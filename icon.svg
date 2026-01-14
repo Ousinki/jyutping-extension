@@ -1,0 +1,19 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Open Book -->
+  <path d="M20 30 C20 30 35 25 64 30 V 110 C35 105 20 110 20 110 V 30 Z" fill="#2196F3"/>
+  <path d="M108 30 C108 30 93 25 64 30 V 110 C93 105 108 110 108 110 V 30 Z" fill="#64B5F6"/>
+  <path d="M25 35 C25 35 38 32 60 35 V 105 C38 102 25 105 25 105 V 35 Z" fill="#BBDEFB"/>
+  <path d="M103 35 C103 35 90 32 68 35 V 105 C90 102 103 105 103 105 V 35 Z" fill="#E3F2FD"/>
+  
+  <!-- Magnifying Glass Handle -->
+  <path d="M85 85 L110 110" stroke="#455A64" stroke-width="12" stroke-linecap="round"/>
+  
+  <!-- Magnifying Glass Rim -->
+  <circle cx="70" cy="70" r="30" fill="#E1F5FE" stroke="#455A64" stroke-width="6"/>
+  
+  <!-- Lens Reflection -->
+  <path d="M55 60 Q 60 55 70 55" stroke="white" stroke-width="3" stroke-linecap="round" opacity="0.6"/>
+  
+  <!-- Text inside Lens -->
+  <text x="70" y="78" font-family="Arial, sans-serif" font-weight="bold" font-size="24" text-anchor="middle" fill="#1565C0">JP</text>
+</svg>

@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+*.zip
+dist/
+
+# Development files
+*.py
+*.pyc
+__pycache__/
+
+# Source data (too large for GitHub)
+# dictionary.json is included as it's necessary for the extension
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+
+# Test files
+test.html
