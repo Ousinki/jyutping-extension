@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>粵語懸浮詞典 - 設定</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --primary: #1565C0;
+      --primary-light: #42A5F5;
+      --primary-dark: #0D47A1;
+      --accent: #22C55E;
+      --bg-page: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --bg-input: #F1F5F9;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+      --radius: 12px;
+      --transition: 200ms ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.6;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .container {
+      max-width: 640px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .header-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 16px;
+      box-shadow: var(--shadow);
+    }
+
+    .header-icon svg {
+      width: 40px;
+      height: 40px;
+      fill: white;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .header p {
+      color: var(--text-secondary);
+      font-size: 15px;
+    }
+
+    /* Settings Card */
+    .settings-card {
+      background: var(--bg-card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      margin-bottom: 24px;
+    }
+
+    .settings-section {
+      padding: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .section-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 16px;
+    }
+
+    /* Setting Item */
+    .setting-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 0;
+    }
+
+    .setting-item:first-of-type {
+      padding-top: 0;
+    }
+
+    .setting-item:last-of-type {
+      padding-bottom: 0;
+    }
+
+    .setting-info {
+      flex: 1;
+      margin-right: 16px;
+    }
+
+    .setting-label {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text-primary);
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .setting-desc {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* Toggle Switch */
+    .toggle {
+      position: relative;
+      width: 52px;
+      height: 28px;
+      flex-shrink: 0;
+    }
+
+    .toggle input {
+      opacity: 0;
+      width: 0;
+      height: 0;
+    }
+
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: var(--bg-input);
+      border-radius: 28px;
+      transition: var(--transition);
+    }
+
+    .toggle-slider::before {
+      position: absolute;
+      content: "";
+      height: 22px;
+      width: 22px;
+      left: 3px;
+      bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.15);
+      transition: var(--transition);
+    }
+
+    .toggle input:checked + .toggle-slider {
+      background: var(--primary);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(24px);
+    }
+
+    .toggle input:focus + .toggle-slider {
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    /* Select */
+    .select-wrapper {
+      position: relative;
+      min-width: 160px;
+    }
+
+    .select-wrapper select {
+      width: 100%;
+      padding: 10px 36px 10px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      appearance: none;
+      transition: var(--transition);
+    }
+
+    .select-wrapper select:hover {
+      border-color: var(--primary-light);
+    }
+
+    .select-wrapper select:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .select-wrapper::after {
+      content: "";
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-secondary);
+      pointer-events: none;
+    }
+
+    /* Range Slider */
+    .range-container {
+      width: 100%;
+      margin-top: 8px;
+    }
+
+    .range-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+
+    .range-value {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary);
+      background: rgba(79, 70, 229, 0.1);
+      padding: 4px 10px;
+      border-radius: 6px;
+    }
+
+    .range-slider {
+      width: 100%;
+      height: 6px;
+      -webkit-appearance: none;
+      appearance: none;
+      background: var(--bg-input);
+      border-radius: 3px;
+      outline: none;
+      cursor: pointer;
+    }
+
+    .range-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 50%;
+      cursor: pointer;
+      box-shadow: 0 2px 6px rgba(79, 70, 229, 0.4);
+      transition: var(--transition);
+    }
+
+    .range-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+    }
+
+    /* Test Button */
+    .test-btn {
+      width: 100%;
+      padding: 14px 24px;
+      font-size: 15px;
+      font-weight: 600;
+      font-family: inherit;
+      color: var(--primary);
+      background: transparent;
+      border: 2px solid var(--primary);
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .test-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .test-btn:active {
+      transform: scale(0.98);
+    }
+
+    .test-btn svg {
+      width: 20px;
+      height: 20px;
+    }
+
+    /* Text Input */
+    .text-input {
+      width: 100%;
+      padding: 12px 14px;
+      font-size: 14px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      transition: var(--transition);
+    }
+
+    .text-input:hover {
+      border-color: var(--primary-light);
+    }
+
+    .text-input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+    }
+
+    .text-input::placeholder {
+      color: var(--text-muted);
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 24px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .footer a {
+      color: var(--primary);
+      text-decoration: none;
+      transition: var(--transition);
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      body {
+        padding: 24px 16px;
+      }
+
+      .header h1 {
+        font-size: 24px;
+      }
+
+      .setting-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .setting-info {
+        margin-right: 0;
+        margin-bottom: 12px;
+      }
+
+      .select-wrapper {
+        width: 100%;
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        transition: none !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">
+        <img src="icon128.png" alt="logo" style="width: 40px; height: 40px; border-radius: 8px;">
+      </div>
+      <h1>粵語懸浮詞典</h1>
+      <p>Cantonese Popup Dictionary Settings</p>
+    </div>
+
+    <!-- General Settings -->
+    <div class="settings-card">
+      <div class="settings-section">
+        <div class="section-title">一般設定</div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">啟用詞典</span>
+            <span class="setting-desc">在網頁上顯示粵語發音提示</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="enabledToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">發音顯示格式</span>
+            <span class="setting-desc">選擇粵語拼音系統</span>
+          </div>
+          <div class="select-wrapper">
+            <select id="displayMode">
+              <option value="jyutping">粵拼 (Jyutping)</option>
+              <option value="yale">耶魯拼音 (Yale)</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TTS Settings -->
+    <div class="settings-card">
+      <div class="settings-section">
+        <div class="section-title">語音設定 (TTS)</div>
+        
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">點擊發聲</span>
+            <span class="setting-desc">點擊高亮文字朗讀粵語發音</span>
+          </div>
+          <label class="toggle">
+            <input type="checkbox" id="ttsEnabledToggle" checked>
+            <span class="toggle-slider"></span>
+          </label>
+        </div>
+
+        <div class="setting-item">
+          <div class="setting-info">
+            <span class="setting-label">語音引擎</span>
+            <span class="setting-desc">選擇 TTS 服務提供商</span>
+          </div>
+          <div class="select-wrapper">
+            <select id="ttsEngine">
+              <option value="webSpeech">Web Speech API</option>
+              <option value="chromeTts">Chrome TTS</option>
+              <option value="edgeTts">Edge TTS</option>
+              <option value="azureTts">Azure Speech (官方雲端語音)</option>
+              <option value="bertVits2">Bert-VITS2 (粵語神經語音)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="setting-item" id="edgeTtsSettings" style="display: none; flex-direction: column; align-items: stretch;">
+          <div class="setting-info" style="margin-bottom: 8px;">
+            <span class="setting-label">Edge TTS 設定</span>
+            <span class="setting-desc">選擇使用預設伺服器或自定義地址</span>
+          </div>
+          <div class="select-wrapper" style="margin-bottom: 8px;">
+            <select id="edgeTtsMode">
+              <option value="default">預設伺服器（免配置）</option>
+              <option value="custom">自定義地址</option>
+            </select>
+          </div>
+          <div id="edgeCustomSettings" style="display: none;">
+            <input type="text" id="edgeTtsUrl" class="text-input" placeholder="http://localhost:5050">
+          </div>
+        </div>
+
+        <div class="setting-item" id="azureTtsSettings" style="display: none; flex-direction: column; align-items: stretch;">
+          <div class="setting-info" style="margin-bottom: 8px;">
+            <span class="setting-label">Azure Speech 設定</span>
+            <span class="setting-desc">選擇使用預設 API 或自定義密鑰</span>
+          </div>
+          <div class="select-wrapper" style="margin-bottom: 8px;">
+            <select id="azureTtsMode">
+              <option value="default">預設 API（免配置）</option>
+              <option value="custom">自定義密鑰（直連 Azure）</option>
+            </select>
+          </div>
+          <div id="azureCustomSettings" style="display: none;">
+            <input type="password" id="azureTtsKey" class="text-input" placeholder="API Key" style="margin-bottom: 8px;">
+            <input type="text" id="azureTtsRegion" class="text-input" placeholder="區域 (例如: koreacentral)">
+          </div>
+          <div style="margin-top: 8px;">
+            <div class="setting-info" style="margin-bottom: 6px;">
+              <span class="setting-label">語音音色</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="azureTtsVoice">
+                <option value="zh-HK-HiuMaanNeural">曉曼 HiuMaan（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s</option>
+                <option value="zh-HK-HiuGaaiNeural">曉佳 HiuGaai（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s</option>
+                <option value="zh-HK-WanLungNeural">雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+          <div class="range-container">
+            <div class="range-header">
+              <span class="setting-label">語速</span>
+              <span class="range-value" id="ttsRateValue">0.9x</span>
+            </div>
+            <input type="range" id="ttsRate" class="range-slider" min="0.5" max="1.5" step="0.1" value="0.9">
+          </div>
+        </div>
+
+        <div class="setting-item" style="padding-top: 16px;">
+          <button id="testTtsBtn" class="test-btn">
+            <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 9V15H7L12 20V4L7 9H3ZM16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12ZM14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z" fill="currentColor"/>
+            </svg>
+            測試語音
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+      <p>數據來源：<a href="https://cc-canto.org" target="_blank">CC-Canto</a> & <a href="https://cc-cedict.org" target="_blank">CC-CEDICT</a></p>
+      <p>授權：CC BY-SA 3.0</p>
+    </div>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="yue-Hant-HK">
+ <head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+  
+
+  <title>404 揾唔到 | 粵典 words.hk</title>
+  
+
+  
+  <!-- hreflang -->
+  <link rel="alternate" hreflang="en" href="https://cantowords.com/data/word_list.csv" />
+  <link rel="alternate" hreflang="zh" href="https://words.hk/data/word_list.csv" />
+  <link rel="alternate" hreflang="x-default" href="https://words.hk/data/word_list.csv" />
+  
+
+  <!-- Bootstrap core CSS -->
+  <link href="//fastly.jsdelivr.net/npm/bootstrap@5.1.1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-F3w7mX95PdgyTmZZMECAngseQB83DfGTowi0iMjiWaeVhAn4FJkqJByhZMI3AhiU" crossorigin="anonymous">
+  <!-- Bootstrap Font Icon CSS -->
+  <link rel="stylesheet" href="//fastly.jsdelivr.net/npm/bootstrap-icons@1.5.0/font/bootstrap-icons.css">
+
+
+  <!-- https://chiron-fonts.github.io/ -->
+  
+  <link rel="stylesheet" href="//fastly.jsdelivr.net/npm/chiron-hei-hk-webfont@2.5.24/css/vf.css" />
+  <link rel="stylesheet" href="//fastly.jsdelivr.net/npm/chiron-hei-hk-webfont@2.5.24/css/vf-italic.css" />
+  
+
+  <!-- Custom styles-->
+  <link href="/static/base.css?t=2022-08-10.1" rel="stylesheet" />
+  
+   <link rel="shortcut icon" href="/static/favicon.ico" />
+  
+
+  <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
+  <!--[if lt IE 9]>
+  <script src="//cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.2/html5shiv-printshiv.min.js"></script>
+  <script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+  <![endif]-->
+
+  <script deferred="deferred" src="//fastly.jsdelivr.net/npm/jquery@1.11.3/dist/jquery.min.js"></script>
+  <script deferred="deferred" src="//fastly.jsdelivr.net/npm/bootstrap@5.1.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-/bQdsTh/da6pkI1MST/rWKFNjaCP5gBSY4sEBT38Q/9RBh9AH40zEOg7Hlq2THRZ" crossorigin="anonymous"></script>
+
+
+  <meta property="og:title" content="" />
+  <meta property="og:description" content="" />
+
+  
+   <meta property="og:locale" content="zh_HK" />
+   <meta property="og:type" content="article" />
+   <meta property="og:site_name" content="粵典 words.hk" />
+   <meta property="article:author" content="https://www.facebook.com/www.words.hk" />
+   <meta property="article:publisher" content="https://www.facebook.com/www.words.hk" />
+   <meta property="og:image" content="https://words.hk/static/og2018.jpg" />
+   <meta property="fb:app_id" content="668825199909866" />
+  
+
+  <script deferred="deferred" src="/static/base.js?v=2022-10-11"></script>
+  
+
+  
+ </head>
+
+ <body>
+  <nav class="navbar fixed-top navbar-expand navbar-dark bg-gradient bg-dark text-light ">
+   <div class="container-lg">
+    <a class="navbar-brand" href="/"><img src="/static/logo-white.png" height="40" width="73"></a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation"><span class="navbar-toggler-icon"></span></button>
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+     <ul class="navbar-nav me-auto">
+      
+      <li class="nav-item"><a class="nav-link " href="/zidin/">查字典</a></li>
+       <li class="nav-item"><a class="nav-link " href="/resources/">資源</a></li>
+      
+       <li class="nav-item"><a class="nav-link " href="/faiman/">粵文庫</a></li>
+      
+      <li class="nav-item"><a class="nav-link " href="/faiman/analysis/">細數據</a></li>
+      
+      <li class="nav-item"><a class="nav-link " href="/base/about/">關於我哋</a></li>
+     </ul>
+     
+     <form action="/zidin/wan/" method="GET" class="d-flex wide-only">
+      <input id="nav-search-input" class="form-control" type="search" style="width: 130px; max-width: 130px" placeholder="漢字 / 粵拼" aria-label="Search" name="q">
+      <button class="btn btn-outline-success" style="margin-right: 3em; margin-left: 3px;" type="submit">查</button>
+     </form>
+     
+     
+     <div class="d-flex page-login" style="padding: 4px 0px 4px 4px">
+      
+      <a class="btn-sm btn-primary" rel="nofollow" href="/accounts/login/?next=/data/word_list.csv">登入</a>
+      
+     </div>
+     
+    </div>
+   </div>
+  </nav>
+
+  <div class="page-content container-lg">
+   
+   
+
+<h1>404 揾唔到</h1>
+
+
+<p>對唔住，揾唔到你想要嘅野。如果你有任何疑難，可以用以下方式同我哋聯絡：<span class="emaillinkplaceholder"></span> | <a href="https://www.facebook.com/www.words.hk">Facebook</a></p>
+
+
+
+  </div><!-- /.container -->
+
+  <div class="page-footer">
+   歡迎向我哋反映意見。 電郵：<span class="emaillinkplaceholder">關於粵典 </span> | <a href="/base/privacy/">私隱政策聲明</a>
+  </div>
+
+  
+   
+<script deferred="deferred" type="text/javascript">
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','//www.google-analytics.com/analytics.js','ga');
+
+  ga('create', 'UA-52921015-1', 'auto');
+  ga('send', 'pageview');
+</script>
+<!-- DIU LA SING GA 4 -->
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-K4ZFC9RS0E"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-K4ZFC9RS0E');
+</script>
+   
+   
+  
+ </body>
+</html>

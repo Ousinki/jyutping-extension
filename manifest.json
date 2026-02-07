@@ -1,11 +1,15 @@
 {
   "manifest_version": 3,
   "name": "粵語懸浮詞典",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "滑鼠懸停中文字即可顯示粵語發音（粵拼/Yale）同埋英文解釋",
   "permissions": [
-    "storage"
+    "storage",
+    "tts"
   ],
+  "background": {
+    "service_worker": "background.js"
+  },
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
@@ -16,7 +20,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["dictionary.json"],
+      "resources": ["dictionary.json", "fonts/HanaMinB.ttf"],
       "matches": ["<all_urls>"]
     }
   ],
@@ -32,5 +36,6 @@
     "16": "icon128.png",
     "48": "icon128.png",
     "128": "icon128.png"
-  }
+  },
+  "options_page": "options.html"
 }

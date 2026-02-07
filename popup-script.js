@@ -6,6 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const enabledToggle = document.getElementById('enabledToggle');
   const displayModeSelect = document.getElementById('displayMode');
+  const openOptionsLink = document.getElementById('openOptions');
 
   // 載入已保存的設定
   chrome.storage.sync.get(['enabled', 'displayMode'], (result) => {
@@ -16,40 +17,31 @@ document.addEventListener('DOMContentLoaded', () => {
   // 監聽開關切換
   enabledToggle.addEventListener('change', () => {
     const enabled = enabledToggle.checked;
-    
-    // 保存設定
     chrome.storage.sync.set({ enabled });
-    
-    // 通知所有 content scripts
-    chrome.tabs.query({}, (tabs) => {
-      tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, {
-          action: 'toggleEnabled',
-          enabled: enabled
-        }).catch(() => {
-          // 忽略錯誤（某些頁面可能無法注入 content script）
-        });
-      });
-    });
+    notifyContentScripts({ action: 'toggleEnabled', enabled });
   });
 
   // 監聽顯示模式切換
   displayModeSelect.addEventListener('change', () => {
     const mode = displayModeSelect.value;
-    
-    // 保存設定
     chrome.storage.sync.set({ displayMode: mode });
-    
-    // 通知所有 content scripts
+    notifyContentScripts({ action: 'changeDisplayMode', mode });
+  });
+
+  // 打開選項頁面
+  openOptionsLink.addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+  });
+
+  // 通知所有 content scripts
+  function notifyContentScripts(message) {
     chrome.tabs.query({}, (tabs) => {
       tabs.forEach(tab => {
-        chrome.tabs.sendMessage(tab.id, {
-          action: 'changeDisplayMode',
-          mode: mode
-        }).catch(() => {
-          // 忽略錯誤
+        chrome.tabs.sendMessage(tab.id, message).catch(() => {
+          // 忽略錯誤（某些頁面可能無法注入 content script）
         });
       });
     });
-  });
+  }
 });

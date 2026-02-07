@@ -3,134 +3,292 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>粵語懸浮詞典 - 設定</title>
+  <title>粵語懸浮詞典</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
+    :root {
+      --primary: #1565C0;
+      --primary-light: #42A5F5;
+      --accent: #22C55E;
+      --bg-page: #F8FAFC;
+      --bg-card: #FFFFFF;
+      --bg-input: #F1F5F9;
+      --text-primary: #1E293B;
+      --text-secondary: #64748B;
+      --text-muted: #94A3B8;
+      --border: #E2E8F0;
+      --transition: 200ms ease;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
     body {
       width: 300px;
-      padding: 16px;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", sans-serif;
-      font-size: 14px;
-      color: #333;
+      font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: var(--bg-page);
+      color: var(--text-primary);
+      line-height: 1.5;
     }
-    
-    h1 {
-      font-size: 18px;
-      margin: 0 0 16px 0;
-      color: #1a1a1a;
+
+    .container {
+      padding: 20px;
     }
-    
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .header-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--primary), var(--primary-light));
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .header-icon svg {
+      width: 22px;
+      height: 22px;
+      fill: white;
+    }
+
+    .header-text h1 {
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text-primary);
+      letter-spacing: -0.01em;
+    }
+
+    .header-text p {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* Settings Card */
+    .settings-card {
+      background: var(--bg-card);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+      overflow: hidden;
+      margin-bottom: 12px;
+    }
+
     .setting-item {
-      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
     }
-    
+
+    .setting-item:last-child {
+      border-bottom: none;
+    }
+
     .setting-label {
-      display: block;
-      margin-bottom: 6px;
+      font-size: 14px;
       font-weight: 500;
-      color: #555;
+      color: var(--text-primary);
     }
-    
-    .toggle-switch {
+
+    /* Toggle Switch */
+    .toggle {
       position: relative;
-      display: inline-block;
-      width: 48px;
+      width: 44px;
       height: 24px;
+      flex-shrink: 0;
     }
-    
-    .toggle-switch input {
+
+    .toggle input {
       opacity: 0;
       width: 0;
       height: 0;
     }
-    
-    .slider {
+
+    .toggle-slider {
       position: absolute;
       cursor: pointer;
       top: 0;
       left: 0;
       right: 0;
       bottom: 0;
-      background-color: #ccc;
-      transition: .3s;
+      background: var(--bg-input);
       border-radius: 24px;
+      transition: var(--transition);
     }
-    
-    .slider:before {
+
+    .toggle-slider::before {
       position: absolute;
       content: "";
       height: 18px;
       width: 18px;
       left: 3px;
       bottom: 3px;
-      background-color: white;
-      transition: .3s;
-      border-radius: 50%;
-    }
-    
-    input:checked + .slider {
-      background-color: #2196F3;
-    }
-    
-    input:checked + .slider:before {
-      transform: translateX(24px);
-    }
-    
-    select {
-      width: 100%;
-      padding: 8px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
       background: white;
+      border-radius: 50%;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+      transition: var(--transition);
     }
-    
+
+    .toggle input:checked + .toggle-slider {
+      background: var(--primary);
+    }
+
+    .toggle input:checked + .toggle-slider::before {
+      transform: translateX(20px);
+    }
+
+    /* Select */
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-wrapper select {
+      padding: 6px 28px 6px 10px;
+      font-size: 13px;
+      font-family: inherit;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--bg-card);
+      color: var(--text-primary);
+      cursor: pointer;
+      appearance: none;
+      transition: var(--transition);
+    }
+
+    .select-wrapper select:hover {
+      border-color: var(--primary-light);
+    }
+
+    .select-wrapper select:focus {
+      outline: none;
+      border-color: var(--primary);
+    }
+
+    .select-wrapper::after {
+      content: "";
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 4px solid transparent;
+      border-right: 4px solid transparent;
+      border-top: 4px solid var(--text-secondary);
+      pointer-events: none;
+    }
+
+    /* Options Link */
+    .options-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      width: 100%;
+      padding: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--primary);
+      background: var(--bg-card);
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+
+    .options-btn:hover {
+      background: var(--primary);
+      color: white;
+    }
+
+    .options-btn svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    /* Footer */
     .footer {
-      margin-top: 20px;
-      padding-top: 16px;
-      border-top: 1px solid #eee;
-      font-size: 12px;
-      color: #888;
+      text-align: center;
+      padding-top: 12px;
+      font-size: 11px;
+      color: var(--text-muted);
     }
-    
+
     .footer a {
-      color: #2196F3;
+      color: var(--primary);
       text-decoration: none;
     }
-    
-    .footer a:hover {
-      text-decoration: underline;
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      * { transition: none !important; }
     }
   </style>
 </head>
 <body>
-  <h1>粵語懸浮詞典</h1>
-  
-  <div class="setting-item">
-    <label class="setting-label">
-      啟用詞典
-    </label>
-    <label class="toggle-switch">
-      <input type="checkbox" id="enabledToggle" checked>
-      <span class="slider"></span>
-    </label>
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <div class="header-icon">
+        <img src="icon128.png" alt="logo" style="width: 24px; height: 24px; border-radius: 4px;">
+      </div>
+      <div class="header-text">
+        <h1>粵語懸浮詞典</h1>
+        <p>Cantonese Popup Dictionary</p>
+      </div>
+    </div>
+
+    <!-- Settings Card -->
+    <div class="settings-card">
+      <div class="setting-item">
+        <span class="setting-label">啟用詞典</span>
+        <label class="toggle">
+          <input type="checkbox" id="enabledToggle" checked>
+          <span class="toggle-slider"></span>
+        </label>
+      </div>
+      
+      <div class="setting-item">
+        <span class="setting-label">發音格式</span>
+        <div class="select-wrapper">
+          <select id="displayMode">
+            <option value="jyutping">粵拼</option>
+            <option value="yale">Yale</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Options Button -->
+    <button id="openOptions" class="options-btn">
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M19.14 12.94C19.18 12.64 19.2 12.33 19.2 12C19.2 11.68 19.18 11.36 19.13 11.06L21.16 9.48C21.34 9.34 21.39 9.07 21.28 8.87L19.36 5.55C19.24 5.33 18.99 5.26 18.77 5.33L16.38 6.29C15.88 5.91 15.35 5.59 14.76 5.35L14.4 2.81C14.36 2.57 14.16 2.4 13.92 2.4H10.08C9.84 2.4 9.65 2.57 9.61 2.81L9.25 5.35C8.66 5.59 8.12 5.92 7.63 6.29L5.24 5.33C5.02 5.25 4.77 5.33 4.65 5.55L2.74 8.87C2.62 9.08 2.66 9.34 2.86 9.48L4.89 11.06C4.84 11.36 4.8 11.69 4.8 12C4.8 12.31 4.82 12.64 4.87 12.94L2.85 14.52C2.67 14.66 2.62 14.93 2.73 15.13L4.65 18.45C4.77 18.67 5.02 18.74 5.24 18.67L7.63 17.71C8.13 18.09 8.66 18.41 9.25 18.65L9.61 21.19C9.65 21.43 9.84 21.6 10.08 21.6H13.92C14.16 21.6 14.36 21.43 14.39 21.19L14.75 18.65C15.34 18.41 15.88 18.09 16.37 17.71L18.76 18.67C18.98 18.75 19.23 18.67 19.35 18.45L21.27 15.13C21.39 14.91 21.34 14.66 21.15 14.52L19.14 12.94ZM12 15.6C10.02 15.6 8.4 13.98 8.4 12C8.4 10.02 10.02 8.4 12 8.4C13.98 8.4 15.6 10.02 15.6 12C15.6 13.98 13.98 15.6 12 15.6Z" fill="currentColor"/>
+      </svg>
+      更多設定
+    </button>
+
+    <!-- Footer -->
+    <div class="footer">
+      <a href="https://cc-canto.org" target="_blank">CC-Canto</a> · <a href="https://cc-cedict.org" target="_blank">CC-CEDICT</a>
+    </div>
   </div>
-  
-  <div class="setting-item">
-    <label class="setting-label" for="displayMode">
-      發音顯示格式
-    </label>
-    <select id="displayMode">
-      <option value="jyutping">粵拼 (Jyutping)</option>
-      <option value="yale">耶魯拼音 (Yale)</option>
-    </select>
-  </div>
-  
-  <div class="footer">
-    <p>數據來源：CC-Canto & CC-CEDICT</p>
-    <p>授權：CC BY-SA 3.0</p>
-    <p><a href="https://cc-canto.org" target="_blank">cc-canto.org</a></p>
-  </div>
-  
+
   <script src="popup-script.js"></script>
 </body>
 </html>
