@@ -5,13 +5,14 @@ node_modules/
 *.zip
 dist/
 
-# Development files
-*.py
+# Raw dictionary source data (large files)
+data/
+
+# Local tools and server (not for distribution)
+wordshk-tools/
+server_deploy/
 *.pyc
 __pycache__/
-
-# Source data (too large for GitHub)
-# dictionary.json is included as it's necessary for the extension
 
 # OS files
 .DS_Store

@@ -2,9 +2,9 @@
 
 一個 Chrome 擴展，滑鼠懸停即可顯示中文字詞的粵語發音（粵拼/Yale）和英文釋義，支援多種語音引擎點擊發聲，並提供 Bing 翻譯和 AI 語境翻譯功能。
 
-![Demo Screenshot](screenshot_store_1.png)
-![Demo - 懸停查詞](screenshot_demo.png)
-![Demo - AI 語境翻譯](screenshot_ai_demo.png)
+![Demo Screenshot](assets/screenshot_store_1.png)
+![Demo - 懸停查詞](assets/screenshot_demo.png)
+![Demo - AI 語境翻譯](assets/screenshot_ai_demo.png)
 
 ## ✨ 功能特點
 
