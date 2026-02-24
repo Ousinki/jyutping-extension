@@ -6,10 +6,15 @@
 (function() {
   'use strict';
 
+  // 唯一標識此 content script 實例（防止擴展重載後舊腳本重複播放音頻）
+  const contentScriptId = Math.random().toString(36).slice(2);
+  document.documentElement.setAttribute('data-jyutping-tts-owner', contentScriptId);
+
   let dictionary = {};
   let popup = null;
   let isEnabled = true;
   let displayMode = 'jyutping'; // 'jyutping' 或 'yale'
+  let popupTheme = 'classic'; // 懸浮窗主題
   let ttsEnabled = true; // TTS 開關
   let ttsEngine = 'webSpeech'; // TTS 引擎: webSpeech, chromeTts, edgeTts, azureTts
   let edgeTtsMode = 'default'; // Edge TTS 模式: default (預設伺服器) / custom (自定義)
@@ -25,6 +30,204 @@
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
   let justNavigated = false; // 是否剛進行鏈接導航
+
+  // 翻譯
+  let translatePopup = null; // 用於句子選區的獨立浮窗
+  let selectionClickTimer = null; // 用於延遲 TTS（可被 dblclick 取消）
+  let pendingTranslateWord = null; // 保存待翻譯的詞（給 dblclick 用）
+
+  // AI 翻譯
+  let aiEnabled = false;
+  let aiLongPressTimer = null; // 長按計時器
+
+  // ========== 主題系統 ==========
+  const POPUP_THEMES = {
+    classic: {
+      name: '經典',
+      vars: {
+        '--popup-bg': '#ffffff',
+        '--popup-border': '#d0d0d0',
+        '--popup-text': '#333333',
+        '--popup-text-muted': '#666666',
+        '--popup-text-label': '#888888',
+        '--popup-accent': '#2196f3',
+        '--popup-accent-hover': '#1976d2',
+        '--popup-word-color': '#1a1a1a',
+        '--popup-def-color': '#555555',
+        '--popup-def-yue': '#b8860b',
+        '--popup-divider': 'rgba(0, 0, 0, 0.08)',
+        '--popup-divider-strong': '#eeeeee',
+        '--popup-example-bg': '#f9f9f9',
+        '--popup-btn-bg': '#f0f0f0',
+        '--popup-btn-hover': '#e0e0e0',
+        '--popup-btn-speaking': '#2196f3',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0 4px 12px rgba(0, 0, 0, 0.15)',
+        '--popup-active-bg': '#f0f7ff',
+      }
+    },
+    night: {
+      name: '深邃夜色',
+      vars: {
+        '--popup-bg': '#1a1a2e',
+        '--popup-border': '#16213e',
+        '--popup-text': '#e0e0e0',
+        '--popup-text-muted': '#a0a0b0',
+        '--popup-text-label': '#8888a0',
+        '--popup-accent': '#7c8cf8',
+        '--popup-accent-hover': '#9aa6ff',
+        '--popup-word-color': '#f0f0ff',
+        '--popup-def-color': '#c0c0d0',
+        '--popup-def-yue': '#e8b84e',
+        '--popup-divider': 'rgba(255, 255, 255, 0.08)',
+        '--popup-divider-strong': '#2a2a40',
+        '--popup-example-bg': '#141425',
+        '--popup-btn-bg': '#2a2a40',
+        '--popup-btn-hover': '#3a3a55',
+        '--popup-btn-speaking': '#7c8cf8',
+        '--popup-btn-speaking-text': '#1a1a2e',
+        '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.4)',
+        '--popup-active-bg': '#222240',
+      }
+    },
+    ink: {
+      name: '墨韻',
+      vars: {
+        '--popup-bg': '#2d2d2d',
+        '--popup-border': '#444444',
+        '--popup-text': '#e0e0e0',
+        '--popup-text-muted': '#aaaaaa',
+        '--popup-text-label': '#999999',
+        '--popup-accent': '#64b5f6',
+        '--popup-accent-hover': '#90caf9',
+        '--popup-word-color': '#f0f0f0',
+        '--popup-def-color': '#cccccc',
+        '--popup-def-yue': '#daa520',
+        '--popup-divider': 'rgba(255, 255, 255, 0.08)',
+        '--popup-divider-strong': '#3d3d3d',
+        '--popup-example-bg': '#252525',
+        '--popup-btn-bg': '#444444',
+        '--popup-btn-hover': '#555555',
+        '--popup-btn-speaking': '#64b5f6',
+        '--popup-btn-speaking-text': '#1a1a1a',
+        '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.4)',
+        '--popup-active-bg': '#383838',
+      }
+    },
+    ocean: {
+      name: '海洋藍',
+      vars: {
+        '--popup-bg': '#e3f2fd',
+        '--popup-border': '#90caf9',
+        '--popup-text': '#1565c0',
+        '--popup-text-muted': '#42a5f5',
+        '--popup-text-label': '#64b5f6',
+        '--popup-accent': '#0d47a1',
+        '--popup-accent-hover': '#1565c0',
+        '--popup-word-color': '#0d47a1',
+        '--popup-def-color': '#1976d2',
+        '--popup-def-yue': '#e65100',
+        '--popup-divider': 'rgba(13, 71, 161, 0.1)',
+        '--popup-divider-strong': '#bbdefb',
+        '--popup-example-bg': '#bbdefb',
+        '--popup-btn-bg': '#bbdefb',
+        '--popup-btn-hover': '#90caf9',
+        '--popup-btn-speaking': '#1565c0',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0 4px 12px rgba(21, 101, 192, 0.2)',
+        '--popup-active-bg': '#bbdefb',
+      }
+    },
+    warm: {
+      name: '暖陽',
+      vars: {
+        '--popup-bg': '#fff8e1',
+        '--popup-border': '#ffe082',
+        '--popup-text': '#5d4037',
+        '--popup-text-muted': '#8d6e63',
+        '--popup-text-label': '#a1887f',
+        '--popup-accent': '#e65100',
+        '--popup-accent-hover': '#f57c00',
+        '--popup-word-color': '#3e2723',
+        '--popup-def-color': '#6d4c41',
+        '--popup-def-yue': '#c62828',
+        '--popup-divider': 'rgba(93, 64, 55, 0.1)',
+        '--popup-divider-strong': '#ffe0b2',
+        '--popup-example-bg': '#fff3e0',
+        '--popup-btn-bg': '#ffe0b2',
+        '--popup-btn-hover': '#ffcc80',
+        '--popup-btn-speaking': '#e65100',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0 4px 12px rgba(230, 81, 0, 0.15)',
+        '--popup-active-bg': '#fff3e0',
+      }
+    },
+    mint: {
+      name: '薄荷綠',
+      vars: {
+        '--popup-bg': '#e8f5e9',
+        '--popup-border': '#a5d6a7',
+        '--popup-text': '#2e7d32',
+        '--popup-text-muted': '#4caf50',
+        '--popup-text-label': '#66bb6a',
+        '--popup-accent': '#1b5e20',
+        '--popup-accent-hover': '#2e7d32',
+        '--popup-word-color': '#1b5e20',
+        '--popup-def-color': '#388e3c',
+        '--popup-def-yue': '#bf360c',
+        '--popup-divider': 'rgba(46, 125, 50, 0.1)',
+        '--popup-divider-strong': '#c8e6c9',
+        '--popup-example-bg': '#c8e6c9',
+        '--popup-btn-bg': '#c8e6c9',
+        '--popup-btn-hover': '#a5d6a7',
+        '--popup-btn-speaking': '#2e7d32',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0 4px 12px rgba(46, 125, 50, 0.2)',
+        '--popup-active-bg': '#c8e6c9',
+      }
+    },
+    glass: {
+      name: '毛玻璃',
+      vars: {
+        '--popup-bg': 'rgba(255, 255, 255, 0.78)',
+        '--popup-border': 'rgba(255, 255, 255, 0.3)',
+        '--popup-text': '#333333',
+        '--popup-text-muted': '#555555',
+        '--popup-text-label': '#777777',
+        '--popup-accent': '#2196f3',
+        '--popup-accent-hover': '#1976d2',
+        '--popup-word-color': '#1a1a1a',
+        '--popup-def-color': '#444444',
+        '--popup-def-yue': '#b8860b',
+        '--popup-divider': 'rgba(0, 0, 0, 0.06)',
+        '--popup-divider-strong': 'rgba(0, 0, 0, 0.08)',
+        '--popup-example-bg': 'rgba(255, 255, 255, 0.5)',
+        '--popup-btn-bg': 'rgba(0, 0, 0, 0.06)',
+        '--popup-btn-hover': 'rgba(0, 0, 0, 0.1)',
+        '--popup-btn-speaking': '#2196f3',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0 8px 32px rgba(0, 0, 0, 0.12)',
+        '--popup-active-bg': 'rgba(33, 150, 243, 0.08)',
+      }
+    }
+  };
+
+  // 應用主題到彈窗
+  function applyPopupTheme(themeName) {
+    if (!popup) return;
+    const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
+    
+    // 設定 CSS 變量
+    for (const [prop, value] of Object.entries(theme.vars)) {
+      popup.style.setProperty(prop, value);
+    }
+    
+    // 處理毛玻璃特殊 class
+    popup.classList.remove('popup-theme-glass');
+    if (themeName === 'glass') {
+      popup.classList.add('popup-theme-glass');
+    }
+  }
   
   // TTS 音頻緩存（避免重複 API 調用）
   const ttsCache = new Map(); // key: "engine:text" -> audioData
@@ -34,13 +237,185 @@
   // 初始化：創建彈窗元素
   function init() {
     createPopup();
+    createTranslatePopup();
     loadDictionary();
     loadSettings();
     setupEventListeners();
   }
 
+  let hasUserSelection = false;
+
+  // 創建句子翻譯用的獨立浮窗（當沒有詞典彈窗時使用）
+  function createTranslatePopup() {
+    translatePopup = document.createElement('div');
+    translatePopup.id = 'cantonese-translate-popup';
+    translatePopup.style.display = 'none';
+    document.body.appendChild(translatePopup);
+    translatePopup.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+  }
+
+  // 發送翻譯請求
+  function requestTranslation(text) {
+    // 只翻譯包含中文的文本
+    const chineseRatio = (text.match(/[\u4e00-\u9fff]/g) || []).length / text.length;
+    if (chineseRatio < 0.3) return;
+
+    showTranslatePopup(text, null, null, true);
+    chrome.runtime.sendMessage({
+      action: 'translate',
+      text: text
+    });
+  }
+
+  // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
+  function showTranslatePopup(originalText, mandarin, english, loading) {
+    // 如果詞典彈窗正在顯示，將翻譯結果插入其中
+    if (popup && popup.style.display !== 'none') {
+      const translateDiv = popup.querySelector('.popup-translate');
+      if (translateDiv) {
+        if (loading) {
+          translateDiv.innerHTML = '<div class="translate-loading">翻譯中...</div>';
+        } else {
+          translateDiv.innerHTML = `
+            <div class="translate-row"><span class="translate-label">普</span><span class="translate-text">${mandarin || ''}</span></div>
+            <div class="translate-row"><span class="translate-label">英</span><span class="translate-text">${english || ''}</span></div>
+          `;
+        }
+        translateDiv.style.display = 'block';
+        return;
+      }
+    }
+    
+    // 否則用獨立浮窗（句子選區翻譯）
+    if (!translatePopup) return;
+    if (loading) {
+      translatePopup.innerHTML = `
+        <div class="translate-header">翻譯中...</div>
+        <div class="translate-body" style="opacity:0.5;">${originalText}</div>
+      `;
+    } else {
+      translatePopup.innerHTML = `
+        <div class="translate-row"><span class="translate-label">普</span><span class="translate-text">${mandarin || ''}</span></div>
+        <div class="translate-row"><span class="translate-label">英</span><span class="translate-text">${english || ''}</span></div>
+      `;
+    }
+    // 定位在選區下方
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const rects = range.getClientRects();
+      if (rects.length > 0) {
+        const lastRect = rects[rects.length - 1];
+        translatePopup.style.position = 'fixed';
+        translatePopup.style.left = Math.max(5, lastRect.left) + 'px';
+        translatePopup.style.top = (lastRect.bottom + 6) + 'px';
+      }
+    }
+    translatePopup.style.display = 'block';
+  }
+
+  // 隱藏翻譯結果浮窗
+  function hideTranslatePopup() {
+    if (translatePopup) {
+      translatePopup.style.display = 'none';
+    }
+  }
+
+  // 獲取選中文本所在的段落/句子作為上下文
+  function getSurroundingSentence() {
+    const selection = window.getSelection();
+    if (!selection.rangeCount) return '';
+    
+    let node = selection.anchorNode;
+    if (!node) return '';
+    
+    // 向上找到塊級元素
+    const blockTags = ['P', 'DIV', 'LI', 'TD', 'TH', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'ARTICLE', 'SECTION'];
+    let el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    while (el && !blockTags.includes(el.tagName)) {
+      el = el.parentElement;
+    }
+    
+    if (!el) {
+      // fallback: 用 anchorNode 的父元素
+      el = node.nodeType === Node.TEXT_NODE ? node.parentElement : node;
+    }
+    
+    const text = (el.textContent || '').trim();
+    // 限制長度，避免發送過長的上下文
+    return text.length > 500 ? text.substring(0, 500) + '...' : text;
+  }
+
+  // 請求 AI 翻譯
+  function requestAiTranslation(word) {
+    if (!word) return;
+    
+    const sentence = getSurroundingSentence();
+    console.log('[AI] requestAiTranslation, word:', word, 'sentence:', sentence.substring(0, 80));
+    
+    // 顯示加載狀態
+    showAiResult(word, '✨ AI 分析中...');
+    
+    chrome.runtime.sendMessage({
+      action: 'aiTranslate',
+      word: word,
+      sentence: sentence
+    });
+  }
+
+  // 顯示 AI 翻譯結果
+  function showAiResult(word, explanation) {
+    // 如果詞典彈窗正在顯示，插入其中
+    if (popup && popup.style.display !== 'none') {
+      const translateDiv = popup.querySelector('.popup-translate');
+      if (translateDiv) {
+        translateDiv.innerHTML = `
+          <div class="ai-result">
+            <div class="ai-label">✨ AI 語境</div>
+            <div class="ai-text">${explanation}</div>
+          </div>
+        `;
+        translateDiv.style.display = 'block';
+        return;
+      }
+    }
+    
+    // 否則用獨立浮窗
+    if (!translatePopup) return;
+    translatePopup.innerHTML = `
+      <div class="ai-result">
+        <div class="ai-label">✨ AI 語境：${word}</div>
+        <div class="ai-text">${explanation}</div>
+      </div>
+    `;
+    // 定位在選區下方
+    const selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      const range = selection.getRangeAt(0);
+      const rects = range.getClientRects();
+      if (rects.length > 0) {
+        const lastRect = rects[rects.length - 1];
+        translatePopup.style.position = 'fixed';
+        translatePopup.style.left = Math.max(5, lastRect.left) + 'px';
+        translatePopup.style.top = (lastRect.bottom + 6) + 'px';
+      }
+    }
+    translatePopup.style.display = 'block';
+  }
+
+
+
   // 創建彈窗 DOM 元素
   function createPopup() {
+    // 清除舊的彈窗元素（擴展重載後舊 content script 留下的）
+    const oldPopup = document.getElementById('cantonese-popup-dict');
+    if (oldPopup) oldPopup.remove();
+    const oldTranslate = document.getElementById('cantonese-translate-popup');
+    if (oldTranslate) oldTranslate.remove();
+    
     popup = document.createElement('div');
     popup.id = 'cantonese-popup-dict';
     popup.style.display = 'none';
@@ -51,6 +426,7 @@
         <div class="popup-main"></div>
         <div class="popup-examples" style="display:none;"></div>
       </div>
+      <div class="popup-translate" style="display:none;"></div>
     `;
     
     document.body.appendChild(popup);
@@ -77,8 +453,9 @@
       scheduleHidePopup();
     });
 
-    // 點擊彈窗內部不關閉
+    // 點擊彈窗內部不關閉，且不影響背景選區
     popup.addEventListener('mousedown', (e) => {
+      e.preventDefault();
       e.stopPropagation();
     });
   }
@@ -98,11 +475,13 @@
   // 載入用戶設定
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'ttsEnabled', 
+      'enabled', 'displayMode', 'popupTheme', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], (result) => {
       isEnabled = result.enabled !== false;
       displayMode = result.displayMode || 'jyutping';
+      popupTheme = result.popupTheme || 'classic';
+      applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
       ttsEngine = result.ttsEngine || 'webSpeech';
       edgeTtsMode = result.edgeTtsMode || 'default';
@@ -113,13 +492,28 @@
       azureTtsVoice = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
       ttsRate = result.ttsRate || 0.9;
     });
+    // AI 設定用 local storage
+    chrome.storage.local.get(['aiEnabled'], (result) => {
+      aiEnabled = result.aiEnabled === true;
+      console.log('[AI] loadSettings, aiEnabled:', aiEnabled);
+    });
   }
 
   // 粵語朗讀功能
+  let lastSpeakTime = 0;
   async function speakCantonese(text) {
     if (!ttsEnabled) return;
     
-    console.log('speakCantonese called, engine:', ttsEngine);
+    // 全局防抖：300ms 內不重複發音
+    const now = Date.now();
+    console.trace(`speakCantonese called for "${text}". Time diff: ${now - lastSpeakTime}ms`);
+    if (now - lastSpeakTime < 300) {
+      console.log('speakCantonese blocked by debounce');
+      return;
+    }
+    lastSpeakTime = now;
+    
+    console.log('speakCantonese proceeding, engine:', ttsEngine);
     
     // 檢查緩存（僅對需要 API 調用的引擎）
     const cacheKey = `${ttsEngine}:${ttsRate}:${text}`;
@@ -223,11 +617,14 @@
   function setupEventListeners() {
     let lastX = 0, lastY = 0;
     let isThrottled = false;
-    let isSelecting = false; // 用戶正在選擇文字
+    let isSelecting = false; // 用戶正在拖拽選擇文字
 
     // 使用 mousemove 實現實時跟隨
     document.addEventListener('mousemove', (e) => {
       if (!isEnabled || isSelecting) return;
+
+      // 如果用戶有手動選中的文本，不要觸發懸停查詞（防止覆蓋選區）
+      if (hasUserSelection) return;
 
       // 如果滑鼠在彈窗上，不處理
       if (isMouseOverPopup) return;
@@ -236,7 +633,6 @@
       if (justNavigated) return;
 
       // ★ 最優先檢查：如果有可編輯元素正在獲得焦點，完全跳過
-      // 防止 IME 輸入法被干擾（特別是 Claude/Gemini 等網站）
       if (hasEditableFocus()) {
         return;
       }
@@ -266,7 +662,6 @@
 
     // 滑鼠離開文檔時隱藏
     document.addEventListener('mouseleave', () => {
-      // 如果有可編輯元素正在獲得焦點，不清除選區
       if (hasEditableFocus()) {
         if (popup) popup.style.display = 'none';
         return;
@@ -274,32 +669,170 @@
       hidePopup();
     });
 
-    // 點擊時清除彈窗，開始選擇模式
+    // 點擊時的邏輯
+
     document.addEventListener('mousedown', (e) => {
-      // 如果點擊在彈窗內部，不隱藏（允許選擇文字）
+      // 如果點擊在彈窗內部，不隱藏
       if (popup && popup.contains(e.target)) {
         return;
       }
 
-      // 如果有高亮詞且點擊在高亮區域內，觸發朗讀
-      if (currentWord && currentRange) {
+      // 如果用戶有手動選中的文本，檢查點擊是否在選區內
+      if (hasUserSelection) {
         const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
+        if (selection.rangeCount > 0 && selection.toString().trim()) {
           const range = selection.getRangeAt(0);
-          const rect = range.getBoundingClientRect();
-          // 檢查點擊是否在高亮區域內
-          if (e.clientX >= rect.left && e.clientX <= rect.right &&
-              e.clientY >= rect.top && e.clientY <= rect.bottom) {
-            speakCantonese(currentWord);
-            e.preventDefault(); // 防止選區被清除
-            return; // 不隱藏彈窗，保持顯示
+          const rects = range.getClientRects();
+          let clickInSelection = false;
+          for (const rect of rects) {
+            if (e.clientX >= rect.left && e.clientX <= rect.right &&
+                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+              clickInSelection = true;
+              break;
+            }
+          }
+          if (clickInSelection) {
+            e.preventDefault();
+            // 用延遲區分單擊（TTS）和雙擊（翻譯）
+            if (selectionClickTimer) {
+              // 第二次點擊 → 取消 TTS，觸發翻譯
+              clearTimeout(selectionClickTimer);
+              selectionClickTimer = null;
+              requestTranslation(selection.toString().trim());
+            } else {
+              // 第一次點擊 → 延遲觸發 TTS
+              const textToSpeak = selection.toString().trim();
+              selectionClickTimer = setTimeout(() => {
+                selectionClickTimer = null;
+                speakCantonese(textToSpeak);
+              }, 250);
+            }
+
+            // 長按 500ms → 觸發 AI 翻譯（直接從 storage 讀取，避免變量未同步）
+            chrome.storage.local.get(['aiEnabled'], (res) => {
+              const isAiOn = res.aiEnabled === true;
+              console.log('[AI] 檢查 AI 狀態:', isAiOn);
+              if (!isAiOn) return;
+
+              if (aiLongPressTimer) clearTimeout(aiLongPressTimer);
+              const selectedWord = selection.toString().trim();
+              console.log('[AI] 長按計時器啟動, word:', selectedWord);
+              aiLongPressTimer = setTimeout(() => {
+                aiLongPressTimer = null;
+                console.log('[AI] 長按 500ms 觸發! word:', selectedWord);
+                // 取消已排隊的 TTS 和 Bing 翻譯
+                if (selectionClickTimer) {
+                  clearTimeout(selectionClickTimer);
+                  selectionClickTimer = null;
+                }
+                requestAiTranslation(selectedWord);
+              }, 500);
+            });
+            return;
           }
         }
+        // 點擊在選區外 → 清除選區
+        hasUserSelection = false;
+        hideTranslatePopup();
       }
-      
+
+      // 如果有高亮詞且點擊在高亮區域內 → 延遲 TTS（可被拖拽取消）
+      if (currentWord && currentRange) {
+        const rect = currentRange.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0 &&
+            e.clientX >= rect.left && e.clientX <= rect.right &&
+            e.clientY >= rect.top && e.clientY <= rect.bottom) {
+          // 不立即 preventDefault — 先觀察用戶是否在拖拽選擇文本
+          const startX = e.clientX;
+          const startY = e.clientY;
+          let isDragging = false;
+
+          // 保存現有選區（點擊會清除它，之後如果是單擊就恢復）
+          const sel = window.getSelection();
+          let savedRange = null;
+          if (sel.rangeCount > 0 && sel.toString().trim()) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+          }
+
+          // 保存當前詞，供 dblclick 使用
+          pendingTranslateWord = currentWord;
+          // 取消之前的計時器，防止重複 TTS
+          if (selectionClickTimer) {
+            clearTimeout(selectionClickTimer);
+            selectionClickTimer = null;
+          }
+
+          const wordToSpeak = currentWord;
+
+          // 延遲 TTS，如果用戶拖拽/雙擊則取消
+          selectionClickTimer = setTimeout(() => {
+            selectionClickTimer = null;
+            if (!isDragging) {
+              speakCantonese(wordToSpeak);
+            }
+          }, 300);
+
+          // 長按 500ms → 觸發 AI 翻譯（同樣可被拖拽取消）
+          chrome.storage.local.get(['aiEnabled'], (res) => {
+            if (res.aiEnabled !== true) return;
+            if (aiLongPressTimer) clearTimeout(aiLongPressTimer);
+            aiLongPressTimer = setTimeout(() => {
+              aiLongPressTimer = null;
+              if (!isDragging) {
+                if (selectionClickTimer) {
+                  clearTimeout(selectionClickTimer);
+                  selectionClickTimer = null;
+                }
+                requestAiTranslation(wordToSpeak);
+              }
+            }, 500);
+          });
+
+          // 監聽拖拽：如果移動超過 5px，切換到選擇模式
+          const onDragMove = (moveEvt) => {
+            const dx = moveEvt.clientX - startX;
+            const dy = moveEvt.clientY - startY;
+            if (dx * dx + dy * dy > 25) { // 5px 閾值
+              isDragging = true;
+              isSelecting = true;
+              currentWord = null;
+              hidePopup();
+              // 取消 TTS 和 AI 計時器
+              if (selectionClickTimer) {
+                clearTimeout(selectionClickTimer);
+                selectionClickTimer = null;
+              }
+              if (aiLongPressTimer) {
+                clearTimeout(aiLongPressTimer);
+                aiLongPressTimer = null;
+              }
+              pendingTranslateWord = null;
+              document.removeEventListener('mousemove', onDragMove);
+            }
+          };
+          document.addEventListener('mousemove', onDragMove);
+
+          // mouseup 時清理拖拽監聽，並恢復選區（如果是單擊）
+          const onDragEnd = () => {
+            document.removeEventListener('mousemove', onDragMove);
+            // 如果不是拖拽且之前有選區，恢復它
+            if (!isDragging && savedRange) {
+              const s = window.getSelection();
+              s.removeAllRanges();
+              s.addRange(savedRange);
+            }
+          };
+          document.addEventListener('mouseup', onDragEnd, { once: true });
+
+          return;
+        }
+      }
+
+      // 如果正等待 dblclick 翻譯，不要隱藏彈窗
+      if (pendingTranslateWord) return;
+
       isSelecting = true;
       currentWord = null;
-      // 如果有可編輯元素正在獲得焦點，只隱藏彈窗，不清除選區
       if (hasEditableFocus()) {
         if (popup) popup.style.display = 'none';
         return;
@@ -307,25 +840,74 @@
       hidePopup();
     });
 
-    // 釋放滑鼠後延遲恢復
-    document.addEventListener('mouseup', () => {
-      // 延遲 300ms 後恢復，讓用戶有時間完成選擇
+    // 雙擊 → 觸發翻譯（比 timer 更可靠）
+    document.addEventListener('dblclick', (e) => {
+      // 取消待執行的 TTS
+      if (selectionClickTimer) {
+        clearTimeout(selectionClickTimer);
+        selectionClickTimer = null;
+      }
+
+      // 情況 1：雙擊高亮詞
+      if (pendingTranslateWord) {
+        e.preventDefault();
+        requestTranslation(pendingTranslateWord);
+        pendingTranslateWord = null;
+        return;
+      }
+
+      // 情況 2：雙擊用戶選區
+      if (hasUserSelection) {
+        const selection = window.getSelection();
+        const text = selection.toString().trim();
+        if (text) {
+          e.preventDefault();
+          requestTranslation(text);
+        }
+      }
+    });
+
+    // 釋放滑鼠後檢查用戶是否手動選中了文本
+    document.addEventListener('mouseup', (e) => {
+      // 清除 AI 長按計時器
+      if (aiLongPressTimer) {
+        console.log('[AI] mouseup 清除長按計時器');
+        clearTimeout(aiLongPressTimer);
+        aiLongPressTimer = null;
+      }
+
+      // 只有用戶真正拖拽過（isSelecting 為 true）才檢測手動選中
+      if (!isSelecting) return;
+
       setTimeout(() => {
         isSelecting = false;
-      }, 300);
+
+        // 檢查用戶是否手動選中了文本（超過 1 個字符的選區）
+        const selection = window.getSelection();
+        const selectedText = selection.toString().trim();
+        
+        if (selectedText.length > 1 && /[\u4e00-\u9fff]/.test(selectedText)) {
+          hasUserSelection = true;
+          hidePopup();
+        } else {
+          hasUserSelection = false;
+        }
+      }, 50);
     });
 
     // 滾動時隱藏彈窗
     document.addEventListener('scroll', () => {
-      // 如果點擊觸發，滾動時可能想保持？
-      // 為了避免遮擋，還是隱藏吧，或者改為跟隨（複雜）
       hidePopup();
+      hasUserSelection = false;
+      hideTranslatePopup();
     });
 
     // 按 ESC 關閉
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         hidePopup();
+        hideTranslatePopup();
+        hasUserSelection = false;
       }
     });
   }
@@ -703,10 +1285,12 @@
 
     const popupMain = popup.querySelector('.popup-main');
     const popupExamples = popup.querySelector('.popup-examples');
+    const popupTranslate = popup.querySelector('.popup-translate');
     
     // 重置樣式
     popupExamples.style.display = 'none';
     popupExamples.innerHTML = '';
+    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
     popupMain.innerHTML = '';
     popup.classList.remove('expanded-mode');
     popup.style.width = '320px'; // 默認寬度
@@ -784,7 +1368,7 @@
       wordSection.style.cursor = 'pointer';
       wordSection.addEventListener('click', (e) => {
         e.stopPropagation();
-        speakText(entry.traditional);
+        speakCantonese(entry.traditional);
       });
     }
 
@@ -794,7 +1378,7 @@
       pronunciationText.style.cursor = 'pointer';
       pronunciationText.addEventListener('click', (e) => {
         e.stopPropagation();
-        speakText(entry.traditional);
+        speakCantonese(entry.traditional);
       });
     }
 
@@ -962,10 +1546,12 @@
   function hidePopup() {
     if (popup) {
       popup.style.display = 'none';
-      // examplesPopup 已廢棄，不再使用
     }
     currentWord = null;
-    removeHighlight();
+    // 如果用戶有手動選中的文本，不清除選區
+    if (!hasUserSelection) {
+      removeHighlight();
+    }
   }
 
   // 選中文字（使用原生 Selection API）
@@ -1003,6 +1589,9 @@
       if (!isEnabled) hidePopup();
     } else if (request.action === 'changeDisplayMode') {
       displayMode = request.mode;
+    } else if (request.action === 'changePopupTheme') {
+      popupTheme = request.theme;
+      applyPopupTheme(popupTheme);
     } else if (request.action === 'changeTtsEnabled') {
       ttsEnabled = request.ttsEnabled;
     } else if (request.action === 'changeTtsEngine') {
@@ -1022,6 +1611,10 @@
     } else if (request.action === 'changeTtsRate') {
       ttsRate = request.ttsRate;
     } else if (request.action === 'playAudio') {
+      // 防止舊 content script 重複播放（擴展重載後舊腳本仍在監聽）
+      const myId = document.documentElement.getAttribute('data-jyutping-tts-owner');
+      if (myId !== contentScriptId) return;
+      
       // 緩存音頻數據
       if (pendingTtsText) {
         if (ttsCache.size >= TTS_CACHE_MAX) {
@@ -1035,6 +1628,20 @@
       // 播放音頻
       const audio = new Audio(request.audioData);
       audio.play();
+    } else if (request.action === 'translateResult') {
+      if (request.success) {
+        showTranslatePopup(null, request.mandarin, request.english, false);
+      } else {
+        showTranslatePopup(null, '❌ ' + request.error, '', false);
+      }
+    } else if (request.action === 'aiTranslateResult') {
+      if (request.success) {
+        showAiResult(request.word, request.explanation);
+      } else {
+        showAiResult(request.word, '❌ ' + request.error);
+      }
+    } else if (request.action === 'changeAiEnabled') {
+      aiEnabled = request.aiEnabled;
     }
   });
 

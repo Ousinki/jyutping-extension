@@ -1,30 +1,64 @@
 /**
  * 粵語懸浮詞典 - 樣式表
+ * 使用 CSS 自定義屬性驅動主題系統
  */
 
 @font-face {
-  font-family: 'HanaMinB';
-  src: url('chrome-extension://__MSG_@@extension_id__/fonts/HanaMinB.ttf');
+  font-family: "HanaMinB";
+  src: url("chrome-extension://__MSG_@@extension_id__/fonts/HanaMinB.ttf");
   font-display: swap;
 }
 
 #cantonese-popup-dict {
+  /* 默認主題變量（經典白色） */
+  --popup-bg: #ffffff;
+  --popup-border: #d0d0d0;
+  --popup-text: #333333;
+  --popup-text-muted: #666666;
+  --popup-text-label: #888888;
+  --popup-accent: #2196f3;
+  --popup-accent-hover: #1976d2;
+  --popup-word-color: #1a1a1a;
+  --popup-def-color: #555555;
+  --popup-def-yue: #b8860b;
+  --popup-divider: rgba(0, 0, 0, 0.08);
+  --popup-divider-strong: #eeeeee;
+  --popup-example-bg: #f9f9f9;
+  --popup-btn-bg: #f0f0f0;
+  --popup-btn-hover: #e0e0e0;
+  --popup-btn-speaking: #2196f3;
+  --popup-btn-speaking-text: #ffffff;
+  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --popup-active-bg: #f0f7ff;
+
   position: fixed;
-  background: white;
-  border: 1px solid #d0d0d0;
+  background: var(--popup-bg);
+  border: 1px solid var(--popup-border);
   border-radius: 8px;
-  /* padding 移到內部容器 */
   padding: 0;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  z-index: 2147483647; /* 最高層級 */
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "PingFang HK", "Microsoft JhengHei", "Microsoft JhengHei UI",
-    "MingLiU", "MingLiU-ExtB", "PMingLiU", "PMingLiU-ExtB", "SimSun", "SimSun-ExtB", "Songti TC", "Songti SC", "STSong", "Apple LiSung", "LiSong Pro", "HanaMinB", "HanaMinA", sans-serif;
+  box-shadow: var(--popup-shadow);
+  z-index: 2147483647;
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "PingFang HK",
+    "Microsoft JhengHei", "Microsoft JhengHei UI", "MingLiU", "MingLiU-ExtB",
+    "PMingLiU", "PMingLiU-ExtB", "SimSun", "SimSun-ExtB", "Songti TC",
+    "Songti SC", "STSong", "Apple LiSung", "LiSong Pro", "HanaMinB", "HanaMinA",
+    sans-serif;
   font-size: 14px;
   line-height: 1.6;
-  color: #333;
-  width: 320px; /* 初始寬度 */
-  transition: width 0.2s ease-in-out, left 0.2s ease-in-out, top 0.2s ease-in-out;
-  overflow: hidden; /* 防止內容溢出 */
+  color: var(--popup-text);
+  width: 320px;
+  transition:
+    width 0.2s ease-in-out,
+    left 0.2s ease-in-out,
+    top 0.2s ease-in-out;
+  overflow: hidden;
+}
+
+/* 毛玻璃主題特殊樣式 */
+#cantonese-popup-dict.popup-theme-glass {
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
 
 .popup-container {
@@ -44,15 +78,15 @@
   width: 320px;
   min-width: 320px;
   padding: 12px 16px;
-  background-color: #f9f9f9;
-  border-left: 1px solid #eee;
+  background-color: var(--popup-example-bg);
+  border-left: 1px solid var(--popup-divider-strong);
   box-sizing: border-box;
-  display: none; /* 初始隱藏 */
+  display: none;
 }
 
 /* Definition active state (when examples shown) */
 .def-item.active {
-  background-color: #f0f7ff;
+  background-color: var(--popup-active-bg);
   border-radius: 4px;
   margin: 0 -4px;
   padding: 2px 4px;
@@ -61,9 +95,9 @@
 .example-title {
   font-weight: bold;
   margin-bottom: 8px;
-  color: #666;
+  color: var(--popup-text-muted);
   font-size: 13px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--popup-divider-strong);
   padding-bottom: 4px;
 }
 
@@ -72,30 +106,30 @@
 }
 
 .example-yue {
-  color: #2c3e50;
-  margin-bottom: 0; /* Reduced from 2px */
+  color: var(--popup-text);
+  margin-bottom: 0;
   line-height: 1.4;
 }
 
 .example-eng {
-  color: #7f8c8d;
+  color: var(--popup-text-muted);
   font-size: 13px;
   margin-top: 2px;
 }
 
 /* Definition with examples marker */
 .has-examples {
-  cursor: pointer; /* Clickable */
+  cursor: pointer;
   position: relative;
 }
 .has-examples:hover {
   text-decoration: underline;
-  text-decoration-color: #aaa;
+  text-decoration-color: var(--popup-text-label);
 }
 
 .has-examples::after {
   content: " ▷";
-  color: #aaa;
+  color: var(--popup-text-label);
   font-size: 10px;
   vertical-align: middle;
   margin-left: 4px;
@@ -104,20 +138,21 @@
 /* 詞彙區塊 */
 #cantonese-popup-dict .word-section {
   margin-bottom: 8px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--popup-divider-strong);
   padding-bottom: 8px;
 }
 
 #cantonese-popup-dict .word-text {
   font-size: 20px;
   font-weight: 600;
-  color: #1a1a1a;
+  color: var(--popup-word-color);
   margin-right: 8px;
+  cursor: pointer;
 }
 
 #cantonese-popup-dict .word-simplified {
   font-size: 16px;
-  color: #666;
+  color: var(--popup-text-muted);
   font-weight: normal;
 }
 
@@ -131,13 +166,13 @@
 
 #cantonese-popup-dict .pronunciation-label {
   font-size: 12px;
-  color: #888;
+  color: var(--popup-text-label);
   font-weight: 500;
 }
 
 #cantonese-popup-dict .pronunciation-text {
   font-size: 15px;
-  color: #2196f3;
+  color: var(--popup-accent);
   font-weight: 500;
   font-family: "Courier New", monospace;
 }
@@ -145,13 +180,13 @@
 /* 釋義區塊 */
 #cantonese-popup-dict .definition-section {
   font-size: 13px;
-  color: #555;
+  color: var(--popup-def-color);
   line-height: 1.5;
 }
 
 #cantonese-popup-dict .def-item {
   padding: 2px 0;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--popup-divider);
 }
 
 #cantonese-popup-dict .def-item:last-child {
@@ -159,14 +194,14 @@
 }
 
 #cantonese-popup-dict .def-yue {
-  color: #b8860b;
+  color: var(--popup-def-yue);
 }
 
 /* 參觀區塊 */
 #cantonese-popup-dict .see-also-section {
   margin-top: 6px;
   padding-top: 6px;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  border-top: 1px solid var(--popup-divider);
   font-size: 12px;
 }
 
@@ -175,11 +210,11 @@
 }
 
 #cantonese-popup-dict .see-also-label {
-  color: #888;
+  color: var(--popup-text-label);
 }
 
 #cantonese-popup-dict .see-also-link {
-  color: #2196f3;
+  color: var(--popup-accent);
   cursor: pointer;
   pointer-events: auto;
 }
@@ -196,18 +231,21 @@
   width: 28px;
   height: 28px;
   border: none;
-  background: #f0f0f0;
+  background: var(--popup-btn-bg);
   border-radius: 50%;
   cursor: pointer;
   font-size: 16px;
   margin-left: 8px;
-  transition: background 0.2s, transform 0.1s;
-  pointer-events: auto; /* 允許點擊 */
+  transition:
+    background 0.2s,
+    transform 0.1s;
+  pointer-events: auto;
   vertical-align: middle;
+  color: var(--popup-text);
 }
 
 #cantonese-popup-dict .speak-btn:hover {
-  background: #e0e0e0;
+  background: var(--popup-btn-hover);
   transform: scale(1.1);
 }
 
@@ -216,8 +254,129 @@
 }
 
 #cantonese-popup-dict .speak-btn.speaking {
+  background: var(--popup-btn-speaking);
+  color: var(--popup-btn-speaking-text);
+}
+
+/* 翻譯區域（嵌入詞典彈窗內） */
+#cantonese-popup-dict .popup-translate {
+  border-top: 1px solid var(--popup-divider);
+  padding: 6px 12px 4px 12px;
+  margin-top: 0;
+}
+
+#cantonese-popup-dict .popup-translate .translate-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 2px 0;
+}
+
+#cantonese-popup-dict .popup-translate .translate-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #fff;
   background: #2196f3;
-  color: white;
+  border-radius: 3px;
+  padding: 0px 4px;
+  flex-shrink: 0;
+  line-height: 1.5;
+}
+
+#cantonese-popup-dict .popup-translate .translate-row:last-child .translate-label {
+  background: #9c27b0;
+}
+
+#cantonese-popup-dict .popup-translate .translate-text {
+  font-size: 13px;
+  color: var(--popup-text);
+}
+
+#cantonese-popup-dict .popup-translate .translate-loading {
+  font-size: 12px;
+  color: var(--popup-text);
+  opacity: 0.6;
+}
+
+/* 翻譯結果浮窗（句子選區用） */
+#cantonese-translate-popup {
+  position: fixed;
+  background: #ffffff;
+  border: 1px solid #d0d0d0;
+  border-radius: 8px;
+  padding: 10px 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  z-index: 2147483647;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  font-size: 14px;
+  color: #333;
+  max-width: 400px;
+  line-height: 1.5;
+  word-wrap: break-word;
+}
+
+#cantonese-translate-popup .translate-header {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+#cantonese-translate-popup .translate-body {
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+#cantonese-translate-popup .translate-row {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 3px 0;
+}
+
+#cantonese-translate-popup .translate-row + .translate-row {
+  border-top: 1px solid #eee;
+}
+
+#cantonese-translate-popup .translate-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #fff;
+  background: #2196f3;
+  border-radius: 3px;
+  padding: 1px 5px;
+  flex-shrink: 0;
+  line-height: 1.4;
+}
+
+#cantonese-translate-popup .translate-row:last-child .translate-label {
+  background: #9c27b0;
+}
+
+#cantonese-translate-popup .translate-text {
+  font-size: 14px;
+  color: #1a1a1a;
+}
+
+/* AI 翻譯結果樣式 */
+#cantonese-popup-dict .ai-result,
+#cantonese-translate-popup .ai-result {
+  padding: 4px 0;
+}
+
+#cantonese-popup-dict .ai-label,
+#cantonese-translate-popup .ai-label {
+  font-size: 11px;
+  font-weight: 600;
+  color: #8b5cf6;
+  margin-bottom: 4px;
+}
+
+#cantonese-popup-dict .ai-text,
+#cantonese-translate-popup .ai-text {
+  font-size: 13px;
+  color: var(--popup-text, #333);
+  line-height: 1.6;
 }
 
 /* 響應式：小屏幕適配 */
@@ -233,72 +392,5 @@
 
   #cantonese-popup-dict .pronunciation-text {
     font-size: 14px;
-  }
-}
-
-/* 深色模式支持 */
-@media (prefers-color-scheme: dark) {
-  #cantonese-popup-dict {
-    background: #2d2d2d;
-    border-color: #444;
-    color: #e0e0e0;
-  }
-
-  #cantonese-popup-dict .word-section {
-    border-bottom-color: #444;
-  }
-
-  #cantonese-popup-dict .word-text {
-    color: #f0f0f0;
-  }
-
-  #cantonese-popup-dict .word-simplified {
-    color: #aaa;
-  }
-
-  #cantonese-popup-dict .pronunciation-label {
-    color: #999;
-  }
-
-  #cantonese-popup-dict .pronunciation-text {
-    color: #64b5f6;
-  }
-
-  #cantonese-popup-dict .definition-section {
-    color: #ccc;
-  }
-
-  #cantonese-popup-dict .def-item {
-    border-bottom-color: rgba(255, 255, 255, 0.08);
-  }
-
-  #cantonese-popup-dict .def-yue {
-    color: #daa520;
-  }
-
-  #cantonese-popup-dict .see-also-section {
-    border-top-color: rgba(255, 255, 255, 0.1);
-  }
-
-  #cantonese-popup-dict .see-also-label {
-    color: #999;
-  }
-
-  #cantonese-popup-dict .see-also-link {
-    color: #64b5f6;
-  }
-
-  #cantonese-popup-dict .speak-btn {
-    background: #444;
-    color: #e0e0e0;
-  }
-
-  #cantonese-popup-dict .speak-btn:hover {
-    background: #555;
-  }
-
-  #cantonese-popup-dict .speak-btn.speaking {
-    background: #64b5f6;
-    color: #1a1a1a;
   }
 }

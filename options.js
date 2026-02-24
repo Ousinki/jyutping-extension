@@ -6,6 +6,7 @@
 document.addEventListener('DOMContentLoaded', () => {
   const enabledToggle = document.getElementById('enabledToggle');
   const displayModeSelect = document.getElementById('displayMode');
+  const popupThemeSelect = document.getElementById('popupTheme');
   const ttsEnabledToggle = document.getElementById('ttsEnabledToggle');
   const ttsEngineSelect = document.getElementById('ttsEngine');
   const edgeTtsSettings = document.getElementById('edgeTtsSettings');
@@ -22,13 +23,64 @@ document.addEventListener('DOMContentLoaded', () => {
   const ttsRateValue = document.getElementById('ttsRateValue');
   const testTtsBtn = document.getElementById('testTtsBtn');
 
+  // AI 翻譯設定
+  const aiEnabledToggle = document.getElementById('aiEnabledToggle');
+  const aiSettings = document.getElementById('aiSettings');
+  const aiBaseUrlInput = document.getElementById('aiBaseUrl');
+  const aiApiKeyInput = document.getElementById('aiApiKey');
+  const aiModelInput = document.getElementById('aiModel');
+  const testAiBtn = document.getElementById('testAiBtn');
+
+
+  // 主題預覽配色數據
+  const THEME_PREVIEW = {
+    classic: { bg: '#ffffff', border: '#d0d0d0', text: '#333', word: '#1a1a1a', accent: '#2196f3', def: '#555', yue: '#b8860b', divider: '#eee', shadow: '0 2px 8px rgba(0,0,0,0.1)' },
+    night:   { bg: '#1a1a2e', border: '#16213e', text: '#e0e0e0', word: '#f0f0ff', accent: '#7c8cf8', def: '#c0c0d0', yue: '#e8b84e', divider: '#2a2a40', shadow: '0 2px 12px rgba(0,0,0,0.4)' },
+    ink:     { bg: '#2d2d2d', border: '#444', text: '#e0e0e0', word: '#f0f0f0', accent: '#64b5f6', def: '#ccc', yue: '#daa520', divider: '#3d3d3d', shadow: '0 2px 12px rgba(0,0,0,0.4)' },
+    ocean:   { bg: '#e3f2fd', border: '#90caf9', text: '#1565c0', word: '#0d47a1', accent: '#0d47a1', def: '#1976d2', yue: '#e65100', divider: '#bbdefb', shadow: '0 2px 8px rgba(21,101,192,0.2)' },
+    warm:    { bg: '#fff8e1', border: '#ffe082', text: '#5d4037', word: '#3e2723', accent: '#e65100', def: '#6d4c41', yue: '#c62828', divider: '#ffe0b2', shadow: '0 2px 8px rgba(230,81,0,0.15)' },
+    mint:    { bg: '#e8f5e9', border: '#a5d6a7', text: '#2e7d32', word: '#1b5e20', accent: '#1b5e20', def: '#388e3c', yue: '#bf360c', divider: '#c8e6c9', shadow: '0 2px 8px rgba(46,125,50,0.2)' },
+    glass:   { bg: 'rgba(255,255,255,0.78)', border: 'rgba(255,255,255,0.3)', text: '#333', word: '#1a1a1a', accent: '#2196f3', def: '#444', yue: '#b8860b', divider: 'rgba(0,0,0,0.08)', shadow: '0 4px 16px rgba(0,0,0,0.12)', glass: true },
+  };
+
+  // 更新主題預覽
+  function updateThemePreview(themeName) {
+    const t = THEME_PREVIEW[themeName] || THEME_PREVIEW.classic;
+    const preview = document.getElementById('themePreview');
+    if (!preview) return;
+    preview.style.background = t.bg;
+    preview.style.borderColor = t.border;
+    preview.style.color = t.text;
+    preview.style.boxShadow = t.shadow;
+    if (t.glass) {
+      preview.style.backdropFilter = 'blur(16px) saturate(180%)';
+    } else {
+      preview.style.backdropFilter = 'none';
+    }
+    const header = document.getElementById('previewHeader');
+    if (header) header.style.borderBottomColor = t.divider;
+    const word = document.getElementById('previewWord');
+    if (word) word.style.color = t.word;
+    const pinyin = document.getElementById('previewPinyin');
+    if (pinyin) pinyin.style.color = t.accent;
+    const def = document.getElementById('previewDef');
+    if (def) def.style.color = t.def;
+    const yue = document.getElementById('previewYue');
+    if (yue) yue.style.color = t.yue;
+  }
+
   // 載入已保存的設定
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'ttsEnabled', 
+    'enabled', 'displayMode', 'popupTheme', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   ], (result) => {
     enabledToggle.checked = result.enabled !== false;
     displayModeSelect.value = result.displayMode || 'jyutping';
+    
+    const theme = result.popupTheme || 'classic';
+    popupThemeSelect.value = theme;
+    updateThemePreview(theme);
+    
     ttsEnabledToggle.checked = result.ttsEnabled !== false;
     
     const engine = result.ttsEngine || 'webSpeech';
@@ -50,6 +102,15 @@ document.addEventListener('DOMContentLoaded', () => {
     const rate = result.ttsRate || 0.9;
     ttsRateSlider.value = rate;
     ttsRateValue.textContent = rate + 'x';
+  });
+
+  // AI 設定用 local storage（避免 sync 配額不足）
+  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel'], (result) => {
+    aiEnabledToggle.checked = result.aiEnabled === true;
+    aiSettings.style.display = result.aiEnabled ? 'block' : 'none';
+    aiBaseUrlInput.value = result.aiBaseUrl || '';
+    aiApiKeyInput.value = result.aiApiKey || '';
+    aiModelInput.value = result.aiModel || '';
   });
 
   // 更新引擎相關 UI
@@ -80,6 +141,14 @@ document.addEventListener('DOMContentLoaded', () => {
     const mode = displayModeSelect.value;
     chrome.storage.sync.set({ displayMode: mode });
     notifyContentScripts({ action: 'changeDisplayMode', mode });
+  });
+
+  // 監聽主題切換
+  popupThemeSelect.addEventListener('change', () => {
+    const theme = popupThemeSelect.value;
+    chrome.storage.sync.set({ popupTheme: theme });
+    updateThemePreview(theme);
+    notifyContentScripts({ action: 'changePopupTheme', theme });
   });
 
   // 監聽 TTS 開關
@@ -146,6 +215,87 @@ document.addEventListener('DOMContentLoaded', () => {
     ttsRateValue.textContent = rate + 'x';
     chrome.storage.sync.set({ ttsRate: rate });
     notifyContentScripts({ action: 'changeTtsRate', ttsRate: rate });
+  });
+
+  // === AI 翻譯設定 ===
+
+  // AI 開關
+  aiEnabledToggle.addEventListener('change', () => {
+    const aiEnabled = aiEnabledToggle.checked;
+    chrome.storage.local.set({ aiEnabled });
+    aiSettings.style.display = aiEnabled ? 'block' : 'none';
+    notifyContentScripts({ action: 'changeAiEnabled', aiEnabled });
+  });
+
+  // AI Base URL 變更
+  aiBaseUrlInput.addEventListener('change', () => {
+    const url = aiBaseUrlInput.value.trim();
+    chrome.storage.local.set({ aiBaseUrl: url });
+    notifyContentScripts({ action: 'changeAiBaseUrl', aiBaseUrl: url });
+  });
+
+  // AI API Key 變更
+  aiApiKeyInput.addEventListener('change', () => {
+    const key = aiApiKeyInput.value.trim();
+    chrome.storage.local.set({ aiApiKey: key });
+    notifyContentScripts({ action: 'changeAiApiKey', aiApiKey: key });
+  });
+
+  // AI 模型變更
+  aiModelInput.addEventListener('change', () => {
+    const model = aiModelInput.value.trim();
+    chrome.storage.local.set({ aiModel: model });
+    notifyContentScripts({ action: 'changeAiModel', aiModel: model });
+  });
+
+  // 測試 AI 連接
+  testAiBtn.addEventListener('click', async () => {
+    const baseUrl = aiBaseUrlInput.value.trim();
+    const apiKey = aiApiKeyInput.value.trim();
+    const model = aiModelInput.value.trim();
+
+    if (!baseUrl || !apiKey || !model) {
+      alert('請先填寫 API Base URL、API Key 和模型名稱');
+      return;
+    }
+
+    testAiBtn.disabled = true;
+    testAiBtn.textContent = '正在測試...';
+
+    try {
+      const url = baseUrl.replace(/\/$/, '') + '/chat/completions';
+      const response = await fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`
+        },
+        body: JSON.stringify({
+          model: model,
+          messages: [{ role: 'user', content: '你好' }],
+          max_tokens: 20
+        })
+      });
+
+      if (!response.ok) {
+        const errText = await response.text();
+        throw new Error(`API 錯誤 (${response.status}): ${errText.substring(0, 100)}`);
+      }
+
+      const data = await response.json();
+      const reply = data.choices?.[0]?.message?.content || '（無回覆）';
+      alert(`✅ 連接成功！\n模型回覆：${reply}`);
+    } catch (error) {
+      alert(`❌ 連接失敗：${error.message}`);
+    }
+
+    testAiBtn.disabled = false;
+    testAiBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+      </svg>
+      測試 AI 連接
+    `;
   });
 
   // 測試 TTS 按鈕
