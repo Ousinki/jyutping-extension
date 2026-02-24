@@ -114,7 +114,8 @@ Azure Speech 提供 3 種高品質粵語音色：
 ## 📦 安裝
 
 ### Chrome Web Store（推薦）
-*審核中...*
+
+👉 [點此安裝粵語懸浮詞典](https://chromewebstore.google.com/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/nkghannminfkihhnkebcjhodfcoamkkm)
 
 ### 手動安裝
 1. 下載或 Clone 本倉庫
