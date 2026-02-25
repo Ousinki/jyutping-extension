@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>粵語懸浮詞典 - 隱私政策</title>
+  <title>粵語懸浮詞典 - 隱私政策 / Privacy Policy</title>
   <style>
     body {
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
@@ -14,49 +14,335 @@
       color: #333;
     }
     h1 { color: #1a73e8; }
-    h2 { color: #333; margin-top: 30px; }
+    h2 { color: #333; margin-top: 30px; border-bottom: 1px solid #eee; padding-bottom: 8px; }
+    h3 { color: #555; margin-top: 20px; }
     .update-date { color: #666; font-size: 14px; }
+    table { border-collapse: collapse; width: 100%; margin: 15px 0; }
+    th, td { border: 1px solid #ddd; padding: 10px 12px; text-align: left; }
+    th { background: #f5f5f5; }
+    .highlight { background: #fff3cd; padding: 12px; border-radius: 6px; margin: 15px 0; }
+    .lang-toggle { text-align: right; margin-bottom: 20px; }
+    .lang-toggle a { color: #1a73e8; cursor: pointer; text-decoration: underline; }
+    .en { display: none; }
   </style>
+  <script>
+    function toggleLang() {
+      document.querySelectorAll('.zh').forEach(el => el.style.display = el.style.display === 'none' ? '' : 'none');
+      document.querySelectorAll('.en').forEach(el => el.style.display = el.style.display === 'none' ? '' : 'none');
+    }
+  </script>
 </head>
 <body>
+
+<div class="lang-toggle"><a onclick="toggleLang()">English / 中文</a></div>
+
+<!-- ==================== 中文版 ==================== -->
+<div class="zh">
   <h1>粵語懸浮詞典 - 隱私政策</h1>
-  <p class="update-date">最後更新：2026年1月15日</p>
+  <p class="update-date">最後更新：2026年2月26日</p>
 
   <h2>概述</h2>
-  <p>「粵語懸浮詞典」是一個 Chrome 瀏覽器擴展，幫助用戶學習粵語發音。本擴展高度重視用戶隱私。</p>
+  <p>「粵語懸浮詞典」（以下簡稱「本擴展」）是一個 Chrome 瀏覽器擴展，幫助用戶學習粵語發音和詞義。本擴展高度重視用戶隱私，本政策詳細說明了數據的收集、使用、存儲和共享方式。</p>
 
-  <h2>數據收集</h2>
-  <p><strong>我們不收集任何用戶數據。</strong></p>
+  <h2>數據收集概覽</h2>
+  <div class="highlight">
+    <strong>核心原則：</strong>本擴展的詞典查詢功能完全在本地離線運行，不向任何服務器發送數據。僅在用戶主動觸發翻譯或語音功能時，才會與外部服務通信。
+  </div>
+
+  <table>
+    <tr>
+      <th>功能</th>
+      <th>是否發送數據</th>
+      <th>數據內容</th>
+      <th>目標服務</th>
+    </tr>
+    <tr>
+      <td>懸停查詞</td>
+      <td>❌ 否（本地離線）</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Bing 翻譯</td>
+      <td>✅ 是（用戶主動觸發）</td>
+      <td>選中的文本</td>
+      <td>Microsoft Bing 翻譯 API</td>
+    </tr>
+    <tr>
+      <td>AI 語境翻譯</td>
+      <td>✅ 是（用戶主動觸發）</td>
+      <td>選中的詞彙及所在段落</td>
+      <td>用戶自行配置的 AI API</td>
+    </tr>
+    <tr>
+      <td>語音朗讀 (TTS)</td>
+      <td>✅ 是（用戶主動觸發）</td>
+      <td>要朗讀的文本</td>
+      <td>Edge TTS / Azure Speech 等</td>
+    </tr>
+  </table>
+
+  <h2>詳細數據說明</h2>
+
+  <h3>1. 詞典查詢（離線）</h3>
+  <p>本擴展的核心功能——懸停查詞——完全在您的設備上本地運行。詞典數據（超過 23 萬條詞條）隨擴展安裝在本地，查詞過程不涉及任何網絡請求，不會向任何服務器發送您正在瀏覽的網頁內容。</p>
+
+  <h3>2. Bing 翻譯</h3>
   <ul>
-    <li>不收集個人身份信息</li>
-    <li>不收集瀏覽歷史</li>
-    <li>不追蹤用戶行為</li>
-    <li>不使用 Cookie</li>
-    <li>不發送任何數據到外部服務器</li>
+    <li><strong>觸發方式：</strong>用戶手動雙擊選中文本時觸發</li>
+    <li><strong>發送的數據：</strong>用戶選中的文本片段</li>
+    <li><strong>數據接收方：</strong>Microsoft Bing 翻譯服務 (bing.com)</li>
+    <li><strong>數據用途：</strong>僅用於獲取翻譯結果，本擴展不保存翻譯記錄</li>
+    <li><strong>第三方隱私政策：</strong><a href="https://privacy.microsoft.com/privacystatement" target="_blank">Microsoft 隱私聲明</a></li>
+  </ul>
+
+  <h3>3. AI 語境翻譯（可選功能）</h3>
+  <ul>
+    <li><strong>觸發方式：</strong>用戶手動長按選中的詞彙時觸發</li>
+    <li><strong>發送的數據：</strong>選中的詞彙及其所在段落（用於提供上下文語境）</li>
+    <li><strong>數據接收方：</strong>用戶自行在設定頁面配置的 AI 服務提供商（如 OpenAI、DeepSeek、火山引擎等）</li>
+    <li><strong>數據用途：</strong>僅用於獲取 AI 解釋，本擴展不保存 AI 回覆</li>
+    <li><strong>用戶控制：</strong>此功能預設關閉，需用戶在設定中手動開啟並自行填寫 API 配置</li>
+    <li><strong>API 密鑰存儲：</strong>用戶提供的 API Key 僅存儲在本地 (chrome.storage.local)，不會上傳至任何服務器</li>
+  </ul>
+
+  <h3>4. 語音朗讀 (TTS)</h3>
+  <ul>
+    <li><strong>觸發方式：</strong>用戶手動點擊高亮文字或音標圖標時觸發</li>
+    <li><strong>發送的數據：</strong>要朗讀的文本內容（詞語或短句）</li>
+    <li><strong>數據接收方：</strong>取決於用戶選擇的 TTS 引擎：
+      <ul>
+        <li>Web Speech API / Chrome TTS：本地處理，不發送數據</li>
+        <li>Edge TTS：Microsoft Edge 語音服務</li>
+        <li>Azure Speech：Microsoft Azure 認知服務</li>
+        <li>Bert-VITS2：用戶自行配置的語音服務器</li>
+      </ul>
+    </li>
+    <li><strong>數據用途：</strong>僅用於生成語音音頻</li>
   </ul>
 
   <h2>本地存儲</h2>
-  <p>本擴展僅使用 Chrome 的本地存儲（chrome.storage.sync）來保存用戶的偏好設置（如開關狀態、拼音顯示模式）。這些數據僅存儲在用戶設備上，不會傳輸到任何外部服務器。</p>
-
-  <h2>權限說明</h2>
+  <p>本擴展使用 Chrome 的本地存儲來保存：</p>
   <ul>
-    <li><strong>所有網站訪問權限</strong>：用於在網頁上檢測中文字符並顯示粵拼彈窗。所有處理均在本地完成。</li>
-    <li><strong>存儲權限</strong>：用於保存用戶偏好設置。</li>
+    <li>用戶偏好設置（開關狀態、拼音顯示模式、主題等）</li>
+    <li>TTS 引擎配置（引擎選擇、音色、語速）</li>
+    <li>AI 翻譯配置（API 地址、API Key、模型名稱）</li>
+  </ul>
+  <p>這些數據僅存儲在用戶設備上，不會傳輸到本擴展開發者的任何服務器。</p>
+
+  <h2>不收集的數據</h2>
+  <p>本擴展<strong>不會</strong>：</p>
+  <ul>
+    <li>收集個人身份信息（姓名、電子郵件等）</li>
+    <li>收集或記錄瀏覽歷史</li>
+    <li>追蹤用戶行為或使用習慣</li>
+    <li>使用 Cookie 或任何追蹤技術</li>
+    <li>顯示廣告或使用廣告追蹤服務</li>
+    <li>將數據出售或共享給本政策未列明的第三方</li>
   </ul>
 
+  <h2>權限說明</h2>
+  <table>
+    <tr>
+      <th>權限</th>
+      <th>用途</th>
+    </tr>
+    <tr>
+      <td>所有網站訪問權限</td>
+      <td>在網頁上檢測中文字符並顯示粵拼彈窗（本地處理）</td>
+    </tr>
+    <tr>
+      <td>存儲權限 (storage)</td>
+      <td>保存用戶偏好設置和 AI 配置</td>
+    </tr>
+    <tr>
+      <td>TTS 權限</td>
+      <td>使用 Chrome 內建語音合成功能朗讀粵語</td>
+    </tr>
+  </table>
+
   <h2>第三方服務</h2>
-  <p>本擴展不使用任何第三方分析、廣告或追蹤服務。</p>
+  <p>本擴展可能與以下第三方服務通信（僅在用戶主動觸發時）：</p>
+  <ul>
+    <li><strong>Microsoft Bing 翻譯</strong> — 提供翻譯服務（<a href="https://privacy.microsoft.com/privacystatement" target="_blank">隱私政策</a>）</li>
+    <li><strong>Microsoft Azure 認知服務</strong> — 提供語音合成服務（<a href="https://privacy.microsoft.com/privacystatement" target="_blank">隱私政策</a>）</li>
+    <li><strong>用戶自選 AI 服務</strong> — 提供語境翻譯（隱私政策取決於用戶選擇的服務提供商）</li>
+  </ul>
+  <p>本擴展不使用任何分析、廣告或追蹤服務。</p>
 
   <h2>數據安全</h2>
-  <p>由於我們不收集任何數據，因此不存在數據洩露風險。</p>
+  <ul>
+    <li>本地存儲的配置數據受 Chrome 瀏覽器的安全機制保護</li>
+    <li>API Key 僅存儲在本地，不會在網絡上明文傳輸（使用 HTTPS）</li>
+    <li>本擴展不設後端服務器，不存儲任何用戶數據</li>
+  </ul>
 
   <h2>兒童隱私</h2>
   <p>本擴展適合所有年齡段使用，不針對兒童收集任何數據。</p>
 
   <h2>政策變更</h2>
-  <p>如果本隱私政策有任何變更，我們會在此頁面更新。</p>
+  <p>如果本隱私政策有任何重大變更，我們會在此頁面更新並修改「最後更新」日期。建議用戶定期查閱本政策。</p>
 
   <h2>聯繫方式</h2>
-  <p>如有任何問題，請通過 Chrome Web Store 擴展頁面聯繫我們。</p>
+  <p>如有任何隱私相關問題或疑慮，請通過以下方式聯繫：</p>
+  <ul>
+    <li>GitHub Issues: <a href="https://github.com/Ousinki/jyutping-extension/issues" target="_blank">github.com/Ousinki/jyutping-extension/issues</a></li>
+  </ul>
+</div>
+
+<!-- ==================== English Version ==================== -->
+<div class="en">
+  <h1>Cantonese Popup Dictionary - Privacy Policy</h1>
+  <p class="update-date">Last Updated: February 26, 2026</p>
+
+  <h2>Overview</h2>
+  <p>Cantonese Popup Dictionary (the "Extension") is a Chrome browser extension that helps users learn Cantonese pronunciation and vocabulary. This policy describes in detail how data is collected, used, stored, and shared.</p>
+
+  <h2>Data Collection Summary</h2>
+  <div class="highlight">
+    <strong>Core Principle:</strong> The Extension's dictionary lookup feature runs entirely offline on your device. Data is only sent to external services when users actively trigger translation or text-to-speech features.
+  </div>
+
+  <table>
+    <tr>
+      <th>Feature</th>
+      <th>Sends Data?</th>
+      <th>Data Sent</th>
+      <th>Destination</th>
+    </tr>
+    <tr>
+      <td>Hover Lookup</td>
+      <td>❌ No (offline)</td>
+      <td>—</td>
+      <td>—</td>
+    </tr>
+    <tr>
+      <td>Bing Translation</td>
+      <td>✅ Yes (user-initiated)</td>
+      <td>Selected text</td>
+      <td>Microsoft Bing Translate API</td>
+    </tr>
+    <tr>
+      <td>AI Context Translation</td>
+      <td>✅ Yes (user-initiated)</td>
+      <td>Selected word + surrounding paragraph</td>
+      <td>User-configured AI API</td>
+    </tr>
+    <tr>
+      <td>Text-to-Speech (TTS)</td>
+      <td>✅ Yes (user-initiated)</td>
+      <td>Text to be spoken</td>
+      <td>Edge TTS / Azure Speech, etc.</td>
+    </tr>
+  </table>
+
+  <h2>Detailed Data Description</h2>
+
+  <h3>1. Dictionary Lookup (Offline)</h3>
+  <p>The core feature—hover word lookup—runs entirely on your local device. The dictionary data (over 230,000 entries) is installed locally with the Extension. No network requests are made during lookups, and the content of the web pages you browse is never sent to any server.</p>
+
+  <h3>2. Bing Translation</h3>
+  <ul>
+    <li><strong>Trigger:</strong> User manually double-clicks on selected text</li>
+    <li><strong>Data sent:</strong> The user-selected text fragment</li>
+    <li><strong>Recipient:</strong> Microsoft Bing Translation service (bing.com)</li>
+    <li><strong>Purpose:</strong> Solely to obtain translation results; the Extension does not store translation history</li>
+    <li><strong>Third-party privacy:</strong> <a href="https://privacy.microsoft.com/privacystatement" target="_blank">Microsoft Privacy Statement</a></li>
+  </ul>
+
+  <h3>3. AI Context Translation (Optional)</h3>
+  <ul>
+    <li><strong>Trigger:</strong> User manually long-presses on a selected word</li>
+    <li><strong>Data sent:</strong> The selected word and its surrounding paragraph (for context)</li>
+    <li><strong>Recipient:</strong> AI service provider configured by the user in settings (e.g., OpenAI, DeepSeek, etc.)</li>
+    <li><strong>Purpose:</strong> Solely to obtain AI-generated explanations; the Extension does not store AI responses</li>
+    <li><strong>User control:</strong> This feature is disabled by default and requires manual activation and API configuration by the user</li>
+    <li><strong>API key storage:</strong> User-provided API keys are stored locally only (chrome.storage.local) and are never uploaded to any server</li>
+  </ul>
+
+  <h3>4. Text-to-Speech (TTS)</h3>
+  <ul>
+    <li><strong>Trigger:</strong> User manually clicks on highlighted text or phonetic icons</li>
+    <li><strong>Data sent:</strong> The text content to be spoken (words or short phrases)</li>
+    <li><strong>Recipient:</strong> Depends on the TTS engine selected by the user:
+      <ul>
+        <li>Web Speech API / Chrome TTS: processed locally, no data sent</li>
+        <li>Edge TTS: Microsoft Edge Speech service</li>
+        <li>Azure Speech: Microsoft Azure Cognitive Services</li>
+        <li>Bert-VITS2: User-configured speech server</li>
+      </ul>
+    </li>
+    <li><strong>Purpose:</strong> Solely to generate speech audio</li>
+  </ul>
+
+  <h2>Local Storage</h2>
+  <p>The Extension uses Chrome's local storage to save:</p>
+  <ul>
+    <li>User preferences (toggle states, phonetic display mode, theme)</li>
+    <li>TTS engine configuration (engine selection, voice, speed)</li>
+    <li>AI translation configuration (API URL, API key, model name)</li>
+  </ul>
+  <p>This data is stored only on the user's device and is not transmitted to the Extension developer's servers.</p>
+
+  <h2>Data We Do NOT Collect</h2>
+  <p>The Extension does <strong>not</strong>:</p>
+  <ul>
+    <li>Collect personally identifiable information (name, email, etc.)</li>
+    <li>Collect or record browsing history</li>
+    <li>Track user behavior or usage patterns</li>
+    <li>Use cookies or any tracking technologies</li>
+    <li>Display ads or use advertising tracking services</li>
+    <li>Sell or share data with third parties not listed in this policy</li>
+  </ul>
+
+  <h2>Permissions</h2>
+  <table>
+    <tr>
+      <th>Permission</th>
+      <th>Purpose</th>
+    </tr>
+    <tr>
+      <td>All URLs access</td>
+      <td>Detect Chinese characters on web pages and display phonetic popups (local processing)</td>
+    </tr>
+    <tr>
+      <td>Storage</td>
+      <td>Save user preferences and AI configuration</td>
+    </tr>
+    <tr>
+      <td>TTS</td>
+      <td>Use Chrome's built-in speech synthesis for Cantonese pronunciation</td>
+    </tr>
+  </table>
+
+  <h2>Third-Party Services</h2>
+  <p>The Extension may communicate with the following third-party services (only when user-initiated):</p>
+  <ul>
+    <li><strong>Microsoft Bing Translate</strong> — Translation service (<a href="https://privacy.microsoft.com/privacystatement" target="_blank">Privacy Policy</a>)</li>
+    <li><strong>Microsoft Azure Cognitive Services</strong> — Speech synthesis service (<a href="https://privacy.microsoft.com/privacystatement" target="_blank">Privacy Policy</a>)</li>
+    <li><strong>User-selected AI services</strong> — Context translation (privacy policy depends on the provider chosen by the user)</li>
+  </ul>
+  <p>The Extension does not use any analytics, advertising, or tracking services.</p>
+
+  <h2>Data Security</h2>
+  <ul>
+    <li>Locally stored configuration data is protected by Chrome browser's security mechanisms</li>
+    <li>API keys are stored locally only and are transmitted over HTTPS</li>
+    <li>The Extension has no backend server and does not store any user data</li>
+  </ul>
+
+  <h2>Children's Privacy</h2>
+  <p>The Extension is suitable for all ages and does not collect any data from children.</p>
+
+  <h2>Policy Changes</h2>
+  <p>If any significant changes are made to this privacy policy, we will update this page and modify the "Last Updated" date. Users are encouraged to review this policy periodically.</p>
+
+  <h2>Contact</h2>
+  <p>If you have any privacy-related questions or concerns, please contact us via:</p>
+  <ul>
+    <li>GitHub Issues: <a href="https://github.com/Ousinki/jyutping-extension/issues" target="_blank">github.com/Ousinki/jyutping-extension/issues</a></li>
+  </ul>
+</div>
+
 </body>
 </html>
