@@ -1,118 +1,118 @@
 {
   "extName": {
-    "message": "Jyutping Hover Dictionary",
+    "message": "粵語懸浮詞典",
     "description": "extName"
   },
   "extDescription": {
-    "message": "Hover over Chinese characters to see Cantonese pronunciation (Jyutping/Yale) and English meanings, with AI contextual translation.",
+    "message": "滑鼠懸停中文字即可顯示粵語發音（粵拼/Yale）同埋英文解釋，支援 AI 語境翻譯",
     "description": "extDescription"
   },
   "extActionTitle": {
-    "message": "Toggle Jyutping Hover Dictionary",
+    "message": "粵語拼音懸浮詞典",
     "description": "extActionTitle"
   },
   "optTitle": {
-    "message": "Jyutping Dictionary",
+    "message": "粵語懸浮詞典",
     "description": "optTitle"
   },
   "optSubtitle": {
-    "message": "Extension Settings",
+    "message": "Cantonese Popup Dictionary Settings",
     "description": "optSubtitle"
   },
   "optGenSettings": {
-    "message": "General Settings",
+    "message": "一般設定",
     "description": "optGenSettings"
   },
   "optEnable": {
-    "message": "Enable Dictionary",
+    "message": "啟用詞典",
     "description": "optEnable"
   },
   "optEnableDesc": {
-    "message": "Show Cantonese pronunciation on hover",
+    "message": "在網頁上顯示粵語發音提示",
     "description": "optEnableDesc"
   },
   "optFormat": {
-    "message": "Pronunciation System",
+    "message": "發音顯示格式",
     "description": "optFormat"
   },
   "optFormatDesc": {
-    "message": "Select romanization format",
+    "message": "選擇粵語拼音系統",
     "description": "optFormatDesc"
   },
   "optTheme": {
-    "message": "Popup Theme",
+    "message": "懸浮窗主題",
     "description": "optTheme"
   },
   "optThemeDesc": {
-    "message": "Select popup color scheme",
+    "message": "選擇詞典彈窗的配色風格",
     "description": "optThemeDesc"
   },
   "optTransSettings": {
-    "message": "Double-Click Translation",
+    "message": "翻譯設定",
     "description": "optTransSettings"
   },
   "optTransDesc1": {
-    "message": "Double-click selected text to show Mandarin and English translation",
+    "message": "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
     "description": "optTransDesc1"
   },
   "optTransDesc2": {
-    "message": "Powered by Bing Translator (Native Cantonese support, no config)",
+    "message": "使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）",
     "description": "optTransDesc2"
   },
   "optAISettings": {
-    "message": "✨ AI Contextual Translation",
+    "message": "✨ AI 語境翻譯",
     "description": "optAISettings"
   },
   "optAIEnable": {
-    "message": "Enable AI Translation",
+    "message": "啟用 AI 翻譯",
     "description": "optAIEnable"
   },
   "optAIEnableDesc": {
-    "message": "Long press selected text for AI contextual explanation",
+    "message": "選中文本後長按選區，AI 根據上下文語境解釋詞義",
     "description": "optAIEnableDesc"
   },
   "optAIBaseUrlDesc": {
-    "message": "OpenAI-compatible API endpoint",
+    "message": "OpenAI 兼容接口地址（支持所有廠商）",
     "description": "optAIBaseUrlDesc"
   },
   "optAIModelLabel": {
-    "message": "AI Model",
+    "message": "AI 模型",
     "description": "optAIModelLabel"
   },
   "optAIPromptLabel": {
-    "message": "System Prompt",
+    "message": "AI 翻譯 Prompt",
     "description": "optAIPromptLabel"
   },
   "optFeedback": {
-    "message": "About & Feedback",
+    "message": "關於與意見反饋",
     "description": "optFeedback"
   },
   "optDev": {
-    "message": "Developer",
+    "message": "開發者",
     "description": "optDev"
   },
   "optFeedbackForm": {
-    "message": "Feedback",
+    "message": "意見反饋",
     "description": "optFeedbackForm"
   },
   "optEmail": {
-    "message": "Email (Optional)",
+    "message": "電郵地址（選填）",
     "description": "optEmail"
   },
   "optMsg": {
-    "message": "Tell us your suggestions or issues...",
+    "message": "輸入你的建議或遇到的問題...",
     "description": "optMsg"
   },
   "optSend": {
-    "message": "Send Feedback",
+    "message": "發送反饋",
     "description": "optSend"
   },
   "optSending": {
-    "message": "Sending...",
+    "message": "發送中...",
     "description": "optSending"
   },
   "optSent": {
-    "message": "Sent!",
+    "message": "已發送！",
     "description": "optSent"
   }
 }
