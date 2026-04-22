@@ -568,12 +568,13 @@
       'enabled', 'displayMode', 'popupTheme', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], (result) => {
-      isEnabled = result.enabled !== false;
+      // enabled 可能在 sync 中設定（Options 頁面），先讀取
+      if (result.enabled !== undefined) isEnabled = result.enabled !== false;
       displayMode = result.displayMode || 'jyutping';
       popupTheme = result.popupTheme || 'classic';
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
-      ttsEngine = result.ttsEngine || 'webSpeech';
+      ttsEngine = result.ttsEngine || 'chromeTts';
       edgeTtsMode = result.edgeTtsMode || 'default';
       edgeTtsUrl = result.edgeTtsUrl || '';
       azureTtsMode = result.azureTtsMode || 'default';
@@ -582,8 +583,9 @@
       azureTtsVoice = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
       ttsRate = result.ttsRate || 0.9;
     });
-    // AI 設定用 local storage
-    chrome.storage.local.get(['aiEnabled'], (result) => {
+    // enabled 狀態同時從 local storage 讀取（工具欄按鈕寫入 local storage）
+    chrome.storage.local.get(['enabled', 'aiEnabled'], (result) => {
+      if (result.enabled !== undefined) isEnabled = result.enabled !== false;
       aiEnabled = result.aiEnabled === true;
       console.log('[AI] loadSettings, aiEnabled:', aiEnabled);
     });
