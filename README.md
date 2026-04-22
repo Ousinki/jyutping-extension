@@ -1,9 +1,14 @@
+<p align="center">
+  <img src="icon_15.png" width="128" alt="粵語懸浮詞典 Logo" />
+</p>
+
 # 粵語懸浮詞典 (Cantonese Popup Dictionary)
 
 一個 Chrome 擴展，滑鼠懸停即可顯示中文字詞的粵語發音（粵拼/Yale）和英文釋義，支援多種語音引擎點擊發聲，並提供 Bing 翻譯和 AI 語境翻譯功能。
 
-![Demo Screenshot](assets/screenshot_store_1.png)
-![Demo - 懸停查詞](assets/screenshot_demo.png)
+![Demo - 懸停查詞](assets/screenshot_demo_hover.png)
+![Demo - 雙擊翻譯](assets/screenshot_demo_translate.png)
+![Demo - 查詞釋義](assets/screenshot_demo.png)
 ![Demo - AI 語境翻譯](assets/screenshot_ai_demo.png)
 
 ## ✨ 功能特點
@@ -15,16 +20,16 @@
 - **點擊發聲**：點擊高亮文字即可朗讀粵語發音
 - **Bing 翻譯**：雙擊選中文本，即時顯示普通話和英文翻譯
 - **✨ AI 語境翻譯**：長按高亮詞或選區，AI 根據上下文語境解釋詞義
-- **多主題彈窗**：7 種精選主題（經典、夜間、水墨、海洋、暖色、薄荷、毛玻璃）
+- **多主題彈窗**：8 種精選主題（經典、香港紅、深邃夜色、水墨、海洋、暖陽、薄荷、毛玻璃）
+- **🌐 多語言介面**：支援繁體中文和英文切換
 - **Shadow DOM 支持**：兼容使用 Web Components 的現代網站（如 Bilibili）
 
 ## 🔊 語音引擎 (TTS)
 
-支援 5 種語音引擎，滿足不同使用場景：
+支援 4 種語音引擎，滿足不同使用場景：
 
 | 引擎 | 需要配置？ | 音質 | 費用 |
 |------|----------|------|------|
-| **Web Speech API** | 免配置 | ⭐⭐⭐ | 免費 |
 | **Chrome TTS** | 免配置 | ⭐⭐⭐ | 免費 |
 | **Edge TTS** | 免配置（預設伺服器）/ 可自定義 | ⭐⭐⭐⭐ | 免費 |
 | **Azure Speech** | 免配置（預設 API）/ 可用自定義密鑰 | ⭐⭐⭐⭐⭐ | 預設免費 / 自定義按量付費 |
@@ -131,7 +136,7 @@ Azure Speech 提供 3 種高品質粵語音色：
 ### 一般設定
 - **啟用 / 關閉詞典**
 - **發音格式**：粵拼 (Jyutping) / Yale
-- **彈窗主題**：經典 / 夜間 / 水墨 / 海洋 / 暖色 / 薄荷 / 毛玻璃
+- **彈窗主題**：經典 / 香港紅 / 深邃夜色 / 水墨 / 海洋 / 暖陽 / 薄荷 / 毛玻璃
 
 ### 翻譯設定
 - **Bing 翻譯**：免費免配置，雙擊選區觸發
@@ -162,7 +167,7 @@ Azure Speech 提供 3 種高品質粵語音色：
 
 ## 📄 授權
 
-本項目採用 [MIT License](LICENSE) 授權。
+本項目採用 [GNU General Public License v3.0](LICENSE) 授權。
 
 ## 🤝 貢獻
 
