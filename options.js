@@ -4,6 +4,18 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
+  // Apply i18n
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const msg = chrome.i18n.getMessage(el.getAttribute('data-i18n'));
+    if (msg) {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.placeholder = msg;
+      } else {
+        el.innerText = msg;
+      }
+    }
+  });
+
   const enabledToggle = document.getElementById('enabledToggle');
   const displayModeSelect = document.getElementById('displayMode');
   const popupThemeSelect = document.getElementById('popupTheme');
