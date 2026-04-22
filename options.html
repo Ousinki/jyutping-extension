@@ -407,8 +407,16 @@
   <body>
     <div class="container">
       <!-- Header -->
-      <div class="header">
+      
+      <div class="header" style="position: relative;">
+        <div style="position: absolute; top: 0; right: 0;">
+          <select id="langToggle" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px; background: white; cursor: pointer;">
+            <option value="zh-HK">繁體中文</option>
+            <option value="en">English</option>
+          </select>
+        </div>
         <div class="header-icon">
+
           <img
             src="icon.svg"
             alt="logo"
@@ -598,7 +606,7 @@
 
             <div class="setting-item" style="flex-direction: column; align-items: stretch;">
               <div class="setting-info" style="margin-bottom: 8px;">
-                <span class="setting-label">模型名稱</span>
+                <span class="setting-label" data-i18n="optModelName">模型名稱</span>
               </div>
               <input
                 type="text"
@@ -613,7 +621,7 @@
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
                 </svg>
-                測試 AI 連接
+                <span data-i18n="optTestAI">測試 AI 連接</span>
               </button>
             </div>
           </div>
@@ -623,12 +631,12 @@
       <!-- TTS Settings -->
       <div class="settings-card">
         <div class="settings-section">
-          <div class="section-title">語音設定 (TTS)</div>
+          <div class="section-title" data-i18n="optTTSSettings">語音設定 (TTS)</div>
 
           <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-label">點擊發聲</span>
-              <span class="setting-desc">點擊高亮文字朗讀粵語發音</span>
+              <span class="setting-label" data-i18n="optClickToSpeak">點擊發聲</span>
+              <span class="setting-desc" data-i18n="optClickToSpeakDesc">點擊高亮文字朗讀粵語發音</span>
             </div>
             <label class="toggle">
               <input type="checkbox" id="ttsEnabledToggle" checked />
@@ -638,8 +646,8 @@
 
           <div class="setting-item">
             <div class="setting-info">
-              <span class="setting-label">語音引擎</span>
-              <span class="setting-desc">選擇 TTS 服務提供商</span>
+              <span class="setting-label" data-i18n="optTTSEngine">語音引擎</span>
+              <span class="setting-desc" data-i18n="optTTSEngineDesc">選擇 TTS 服務提供商</span>
             </div>
             <div class="select-wrapper">
               <select id="ttsEngine">
@@ -658,8 +666,8 @@
             style="display: none; flex-direction: column; align-items: stretch"
           >
             <div class="setting-info" style="margin-bottom: 8px">
-              <span class="setting-label">Edge TTS 設定</span>
-              <span class="setting-desc">選擇使用預設伺服器或自定義地址</span>
+              <span class="setting-label" data-i18n="optEdgeSettings">Edge TTS 設定</span>
+              <span class="setting-desc" data-i18n="optEdgeSettingsDesc">選擇使用預設伺服器或自定義地址</span>
             </div>
             <div class="select-wrapper" style="margin-bottom: 8px">
               <select id="edgeTtsMode">
@@ -683,8 +691,8 @@
             style="display: none; flex-direction: column; align-items: stretch"
           >
             <div class="setting-info" style="margin-bottom: 8px">
-              <span class="setting-label">Azure Speech 設定</span>
-              <span class="setting-desc">選擇使用預設 API 或自定義密鑰</span>
+              <span class="setting-label" data-i18n="optAzureSettings">Azure Speech 設定</span>
+              <span class="setting-desc" data-i18n="optAzureSettingsDesc">選擇使用預設 API 或自定義密鑰</span>
             </div>
             <div class="select-wrapper" style="margin-bottom: 8px">
               <select id="azureTtsMode">
@@ -709,7 +717,7 @@
             </div>
             <div style="margin-top: 8px">
               <div class="setting-info" style="margin-bottom: 6px">
-                <span class="setting-label">語音音色</span>
+                <span class="setting-label" data-i18n="optVoice">語音音色</span>
               </div>
               <div class="select-wrapper">
                 <select id="azureTtsVoice">
@@ -733,7 +741,7 @@
           >
             <div class="range-container">
               <div class="range-header">
-                <span class="setting-label">語速</span>
+                <span class="setting-label" data-i18n="optSpeed">語速</span>
                 <span class="range-value" id="ttsRateValue">0.9x</span>
               </div>
               <input
@@ -760,7 +768,7 @@
                   fill="currentColor"
                 />
               </svg>
-              測試語音
+              <span data-i18n="optTestTTS">測試語音</span>
             </button>
           </div>
         </div>
@@ -768,9 +776,9 @@
       <!-- Feedback Card -->
       <div class="settings-card">
         <div class="settings-section">
-          <h2>💡 意見與反饋</h2>
+          <h2 data-i18n="optFeedbackTitle">💡 意見與反饋</h2>
           <p class="section-desc">
-            如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！
+            <span data-i18n="optFeedbackDesc">如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！</span>
           </p>
 
           <form id="feedbackForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
@@ -778,23 +786,23 @@
             
             <div>
               <div class="setting-info" style="margin-bottom: 6px">
-                <span class="setting-label">您的稱呼 <span style="font-weight: normal; color: var(--text-muted); font-size: 13px;">(選填)</span></span>
+                <span class="setting-label"><span data-i18n="optNameLabel">您的稱呼</span> <span style="font-weight: normal; color: var(--text-muted); font-size: 13px;" data-i18n="optOptional">(選填)</span></span>
               </div>
-              <input type="text" name="name" class="text-input" placeholder="如何稱呼您？" />
+              <input type="text" name="name" class="text-input" placeholder="如何稱呼您？" data-i18n="optNamePlaceholder" />
             </div>
             
             <div>
               <div class="setting-info" style="margin-bottom: 6px">
-                <span class="setting-label">聯絡電郵 <span style="font-weight: normal; color: var(--text-muted); font-size: 13px;">(選填)</span></span>
+                <span class="setting-label"><span data-i18n="optEmailLabel">聯絡電郵</span> <span style="font-weight: normal; color: var(--text-muted); font-size: 13px;" data-i18n="optOptional">(選填)</span></span>
               </div>
-              <input type="email" name="email" class="text-input" placeholder="your@email.com (方便回覆您)" />
+              <input type="email" name="email" class="text-input" placeholder="your@email.com (方便回覆您)" data-i18n="optEmailPlaceholder" />
             </div>
 
             <div>
               <div class="setting-info" style="margin-bottom: 6px">
-                <span class="setting-label">反饋內容</span>
+                <span class="setting-label" data-i18n="optFeedbackLabel">反饋內容</span>
               </div>
-              <textarea name="message" class="text-input" placeholder="請填寫您的建議或遇到的問題..." style="min-height: 100px; resize: vertical;" required></textarea>
+              <textarea name="message" class="text-input" placeholder="請填寫您的建議或遇到的問題..." data-i18n="optFeedbackPlaceholder" style="min-height: 100px; resize: vertical;" required></textarea>
             </div>
 
             <button type="submit" class="test-btn" id="submitFeedbackBtn" style="justify-content: center; margin-top: 8px;">
@@ -812,10 +820,10 @@
       <!-- Footer -->
       <div class="footer">
         <p>
-          數據來源：<a href="https://cc-canto.org" target="_blank">CC-Canto</a>
+          <span data-i18n="optFooterData">數據來源：</span><a href="https://cc-canto.org" target="_blank">CC-Canto</a>
           & <a href="https://cc-cedict.org" target="_blank">CC-CEDICT</a>
         </p>
-        <p>授權：CC BY-SA 3.0</p>
+        <p><span data-i18n="optFooterLicense">授權：</span>CC BY-SA 3.0</p>
       </div>
     </div>
 

@@ -4,17 +4,93 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Apply i18n
+
+const i18nDict = {
+  "zh-HK": {
+    optTitle: "粵語懸浮詞典", optSubtitle: "Cantonese Popup Dictionary Settings", optGenSettings: "一般設定",
+    optEnable: "啟用詞典", optEnableDesc: "在網頁上顯示粵語發音提示", optFormat: "發音顯示格式",
+    optFormatDesc: "選擇粵語拼音系統", optTheme: "懸浮窗主題", optThemeDesc: "選擇詞典彈窗的配色風格",
+    optTransSettings: "翻譯設定", optTransDesc1: "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
+    optTransDesc2: "使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）", optAISettings: "✨ AI 語境翻譯",
+    optAIEnable: "啟用 AI 翻譯", optAIEnableDesc: "選中文本後長按選區，AI 根據上下文語境解釋詞義",
+    optAIBaseUrlDesc: "OpenAI 兼容接口地址（支持所有廠商）", optAIModelLabel: "模型名稱",
+    optAIPromptLabel: "AI 翻譯 Prompt", optFeedback: "關於與意見反饋", optDev: "開發者:",
+    optFeedbackForm: "意見反饋", optEmail: "電郵地址（選填）", optMsg: "輸入你的建議或遇到的問題...",
+    optSend: "發送反饋", optSending: "發送中...", optSent: "已發送！",
+    optModelName: "模型名稱", optTestAI: " 測試 AI 連接", optTTSSettings: "語音設定 (TTS)",
+    optClickToSpeak: "點擊發聲", optClickToSpeakDesc: "點擊高亮文字朗讀粵語發音", optTTSEngine: "語音引擎",
+    optTTSEngineDesc: "選擇 TTS 服務提供商", optEdgeSettings: "Edge TTS 設定",
+    optEdgeSettingsDesc: "選擇使用預設伺服器或自定義地址", optAzureSettings: "Azure Speech 設定",
+    optAzureSettingsDesc: "選擇使用預設 API 或自定義密鑰", optVoice: "語音音色", optSpeed: "語速",
+    optTestTTS: " 測試語音", optFeedbackTitle: "💡 意見與反饋", optFeedbackDesc: "如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！",
+    optNameLabel: "您的稱呼", optOptional: "(選填)", optNamePlaceholder: "如何稱呼您？",
+    optEmailLabel: "聯絡電郵", optEmailPlaceholder: "your@email.com (方便回覆您)",
+    optFeedbackLabel: "反饋內容", optFeedbackPlaceholder: "請填寫您的建議或遇到的問題...",
+    optFooterData: "數據來源：", optFooterLicense: "授權："
+  },
+  "en": {
+    optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
+    optEnable: "Enable Dictionary", optEnableDesc: "Show Cantonese pronunciation on hover", optFormat: "Pronunciation System",
+    optFormatDesc: "Select romanization format", optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
+    optTransSettings: "Translation Settings", optTransDesc1: "Double-click selected text to show Mandarin and English translation",
+    optTransDesc2: "Powered by Bing Translator (Native Cantonese support, no config)", optAISettings: "✨ AI Contextual Translation",
+    optAIEnable: "Enable AI Translation", optAIEnableDesc: "Long press selected text for AI contextual explanation",
+    optAIBaseUrlDesc: "OpenAI-compatible API endpoint", optAIModelLabel: "AI Model",
+    optAIPromptLabel: "System Prompt", optFeedback: "About & Feedback", optDev: "Developer:",
+    optFeedbackForm: "Feedback", optEmail: "Email (Optional)", optMsg: "Tell us your suggestions or issues...",
+    optSend: "Send Feedback", optSending: "Sending...", optSent: "Sent!",
+    optModelName: "Model Name", optTestAI: " Test AI Connection", optTTSSettings: "Speech Settings (TTS)",
+    optClickToSpeak: "Click to Speak", optClickToSpeakDesc: "Click highlighted text to read Cantonese pronunciation", optTTSEngine: "Speech Engine",
+    optTTSEngineDesc: "Select TTS provider", optEdgeSettings: "Edge TTS Settings",
+    optEdgeSettingsDesc: "Select default server or custom URL", optAzureSettings: "Azure Speech Settings",
+    optAzureSettingsDesc: "Select default API or custom key", optVoice: "Voice Tone", optSpeed: "Speech Rate",
+    optTestTTS: " Test Voice", optFeedbackTitle: "💡 Feedback & Suggestions", optFeedbackDesc: "If you have any suggestions or encounter bugs, please tell me here!",
+    optNameLabel: "Your Name", optOptional: "(Optional)", optNamePlaceholder: "How should we call you?",
+    optEmailLabel: "Email Address", optEmailPlaceholder: "your@email.com (For replying)",
+    optFeedbackLabel: "Feedback Content", optFeedbackPlaceholder: "Please describe your suggestions or issues...",
+    optFooterData: "Data Source:", optFooterLicense: "License:"
+  }
+};
+
+function applyI18n(lang) {
+  const dict = i18nDict[lang] || i18nDict["zh-HK"];
   document.querySelectorAll('[data-i18n]').forEach(el => {
-    const msg = chrome.i18n.getMessage(el.getAttribute('data-i18n'));
-    if (msg) {
+    const key = el.getAttribute('data-i18n');
+    if (dict[key]) {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.placeholder = msg;
+        el.placeholder = dict[key];
       } else {
-        el.innerText = msg;
+        // preserve child nodes like svgs if any by just setting text node?
+        // Actually mostly it's simple text. For buttons with svg we need care.
+        if (el.children.length > 0) {
+            // Find the text node and replace it
+            for (let child of el.childNodes) {
+                if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length > 0) {
+                    child.nodeValue = dict[key];
+                    break;
+                }
+            }
+        } else {
+            el.innerText = dict[key];
+        }
       }
     }
   });
+}
+
+  // Get saved language or default
+  chrome.storage.local.get(['uiLang'], (res) => {
+    const lang = res.uiLang || 'zh-HK';
+    document.getElementById('langToggle').value = lang;
+    applyI18n(lang);
+  });
+
+  document.getElementById('langToggle').addEventListener('change', (e) => {
+    const lang = e.target.value;
+    chrome.storage.local.set({ uiLang: lang });
+    applyI18n(lang);
+  });
+
 
   const enabledToggle = document.getElementById('enabledToggle');
   const displayModeSelect = document.getElementById('displayMode');
