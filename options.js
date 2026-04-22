@@ -35,9 +35,9 @@ const i18nDict = {
     optVoice1: "曉曼 HiuMaan（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
     optVoice2: "曉佳 HiuGaai（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
     optVoice3: "雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
-    optAITip1: "常用：OpenAI &rarr; https://api.openai.com/v1",
-    optAITip2: "DeepSeek &rarr; https://api.deepseek.com",
-    optAITip3: "Ollama &rarr; http://localhost:11434/v1"
+    optAITip1: "常用：OpenAI",
+    optAITip2: "DeepSeek",
+    optAITip3: "Ollama"
 
   },
   "en": {
@@ -69,9 +69,9 @@ const i18nDict = {
     optVoice1: "HiuMaan (Female) ⭐⭐⭐⭐⭐ · Latency ~1s",
     optVoice2: "HiuGaai (Female) ⭐⭐⭐⭐⭐ · Latency ~1s",
     optVoice3: "WanLung (Male) ⭐⭐⭐⭐⭐ · Latency ~1s",
-    optAITip1: "Common: OpenAI &rarr; https://api.openai.com/v1",
-    optAITip2: "DeepSeek &rarr; https://api.deepseek.com",
-    optAITip3: "Ollama &rarr; http://localhost:11434/v1"
+    optAITip1: "Common: OpenAI",
+    optAITip2: "DeepSeek",
+    optAITip3: "Ollama"
 
   }
 };
