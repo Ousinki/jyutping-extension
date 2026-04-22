@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "粵語懸浮詞典",
-  "version": "1.2.0",
+  "version": "1.3.0",
   "description": "滑鼠懸停中文字即可顯示粵語發音（粵拼/Yale）同埋英文解釋，支援 AI 語境翻譯",
   "permissions": [
     "storage",
