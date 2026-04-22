@@ -131,8 +131,11 @@ function applyI18n(lang) {
 
   document.getElementById('langToggle').addEventListener('change', (e) => {
     const lang = e.target.value;
-    chrome.storage.local.set({ uiLang: lang });
+    chrome.storage.local.set({ uiLang: lang, extensionLang: lang });
     applyI18n(lang);
+    // Also refresh dynamically generated buttons
+    if (typeof resetTestButton === 'function') resetTestButton();
+    if (typeof resetAiTestButton === 'function') resetAiTestButton();
   });
 
 
@@ -435,7 +438,7 @@ function applyI18n(lang) {
   testTtsBtn.addEventListener('click', async () => {
     const engine = ttsEngineSelect.value;
     const rate = parseFloat(ttsRateSlider.value);
-    const testText = t('optGreeting');
+    const testText = '你好，歡迎使用粵語詞典';
     
     testTtsBtn.disabled = true;
     testTtsBtn.textContent = t('optPlaying');
@@ -739,6 +742,17 @@ function applyI18n(lang) {
         <path d="M3 9V15H7L12 20V4L7 9H3ZM16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12ZM14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z" fill="currentColor"/>
       </svg>
       ${t('optTestTTS')}
+    `;
+  }
+
+  // 重置 AI 測試按鈕
+  function resetAiTestButton() {
+    testAiBtn.disabled = false;
+    testAiBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
+      </svg>
+      ${t('optTestAI')}
     `;
   }
 
