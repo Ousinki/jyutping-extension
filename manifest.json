@@ -33,9 +33,9 @@
     "default_title": "粵語拼音懸浮詞典"
   },
   "icons": {
-    "16": "icon_action.png",
-    "48": "icon_action.png",
-    "128": "icon_action.png"
+    "16": "icon16.png",
+    "48": "icon48.png",
+    "128": "icon128.png"
   },
   "options_page": "options.html"
 }
