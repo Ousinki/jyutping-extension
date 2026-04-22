@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "Jyutping Hover Dictionary",
+    "description": "Name of the extension"
+  },
+  "extDescription": {
+    "message": "Hover over Chinese characters to see Cantonese pronunciation (Jyutping/Yale) and English meanings, with AI contextual translation.",
+    "description": "Description of the extension"
+  },
+  "extActionTitle": {
+    "message": "Toggle Jyutping Hover Dictionary",
+    "description": "Tooltip for the extension icon in the toolbar"
+  }
+}

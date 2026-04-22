@@ -1,0 +1,14 @@
+{
+  "extName": {
+    "message": "粵語懸浮詞典",
+    "description": "Name of the extension"
+  },
+  "extDescription": {
+    "message": "滑鼠懸停中文字即可顯示粵語發音（粵拼/Yale）同埋英文解釋，支援 AI 語境翻譯",
+    "description": "Description of the extension"
+  },
+  "extActionTitle": {
+    "message": "粵語拼音懸浮詞典",
+    "description": "Tooltip for the extension icon in the toolbar"
+  }
+}
