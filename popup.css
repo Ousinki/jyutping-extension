@@ -16,8 +16,8 @@
   --popup-text: #333333;
   --popup-text-muted: #666666;
   --popup-text-label: #888888;
-  --popup-accent: #2196f3;
-  --popup-accent-hover: #1976d2;
+  --popup-accent: #8A1C1C;
+  --popup-accent-hover: #B42929;
   --popup-word-color: #1a1a1a;
   --popup-def-color: #555555;
   --popup-def-yue: #b8860b;
@@ -26,18 +26,18 @@
   --popup-example-bg: #f9f9f9;
   --popup-btn-bg: #f0f0f0;
   --popup-btn-hover: #e0e0e0;
-  --popup-btn-speaking: #2196f3;
+  --popup-btn-speaking: #8A1C1C;
   --popup-btn-speaking-text: #ffffff;
-  --popup-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-  --popup-active-bg: #f0f7ff;
+  --popup-shadow: 0px 0.5px 0.5px rgba(0, 0, 0, 0.08),
+                  1px 2px 1px rgba(0, 0, 0, 0.08),
+                  2px 4px 8px rgba(0, 0, 0, 0.08);
+  --popup-active-bg: #F9EBEB;
 
   position: fixed;
-  background: var(--popup-bg);
-  border: 1px solid var(--popup-border);
-  border-radius: 8px;
-  padding: 0;
-  box-shadow: var(--popup-shadow);
   z-index: 2147483647;
+  padding: 0;
+  /* 統一的投影濾鏡，讓本體與箭頭的陰影完美融合 (仿 10ten) */
+  filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.15));
   font-family:
     -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "PingFang HK",
     "Microsoft JhengHei", "Microsoft JhengHei UI", "MingLiU", "MingLiU-ExtB",
@@ -52,11 +52,23 @@
     width 0.2s ease-in-out,
     left 0.2s ease-in-out,
     top 0.2s ease-in-out;
+}
+
+/* 內容內部容器（提供實際的白底、邊框與圓角） */
+.popup-inner {
+  background: var(--popup-bg);
+  border: 1px solid var(--popup-border);
+  border-radius: 8px;
+  /* 此處移除 box-shadow，改由外層 drop-shadow 統一提供 */
   overflow: hidden;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 /* 毛玻璃主題特殊樣式 */
-#cantonese-popup-dict.popup-theme-glass {
+#cantonese-popup-dict.popup-theme-glass .popup-inner {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
@@ -109,6 +121,20 @@
   color: var(--popup-text);
   margin-bottom: 0;
   line-height: 1.4;
+}
+
+/* 例句喇叭按鈕：默認隱藏，懸停顯示 */
+.example-tts-btn {
+  opacity: 0;
+  visibility: hidden;
+  margin-left: 6px;
+  transform: translateY(-1px);
+}
+
+.example-item:hover .example-tts-btn,
+.example-tts-btn.speaking {
+  opacity: 1;
+  visibility: visible;
 }
 
 .example-eng {
@@ -175,6 +201,84 @@
   color: var(--popup-accent);
   font-weight: 500;
   font-family: "Courier New", monospace;
+}
+
+/* ========== TTS 喇叭按鈕 ========== */
+#cantonese-popup-dict .tts-speaker-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none !important;
+  border: none !important;
+  padding: 2px !important;
+  margin: 0;
+  cursor: pointer;
+  color: var(--popup-text-muted);
+  border-radius: 4px;
+  transition: color 0.2s ease, background-color 0.2s ease;
+  vertical-align: middle;
+  flex-shrink: 0;
+  width: auto !important;
+  height: auto !important;
+  box-shadow: none !important;
+  line-height: 1 !important;
+}
+
+/* 強制重置 SVG 大小，防止宿主網頁的樣式（如 svg { width: 100% }）污染 */
+#cantonese-popup-dict .tts-speaker-btn svg {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px !important;
+  min-height: 18px !important;
+  max-width: 18px !important;
+  max-height: 18px !important;
+  display: block !important;
+  box-sizing: content-box !important;
+}
+
+/* 例句喇叭稍微小一點 */
+#cantonese-popup-dict .example-tts-btn svg {
+  width: 14px !important;
+  height: 14px !important;
+  min-width: 14px !important;
+  min-height: 14px !important;
+  max-width: 14px !important;
+  max-height: 14px !important;
+}
+
+#cantonese-popup-dict .tts-speaker-btn:hover {
+  color: var(--popup-accent);
+  background-color: var(--popup-btn-bg);
+}
+
+/* 靜音狀態下隱藏聲波弧線 */
+#cantonese-popup-dict .tts-speaker-btn .tts-wave {
+  opacity: 0.3;
+  transition: opacity 0.2s ease;
+}
+
+#cantonese-popup-dict .tts-speaker-btn:hover .tts-wave {
+  opacity: 0.6;
+}
+
+/* 播放中狀態 */
+#cantonese-popup-dict .tts-speaker-btn.speaking {
+  color: var(--popup-btn-speaking);
+}
+
+#cantonese-popup-dict .tts-speaker-btn.speaking .tts-wave-1 {
+  opacity: 1;
+  animation: tts-pulse 0.8s ease-in-out infinite alternate;
+}
+
+#cantonese-popup-dict .tts-speaker-btn.speaking .tts-wave-2 {
+  opacity: 1;
+  animation: tts-pulse 0.8s 0.2s ease-in-out infinite alternate;
+}
+
+@keyframes tts-pulse {
+  0% { opacity: 0.3; }
+  100% { opacity: 1; }
 }
 
 /* 釋義區塊 */
@@ -276,7 +380,7 @@
   font-size: 10px;
   font-weight: 600;
   color: #fff;
-  background: #2196f3;
+  background: var(--popup-accent);
   border-radius: 3px;
   padding: 0px 4px;
   flex-shrink: 0;
@@ -342,7 +446,7 @@
   font-size: 11px;
   font-weight: 600;
   color: #fff;
-  background: #2196f3;
+  background: var(--popup-accent);
   border-radius: 3px;
   padding: 1px 5px;
   flex-shrink: 0;
@@ -377,6 +481,87 @@
   font-size: 13px;
   color: var(--popup-text, #333);
   line-height: 1.6;
+}
+
+/* ========== 文字高亮樣式 ========== */
+.jyutping-highlight {
+  background-color: rgba(255, 220, 80, 0.45) !important;
+  border-radius: 2px;
+  box-decoration-break: clone;
+  -webkit-box-decoration-break: clone;
+}
+
+/* ========== 彈窗箭頭樣式 ========== */
+.popup-arrow {
+  position: absolute;
+  overflow: hidden;
+
+  /* Desired width of the arrow */
+  --arrow-width: 20px;
+
+  /* Amount of room to allow for the shadow */
+  --shadow-radius: 8px;
+  --shadow-margin: calc(var(--shadow-radius) / 2);
+
+  /* Crop the arrow region to show half the arrow plus allow room for margins */
+  width: calc(var(--arrow-width) + 2 * var(--shadow-margin));
+  height: calc(var(--arrow-width) / 2 + var(--shadow-margin));
+
+  pointer-events: none;
+  z-index: 2147483647;
+  transform: translateX(-50%);
+}
+
+.popup-arrow::before {
+  position: absolute;
+  content: '';
+  box-sizing: border-box;
+  border-radius: 0;
+
+  --sin-45: 0.707106781;
+  --square-side: calc(var(--arrow-width) / 2 / var(--sin-45));
+  width: var(--square-side);
+  height: var(--square-side);
+
+  --overhang: calc((var(--arrow-width) - var(--square-side)) / 2);
+  margin-left: calc(var(--overhang) + var(--shadow-margin));
+  margin-top: calc(var(--overhang) + var(--shadow-margin));
+
+  background-color: var(--popup-bg);
+  border: 1px solid var(--popup-border);
+}
+
+/* 箭頭朝上（彈窗在詞彙下方） */
+.popup-arrow-up {
+  top: calc(-1 * (var(--arrow-width) / 2 + var(--shadow-margin)));
+  margin-top: 1px;
+}
+
+.popup-arrow-up::before {
+  transform: rotate(225deg);
+  box-shadow:
+    0px 0.5px 0.5px rgba(100, 100, 100, 0.15),
+    -1px 2px 1px rgba(100, 100, 100, 0.15);
+}
+
+/* 箭頭朝下（彈窗在詞彙上方） */
+.popup-arrow-down {
+  top: 100%;
+  margin-top: -1px;
+}
+
+.popup-arrow-down::before {
+  transform: rotate(45deg);
+  margin-top: calc(var(--square-side) / -2);
+  box-shadow:
+    0px 0.5px 0.5px rgba(100, 100, 100, 0.15),
+    2px 2px 1px rgba(100, 100, 100, 0.15),
+    4px 4px 8px rgba(100, 100, 100, 0.15);
+}
+
+/* 隱藏箭頭（導航模式） */
+.popup-arrow-hidden {
+  display: none;
 }
 
 /* 響應式：小屏幕適配 */

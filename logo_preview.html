@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <title>粵語懸浮詞典 SVG Logo 預覽 (維基百科官方紫荊花版)</title>
+  <style>
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "PingFang HK", "PingFang TC", "Heiti TC", sans-serif;
+      background-color: #f5f5f7;
+      color: #1d1d1f;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px 20px;
+      margin: 0;
+    }
+    h1 {
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+    p.intro {
+      color: #666;
+      margin-bottom: 40px;
+      max-width: 650px;
+      text-align: center;
+      line-height: 1.6;
+    }
+    .logo-container {
+      display: flex;
+      gap: 60px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .logo-card {
+      background: white;
+      padding: 30px;
+      border-radius: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .logo-title {
+      margin-top: 24px;
+      font-weight: 500;
+      font-size: 18px;
+    }
+    .logo-desc {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #86868b;
+      text-align: center;
+      max-width: 256px;
+      line-height: 1.5;
+    }
+    .banner-svg { width: 400px; height: 200px; }
+    .icon-svg { width: 256px; height: 256px; }
+  </style>
+</head>
+<body>
+
+  <h1>3 款致敬 HKLII 的「官方标准紫荆花」Logo</h1>
+  <p class="intro">
+    为了绝对的标准，我直接从<b>维基百科的《香港特别行政区区旗》SVG 源码</b>中提取了官方的洋紫荆花瓣与星星路径代码！<br>
+    这里为你呈现 3 种结合了官方图形与 HKLII 排版的方案（空心线框版、纯色极简版、经典区旗红白版）。
+  </p>
+
+  <!-- 官方紫荆花路径定义 (从 450, 300 原点提取) -->
+  <svg width="0" height="0" style="display:none;">
+    <defs>
+      <!-- 单片花瓣 (已移除中间的叶脉纹理，保持纯净外轮廓) -->
+      <g id="hk-petal">
+        <path d="M 492.936022 125.19583 a 27.917245 27.917245 0 0 0 -14.901582 41.791893 a 45.171052 45.171052 0 0 1 -20.289932 66.204239 a 38.650583 38.650583 0 0 0 -10.816469 64.313021 A 90.342104 90.342104 0 0 1 492.936022 125.19583 Z" />
+      </g>
+      <!-- 单颗星星 -->
+      <g id="hk-star">
+        <path d="M451.979333 181.099409l-27.564739 12.021638 29.366483 6.476437-19.951229-22.500734 2.915284 29.930515" />
+      </g>
+      <!-- 五瓣花 (无星星) -->
+      <g id="hk-flower">
+        <use href="#hk-petal" transform="rotate(0 450 300)"/>
+        <use href="#hk-petal" transform="rotate(72 450 300)"/>
+        <use href="#hk-petal" transform="rotate(144 450 300)"/>
+        <use href="#hk-petal" transform="rotate(216 450 300)"/>
+        <use href="#hk-petal" transform="rotate(288 450 300)"/>
+      </g>
+      <!-- 五颗星 -->
+      <g id="hk-stars">
+        <use href="#hk-star" transform="rotate(0 450 300)"/>
+        <use href="#hk-star" transform="rotate(72 450 300)"/>
+        <use href="#hk-star" transform="rotate(144 450 300)"/>
+        <use href="#hk-star" transform="rotate(216 450 300)"/>
+        <use href="#hk-star" transform="rotate(288 450 300)"/>
+      </g>
+    </defs>
+  </svg>
+
+  <div class="logo-container">
+    
+    <!-- Option 13: Red Outline (HKLII Style) -->
+    <div class="logo-card" style="grid-column: 1 / -1; width: 100%; max-width: 500px;">
+      <svg class="banner-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 400">
+        <defs>
+          <style>
+            .bg-13 { fill: #382424; }
+            .outline-13 { fill: none; stroke: #D83131; stroke-width: 10; stroke-linejoin: round; }
+            .brand-13 { font-family: 'Times New Roman', Times, serif; font-size: 96px; fill: #ffffff; letter-spacing: 2px;}
+          </style>
+        </defs>
+        <rect class="bg-13" width="800" height="400" rx="40"/>
+        
+        <g transform="translate(280, 200) scale(1) translate(-450, -300)">
+          <use href="#hk-flower" class="outline-13" />
+        </g>
+        
+        <text x="750" y="360" class="brand-13" text-anchor="end">JYUTPING</text>
+      </svg>
+      <div class="logo-title">方案 13：官方描边版 (HKLII 风格)</div>
+      <div class="logo-desc">长宽比 2:1。对官方的实心花瓣直接使用红色描边。由于官方花瓣在中心是彼此交叠的，描边后在中心形成了一个极其精致复杂的几何星结。</div>
+    </div>
+
+    <!-- Option 14: Square Extension Icon (Red Outline + Chinese) -->
+    <div class="logo-card">
+      <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <defs>
+          <style>
+            .bg-14 { fill: #382424; }
+            .outline-14 { fill: none; stroke: #D83131; stroke-width: 12; stroke-linejoin: round; }
+            .brand-14 { font-family: 'Times New Roman', 'Songti TC', serif; font-size: 110px; fill: #ffffff; letter-spacing: 4px; font-weight: normal;}
+          </style>
+        </defs>
+        <rect class="bg-14" width="512" height="512" rx="100"/>
+        
+        <g transform="translate(240, 230) scale(1.05) translate(-450, -300)">
+          <use href="#hk-flower" class="outline-14" />
+        </g>
+        
+        <text x="470" y="440" class="brand-14" text-anchor="end">粵拼</text>
+      </svg>
+      <div class="logo-title">方案 14：正方形图标 (中文描边版)</div>
+      <div class="logo-desc">专为浏览器插件设计的 1:1 正方形。采用了同样极其克制、充满学术感的红色空心描边风格，搭配经典的“粵拼”二字，文化底蕴深厚。</div>
+    </div>
+
+    <!-- Option 15: Square Extension Icon (Dark Charcoal Outline + English) -->
+    <div class="logo-card">
+      <svg class="icon-svg" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+        <defs>
+          <style>
+            .bg-15 { fill: #1c1e21; }
+            .outline-15 { fill: none; stroke: #E32636; stroke-width: 12; stroke-linejoin: round; }
+            .brand-15 { font-family: 'Times New Roman', Times, serif; font-size: 76px; fill: #ffffff; letter-spacing: 0px;}
+            .sub-15 { font-family: 'Times New Roman', Times, serif; font-size: 28px; fill: #888888; letter-spacing: 5px;}
+          </style>
+        </defs>
+        <rect class="bg-15" width="512" height="512" rx="100"/>
+        
+        <g transform="translate(256, 210) scale(0.95) translate(-450, -300)">
+          <use href="#hk-flower" class="outline-15" />
+        </g>
+        
+        <!-- Text overlaying slightly -->
+        <text x="470" y="420" class="brand-15" text-anchor="end">JYUTPING</text>
+        <text x="465" y="465" class="sub-15" text-anchor="end">DICTIONARY</text>
+      </svg>
+      <div class="logo-title">方案 15：正方形图标 (黑底描边版)</div>
+      <div class="logo-desc">将背景换成了更深邃的深碳黑色，空心描边的花朵呈现更亮眼的红色。右下角配以双排英文衬线体，现代品牌感极强。</div>
+    </div>
+
+  </div>
+
+</body>
+</html>

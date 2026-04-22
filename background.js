@@ -30,6 +30,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleTranslate(request, sender.tab.id);
   } else if (request.action === 'aiTranslate') {
     handleAiTranslate(request, sender.tab.id);
+  } else if (request.action === 'openOptionsPage') {
+    chrome.runtime.openOptionsPage();
   }
   return true;
 });
@@ -416,6 +418,67 @@ async function handleAiTranslate(request, tabId) {
       success: false,
       error: error.message,
       word: word
+    });
+  }
+}
+
+// ==================== 快捷開關 (單擊圖標) ====================
+
+chrome.action.onClicked.addListener(async (tab) => {
+  const result = await chrome.storage.local.get(['enabled']);
+  // 默認為 true
+  const isCurrentlyEnabled = result.enabled !== false;
+  const newEnabledState = !isCurrentlyEnabled;
+
+  // 保存新狀態
+  await chrome.storage.local.set({ enabled: newEnabledState });
+
+  // 更新圖標 badge 來顯示狀態
+  updateActionBadge(newEnabledState);
+
+  // 通知所有標籤頁更新狀態
+  const tabs = await chrome.tabs.query({});
+  for (const t of tabs) {
+    try {
+      chrome.tabs.sendMessage(t.id, {
+        action: 'toggleEnabled',
+        enabled: newEnabledState
+      }).catch(() => {}); // 忽略無法接收消息的頁面
+    } catch (e) {}
+  }
+});
+
+// 啟動或安裝時初始化 badge
+chrome.runtime.onStartup.addListener(initBadge);
+chrome.runtime.onInstalled.addListener(initBadge);
+
+async function initBadge() {
+  const result = await chrome.storage.local.get(['enabled']);
+  updateActionBadge(result.enabled !== false);
+}
+
+function updateActionBadge(isEnabled) {
+  if (isEnabled) {
+    // 啟用時顯示 ON，並使用彩色圖標
+    chrome.action.setBadgeText({ text: 'ON' });
+    chrome.action.setBadgeBackgroundColor({ color: '#8A1C1C' }); // 香港紅
+    chrome.action.setIcon({
+      path: {
+        "16": "icon_action.png",
+        "48": "icon_action.png",
+        "128": "icon_action.png"
+      }
+    });
+  } else {
+    // 停用時顯示 OFF，並使用灰色圖標
+    chrome.action.setBadgeText({ text: 'OFF' });
+    chrome.action.setBadgeBackgroundColor({ color: '#888888' }); // 灰色
+    chrome.action.setIcon({
+      path: {
+        "16": "icon_action_gray.png",
+        "48": "icon_action_gray.png",
+        "128": "icon_action_gray.png"
+      }
     });
   }
 }

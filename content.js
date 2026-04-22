@@ -12,6 +12,7 @@
 
   let dictionary = {};
   let popup = null;
+  let popupArrow = null; // 彈窗箭頭元素
   let isEnabled = true;
   let displayMode = 'jyutping'; // 'jyutping' 或 'yale'
   let popupTheme = 'classic'; // 懸浮窗主題
@@ -26,6 +27,7 @@
   let azureTtsVoice = 'zh-HK-HiuMaanNeural'; // Azure Speech 音色
   let ttsRate = 0.9; // TTS 語速
   let currentRange = null; // 儲存當前選中的範圍
+  let highlightSpans = []; // CSS 高亮的 span 元素
   let currentWord = null; // 追蹤當前顯示的詞
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
@@ -64,6 +66,30 @@
         '--popup-btn-speaking-text': '#ffffff',
         '--popup-shadow': '0 4px 12px rgba(0, 0, 0, 0.15)',
         '--popup-active-bg': '#f0f7ff',
+      }
+    },
+    academic: {
+      name: '香港紅',
+      vars: {
+        '--popup-bg': '#ffeaeb',
+        '--popup-border': '#fba5a8',
+        '--popup-text': '#8A1C1C',
+        '--popup-text-muted': '#d46a6a',
+        '--popup-text-label': '#e38a8a',
+        '--popup-accent': '#D83131',
+        '--popup-accent-hover': '#8A1C1C',
+        '--popup-word-color': '#610c0c',
+        '--popup-def-color': '#8A1C1C',
+        '--popup-def-yue': '#D83131',
+        '--popup-divider': 'rgba(138, 28, 28, 0.12)',
+        '--popup-divider-strong': '#fccacc',
+        '--popup-example-bg': '#fce1e3',
+        '--popup-btn-bg': '#fce1e3',
+        '--popup-btn-hover': '#fba5a8',
+        '--popup-btn-speaking': '#D83131',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0 4px 12px rgba(138, 28, 28, 0.2)',
+        '--popup-active-bg': '#fce1e3',
       }
     },
     night: {
@@ -420,16 +446,46 @@
     popup.id = 'cantonese-popup-dict';
     popup.style.display = 'none';
     
-    // 內部結構：左側主要內容，右側例句（初始隱藏）
+    // 箭頭元素
+    popupArrow = document.createElement('div');
+    popupArrow.className = 'popup-arrow';
+    
+    // 內部結構：左側主要內容 + 右側例句 + 翻譯（全部包裹在 overflow hidden 容器中，以免內容溢出圓角）
     popup.innerHTML = `
-      <div class="popup-container">
-        <div class="popup-main"></div>
-        <div class="popup-examples" style="display:none;"></div>
+      <div class="popup-inner" style="border-radius: inherit; overflow: hidden; width: 100%; height: 100%; display: flex; flex-direction: column; position: relative;">
+        <!-- 設定按鈕 -->
+        <div class="popup-settings-btn" title="設定" style="position: absolute; top: 10px; right: 10px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; z-index: 10; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </div>
+        <div class="popup-container">
+          <div class="popup-main"></div>
+          <div class="popup-examples" style="display:none;"></div>
+        </div>
+        <div class="popup-translate" style="display:none;"></div>
       </div>
-      <div class="popup-translate" style="display:none;"></div>
     `;
+    popup.appendChild(popupArrow);
     
     document.body.appendChild(popup);
+
+    // 設定按鈕事件
+    const settingsBtn = popup.querySelector('.popup-settings-btn');
+    settingsBtn.addEventListener('mouseenter', () => {
+      settingsBtn.style.opacity = '1';
+      settingsBtn.style.backgroundColor = 'var(--popup-divider)';
+    });
+    settingsBtn.addEventListener('mouseleave', () => {
+      settingsBtn.style.opacity = '0.4';
+      settingsBtn.style.backgroundColor = 'transparent';
+    });
+    settingsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      chrome.runtime.sendMessage({ action: 'openOptionsPage' });
+    });
 
     // 滑鼠進入彈窗時固定顯示
     popup.addEventListener('mouseenter', () => {
@@ -501,7 +557,29 @@
 
   // 粵語朗讀功能
   let lastSpeakTime = 0;
-  async function speakCantonese(text) {
+  let ttsPlaybackTimer = null; // 用於追蹤 TTS 播放狀態
+  let activeSpeakerBtn = null; // 當前正在播放動畫的按鈕
+  
+  function startSpeakerAnimation(btn = null) {
+    if (activeSpeakerBtn) {
+      activeSpeakerBtn.classList.remove('speaking');
+    }
+    activeSpeakerBtn = btn || (popup ? popup.querySelector('.pronunciation-section .tts-speaker-btn') : null);
+    if (activeSpeakerBtn) activeSpeakerBtn.classList.add('speaking');
+    
+    // 清除上一次的保底計時器
+    if (ttsPlaybackTimer) clearTimeout(ttsPlaybackTimer);
+  }
+  
+  function stopSpeakerAnimation() {
+    if (activeSpeakerBtn) {
+      activeSpeakerBtn.classList.remove('speaking');
+      activeSpeakerBtn = null;
+    }
+    if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
+  }
+  
+  async function speakCantonese(text, targetBtn = null) {
     if (!ttsEnabled) return;
     
     // 全局防抖：300ms 內不重複發音
@@ -515,6 +593,11 @@
     
     console.log('speakCantonese proceeding, engine:', ttsEngine);
     
+    // ★ 統一啟動喇叭動畫
+    startSpeakerAnimation(targetBtn);
+    // 保底超時：最多 10 秒後停止動畫（防止狀態卡死）
+    ttsPlaybackTimer = setTimeout(stopSpeakerAnimation, 10000);
+    
     // 檢查緩存（僅對需要 API 調用的引擎）
     const cacheKey = `${ttsEngine}:${ttsRate}:${text}`;
     if (['edgeTts', 'azureTts', 'bertVits2'].includes(ttsEngine)) {
@@ -522,6 +605,8 @@
       if (cachedAudio) {
         console.log('TTS cache hit:', text);
         const audio = new Audio(cachedAudio);
+        audio.onended = stopSpeakerAnimation;
+        audio.onerror = stopSpeakerAnimation;
         audio.play();
         return;
       }
@@ -561,6 +646,7 @@
       }
     } catch (error) {
       console.error('TTS error:', error);
+      stopSpeakerAnimation();
       // 降級到 Web Speech
       speakWithWebSpeech(text);
     }
@@ -572,6 +658,8 @@
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-HK';
     utterance.rate = ttsRate;
+    utterance.onend = stopSpeakerAnimation;
+    utterance.onerror = stopSpeakerAnimation;
     
     const voices = speechSynthesis.getVoices();
     const cantoneseVoice = voices.find(v => 
@@ -1044,15 +1132,37 @@
     const clientX = e.clientX;
     const clientY = e.clientY;
 
-    // 獲取滑鼠位置的文字（支持 Shadow DOM）
-    const range = getCaretRangeFromPointInShadow(clientX, clientY);
+    // ★ 檢查是否懸停在已高亮的文字上
+    const targetElement = document.elementFromPoint(clientX, clientY);
+    if (targetElement && targetElement.classList.contains('jyutping-highlight')) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      return;
+    }
+
+    // ★ 測試滑鼠是否在文字上
+    let range = getCaretRangeFromPointInShadow(clientX, clientY);
     if (!range) {
       // 滑鼠在空白處
-      // 如果剛導航過，不隱藏彈窗（保持顯示直到用戶進入彈窗）
       if (!justNavigated) {
         scheduleHidePopup();
       }
-      return;
+      return; // ★ 核心修復：在空白處移動時，保留舊的高亮，讓它跟隨彈窗生命週期
+    }
+
+    // 到這裡說明滑鼠在真正的文字上。移除舊高亮並清理 DOM。
+    const previousWord = currentWord;
+    if (highlightSpans.length > 0) {
+      removeHighlight();
+      // 由於 removeHighlight 調用了 normalize() 合併了文字節點，
+      // 原來的 range.startContainer 可能已經失效，所以必須重新獲取一次
+      range = getCaretRangeFromPointInShadow(clientX, clientY);
+      if (!range) {
+        if (!justNavigated) scheduleHidePopup();
+        return;
+      }
     }
 
     const textNode = range.startContainer;
@@ -1081,9 +1191,12 @@
       // 我們應該取消導航狀態，轉為顯示新詞
       justNavigated = false;
 
-      // 如果是同一個詞，且彈窗已顯示，則跳過
-      // 如果彈窗隱藏（bug 修復），則繼續執行 showPopup
-      if (currentWord === result.word && popup.style.display !== 'none') {
+      // 無論是否同詞，都重新應用高亮（因為上面已經移除了）
+      highlightText(textNode, offset, result.length);
+
+      // 如果是同一個詞，且彈窗已顯示，不需要重建彈窗內容
+      if (previousWord === result.word && popup.style.display !== 'none') {
+        currentWord = result.word;
         // 如果有待執行的隱藏任務，取消它（因為用戶又回來了）
         if (hideTimeout) {
           clearTimeout(hideTimeout);
@@ -1094,7 +1207,6 @@
       
       // 新詞，更新顯示
       currentWord = result.word;
-      highlightText(textNode, offset, result.length);
       
       // 使用文字本身的位置來定位彈窗（而非滑鼠位置）
       if (currentRange) {
@@ -1279,6 +1391,13 @@
         <div class="pronunciation-section">
           <span class="pronunciation-label">${displayMode === 'yale' ? 'Yale' : '粵拼'}:</span>
           <span class="pronunciation-text">${pronunciation}</span>
+          <button class="tts-speaker-btn" title="播放發音" aria-label="播放發音">
+            <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </button>
         </div>
       `;
     }
@@ -1372,14 +1491,21 @@
       });
     }
 
-    // 綁定發音點擊（只有藍色拼音文字可發聲，標籤不觸發）
+    // 綁定發音點擊（拼音文字 + 喇叭按鈕均可觸發發聲）
     const pronunciationText = popupMain.querySelector('.pronunciation-text');
+    const speakerBtn = popupMain.querySelector('.tts-speaker-btn');
+    
+    function triggerTTS(e) {
+      e.stopPropagation();
+      speakCantonese(entry.traditional, speakerBtn);
+    }
+    
     if (pronunciationText) {
       pronunciationText.style.cursor = 'pointer';
-      pronunciationText.addEventListener('click', (e) => {
-        e.stopPropagation();
-        speakCantonese(entry.traditional);
-      });
+      pronunciationText.addEventListener('click', triggerTTS);
+    }
+    if (speakerBtn) {
+      speakerBtn.addEventListener('click', triggerTTS);
     }
 
     // 綁定例句點擊事件
@@ -1449,9 +1575,12 @@
       const viewportHeight = window.innerHeight;
 
       let left, top;
+      let arrowDirection = 'up'; // 箭頭方向：up = 彈窗在下方，箭頭朝上指向詞語
       
       const x = rect.left;
       const y = rect.bottom; // 默認參考點
+      const ARROW_HEIGHT = 8; // 箭頭高度
+      const GAP = 2; // 箭頭與文字的間距
 
       // 水平位置：默認居中對齊或者靠左
       if (x + 5 + popupWidth <= viewportWidth) {
@@ -1463,22 +1592,17 @@
       }
 
       // 垂直位置：優先顯示在文字下方
-      // 檢查下方空間是否足夠 (使用 rect.bottom)
-      if (rect.bottom + 5 + popupHeight <= viewportHeight) {
-        top = rect.bottom + 5;
+      if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
+        top = rect.bottom + GAP + ARROW_HEIGHT;
+        arrowDirection = 'up';
       } else {
-        // 下方不足，放上方 (使用 rect.top)
-        top = rect.top - popupHeight - 5;
+        // 下方不足，放上方
+        top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+        arrowDirection = 'down';
         
-        // 如果上方也不足（例如頂部大段文字），則強制放下方（可能需要滾動），或者放頂部
         if (top < 5) {
-            // 如果上方放不下，優先保證頂部可見
-            if (rect.bottom + 5 + popupHeight > viewportHeight) {
-                // 屏幕太矮，無法完整顯示，優先顯示頂部
-                top = 5; 
-            } else {
-                top = 5;
-            }
+            top = 5;
+            arrowDirection = 'up';
         }
       }
       
@@ -1486,9 +1610,22 @@
       popup.style.left = left + 'px';
       popup.style.top = top + 'px';
       
+      // 設置箭頭位置和方向
+      if (popupArrow) {
+        popupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
+        // 計算箭頭水平位置：指向高亮文字的中心
+        const highlightCenterX = rect.left + rect.width / 2;
+        let arrowCenter = highlightCenterX - left;
+        // 確保箭頭在彈窗範圍內
+        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+        popupArrow.style.left = arrowCenter + 'px';
+      }
+      
       popup.style.visibility = 'visible';
     } else {
        popup.style.display = 'block';
+       // 保持當前位置時隱藏箭頭
+       if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
     }
     popup.style.pointerEvents = 'auto'; // 允許交互
 
@@ -1501,16 +1638,38 @@
     const popupExamples = popup.querySelector('.popup-examples');
     let html = '<div class="example-title">例句</div>';
     
-    examples.forEach(eg => {
+    examples.forEach((eg, i) => {
       const engPart = eg.eng ? `<div class="example-eng">${eg.eng}</div>` : '';
       html += `
         <div class="example-item">
-          <div class="example-yue">${eg.yue}</div>
+          <div class="example-yue">
+            <span class="example-yue-text">${eg.yue}</span>
+            <button class="tts-speaker-btn example-tts-btn" data-index="${i}" title="播放例句" aria-label="播放例句">
+              <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+              </svg>
+            </button>
+          </div>
           ${engPart}
         </div>
       `;
     });
     popupExamples.innerHTML = html;
+
+    // 綁定例句喇叭點擊事件
+    const exampleBtns = popupExamples.querySelectorAll('.example-tts-btn');
+    exampleBtns.forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const index = btn.getAttribute('data-index');
+        if (examples[index] && examples[index].yue) {
+          // 移除任何標點符號再朗讀效果更好，但這裡直接傳原文
+          speakCantonese(examples[index].yue, btn);
+        }
+      });
+    });
   }
 
   // 調整彈窗位置（當變寬時）
@@ -1554,32 +1713,60 @@
     }
   }
 
-  // 選中文字（使用原生 Selection API）
+  // 選中文字（使用 CSS 高亮 span 代替原生 Selection）
   function highlightText(textNode, offset, length) {
     try {
-      // 創建 Range
+      // 先移除舊的高亮
+      removeHighlight();
+      
+      const end = Math.min(offset + length, textNode.textContent.length);
+      
+      // 創建 Range 用於定位彈窗
       const range = document.createRange();
       range.setStart(textNode, offset);
-      range.setEnd(textNode, Math.min(offset + length, textNode.textContent.length));
-
-      // 使用瀏覽器原生 Selection API 選中文字
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      selection.addRange(range);
+      range.setEnd(textNode, end);
       
-      currentRange = range;
+      // 使用 span 包裹高亮文字（替代原生 Selection）
+      const highlightSpan = document.createElement('span');
+      highlightSpan.className = 'jyutping-highlight';
+      range.surroundContents(highlightSpan);
+      
+      highlightSpans.push(highlightSpan);
+      
+      // 更新 currentRange 指向高亮 span 的範圍（用於彈窗定位）
+      currentRange = document.createRange();
+      currentRange.selectNodeContents(highlightSpan);
     } catch (e) {
-      console.log('Selection failed:', e);
+      console.log('Highlight failed:', e);
+      // 回退方案：如果 surroundContents 失敗（跨元素），嘗試簡單 range
+      try {
+        const range = document.createRange();
+        range.setStart(textNode, offset);
+        range.setEnd(textNode, Math.min(offset + length, textNode.textContent.length));
+        currentRange = range;
+      } catch (e2) {
+        console.log('Fallback range also failed:', e2);
+      }
     }
   }
 
-  // 移除選中
+  // 移除高亮
   function removeHighlight() {
-    if (currentRange) {
-      const selection = window.getSelection();
-      selection.removeAllRanges();
-      currentRange = null;
-    }
+    // 移除所有高亮 span，恢復原始文字節點
+    highlightSpans.forEach(span => {
+      if (span && span.parentNode) {
+        const parent = span.parentNode;
+        // 將 span 內容提取回父節點
+        while (span.firstChild) {
+          parent.insertBefore(span.firstChild, span);
+        }
+        parent.removeChild(span);
+        // 合併相鄰的文字節點
+        parent.normalize();
+      }
+    });
+    highlightSpans = [];
+    currentRange = null;
   }
 
   // 監聽來自 popup 的消息（切換開關、設定等）
@@ -1627,6 +1814,8 @@
       }
       // 播放音頻
       const audio = new Audio(request.audioData);
+      audio.onended = stopSpeakerAnimation;
+      audio.onerror = stopSpeakerAnimation;
       audio.play();
     } else if (request.action === 'translateResult') {
       if (request.success) {

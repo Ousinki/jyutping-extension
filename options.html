@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>粵語懸浮詞典 - 設定</title>
+    <link rel="icon" type="image/svg+xml" href="icon_favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -12,9 +13,9 @@
     />
     <style>
       :root {
-        --primary: #1565c0;
-        --primary-light: #42a5f5;
-        --primary-dark: #0d47a1;
+        --primary: #8A1C1C;
+        --primary-light: #B42929;
+        --primary-dark: #382424;
         --accent: #22c55e;
         --bg-page: #f8fafc;
         --bg-card: #ffffff;
@@ -62,17 +63,10 @@
       .header-icon {
         width: 72px;
         height: 72px;
-        background: linear-gradient(
-          135deg,
-          var(--primary),
-          var(--primary-light)
-        );
-        border-radius: 20px;
         display: flex;
         align-items: center;
         justify-content: center;
         margin: 0 auto 16px;
-        box-shadow: var(--shadow);
       }
 
       .header-icon svg {
@@ -416,9 +410,9 @@
       <div class="header">
         <div class="header-icon">
           <img
-            src="icon128.png"
+            src="icon.svg"
             alt="logo"
-            style="width: 40px; height: 40px; border-radius: 8px"
+            style="width: 72px; height: 72px; border-radius: 14px; box-shadow: var(--shadow);"
           />
         </div>
         <h1>粵語懸浮詞典</h1>
@@ -473,6 +467,7 @@
               <div class="select-wrapper">
                 <select id="popupTheme">
                   <option value="classic">經典</option>
+                  <option value="academic">香港紅</option>
                   <option value="night">深邃夜色</option>
                   <option value="ink">墨韻</option>
                   <option value="ocean">海洋藍</option>
