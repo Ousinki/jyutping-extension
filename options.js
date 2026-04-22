@@ -37,7 +37,14 @@ const i18nDict = {
     optVoice3: "雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
     optAITip1: "常用：OpenAI",
     optAITip2: "DeepSeek",
-    optAITip3: "Ollama"
+    optAITip3: "Ollama",
+    optPlaying: "正在播放...",
+    optTestingAI: "正在測試...",
+    optSuccess: "✅ 連接成功！\n模型回覆：",
+    optFail: "❌ 連接失敗：",
+    optNoReply: "（無回覆）",
+    optGreeting: "你好，歡迎使用粵語詞典"
+
 
   },
   "en": {
@@ -71,10 +78,23 @@ const i18nDict = {
     optVoice3: "WanLung (Male) ⭐⭐⭐⭐⭐ · Latency ~1s",
     optAITip1: "Common: OpenAI",
     optAITip2: "DeepSeek",
-    optAITip3: "Ollama"
+    optAITip3: "Ollama",
+    optPlaying: "Playing...",
+    optTestingAI: "Testing...",
+    optSuccess: "✅ Connection Successful!\nModel replied: ",
+    optFail: "❌ Connection Failed: ",
+    optNoReply: "(No reply)",
+    optGreeting: "Hello, welcome to Jyutping Dictionary"
+
 
   }
 };
+
+function t(key) {
+  const lang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
+  const dict = i18nDict[lang] || i18nDict["zh-HK"];
+  return dict[key] || key;
+}
 
 function applyI18n(lang) {
   const dict = i18nDict[lang] || i18nDict["zh-HK"];
@@ -373,7 +393,7 @@ function applyI18n(lang) {
     }
 
     testAiBtn.disabled = true;
-    testAiBtn.textContent = '正在測試...';
+    testAiBtn.textContent = t('optTestingAI');
 
     try {
       const url = baseUrl.replace(/\/$/, '') + '/chat/completions';
@@ -396,10 +416,10 @@ function applyI18n(lang) {
       }
 
       const data = await response.json();
-      const reply = data.choices?.[0]?.message?.content || '（無回覆）';
-      alert(`✅ 連接成功！\n模型回覆：${reply}`);
+      const reply = data.choices?.[0]?.message?.content || t('optNoReply');
+      alert(`${t('optSuccess')}${reply}`);
     } catch (error) {
-      alert(`❌ 連接失敗：${error.message}`);
+      alert(`${t('optFail')}${error.message}`);
     }
 
     testAiBtn.disabled = false;
@@ -407,7 +427,7 @@ function applyI18n(lang) {
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" fill="currentColor"/>
       </svg>
-      測試 AI 連接
+      ${t('optTestAI')}
     `;
   });
 
@@ -415,10 +435,10 @@ function applyI18n(lang) {
   testTtsBtn.addEventListener('click', async () => {
     const engine = ttsEngineSelect.value;
     const rate = parseFloat(ttsRateSlider.value);
-    const testText = '你好，歡迎使用粵語詞典';
+    const testText = t('optGreeting');
     
     testTtsBtn.disabled = true;
-    testTtsBtn.textContent = '正在播放...';
+    testTtsBtn.textContent = t('optPlaying');
     
     try {
       if (engine === 'webSpeech') {
@@ -718,7 +738,7 @@ function applyI18n(lang) {
       <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M3 9V15H7L12 20V4L7 9H3ZM16.5 12C16.5 10.23 15.48 8.71 14 7.97V16.02C15.48 15.29 16.5 13.77 16.5 12ZM14 3.23V5.29C16.89 6.15 19 8.83 19 12C19 15.17 16.89 17.85 14 18.71V20.77C18.01 19.86 21 16.28 21 12C21 7.72 18.01 4.14 14 3.23Z" fill="currentColor"/>
       </svg>
-      測試語音
+      ${t('optTestTTS')}
     `;
   }
 

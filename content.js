@@ -42,7 +42,41 @@
   let aiEnabled = false;
   let aiLongPressTimer = null; // 長按計時器
 
-  // ========== 主題系統 ==========
+
+  // ========== i18n 系統 ==========
+  const popupI18n = {
+    "zh-HK": {
+      translating: "${pt('translating')}",
+      mandarin: "普",
+      english: "英",
+      aiExplaining: "${pt('aiExplaining')}",
+      noPronunciation: "${pt('noPronunciation')}",
+      speak: "發音",
+      copy: "複製",
+      cantConnect: "${pt('cantConnect')}"
+    },
+    "en": {
+      translating: "Translating...",
+      mandarin: "CN",
+      english: "EN",
+      aiExplaining: "AI explaining...",
+      noPronunciation: "Pronunciation not found",
+      speak: "Speak",
+      copy: "Copy",
+      cantConnect: "Cannot connect to server"
+    }
+  };
+  let currentLang = 'zh-HK';
+  chrome.storage.local.get(['extensionLang'], (res) => {
+    if (res.extensionLang) currentLang = res.extensionLang;
+  });
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes.extensionLang) currentLang = changes.extensionLang.newValue;
+  });
+  const pt = (key) => (popupI18n[currentLang] || popupI18n['zh-HK'])[key] || key;
+
+  // ========== 主题系统 ==========
+
   const POPUP_THEMES = {
     classic: {
       name: '經典',
@@ -303,11 +337,11 @@
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
         if (loading) {
-          translateDiv.innerHTML = '<div class="translate-loading">翻譯中...</div>';
+          translateDiv.innerHTML = '<div class="translate-loading">${pt('translating')}</div>';
         } else {
           translateDiv.innerHTML = `
-            <div class="translate-row"><span class="translate-label">普</span><span class="translate-text">${mandarin || ''}</span></div>
-            <div class="translate-row"><span class="translate-label">英</span><span class="translate-text">${english || ''}</span></div>
+            <div class="translate-row"><span class="translate-label">${pt('mandarin')}</span><span class="translate-text">${mandarin || ''}</span></div>
+            <div class="translate-row"><span class="translate-label">${pt('english')}</span><span class="translate-text">${english || ''}</span></div>
           `;
         }
         translateDiv.style.display = 'block';
@@ -319,13 +353,13 @@
     if (!translatePopup) return;
     if (loading) {
       translatePopup.innerHTML = `
-        <div class="translate-header">翻譯中...</div>
+        <div class="translate-header">${pt('translating')}</div>
         <div class="translate-body" style="opacity:0.5;">${originalText}</div>
       `;
     } else {
       translatePopup.innerHTML = `
-        <div class="translate-row"><span class="translate-label">普</span><span class="translate-text">${mandarin || ''}</span></div>
-        <div class="translate-row"><span class="translate-label">英</span><span class="translate-text">${english || ''}</span></div>
+        <div class="translate-row"><span class="translate-label">${pt('mandarin')}</span><span class="translate-text">${mandarin || ''}</span></div>
+        <div class="translate-row"><span class="translate-label">${pt('english')}</span><span class="translate-text">${english || ''}</span></div>
       `;
     }
     // 定位在選區下方
