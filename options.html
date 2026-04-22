@@ -765,6 +765,49 @@
           </div>
         </div>
       </div>
+      <!-- Feedback Card -->
+      <div class="settings-card">
+        <div class="settings-section">
+          <h2>💡 意見與反饋</h2>
+          <p class="section-desc">
+            如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！
+          </p>
+
+          <form id="feedbackForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+            <input type="hidden" name="access_key" value="d19a0594-b64b-4593-b0e1-baf1cbeb6a4c">
+            
+            <div>
+              <div class="setting-info" style="margin-bottom: 6px">
+                <span class="setting-label">您的稱呼 <span style="font-weight: normal; color: var(--text-muted); font-size: 13px;">(選填)</span></span>
+              </div>
+              <input type="text" name="name" class="text-input" placeholder="如何稱呼您？" />
+            </div>
+            
+            <div>
+              <div class="setting-info" style="margin-bottom: 6px">
+                <span class="setting-label">聯絡電郵 <span style="font-weight: normal; color: var(--text-muted); font-size: 13px;">(選填)</span></span>
+              </div>
+              <input type="email" name="email" class="text-input" placeholder="your@email.com (方便回覆您)" />
+            </div>
+
+            <div>
+              <div class="setting-info" style="margin-bottom: 6px">
+                <span class="setting-label">反饋內容</span>
+              </div>
+              <textarea name="message" class="text-input" placeholder="請填寫您的建議或遇到的問題..." style="min-height: 100px; resize: vertical;" required></textarea>
+            </div>
+
+            <button type="submit" class="test-btn" id="submitFeedbackBtn" style="justify-content: center; margin-top: 8px;">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              發送反饋
+            </button>
+            <div id="feedbackResult" style="text-align: center; font-size: 14px; margin-top: 4px; display: none;"></div>
+          </form>
+        </div>
+      </div>
 
       <!-- Footer -->
       <div class="footer">

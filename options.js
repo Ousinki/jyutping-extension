@@ -618,4 +618,54 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
+
+  // === 意見與反饋表單處理 ===
+  const feedbackForm = document.getElementById('feedbackForm');
+  const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
+  const feedbackResult = document.getElementById('feedbackResult');
+
+  if (feedbackForm) {
+    feedbackForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const formData = new FormData(feedbackForm);
+      const originalHTML = submitFeedbackBtn.innerHTML;
+      
+      submitFeedbackBtn.innerHTML = `發送中...`;
+      submitFeedbackBtn.disabled = true;
+      submitFeedbackBtn.style.opacity = '0.7';
+      feedbackResult.style.display = 'none';
+
+      try {
+        const response = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await response.json();
+
+        if (response.ok) {
+          feedbackResult.textContent = "✅ 發送成功！非常感謝您的反饋！";
+          feedbackResult.style.color = "var(--accent)";
+          feedbackForm.reset();
+        } else {
+          feedbackResult.textContent = "❌ 發送失敗：" + data.message;
+          feedbackResult.style.color = "var(--primary)";
+        }
+      } catch (error) {
+        feedbackResult.textContent = "❌ 發生錯誤，請稍後再試。";
+        feedbackResult.style.color = "var(--primary)";
+      } finally {
+        feedbackResult.style.display = 'block';
+        submitFeedbackBtn.innerHTML = originalHTML;
+        submitFeedbackBtn.disabled = false;
+        submitFeedbackBtn.style.opacity = '1';
+        
+        // 5秒後隱藏提示
+        setTimeout(() => {
+          feedbackResult.style.display = 'none';
+        }, 5000);
+      }
+    });
+  }
 });
