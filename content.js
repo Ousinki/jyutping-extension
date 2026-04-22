@@ -46,14 +46,14 @@
   // ========== i18n 系統 ==========
   const popupI18n = {
     "zh-HK": {
-      translating: "${pt('translating')}",
+      translating: "翻譯中...",
       mandarin: "普",
       english: "英",
-      aiExplaining: "${pt('aiExplaining')}",
-      noPronunciation: "${pt('noPronunciation')}",
+      aiExplaining: "AI 釋義中...",
+      noPronunciation: "找不到該詞的讀音",
       speak: "發音",
       copy: "複製",
-      cantConnect: "${pt('cantConnect')}"
+      cantConnect: "無法連接字典伺服器"
     },
     "en": {
       translating: "Translating...",
@@ -337,7 +337,7 @@
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
         if (loading) {
-          translateDiv.innerHTML = '<div class="translate-loading">${pt('translating')}</div>';
+          translateDiv.innerHTML = `<div class="translate-loading">${pt('translating')}</div>`;
         } else {
           translateDiv.innerHTML = `
             <div class="translate-row"><span class="translate-label">${pt('mandarin')}</span><span class="translate-text">${mandarin || ''}</span></div>
