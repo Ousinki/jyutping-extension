@@ -1158,6 +1158,7 @@
   // 處理滑鼠懸停事件
   function handleMouseOver(e) {
     if (!isEnabled) return;
+    if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
     
     // 如果是用戶正在瀏覽的導航彈窗，且滑鼠不在彈窗上
     // 此時不應該讓移動滑鼠打斷導航，除非用戶再次進入
