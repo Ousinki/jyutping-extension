@@ -474,14 +474,14 @@
               </div>
               <div class="select-wrapper">
                 <select id="popupTheme">
-                  <option value="classic">經典</option>
+                  <option value="classic" data-i18n="optThemeClassic">經典</option>
                   <option value="academic">香港紅</option>
                   <option value="night">深邃夜色</option>
-                  <option value="ink">墨韻</option>
-                  <option value="ocean">海洋藍</option>
-                  <option value="warm">暖陽</option>
-                  <option value="mint">薄荷綠</option>
-                  <option value="glass">毛玻璃</option>
+                  <option value="ink" data-i18n="optThemeInk">墨韻</option>
+                  <option value="ocean" data-i18n="optThemeOcean">海洋藍</option>
+                  <option value="warm" data-i18n="optThemeWarm">暖陽</option>
+                  <option value="mint" data-i18n="optThemeMint">薄荷綠</option>
+                  <option value="glass" data-i18n="optThemeGlass">毛玻璃</option>
                 </select>
               </div>
             </div>
@@ -654,8 +654,8 @@
                 <option value="webSpeech">Web Speech API</option>
                 <option value="chromeTts">Chrome TTS</option>
                 <option value="edgeTts">Edge TTS</option>
-                <option value="azureTts">Azure Speech (官方雲端語音)</option>
-                <option value="bertVits2">Bert-VITS2 (粵語神經語音)</option>
+                <option value="azureTts" data-i18n="optEngineAzure">Azure Speech (官方雲端語音)</option>
+                <option value="bertVits2" data-i18n="optEngineBert">Bert-VITS2 (粵語神經語音)</option>
               </select>
             </div>
           </div>
@@ -671,8 +671,8 @@
             </div>
             <div class="select-wrapper" style="margin-bottom: 8px">
               <select id="edgeTtsMode">
-                <option value="default">預設伺服器（免配置）</option>
-                <option value="custom">自定義地址</option>
+                <option value="default" data-i18n="optDefaultServer">預設伺服器（免配置）</option>
+                <option value="custom" data-i18n="optCustomUrl">自定義地址</option>
               </select>
             </div>
             <div id="edgeCustomSettings" style="display: none">
@@ -696,8 +696,8 @@
             </div>
             <div class="select-wrapper" style="margin-bottom: 8px">
               <select id="azureTtsMode">
-                <option value="default">預設 API（免配置）</option>
-                <option value="custom">自定義密鑰（直連 Azure）</option>
+                <option value="default" data-i18n="optDefaultAPI">預設 API（免配置）</option>
+                <option value="custom" data-i18n="optCustomKey">自定義密鑰（直連 Azure）</option>
               </select>
             </div>
             <div id="azureCustomSettings" style="display: none">
@@ -721,15 +721,9 @@
               </div>
               <div class="select-wrapper">
                 <select id="azureTtsVoice">
-                  <option value="zh-HK-HiuMaanNeural">
-                    曉曼 HiuMaan（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s
-                  </option>
-                  <option value="zh-HK-HiuGaaiNeural">
-                    曉佳 HiuGaai（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s
-                  </option>
-                  <option value="zh-HK-WanLungNeural">
-                    雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s
-                  </option>
+                  <option value="zh-HK-HiuMaanNeural" data-i18n="optVoice1">曉曼 HiuMaan（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s</option>
+                  <option value="zh-HK-HiuGaaiNeural" data-i18n="optVoice2">曉佳 HiuGaai（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s</option>
+                  <option value="zh-HK-WanLungNeural" data-i18n="optVoice3">雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s</option>
                 </select>
               </div>
             </div>
@@ -810,7 +804,7 @@
                 <line x1="22" y1="2" x2="11" y2="13"></line>
                 <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
               </svg>
-              發送反饋
+              <span data-i18n="optSend">發送反饋</span>
             </button>
             <div id="feedbackResult" style="text-align: center; font-size: 14px; margin-top: 4px; display: none;"></div>
           </form>

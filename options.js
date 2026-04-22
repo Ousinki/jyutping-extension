@@ -26,7 +26,19 @@ const i18nDict = {
     optNameLabel: "您的稱呼", optOptional: "(選填)", optNamePlaceholder: "如何稱呼您？",
     optEmailLabel: "聯絡電郵", optEmailPlaceholder: "your@email.com (方便回覆您)",
     optFeedbackLabel: "反饋內容", optFeedbackPlaceholder: "請填寫您的建議或遇到的問題...",
-    optFooterData: "數據來源：", optFooterLicense: "授權："
+        optFooterData: "數據來源：", optFooterLicense: "授權：",
+    optThemeClassic: "經典", optThemeHK: "香港紅", optThemeDark: "深邃夜色", optThemeInk: "墨韻",
+    optThemeOcean: "海洋藍", optThemeWarm: "暖陽", optThemeMint: "薄荷綠", optThemeGlass: "毛玻璃",
+    optDefaultServer: "預設伺服器（免配置）", optCustomUrl: "自定義地址",
+    optDefaultAPI: "預設 API（免配置）", optCustomKey: "自定義密鑰（直連 Azure）",
+    optEngineAzure: "Azure Speech (官方雲端語音)", optEngineBert: "Bert-VITS2 (粵語神經語音)",
+    optVoice1: "曉曼 HiuMaan（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
+    optVoice2: "曉佳 HiuGaai（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
+    optVoice3: "雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
+    optAITip1: "常用：OpenAI &rarr; https://api.openai.com/v1",
+    optAITip2: "DeepSeek &rarr; https://api.deepseek.com",
+    optAITip3: "Ollama &rarr; http://localhost:11434/v1"
+
   },
   "en": {
     optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
@@ -48,7 +60,19 @@ const i18nDict = {
     optNameLabel: "Your Name", optOptional: "(Optional)", optNamePlaceholder: "How should we call you?",
     optEmailLabel: "Email Address", optEmailPlaceholder: "your@email.com (For replying)",
     optFeedbackLabel: "Feedback Content", optFeedbackPlaceholder: "Please describe your suggestions or issues...",
-    optFooterData: "Data Source:", optFooterLicense: "License:"
+        optFooterData: "Data Source:", optFooterLicense: "License:",
+    optThemeClassic: "Classic", optThemeHK: "Hong Kong Red", optThemeDark: "Deep Night", optThemeInk: "Ink",
+    optThemeOcean: "Ocean Blue", optThemeWarm: "Warm Sun", optThemeMint: "Mint Green", optThemeGlass: "Frosted Glass",
+    optDefaultServer: "Default Server (No config)", optCustomUrl: "Custom URL",
+    optDefaultAPI: "Default API (No config)", optCustomKey: "Custom Key (Direct to Azure)",
+    optEngineAzure: "Azure Speech (Official Cloud TTS)", optEngineBert: "Bert-VITS2 (Neural Cantonese TTS)",
+    optVoice1: "HiuMaan (Female) ⭐⭐⭐⭐⭐ · Latency ~1s",
+    optVoice2: "HiuGaai (Female) ⭐⭐⭐⭐⭐ · Latency ~1s",
+    optVoice3: "WanLung (Male) ⭐⭐⭐⭐⭐ · Latency ~1s",
+    optAITip1: "Common: OpenAI &rarr; https://api.openai.com/v1",
+    optAITip2: "DeepSeek &rarr; https://api.deepseek.com",
+    optAITip3: "Ollama &rarr; http://localhost:11434/v1"
+
   }
 };
 
@@ -71,7 +95,7 @@ function applyI18n(lang) {
                 }
             }
         } else {
-            el.innerText = dict[key];
+            el.innerHTML = dict[key];
         }
       }
     }
