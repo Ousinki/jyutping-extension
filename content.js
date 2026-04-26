@@ -26,6 +26,8 @@
   let azureTtsRegion = ''; // Azure Speech 區域
   let azureTtsVoice = 'zh-HK-HiuMaanNeural'; // Azure Speech 音色
   let ttsRate = 0.9; // TTS 語速
+  let customZhFont = ''; // 自定義中文字體
+  let customEnFont = ''; // 自定義英文字體
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
   let currentWord = null; // 追蹤當前顯示的詞
@@ -280,12 +282,32 @@
     // 設定 CSS 變量
     for (const [prop, value] of Object.entries(theme.vars)) {
       popup.style.setProperty(prop, value);
+      if (translatePopup) translatePopup.style.setProperty(prop, value);
     }
     
     // 處理毛玻璃特殊 class
     popup.classList.remove('popup-theme-glass');
+    if (translatePopup) translatePopup.classList.remove('popup-theme-glass');
     if (themeName === 'glass') {
       popup.classList.add('popup-theme-glass');
+      if (translatePopup) translatePopup.classList.add('popup-theme-glass');
+    }
+
+    // 應用自定義字體
+    if (customZhFont) {
+      popup.style.setProperty('--popup-font-zh', customZhFont);
+      if (translatePopup) translatePopup.style.setProperty('--popup-font-zh', customZhFont);
+    } else {
+      popup.style.removeProperty('--popup-font-zh');
+      if (translatePopup) translatePopup.style.removeProperty('--popup-font-zh');
+    }
+    
+    if (customEnFont) {
+      popup.style.setProperty('--popup-font-en', customEnFont);
+      if (translatePopup) translatePopup.style.setProperty('--popup-font-en', customEnFont);
+    } else {
+      popup.style.removeProperty('--popup-font-en');
+      if (translatePopup) translatePopup.style.removeProperty('--popup-font-en');
     }
   }
   
@@ -315,6 +337,94 @@
       e.preventDefault();
       e.stopPropagation();
     });
+  }
+
+  let longPressRing = null;
+  function createLongPressRing() {
+    if (longPressRing) return;
+    longPressRing = document.createElement('div');
+    longPressRing.id = 'jyutping-longpress-ring';
+    longPressRing.innerHTML = `
+      <svg width="28" height="28" viewBox="0 0 28 28">
+        <circle cx="14" cy="14" r="12" fill="none" stroke="rgba(139, 92, 246, 0.2)" stroke-width="3"></circle>
+        <circle class="ring-progress" cx="14" cy="14" r="12" fill="none" stroke="#8b5cf6" stroke-width="3" 
+          stroke-dasharray="75.4" stroke-dashoffset="75.4" stroke-linecap="round" 
+          transform="rotate(-90 14 14)"></circle>
+      </svg>
+    `;
+    document.body.appendChild(longPressRing);
+  }
+
+  function startLongPressAnimation(x, y) {
+    if (!longPressRing) createLongPressRing();
+    longPressRing.style.left = x + 'px';
+    longPressRing.style.top = y + 'px';
+    longPressRing.style.opacity = '1';
+    
+    // 強制重繪
+    longPressRing.offsetHeight;
+    
+    const progressCircle = longPressRing.querySelector('.ring-progress');
+    progressCircle.style.transition = 'stroke-dashoffset 0.5s linear';
+    progressCircle.style.strokeDashoffset = '0';
+  }
+
+  function cancelLongPressAnimation() {
+    if (!longPressRing) return;
+    longPressRing.style.opacity = '0';
+    const progressCircle = longPressRing.querySelector('.ring-progress');
+    progressCircle.style.transition = 'none';
+    progressCircle.style.strokeDashoffset = '75.4';
+  }
+
+  // 定位翻譯和AI浮窗（包含箭頭）
+  function positionTranslatePopup(rect) {
+    if (!rect) return;
+    
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    const popupWidth = translatePopup.offsetWidth || 200;
+    const popupHeight = translatePopup.offsetHeight || 60;
+    const ARROW_HEIGHT = 8;
+    const GAP = 2;
+
+    let left = rect.left;
+    let top;
+    let arrowDirection = 'up';
+
+    // 水平位置限制
+    if (left + 5 + popupWidth > viewportWidth) {
+      left = viewportWidth - popupWidth - 10;
+      if (left < 5) left = 5;
+    } else {
+      left = left + 5;
+    }
+
+    // 垂直位置限制 (相對於 viewport 計算，最後加 scrollX/Y)
+    if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
+      top = rect.bottom + GAP + ARROW_HEIGHT;
+      arrowDirection = 'up';
+    } else {
+      top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+      arrowDirection = 'down';
+      if (top < 5) {
+        top = 5;
+        arrowDirection = 'up';
+      }
+    }
+
+    translatePopup.style.position = 'absolute';
+    translatePopup.style.left = Math.max(5, left + window.scrollX) + 'px';
+    translatePopup.style.top = (top + window.scrollY) + 'px';
+
+    const translatePopupArrow = translatePopup.querySelector('.popup-arrow');
+    if (translatePopupArrow) {
+      translatePopupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
+      const highlightCenterX = rect.left + rect.width / 2;
+      let arrowCenter = highlightCenterX - left;
+      arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+      translatePopupArrow.style.left = arrowCenter + 'px';
+    }
   }
 
   // 發送翻譯請求
@@ -351,30 +461,45 @@
     
     // 否則用獨立浮窗（句子選區翻譯）
     if (!translatePopup) return;
+    
+    // 構建帶有 popup-inner 和 popup-arrow 的結構
+    let innerContent = '';
     if (loading) {
-      translatePopup.innerHTML = `
+      innerContent = `
         <div class="translate-header">${pt('translating')}</div>
         <div class="translate-body" style="opacity:0.5;">${originalText}</div>
       `;
     } else {
-      translatePopup.innerHTML = `
+      innerContent = `
         <div class="translate-row"><span class="translate-label">${pt('mandarin')}</span><span class="translate-text">${mandarin || ''}</span></div>
         <div class="translate-row"><span class="translate-label">${pt('english')}</span><span class="translate-text">${english || ''}</span></div>
       `;
     }
+
+    translatePopup.innerHTML = `
+      <div class="popup-arrow"></div>
+      <div class="popup-inner">
+        ${innerContent}
+      </div>
+    `;
+
+    translatePopup.style.display = 'block';
+    // 調用 applyPopupTheme 確保樣式同步
+    if (typeof popupTheme !== 'undefined') applyPopupTheme(popupTheme);
+
     // 定位在選區下方
+    let posRect = null;
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const rects = range.getClientRects();
-      if (rects.length > 0) {
-        const lastRect = rects[rects.length - 1];
-        translatePopup.style.position = 'fixed';
-        translatePopup.style.left = Math.max(5, lastRect.left) + 'px';
-        translatePopup.style.top = (lastRect.bottom + 6) + 'px';
-      }
+      const rect = selection.getRangeAt(0).getBoundingClientRect();
+      if (rect.width > 0) posRect = rect;
     }
-    translatePopup.style.display = 'block';
+    if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
+      posRect = currentRange.getBoundingClientRect();
+    }
+    if (posRect) {
+      positionTranslatePopup(posRect);
+    }
   }
 
   // 隱藏翻譯結果浮窗
@@ -446,24 +571,32 @@
     // 否則用獨立浮窗
     if (!translatePopup) return;
     translatePopup.innerHTML = `
-      <div class="ai-result">
-        <div class="ai-label">✨ AI 語境：${word}</div>
-        <div class="ai-text">${explanation}</div>
+      <div class="popup-arrow"></div>
+      <div class="popup-inner">
+        <div class="ai-result">
+          <div class="ai-label">✨ AI 語境：${word}</div>
+          <div class="ai-text">${explanation}</div>
+        </div>
       </div>
     `;
+
+    translatePopup.style.display = 'block';
+    // 調用 applyPopupTheme 確保樣式同步
+    if (typeof popupTheme !== 'undefined') applyPopupTheme(popupTheme);
+
     // 定位在選區下方
+    let posRect = null;
     const selection = window.getSelection();
     if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      const rects = range.getClientRects();
-      if (rects.length > 0) {
-        const lastRect = rects[rects.length - 1];
-        translatePopup.style.position = 'fixed';
-        translatePopup.style.left = Math.max(5, lastRect.left) + 'px';
-        translatePopup.style.top = (lastRect.bottom + 6) + 'px';
-      }
+      const rect = selection.getRangeAt(0).getBoundingClientRect();
+      if (rect.width > 0) posRect = rect;
     }
-    translatePopup.style.display = 'block';
+    if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
+      posRect = currentRange.getBoundingClientRect();
+    }
+    if (posRect) {
+      positionTranslatePopup(posRect);
+    }
   }
 
 
@@ -565,13 +698,15 @@
   // 載入用戶設定
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'popupTheme', 'ttsEnabled', 
+      'enabled', 'displayMode', 'popupTheme', 'customZhFont', 'customEnFont', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
       displayMode = result.displayMode || 'jyutping';
       popupTheme = result.popupTheme || 'classic';
+      customZhFont = result.customZhFont || '';
+      customEnFont = result.customEnFont || '';
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
       ttsEngine = result.ttsEngine || 'chromeTts';
@@ -838,11 +973,18 @@
               console.log('[AI] 檢查 AI 狀態:', isAiOn);
               if (!isAiOn) return;
 
-              if (aiLongPressTimer) clearTimeout(aiLongPressTimer);
+              if (aiLongPressTimer) {
+                clearTimeout(aiLongPressTimer);
+                cancelLongPressAnimation();
+              }
               const selectedWord = selection.toString().trim();
               console.log('[AI] 長按計時器啟動, word:', selectedWord);
+              
+              startLongPressAnimation(e.clientX, e.clientY);
+              
               aiLongPressTimer = setTimeout(() => {
                 aiLongPressTimer = null;
+                cancelLongPressAnimation();
                 console.log('[AI] 長按 500ms 觸發! word:', selectedWord);
                 // 取消已排隊的 TTS 和 Bing 翻譯
                 if (selectionClickTimer) {
@@ -858,6 +1000,7 @@
         // 點擊在選區外 → 清除選區
         hasUserSelection = false;
         hideTranslatePopup();
+        cancelLongPressAnimation();
       }
 
       // 如果有高亮詞且點擊在高亮區域內 → 延遲 TTS（可被拖拽取消）
@@ -899,9 +1042,14 @@
           // 長按 500ms → 觸發 AI 翻譯（同樣可被拖拽取消）
           chrome.storage.local.get(['aiEnabled'], (res) => {
             if (res.aiEnabled !== true) return;
-            if (aiLongPressTimer) clearTimeout(aiLongPressTimer);
+            if (aiLongPressTimer) {
+              clearTimeout(aiLongPressTimer);
+              cancelLongPressAnimation();
+            }
+            startLongPressAnimation(e.clientX, e.clientY);
             aiLongPressTimer = setTimeout(() => {
               aiLongPressTimer = null;
+              cancelLongPressAnimation();
               if (!isDragging) {
                 if (selectionClickTimer) {
                   clearTimeout(selectionClickTimer);
@@ -929,6 +1077,7 @@
               if (aiLongPressTimer) {
                 clearTimeout(aiLongPressTimer);
                 aiLongPressTimer = null;
+                cancelLongPressAnimation();
               }
               pendingTranslateWord = null;
               document.removeEventListener('mousemove', onDragMove);
@@ -952,8 +1101,8 @@
         }
       }
 
-      // 如果正等待 dblclick 翻譯，不要隱藏彈窗
-      if (pendingTranslateWord) return;
+      // 既然在非高亮區域點擊，說明不是雙擊高亮詞，清除 pending 狀態
+      pendingTranslateWord = null;
 
       isSelecting = true;
       currentWord = null;
@@ -962,6 +1111,7 @@
         return;
       }
       hidePopup();
+      cancelLongPressAnimation();
     });
 
     // 雙擊 → 觸發翻譯（比 timer 更可靠）
@@ -998,6 +1148,7 @@
         console.log('[AI] mouseup 清除長按計時器');
         clearTimeout(aiLongPressTimer);
         aiLongPressTimer = null;
+        cancelLongPressAnimation();
       }
 
       // 只有用戶真正拖拽過（isSelecting 為 true）才檢測手動選中
@@ -1022,9 +1173,18 @@
     // 滾動時隱藏彈窗
     document.addEventListener('scroll', () => {
       hidePopup();
-      hasUserSelection = false;
+      // 如果用戶仍有選中文字（藍底），保留保護狀態，防止吸附覆蓋選區
+      const sel = window.getSelection();
+      if (!sel || sel.toString().trim().length === 0) {
+        hasUserSelection = false;
+      }
       hideTranslatePopup();
-    });
+      if (aiLongPressTimer) {
+        clearTimeout(aiLongPressTimer);
+        aiLongPressTimer = null;
+      }
+      cancelLongPressAnimation();
+    }, true);
 
     // 按 ESC 關閉
     document.addEventListener('keydown', (e) => {
@@ -1815,6 +1975,10 @@
       displayMode = request.mode;
     } else if (request.action === 'changePopupTheme') {
       popupTheme = request.theme;
+      applyPopupTheme(popupTheme);
+    } else if (request.action === 'changeCustomFont') {
+      if (request.customZhFont !== undefined) customZhFont = request.customZhFont;
+      if (request.customEnFont !== undefined) customEnFont = request.customEnFont;
       applyPopupTheme(popupTheme);
     } else if (request.action === 'changeTtsEnabled') {
       ttsEnabled = request.ttsEnabled;

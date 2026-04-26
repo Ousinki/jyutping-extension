@@ -10,6 +10,8 @@
 ![Demo - 雙擊翻譯](assets/screenshot_demo_translate.png)
 ![Demo - 查詞釋義](assets/screenshot_demo.png)
 ![Demo - AI 語境翻譯](assets/screenshot_ai_demo.png)
+![Demo - 網頁測試](assets/promo_wenweipo.jpg)
+
 
 ## ✨ 功能特點
 
@@ -22,6 +24,8 @@
 - **✨ AI 語境翻譯**：長按高亮詞或選區，AI 根據上下文語境解釋詞義
 - **多主題彈窗**：8 種精選主題（經典、香港紅、深邃夜色、水墨、海洋、暖陽、薄荷、毛玻璃）
 - **🌐 多語言介面**：支援繁體中文和英文切換
+- **✨ 互動式設定頁面**：新增高保真 CSS 動畫演示，輕鬆掌握「雙擊翻譯」、「長按 AI 翻譯」及「單擊發聲」的操作姿勢
+- **🛡️ 排版隔離升級**：採用嚴格的 CSS 隔離技術，防止宿主網頁樣式污染，確保懸浮窗排版與字體大小始終如一
 - **Shadow DOM 支持**：兼容使用 Web Components 的現代網站（如 Bilibili）
 
 ## 🔊 語音引擎 (TTS)

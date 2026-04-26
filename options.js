@@ -10,6 +10,8 @@ const i18nDict = {
     optTitle: "粵語懸浮詞典", optSubtitle: "Cantonese Popup Dictionary Settings", optGenSettings: "一般設定",
     optEnable: "啟用詞典", optEnableDesc: "在網頁上顯示粵語發音提示", optFormat: "發音顯示格式",
     optFormatDesc: "選擇粵語拼音系統", optTheme: "懸浮窗主題", optThemeDesc: "選擇詞典彈窗的配色風格",
+    optFontSettings: "字體設定", optZhFont: "中文字體", optZhFontDesc: "設定詞典顯示的中文字體（留空為預設）",
+    optEnFont: "拼音字體", optEnFontDesc: "設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）",
     optTransSettings: "翻譯設定", optTransDesc1: "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
     optTransDesc2: "使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）", optAISettings: "✨ AI 語境翻譯",
     optAIEnable: "啟用 AI 翻譯", optAIEnableDesc: "選中文本後長按選區，AI 根據上下文語境解釋詞義",
@@ -22,7 +24,7 @@ const i18nDict = {
     optTTSEngineDesc: "選擇 TTS 服務提供商", optEdgeSettings: "Edge TTS 設定",
     optEdgeSettingsDesc: "選擇使用預設伺服器或自定義地址", optAzureSettings: "Azure Speech 設定",
     optAzureSettingsDesc: "選擇使用預設 API 或自定義密鑰", optVoice: "語音音色", optSpeed: "語速",
-    optTestTTS: " 測試語音", optFeedbackTitle: "💡 意見與反饋", optFeedbackDesc: "如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！",
+    optTestTTS: " 測試語音", optFeedbackTitle: "💡 意見與反饋", optFeedbackDesc: "如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我，或者發送電郵至 ousinki@outlook.com！",
     optNameLabel: "您的稱呼", optOptional: "(選填)", optNamePlaceholder: "如何稱呼您？",
     optEmailLabel: "聯絡電郵", optEmailPlaceholder: "your@email.com (方便回覆您)",
     optFeedbackLabel: "反饋內容", optFeedbackPlaceholder: "請填寫您的建議或遇到的問題...",
@@ -51,6 +53,8 @@ const i18nDict = {
     optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
     optEnable: "Enable Dictionary", optEnableDesc: "Show Cantonese pronunciation on hover", optFormat: "Pronunciation System",
     optFormatDesc: "Select romanization format", optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
+    optFontSettings: "Font Settings", optZhFont: "Chinese Font", optZhFontDesc: "Set font for Chinese text (leave empty for default)",
+    optEnFont: "Pinyin Font", optEnFontDesc: "Set the exclusive font for Pinyin text (monospace recommended, leave empty for default)",
     optTransSettings: "Translation Settings", optTransDesc1: "Double-click selected text to show Mandarin and English translation",
     optTransDesc2: "Powered by Bing Translator (Native Cantonese support, no config)", optAISettings: "✨ AI Contextual Translation",
     optAIEnable: "Enable AI Translation", optAIEnableDesc: "Long press selected text for AI contextual explanation",
@@ -63,7 +67,7 @@ const i18nDict = {
     optTTSEngineDesc: "Select TTS provider", optEdgeSettings: "Edge TTS Settings",
     optEdgeSettingsDesc: "Select default server or custom URL", optAzureSettings: "Azure Speech Settings",
     optAzureSettingsDesc: "Select default API or custom key", optVoice: "Voice Tone", optSpeed: "Speech Rate",
-    optTestTTS: " Test Voice", optFeedbackTitle: "💡 Feedback & Suggestions", optFeedbackDesc: "If you have any suggestions or encounter bugs, please tell me here!",
+    optTestTTS: " Test Voice", optFeedbackTitle: "💡 Feedback & Suggestions", optFeedbackDesc: "If you have any suggestions or encounter bugs, please tell me here, or email me at ousinki@outlook.com!",
     optNameLabel: "Your Name", optOptional: "(Optional)", optNamePlaceholder: "How should we call you?",
     optEmailLabel: "Email Address", optEmailPlaceholder: "your@email.com (For replying)",
     optFeedbackLabel: "Feedback Content", optFeedbackPlaceholder: "Please describe your suggestions or issues...",
@@ -142,6 +146,13 @@ function applyI18n(lang) {
   const enabledToggle = document.getElementById('enabledToggle');
   const displayModeSelect = document.getElementById('displayMode');
   const popupThemeSelect = document.getElementById('popupTheme');
+  
+  // 字體設定
+  const zhFontSelect = document.getElementById('zhFontSelect');
+  const customZhFontInput = document.getElementById('customZhFont');
+  const enFontSelect = document.getElementById('enFontSelect');
+  const customEnFontInput = document.getElementById('customEnFont');
+
   const ttsEnabledToggle = document.getElementById('ttsEnabledToggle');
   const ttsEngineSelect = document.getElementById('ttsEngine');
   const edgeTtsSettings = document.getElementById('edgeTtsSettings');
@@ -205,9 +216,20 @@ function applyI18n(lang) {
     if (yue) yue.style.color = t.yue;
   }
 
+  // 更新預覽字體
+  function updatePreviewFont(type, font) {
+    const preview = document.getElementById('themePreview');
+    if (!preview) return;
+    if (type === 'zh') {
+      preview.style.setProperty('--popup-font-zh', font || 'system-ui, -apple-system, sans-serif');
+    } else if (type === 'en') {
+      preview.style.setProperty('--popup-font-en', font || '"Courier New", monospace');
+    }
+  }
+
   // 載入已保存的設定
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'popupTheme', 'ttsEnabled', 
+    'enabled', 'displayMode', 'popupTheme', 'customZhFont', 'customEnFont', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   ], (result) => {
     enabledToggle.checked = result.enabled !== false;
@@ -217,6 +239,60 @@ function applyI18n(lang) {
     popupThemeSelect.value = theme;
     updateThemePreview(theme);
     
+    const setupFontUI = (selectElem, inputElem, savedValue) => {
+      let matchFound = false;
+      const valueToCheck = savedValue || '';
+      for (let i = 0; i < selectElem.options.length; i++) {
+        if (selectElem.options[i].value === valueToCheck) {
+          matchFound = true;
+          break;
+        }
+      }
+
+      if (matchFound) {
+        selectElem.value = valueToCheck;
+        inputElem.style.display = 'none';
+        inputElem.value = valueToCheck;
+      } else {
+        selectElem.value = 'custom';
+        inputElem.style.display = 'block';
+        inputElem.value = valueToCheck;
+      }
+    };
+
+    const finishSetup = () => {
+      setupFontUI(zhFontSelect, customZhFontInput, result.customZhFont);
+      setupFontUI(enFontSelect, customEnFontInput, result.customEnFont);
+      updatePreviewFont('zh', result.customZhFont);
+      updatePreviewFont('en', result.customEnFont);
+    };
+
+    if (chrome.fontSettings && chrome.fontSettings.getFontList) {
+      chrome.fontSettings.getFontList((fonts) => {
+        const createGroup = (isEn) => {
+          const group = document.createElement('optgroup');
+          group.label = "--- 本地已安裝字體 ---";
+          fonts.forEach(font => {
+            const option = document.createElement('option');
+            option.value = `'${font.fontId}', ${isEn ? 'monospace' : 'sans-serif'}`;
+            option.textContent = font.displayName || font.fontId;
+            group.appendChild(option);
+          });
+          return group;
+        };
+
+        const customZhOpt = Array.from(zhFontSelect.options).find(opt => opt.value === 'custom');
+        zhFontSelect.insertBefore(createGroup(false), customZhOpt);
+
+        const customEnOpt = Array.from(enFontSelect.options).find(opt => opt.value === 'custom');
+        enFontSelect.insertBefore(createGroup(true), customEnOpt);
+
+        finishSetup();
+      });
+    } else {
+      finishSetup();
+    }
+
     ttsEnabledToggle.checked = result.ttsEnabled !== false;
     
     const engine = result.ttsEngine || 'webSpeech';
@@ -285,6 +361,56 @@ function applyI18n(lang) {
     chrome.storage.sync.set({ popupTheme: theme });
     updateThemePreview(theme);
     notifyContentScripts({ action: 'changePopupTheme', theme });
+  });
+
+  // 監聽中文字體下拉選單
+  zhFontSelect.addEventListener('change', () => {
+    if (zhFontSelect.value === 'custom') {
+      customZhFontInput.style.display = 'block';
+      customZhFontInput.focus();
+    } else {
+      customZhFontInput.style.display = 'none';
+      customZhFontInput.value = zhFontSelect.value;
+      const font = zhFontSelect.value;
+      chrome.storage.sync.set({ customZhFont: font });
+      updatePreviewFont('zh', font);
+      notifyContentScripts({ action: 'changeCustomFont', customZhFont: font });
+    }
+  });
+
+  // 監聽中文字體自定義輸入
+  customZhFontInput.addEventListener('input', () => {
+    if (zhFontSelect.value === 'custom') {
+      const font = customZhFontInput.value.trim();
+      chrome.storage.sync.set({ customZhFont: font });
+      updatePreviewFont('zh', font);
+      notifyContentScripts({ action: 'changeCustomFont', customZhFont: font });
+    }
+  });
+
+  // 監聽英文字體下拉選單
+  enFontSelect.addEventListener('change', () => {
+    if (enFontSelect.value === 'custom') {
+      customEnFontInput.style.display = 'block';
+      customEnFontInput.focus();
+    } else {
+      customEnFontInput.style.display = 'none';
+      customEnFontInput.value = enFontSelect.value;
+      const font = enFontSelect.value;
+      chrome.storage.sync.set({ customEnFont: font });
+      updatePreviewFont('en', font);
+      notifyContentScripts({ action: 'changeCustomFont', customEnFont: font });
+    }
+  });
+
+  // 監聽英文字體自定義輸入
+  customEnFontInput.addEventListener('input', () => {
+    if (enFontSelect.value === 'custom') {
+      const font = customEnFontInput.value.trim();
+      chrome.storage.sync.set({ customEnFont: font });
+      updatePreviewFont('en', font);
+      notifyContentScripts({ action: 'changeCustomFont', customEnFont: font });
+    }
   });
 
   // 監聽 TTS 開關
@@ -376,6 +502,24 @@ function applyI18n(lang) {
     chrome.storage.local.set({ aiApiKey: key });
     notifyContentScripts({ action: 'changeAiApiKey', aiApiKey: key });
   });
+
+  // Toggle API Key Visibility
+  const toggleApiKeyBtn = document.getElementById('toggleApiKeyBtn');
+  const eyeIconShow = document.getElementById('eyeIconShow');
+  const eyeIconHide = document.getElementById('eyeIconHide');
+  if (toggleApiKeyBtn && eyeIconShow && eyeIconHide) {
+    toggleApiKeyBtn.addEventListener('click', () => {
+      if (aiApiKeyInput.type === 'password') {
+        aiApiKeyInput.type = 'text';
+        eyeIconShow.style.display = 'none';
+        eyeIconHide.style.display = 'block';
+      } else {
+        aiApiKeyInput.type = 'password';
+        eyeIconShow.style.display = 'block';
+        eyeIconHide.style.display = 'none';
+      }
+    });
+  }
 
   // AI 模型變更
   aiModelInput.addEventListener('change', () => {

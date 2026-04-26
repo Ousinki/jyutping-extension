@@ -20,6 +20,7 @@
 ## 前端（瀏覽器擴展）
 
 ### content.js
+
 - [ ] 檢測選中詞是否在詞典中（已有邏輯）
 - [ ] 未收錄詞彙的彈窗中增加「📤 提交此詞彙」按鈕
 - [ ] 點擊後提取：詞彙 + 所在段落文本
@@ -29,16 +30,19 @@
 - [ ] 每日提交上限（如 20 次），防止濫用
 
 ### background.js
+
 - [ ] 新增 `submitWord` 消息處理
 - [ ] 發送 POST 請求到服務器 API
 - [ ] 處理響應和錯誤
 
 ### options.html / options.js
+
 - [ ] 新增「社區貢獻」設定區塊
 - [ ] 啟用/關閉詞彙提交功能的開關
 - [ ] 顯示用戶已提交的詞彙列表（本地記錄）
 
 ### manifest.json
+
 - [ ] 如果 API 域名固定，添加到 `host_permissions`
 
 ---
@@ -46,6 +50,7 @@
 ## 後端（服務器）
 
 ### API 設計
+
 - [ ] `POST /api/submit-word` — 提交詞彙
   ```json
   {
@@ -59,11 +64,13 @@
 - [ ] `DELETE /api/reject-word/:id` — 拒絕（管理員）
 
 ### 數據庫
+
 - [ ] 選擇存儲方案（SQLite / PostgreSQL / Google Sheets）
 - [ ] 詞彙表結構：id, word, sentence, status(pending/approved/rejected), created_at
 - [ ] 防刷機制：IP 限流 / 同一詞重複提交去重
 
 ### 管理後台
+
 - [ ] 簡易審核頁面（可用簡單 HTML 或 Google Sheets 替代）
 - [ ] 審核通過後自動生成詞典條目格式
 - [ ] 批量導出為 dictionary.json 格式
@@ -96,6 +103,7 @@
 ## 關於用戶賬號
 
 **v1.3 不需要賬號系統。** 採用匿名提交 + 頻率限制方案：
+
 - 用戶無需登錄即可提交
 - 用 `chrome.storage.local` 記錄本地提交歷史和每日計數
 - 服務端用 IP 限流防止濫用

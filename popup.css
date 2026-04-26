@@ -9,7 +9,8 @@
   font-display: swap;
 }
 
-#cantonese-popup-dict {
+#cantonese-popup-dict,
+#cantonese-translate-popup {
   /* 默認主題變量（經典白色） */
   --popup-bg: #ffffff;
   --popup-border: #d0d0d0;
@@ -33,25 +34,53 @@
                   2px 4px 8px rgba(0, 0, 0, 0.08);
   --popup-active-bg: #F9EBEB;
 
-  position: fixed;
   z-index: 2147483647;
   padding: 0;
   /* 統一的投影濾鏡，讓本體與箭頭的陰影完美融合 (仿 10ten) */
   filter: drop-shadow(0px 2px 6px rgba(0, 0, 0, 0.15));
-  font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "PingFang HK",
+  --popup-font-zh: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "PingFang HK",
     "Microsoft JhengHei", "Microsoft JhengHei UI", "MingLiU", "MingLiU-ExtB",
     "PMingLiU", "PMingLiU-ExtB", "SimSun", "SimSun-ExtB", "Songti TC",
     "Songti SC", "STSong", "Apple LiSung", "LiSong Pro", "HanaMinB", "HanaMinA",
     sans-serif;
+  --popup-font-en: "Courier New", Courier, monospace;
+}
+
+#cantonese-popup-dict,
+#cantonese-popup-dict *,
+#cantonese-translate-popup,
+#cantonese-translate-popup * {
+  font-family: var(--popup-font-zh, system-ui, -apple-system, sans-serif) !important;
+}
+
+/* 防止宿主網站的 * { font-size: 16pt; } 這類全局通配符污染彈窗內部的繼承 */
+#cantonese-popup-dict *,
+#cantonese-translate-popup * {
+  font-size: inherit;
+  line-height: inherit;
+  color: inherit;
+  font-weight: inherit;
+}
+
+#cantonese-popup-dict {
   font-size: 14px;
   line-height: 1.6;
   color: var(--popup-text);
+}
+
+#cantonese-popup-dict {
+  position: fixed;
   width: 320px;
   transition:
     width 0.2s ease-in-out,
     left 0.2s ease-in-out,
     top 0.2s ease-in-out;
+}
+
+#cantonese-translate-popup {
+  position: absolute;
+  max-width: 400px;
+  width: max-content;
 }
 
 /* 內容內部容器（提供實際的白底、邊框與圓角） */
@@ -68,7 +97,8 @@
 }
 
 /* 毛玻璃主題特殊樣式 */
-#cantonese-popup-dict.popup-theme-glass .popup-inner {
+#cantonese-popup-dict.popup-theme-glass .popup-inner,
+#cantonese-translate-popup.popup-theme-glass .popup-inner {
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
 }
@@ -200,7 +230,7 @@
   font-size: 15px;
   color: var(--popup-accent);
   font-weight: 500;
-  font-family: "Courier New", monospace;
+  font-family: var(--popup-font-en, "Courier New", monospace) !important;
 }
 
 /* ========== TTS 喇叭按鈕 ========== */
@@ -404,31 +434,24 @@
 
 /* 翻譯結果浮窗（句子選區用） */
 #cantonese-translate-popup {
-  position: fixed;
-  background: #ffffff;
-  border: 1px solid #d0d0d0;
-  border-radius: 8px;
-  padding: 10px 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
-  z-index: 2147483647;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  font-size: 14px;
-  color: #333;
-  max-width: 400px;
   line-height: 1.5;
   word-wrap: break-word;
 }
 
+#cantonese-translate-popup .popup-inner {
+  padding: 8px 12px;
+}
+
 #cantonese-translate-popup .translate-header {
   font-size: 11px;
-  color: #888;
+  color: var(--popup-text-label);
   margin-bottom: 4px;
   font-weight: 500;
 }
 
 #cantonese-translate-popup .translate-body {
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--popup-word-color);
 }
 
 #cantonese-translate-popup .translate-row {
@@ -439,14 +462,14 @@
 }
 
 #cantonese-translate-popup .translate-row + .translate-row {
-  border-top: 1px solid #eee;
+  border-top: 1px solid var(--popup-divider-strong);
 }
 
 #cantonese-translate-popup .translate-label {
   font-size: 11px;
   font-weight: 600;
   color: #fff;
-  background: var(--popup-accent, #8A1C1C);
+  background: var(--popup-accent);
   border-radius: 3px;
   padding: 1px 5px;
   flex-shrink: 0;
@@ -459,7 +482,7 @@
 
 #cantonese-translate-popup .translate-text {
   font-size: 14px;
-  color: #1a1a1a;
+  color: var(--popup-word-color);
 }
 
 /* AI 翻譯結果樣式 */
@@ -484,11 +507,56 @@
 }
 
 /* ========== 文字高亮樣式 ========== */
+::highlight(jyutping-highlight),
 .jyutping-highlight {
   background-color: rgba(255, 220, 80, 0.45) !important;
-  border-radius: 2px;
-  box-decoration-break: clone;
-  -webkit-box-decoration-break: clone;
+  font-size: inherit !important;
+}
+
+/* ========== AI 長按進度環 ========== */
+#jyutping-longpress-ring {
+  position: fixed;
+  pointer-events: none;
+  z-index: 2147483647;
+  width: 28px;
+  height: 28px;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.1s ease;
+}
+#jyutping-longpress-ring.active {
+  opacity: 1;
+}
+#jyutping-longpress-ring .ring-track {
+  fill: none;
+  stroke: rgba(0, 0, 0, 0.1);
+  stroke-width: 3;
+}
+#jyutping-longpress-ring .ring-progress {
+  fill: none;
+  stroke: rgba(138, 28, 28, 0.85);
+  stroke-width: 3;
+  stroke-linecap: round;
+  /* 圓周 ≈ 2π×11 ≈ 69.115 */
+  stroke-dasharray: 69.115;
+  stroke-dashoffset: 69.115;
+  transform: rotate(-90deg);
+  transform-origin: center;
+}
+#jyutping-longpress-ring.active .ring-progress {
+  animation: jyutping-ring-fill 500ms linear forwards;
+}
+@keyframes jyutping-ring-fill {
+  to { stroke-dashoffset: 0; }
+}
+/* 完成時擴散效果 */
+#jyutping-longpress-ring.done {
+  animation: jyutping-ring-done 0.3s ease-out forwards;
+}
+@keyframes jyutping-ring-done {
+  0%   { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+  50%  { transform: translate(-50%, -50%) scale(1.5); opacity: 0.5; }
+  100% { transform: translate(-50%, -50%) scale(1.8); opacity: 0; }
 }
 
 /* ========== 彈窗箭頭樣式 ========== */

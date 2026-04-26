@@ -457,6 +457,50 @@
             </div>
           </div>
 
+          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+            <div class="setting-info" style="margin-bottom: 8px;">
+              <span class="setting-label" data-i18n="optZhFont">中文字體</span>
+              <span class="setting-desc" data-i18n="optZhFontDesc">設定詞典顯示的中文字體（留空為預設）</span>
+            </div>
+            <select id="zhFontSelect" class="select-input" style="margin-bottom: 8px;">
+              <option value="">系統預設 (System UI)</option>
+              <option value="'Noto Sans TC', sans-serif">思源黑體 (Noto Sans TC)</option>
+              <option value="'PingFang HK', sans-serif">蘋方-港 (PingFang HK)</option>
+              <option value="'Microsoft JhengHei', sans-serif">微軟正黑體 (Microsoft JhengHei)</option>
+              <option value="'Songti TC', 'SimSun', serif">明體 / 宋體 (Songti / SimSun)</option>
+              <option value="'Kaiti TC', 'KaiTi', serif">楷體 (Kaiti)</option>
+              <option value="'HanaMinA', 'HanaMinB', serif">花園明朝 (HanaMin)</option>
+              <option value="custom">自定義輸入...</option>
+            </select>
+            <input
+              type="text"
+              id="customZhFont"
+              class="text-input"
+              style="display: none;"
+              placeholder="例如: 'Noto Sans TC', 'PingFang HK', sans-serif"
+            />
+          </div>
+
+          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+            <div class="setting-info" style="margin-bottom: 8px;">
+              <span class="setting-label" data-i18n="optEnFont">拼音字體</span>
+              <span class="setting-desc" data-i18n="optEnFontDesc">設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）</span>
+            </div>
+            <select id="enFontSelect" class="select-input" style="margin-bottom: 8px;">
+              <option value="">經典等寬字體 (Courier / 預設)</option>
+              <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">現代等寬字體 (SF Mono / Consolas)</option>
+              <option value="system-ui, -apple-system, sans-serif">系統無襯線體 (System UI)</option>
+              <option value="custom">自定義輸入...</option>
+            </select>
+            <input
+              type="text"
+              id="customEnFont"
+              class="text-input"
+              style="display: none;"
+              placeholder="例如: 'Courier New', monospace"
+            />
+          </div>
+
           <div
             class="setting-item"
             style="flex-direction: column; align-items: stretch"
@@ -490,6 +534,9 @@
             <div
               id="themePreview"
               style="
+                --popup-font-zh: system-ui, -apple-system, sans-serif;
+                --popup-font-en: 'Courier New', monospace;
+                font-family: var(--popup-font-zh);
                 border-radius: 8px;
                 border: 1px solid #d0d0d0;
                 padding: 12px 16px;
@@ -528,7 +575,7 @@
                   id="previewPinyin"
                   style="
                     font-size: 14px;
-                    font-family: &quot;Courier New&quot;, monospace;
+                    font-family: var(--popup-font-en);
                   "
                   >nei5 hou2</span
                 >
@@ -545,6 +592,7 @@
         </div>
       </div>
 
+
       <!-- Translation Settings -->
       <div class="settings-card">
         <div class="settings-section">
@@ -555,6 +603,107 @@
           <p style="font-size: 11px; color: var(--text-secondary); margin: 0; opacity: 0.7;">
             <span data-i18n="optTransDesc2">使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）</span>
           </p>
+
+          <!-- Animation Demo -->
+          <div style="margin-top: 20px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px 90px 24px; position: relative; display: flex; justify-content: center; align-items: flex-start; min-height: 140px;">
+            <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em;">
+              <span>歡迎嚟到香港</span>
+              
+              <!-- Selection highlight -->
+              <div class="demo-selection" style="position: absolute; top: -2px; left: -2px; height: calc(100% + 4px); background: rgba(59, 130, 246, 0.2); z-index: -1; border-radius: 4px;"></div>
+              
+              <!-- Simulated Translate Popup (Now Below) -->
+              <div class="demo-popup" style="position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; width: max-content; box-shadow: var(--shadow); pointer-events: none; text-align: left;">
+                <div style="display: flex; flex-direction: column; gap: 6px;">
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-weight: 600;">普</span>
+                    <span style="font-size: 13px; color: var(--text-primary);">欢迎来到香港</span>
+                  </div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 600;">英</span>
+                    <span style="font-size: 13px; color: var(--text-primary); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">Welcome to Hong Kong</span>
+                  </div>
+                </div>
+                
+                <!-- Arrow Pointing Upwards -->
+                <div style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid var(--bg-card);"></div>
+                <div style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 7px solid var(--border); z-index: -1; margin-bottom: 1px;"></div>
+              </div>
+
+              <!-- Simulated Cursor (Larger) -->
+              <div class="demo-cursor" style="position: absolute; width: 26px; height: 26px; z-index: 10;">
+                <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%;">
+                  <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+                </svg>
+                <div class="demo-ripple"></div>
+              </div>
+            </div>
+
+            <style>
+              .demo-selection {
+                width: 0%;
+                animation: selectText 5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+              }
+              .demo-popup {
+                opacity: 0;
+                transform: translate(-50%, -10px);
+                animation: showPopup 5s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+              }
+              .demo-cursor {
+                top: 30px;
+                left: -50px;
+                opacity: 0;
+                animation: moveCursor 5s ease-in-out infinite;
+                transform-origin: top left;
+              }
+              .demo-ripple {
+                position: absolute;
+                top: -2px; left: -14px;
+                width: 24px; height: 24px;
+                border-radius: 50%;
+                background: rgba(59, 130, 246, 0.5);
+                opacity: 0;
+                animation: rippleClick 5s infinite;
+              }
+
+              @keyframes moveCursor {
+                0%, 5% { top: 30px; left: -50px; opacity: 0; }
+                10% { opacity: 1; }
+                20% { top: 5px; left: -5px; } /* Start of text */
+                35% { top: 5px; left: 100%; } /* End of text */
+                45% { top: 12px; left: 50%; } /* Middle of text */
+                50% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 1 */
+                51% { top: 12px; left: 50%; transform: scale(1); }
+                53% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 2 */
+                54% { top: 12px; left: 50%; transform: scale(1); }
+                75% { top: 12px; left: 50%; opacity: 1; }
+                85% { top: 30px; left: 120%; opacity: 0; }
+                100% { top: 30px; left: 120%; opacity: 0; }
+              }
+
+              @keyframes selectText {
+                0%, 20% { width: 0%; opacity: 0; }
+                21% { width: 0%; opacity: 1; }
+                35%, 75% { width: 100%; opacity: 1; }
+                76%, 100% { width: 0%; opacity: 0; }
+              }
+
+              @keyframes showPopup {
+                0%, 54% { opacity: 0; transform: translate(-50%, -10px); }
+                58%, 75% { opacity: 1; transform: translate(-50%, 0); }
+                80%, 100% { opacity: 0; transform: translate(-50%, -10px); }
+              }
+
+              @keyframes rippleClick {
+                0%, 49% { opacity: 0; transform: scale(0.2); }
+                50% { opacity: 1; transform: scale(0.2); }
+                51% { opacity: 0; transform: scale(1.5); }
+                52% { opacity: 1; transform: scale(0.2); }
+                53% { opacity: 0; transform: scale(1.5); }
+                54%, 100% { opacity: 0; }
+              }
+            </style>
+          </div>
         </div>
       </div>
 
@@ -572,6 +721,146 @@
               <input type="checkbox" id="aiEnabledToggle" />
               <span class="toggle-slider"></span>
             </label>
+          </div>
+
+          <!-- AI Animation Demo -->
+          <div style="margin-top: 16px; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px 100px 24px; position: relative; display: flex; justify-content: center; align-items: flex-start; min-height: 150px;">
+            <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em;">
+              <span>我真係好鍾意香港</span>
+              
+              <!-- Selection highlight -->
+              <div class="demo-ai-selection" style="position: absolute; top: -2px; left: -2px; height: calc(100% + 4px); background: rgba(59, 130, 246, 0.2); z-index: -1; border-radius: 4px;"></div>
+              
+              <!-- Simulated AI Popup -->
+              <div class="demo-ai-popup" style="position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; width: 230px; box-shadow: var(--shadow); pointer-events: none; text-align: left; display: flex; flex-direction: column; gap: 8px;">
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="rgba(138, 28, 28, 0.85)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+                  </svg>
+                  <span style="font-size: 13px; font-weight: 600; color: rgba(138, 28, 28, 0.85);">AI 語境解釋</span>
+                </div>
+                <div style="font-size: 13px; color: var(--text-primary); line-height: 1.5;">
+                  <span style="font-weight: 600; background: rgba(138, 28, 28, 0.12); padding: 0 4px; border-radius: 3px;">真係好鍾意</span>：<span class="demo-ai-typewriter"></span><span class="demo-ai-cursor-blink">|</span>
+                </div>
+                
+                <!-- Arrow Pointing Upwards -->
+                <div style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-bottom: 6px solid var(--bg-card);"></div>
+                <div style="position: absolute; bottom: 100%; left: 50%; transform: translateX(-50%); border-left: 7px solid transparent; border-right: 7px solid transparent; border-bottom: 7px solid var(--border); z-index: -1; margin-bottom: 1px;"></div>
+              </div>
+
+              <!-- Simulated Cursor with Ring -->
+              <div class="demo-ai-cursor" style="position: absolute; width: 26px; height: 26px; z-index: 10;">
+                <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%; position: relative; z-index: 2;">
+                  <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+                </svg>
+                <!-- SVG Progress Ring -->
+                <svg class="demo-ai-ring" width="48" height="48" viewBox="0 0 48 48" style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-90deg); z-index: 1; pointer-events: none;">
+                  <circle cx="24" cy="24" r="18" fill="none" stroke="rgba(138, 28, 28, 0.2)" stroke-width="4" />
+                  <circle class="demo-ai-ring-progress" cx="24" cy="24" r="18" fill="none" stroke="rgba(138, 28, 28, 0.85)" stroke-width="4" stroke-dasharray="113.1" stroke-dashoffset="113.1" stroke-linecap="round" />
+                </svg>
+              </div>
+            </div>
+
+            <style>
+              .demo-ai-selection {
+                width: 0%;
+                animation: selectAiText 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+              }
+              .demo-ai-popup {
+                opacity: 0;
+                transform: translate(-50%, -10px);
+                animation: showAiPopup 6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+              }
+              .demo-ai-cursor {
+                top: 30px;
+                left: -50px;
+                opacity: 0;
+                animation: moveAiCursor 6s ease-in-out infinite;
+                transform-origin: top left;
+              }
+              .demo-ai-ring {
+                opacity: 0;
+                animation: showAiRing 6s infinite;
+              }
+              .demo-ai-ring-progress {
+                animation: fillAiRing 6s ease-out infinite;
+              }
+              
+              /* Typewriter effect */
+              .demo-ai-typewriter::after {
+                content: "";
+                animation: typeAiText 6s infinite;
+              }
+              
+              .demo-ai-cursor-blink {
+                font-weight: 400;
+                color: #8b5cf6;
+                animation: blinkAiCursor 6s infinite;
+              }
+
+              @keyframes moveAiCursor {
+                0%, 5% { top: 30px; left: -50px; opacity: 0; }
+                10% { opacity: 1; }
+                20% { top: 5px; left: -5px; } /* Start of text */
+                35% { top: 5px; left: 100%; } /* End of text */
+                45% { top: 12px; left: 50%; transform: scale(1); } /* Middle of text */
+                48% { top: 12px; left: 50%; transform: scale(0.85); } /* Press down */
+                70% { top: 12px; left: 50%; transform: scale(0.85); } /* Hold */
+                72% { top: 12px; left: 50%; transform: scale(1); } /* Release */
+                85% { top: 12px; left: 50%; opacity: 1; }
+                95%, 100% { top: 30px; left: 120%; opacity: 0; }
+              }
+
+              @keyframes selectAiText {
+                0%, 20% { width: 0%; opacity: 0; }
+                21% { width: 0%; opacity: 1; }
+                35%, 85% { width: 100%; opacity: 1; }
+                86%, 100% { width: 0%; opacity: 0; }
+              }
+
+              @keyframes showAiRing {
+                0%, 47% { opacity: 0; }
+                48%, 70% { opacity: 1; }
+                71%, 100% { opacity: 0; }
+              }
+
+              @keyframes fillAiRing {
+                0%, 48% { stroke-dashoffset: 113.1; } /* 2 * PI * 18 = 113.097 */
+                68% { stroke-dashoffset: 0; }
+                69%, 100% { stroke-dashoffset: 0; }
+              }
+
+              @keyframes showAiPopup {
+                0%, 70% { opacity: 0; transform: translate(-50%, -10px); }
+                72%, 88% { opacity: 1; transform: translate(-50%, 0); }
+                92%, 100% { opacity: 0; transform: translate(-50%, -10px); }
+              }
+
+              @keyframes typeAiText {
+                0%, 72% { content: ""; }
+                73% { content: "表"; }
+                74% { content: "表达"; }
+                75% { content: "表达强"; }
+                76% { content: "表达强烈"; }
+                77% { content: "表达强烈的"; }
+                78% { content: "表达强烈的喜爱"; }
+                79%, 100% { content: "表达强烈的喜爱之情。"; }
+              }
+              
+              @keyframes blinkAiCursor {
+                0%, 71% { opacity: 0; }
+                72% { opacity: 1; }
+                73% { opacity: 0; }
+                74% { opacity: 1; }
+                75% { opacity: 0; }
+                76% { opacity: 1; }
+                77% { opacity: 0; }
+                78% { opacity: 1; }
+                79% { opacity: 0; }
+                80%, 88% { opacity: 1; }
+                89%, 100% { opacity: 0; }
+              }
+            </style>
           </div>
 
           <div id="aiSettings" style="display: none;">
@@ -597,12 +886,25 @@
               <div class="setting-info" style="margin-bottom: 8px;">
                 <span class="setting-label">API Key</span>
               </div>
-              <input
-                type="password"
-                id="aiApiKey"
-                class="text-input"
-                placeholder="sk-xxxxxxxxxxxxxxxx"
-              />
+              <div style="position: relative; width: 100%;">
+                <input
+                  type="password"
+                  id="aiApiKey"
+                  class="text-input"
+                  placeholder="sk-xxxxxxxxxxxxxxxx"
+                  style="padding-right: 40px; font-family: monospace; letter-spacing: 1px;"
+                />
+                <button id="toggleApiKeyBtn" type="button" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px;" title="Show/Hide">
+                  <svg id="eyeIconShow" style="width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                    <circle cx="12" cy="12" r="3"></circle>
+                  </svg>
+                  <svg id="eyeIconHide" style="width: 18px; height: 18px; display: none;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                    <line x1="1" y1="1" x2="23" y2="23"></line>
+                  </svg>
+                </button>
+              </div>
             </div>
 
             <div class="setting-item" style="flex-direction: column; align-items: stretch;">
@@ -643,6 +945,131 @@
               <input type="checkbox" id="ttsEnabledToggle" checked />
               <span class="toggle-slider"></span>
             </label>
+          </div>
+
+          <!-- TTS Animation Demo -->
+          <div style="margin-top: 16px; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 40px 24px; position: relative; display: flex; justify-content: center; align-items: center; min-height: 120px; overflow: hidden;">
+            <div style="font-size: 20px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em; padding: 2px 4px; cursor: text;">
+              <span>早晨</span>
+              
+              <!-- Selection highlight -->
+              <div class="demo-tts-selection" style="position: absolute; top: 0; left: 0; height: 100%; background: rgba(59, 130, 246, 0.3); z-index: -1; border-radius: 2px;"></div>
+              
+              <!-- Sound wave indicator (no popup) -->
+              <div class="demo-tts-sound" style="position: absolute; top: -32px; left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; color: #10b981; opacity: 0; pointer-events: none;">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="filter: drop-shadow(0 2px 4px rgba(16, 185, 129, 0.2));">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="rgba(16, 185, 129, 0.2)"></polygon>
+                  <path class="demo-tts-wave1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  <path class="demo-tts-wave2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+              </div>
+
+              <!-- Simulated Cursor -->
+              <div class="demo-tts-cursor" style="position: absolute; width: 26px; height: 26px; z-index: 10;">
+                <svg class="demo-tts-cursor-arrow" viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%; position: absolute; top: 0; left: 0;">
+                  <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+                </svg>
+                <svg class="demo-tts-cursor-ibeam" viewBox="0 0 24 24" fill="none" stroke="#1e293b" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(255,255,255,0.8)); width: 100%; height: 100%; position: absolute; top: -6px; left: 0; opacity: 0;">
+                  <path d="M12 4v16M8 4h8M8 20h8"/>
+                </svg>
+                <div class="demo-tts-ripple"></div>
+              </div>
+            </div>
+
+            <style>
+              .demo-tts-selection {
+                width: 0%;
+                animation: selectTtsText 6s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+              }
+              .demo-tts-sound {
+                animation: showTtsSound 6s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+              }
+              .demo-tts-cursor {
+                top: 40px;
+                left: -40px;
+                opacity: 0;
+                animation: moveTtsCursor 6s ease-in-out infinite;
+                transform-origin: top left;
+              }
+              .demo-tts-cursor-arrow {
+                animation: toggleTtsArrow 6s infinite;
+              }
+              .demo-tts-cursor-ibeam {
+                animation: toggleTtsIbeam 6s infinite;
+              }
+              .demo-tts-ripple {
+                position: absolute;
+                top: -2px; left: -14px;
+                width: 24px; height: 24px;
+                border-radius: 50%;
+                background: rgba(16, 185, 129, 0.5);
+                opacity: 0;
+                animation: rippleTtsClick 6s infinite;
+              }
+              .demo-tts-wave1 {
+                animation: pulseTtsWave 6s infinite;
+              }
+              .demo-tts-wave2 {
+                animation: pulseTtsWave 6s infinite;
+                animation-delay: 0.15s;
+              }
+
+              @keyframes selectTtsText {
+                0%, 15% { width: 0%; opacity: 1; }
+                30%, 80% { width: 100%; opacity: 1; }
+                81%, 100% { width: 0%; opacity: 0; }
+              }
+
+              @keyframes moveTtsCursor {
+                0%, 5% { top: 40px; left: -40px; opacity: 0; }
+                8% { opacity: 1; }
+                12% { top: 18px; left: -5px; transform: scale(1); }
+                15% { top: 18px; left: -5px; transform: scale(0.85); } /* Mouse down */
+                30% { top: 18px; left: 100%; transform: scale(0.85); } /* Drag */
+                35% { top: 18px; left: 100%; transform: scale(1); } /* Mouse up */
+                40% { top: 12px; left: 50%; transform: scale(1); } /* Move to center */
+                45% { top: 12px; left: 50%; transform: scale(0.85); } /* Click */
+                48% { top: 12px; left: 50%; transform: scale(1); } /* Release click */
+                70% { top: 12px; left: 50%; transform: scale(1); opacity: 1; } /* Wait for sound */
+                85% { top: 40px; left: 150%; opacity: 0; }
+                100% { top: 40px; left: 150%; opacity: 0; }
+              }
+
+              @keyframes toggleTtsArrow {
+                0%, 8% { opacity: 1; }
+                10%, 36% { opacity: 0; }
+                38%, 100% { opacity: 1; }
+              }
+
+              @keyframes toggleTtsIbeam {
+                0%, 8% { opacity: 0; }
+                10%, 36% { opacity: 1; }
+                38%, 100% { opacity: 0; }
+              }
+
+              @keyframes rippleTtsClick {
+                0%, 44% { opacity: 0; transform: scale(0.2); }
+                45% { opacity: 1; transform: scale(0.2); }
+                50% { opacity: 0; transform: scale(1.8); }
+                51%, 100% { opacity: 0; }
+              }
+
+              @keyframes showTtsSound {
+                0%, 44% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+                46%, 70% { opacity: 1; transform: translateX(-50%) scale(1); }
+                75%, 100% { opacity: 0; transform: translateX(-50%) scale(0.8); }
+              }
+              
+              @keyframes pulseTtsWave {
+                0%, 44% { opacity: 0.3; }
+                50% { opacity: 1; }
+                55% { opacity: 0.3; }
+                60% { opacity: 1; }
+                65% { opacity: 0.3; }
+                70% { opacity: 1; }
+                75%, 100% { opacity: 0.3; }
+              }
+            </style>
           </div>
 
           <div class="setting-item">
