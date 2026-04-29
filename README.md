@@ -1,6 +1,9 @@
 <p align="center">
   <img src="icon_15.png" width="128" alt="粵語懸浮詞典 Logo" />
 </p>
+<p align="center">
+  <strong>🇭🇰 繁體中文</strong> | <a href="README_EN.md">🇬🇧 English</a>
+</p>
 
 # 粵語懸浮詞典 (Cantonese Popup Dictionary)
 
@@ -125,6 +128,10 @@ Azure Speech 提供 3 種高品質粵語音色：
 ### Chrome Web Store（推薦）
 
 👉 [點此安裝粵語懸浮詞典](https://chromewebstore.google.com/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/nkghannminfkihhnkebcjhodfcoamkkm)
+
+### Microsoft Edge Add-ons
+
+👉 [點此安裝粵語懸浮詞典（Edge）](https://microsoftedge.microsoft.com/addons/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/akejhmlcbfmnoodfibchikfjkgjjbfpc)
 
 ### 手動安裝
 1. 下載或 Clone 本倉庫
