@@ -11,10 +11,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: ZIP and Upload to Chrome Web Store
+      - name: Pack extension into ZIP
+        run: zip -r extension.zip . -x "*.git*" ".github/*" "docs/*" "README.md" "wordshk-tools/*" "tests/*" "*.zip"
+
+      - name: Upload to Chrome Web Store
         uses: mnao305/chrome-extension-upload@v5.0.0
         with:
-          file-path: '.'
+          file-path: 'extension.zip'
           extension-id: ${{ secrets.EXTENSION_ID }}
           client-id: ${{ secrets.CLIENT_ID }}
           client-secret: ${{ secrets.CLIENT_SECRET }}
