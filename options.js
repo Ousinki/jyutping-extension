@@ -3,7 +3,10 @@
  * 處理設定頁面的邏輯
  */
 
+import GoogleAnalytics from './scripts/google-analytics.js';
+
 document.addEventListener('DOMContentLoaded', () => {
+  GoogleAnalytics.trackPageView('Options Page', '/options.html');
 
 const i18nDict = {
   "zh-HK": {
@@ -345,6 +348,7 @@ function applyI18n(lang) {
   enabledToggle.addEventListener('change', () => {
     const enabled = enabledToggle.checked;
     chrome.storage.sync.set({ enabled });
+    GoogleAnalytics.fireEvent('change_setting', { setting: 'enabled', value: enabled });
     notifyContentScripts({ action: 'toggleEnabled', enabled });
   });
 
@@ -352,6 +356,7 @@ function applyI18n(lang) {
   displayModeSelect.addEventListener('change', () => {
     const mode = displayModeSelect.value;
     chrome.storage.sync.set({ displayMode: mode });
+    GoogleAnalytics.fireEvent('change_setting', { setting: 'displayMode', value: mode });
     notifyContentScripts({ action: 'changeDisplayMode', mode });
   });
 
@@ -359,6 +364,7 @@ function applyI18n(lang) {
   popupThemeSelect.addEventListener('change', () => {
     const theme = popupThemeSelect.value;
     chrome.storage.sync.set({ popupTheme: theme });
+    GoogleAnalytics.fireEvent('change_setting', { setting: 'popupTheme', value: theme });
     updateThemePreview(theme);
     notifyContentScripts({ action: 'changePopupTheme', theme });
   });
@@ -424,6 +430,7 @@ function applyI18n(lang) {
   ttsEngineSelect.addEventListener('change', () => {
     const engine = ttsEngineSelect.value;
     chrome.storage.sync.set({ ttsEngine: engine });
+    GoogleAnalytics.fireEvent('change_setting', { setting: 'ttsEngine', value: engine });
     updateEngineUI(engine);
     notifyContentScripts({ action: 'changeTtsEngine', ttsEngine: engine });
   });

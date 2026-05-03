@@ -3,12 +3,22 @@
  * 處理 Chrome TTS、Edge TTS、Azure Speech 和 Bert-VITS2 調用
  */
 
+import GoogleAnalytics from './scripts/google-analytics.js';
+
+// 記錄背景腳本未捕捉的錯誤
+addEventListener('unhandledrejection', async (event) => {
+  GoogleAnalytics.fireEvent('extension_error', {
+    message: event.reason ? event.reason.message : 'Unknown error'
+  });
+});
+
 const BERT_VITS2_SPACE = 'https://naozumi0512-bert-vits2-cantonese-yue.hf.space';
 const AZURE_TTS_PROXY = 'http://114.55.243.162:8090';
 
 // 監聽來自 content script 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'chromeTtsSpeak') {
+    GoogleAnalytics.fireEvent('tts_play', { engine: 'chromeTts' });
     chrome.tts.speak(request.text, {
       lang: request.options.lang || 'zh-HK',
       rate: request.options.rate || 0.9,
@@ -19,16 +29,22 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       }
     });
   } else if (request.action === 'edgeTtsSpeak') {
+    GoogleAnalytics.fireEvent('tts_play', { engine: 'edgeTts' });
     handleEdgeTts(request.text, request.baseUrl, request.rate, sender.tab.id);
   } else if (request.action === 'azureTtsSpeak') {
+    GoogleAnalytics.fireEvent('tts_play', { engine: 'azureTts' });
     handleAzureTts(request.text, request.azureKey, request.azureRegion, request.azureVoice, request.rate, sender.tab.id);
   } else if (request.action === 'azureTtsProxySpeak') {
+    GoogleAnalytics.fireEvent('tts_play', { engine: 'azureTtsProxy' });
     handleAzureTtsProxy(request.text, request.azureVoice, request.rate, sender.tab.id);
   } else if (request.action === 'bertVits2Speak') {
+    GoogleAnalytics.fireEvent('tts_play', { engine: 'bertVits2' });
     handleBertVits2(request.text, request.rate || 1.0, sender.tab.id);
   } else if (request.action === 'translate') {
+    GoogleAnalytics.fireEvent('translate', { type: 'bing' });
     handleTranslate(request, sender.tab.id);
   } else if (request.action === 'aiTranslate') {
+    GoogleAnalytics.fireEvent('translate', { type: 'ai' });
     handleAiTranslate(request, sender.tab.id);
   } else if (request.action === 'openOptionsPage') {
     chrome.runtime.openOptionsPage();
@@ -435,6 +451,9 @@ chrome.action.onClicked.addListener(async (tab) => {
 
   // 更新圖標 badge 來顯示狀態
   updateActionBadge(newEnabledState);
+
+  // 記錄開關事件
+  GoogleAnalytics.fireEvent('toggle_extension', { enabled: newEnabledState });
 
   // 通知所有標籤頁更新狀態
   const tabs = await chrome.tabs.query({});

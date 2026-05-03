@@ -1,0 +1,52 @@
+Cantonese Popup Dictionary — The best tool for learning Cantonese!
+
+Hover over any Chinese character to instantly see its Cantonese pronunciation (Jyutping & Yale romanization) and English definitions. A must-have Chrome extension for Cantonese learners, linguists, and native speakers.
+
+Key Features:
+
+- Instant Cantonese Lookup: Hover over any Chinese text to see Cantonese pronunciation
+- Dual Romanization: Supports both Jyutping and Yale systems
+- English Definitions: Detailed English translations and explanations
+- Click to expand: View more example sentences and detailed definitions
+- 8 Popup Themes: Classic, Hong Kong Red, Deep Night, Ink Wash, Ocean, Warm Sun, Mint, Frosted Glass
+
+Text-to-Speech (v1.1):
+
+- 4 TTS Engines: Chrome TTS, Edge TTS, Azure Speech, Bert-VITS2
+- Azure Speech offers 3 premium Cantonese voices (HiuMaan, HiuGaai, WanLung)
+- Edge TTS & Azure Speech work out-of-the-box with built-in servers
+- Adjustable speed: 0.5x – 1.5x
+
+Translation (v1.2):
+
+- Bing Translate: Double-click selected text for instant Mandarin & English translation (free, no setup)
+- ✨ AI Contextual Translation: Long-press highlighted text for ~0.5s — AI explains meaning based on surrounding context
+- Compatible with all OpenAI-compatible APIs (DeepSeek, Volcengine, Ollama, OpenAI, etc.)
+
+Multilingual Interface (v1.3):
+
+- Switch between Traditional Chinese and English UI
+- Full localization across settings, popups, and translation panels
+
+UX Enhancements (v1.4):
+
+- ✨ Interactive Settings Page: High-fidelity CSS animations demonstrate how to use double-click translation, AI long-press, and click-to-speak
+- 🛡️ Style Isolation: Fixed font interference from host pages; popups now stay perfectly anchored during scrolling
+
+Dictionary Sources:
+
+- words.hk Cantonese Open Dictionary
+- CC-Canto Cantonese Dictionary
+- CC-CEDICT Chinese-English Dictionary
+- Over 230,000 entries
+
+How to Use:
+
+- Hover over Chinese text to see Cantonese pronunciation
+- Click a highlighted word to hear it spoken
+- Double-click a selection to trigger Bing Translate
+- Long-press a highlighted word for 0.5s to trigger AI contextual translation
+
+Privacy: This extension does not collect any user data. AI translation uses the user's own API key — data is sent directly to the AI provider of their choice.
+
+License: CC BY-SA 3.0
