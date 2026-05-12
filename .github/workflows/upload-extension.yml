@@ -21,7 +21,11 @@ jobs:
             -x "data/*" \
             -x "wordshk-tools/*" \
             -x "server_deploy/*" \
-            -x "scripts/*" \
+            -x "scripts/*.py" \
+            -x "scripts/*.sh" \
+            -x "scripts/*.csv" \
+            -x "scripts/merge-wordshk.js" \
+            -x "scripts/parse-cccanto.js" \
             -x "docs/*" \
             -x ".DS_Store" \
             -x "*.zip" \
