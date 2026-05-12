@@ -441,19 +441,122 @@ async function handleAiTranslate(request, tabId) {
 // ==================== 快捷開關 (單擊圖標) ====================
 
 chrome.action.onClicked.addListener(async (tab) => {
-  const result = await chrome.storage.local.get(['enabled']);
+  const result = await chrome.storage.sync.get(['enabled']);
   // 默認為 true
   const isCurrentlyEnabled = result.enabled !== false;
   const newEnabledState = !isCurrentlyEnabled;
 
-  // 保存新狀態
-  await chrome.storage.local.set({ enabled: newEnabledState });
+  await setExtensionState(newEnabledState);
+});
 
-  // 更新圖標 badge 來顯示狀態
-  updateActionBadge(newEnabledState);
+// 啟動或安裝時初始化
+chrome.runtime.onStartup.addListener(initState);
+chrome.runtime.onInstalled.addListener(() => {
+  // 創建右鍵選單
+  chrome.contextMenus.create({
+    id: "jyutping-parent",
+    title: chrome.i18n.getMessage("extName") || "粵語懸浮詞典",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "toggle-jyutping",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("ctxMenuDisable") || "暫停粵語懸浮詞典",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "sep1",
+    parentId: "jyutping-parent",
+    type: "separator",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "mode-full",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("optStyleFull") || "完整模式",
+    type: "radio",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "mode-compact",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("optStyleCompact") || "精簡音標",
+    type: "radio",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "sep2",
+    parentId: "jyutping-parent",
+    type: "separator",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "open-settings",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("ctxMenuSettings") || "詞典設定...",
+    contexts: ["all"]
+  });
+  
+  initState();
+});
+
+// 監聽右鍵選單點擊
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === "toggle-jyutping") {
+    const result = await chrome.storage.sync.get(['enabled']);
+    const newEnabledState = !(result.enabled !== false);
+    await setExtensionState(newEnabledState);
+  } else if (info.menuItemId === "mode-full") {
+    await chrome.storage.sync.set({ popupDisplayStyle: 'full' });
+    GoogleAnalytics.fireEvent('change_setting_context', { setting: 'popupDisplayStyle', value: 'full' });
+  } else if (info.menuItemId === "mode-compact") {
+    await chrome.storage.sync.set({ popupDisplayStyle: 'compact' });
+    GoogleAnalytics.fireEvent('change_setting_context', { setting: 'popupDisplayStyle', value: 'compact' });
+  } else if (info.menuItemId === "open-settings") {
+    chrome.runtime.openOptionsPage();
+  }
+});
+
+// 監聽來自選項頁面的狀態改變
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'sync') {
+    if (changes.enabled !== undefined) {
+      const isEnabled = changes.enabled.newValue !== false;
+      updateActionBadge(isEnabled);
+      updateContextMenuState(isEnabled, null);
+    }
+    if (changes.popupDisplayStyle !== undefined) {
+      updateContextMenuState(null, changes.popupDisplayStyle.newValue);
+    }
+  }
+});
+
+// 初始化狀態
+async function initState() {
+  const result = await chrome.storage.sync.get(['enabled', 'popupDisplayStyle']);
+  const isEnabled = result.enabled !== false;
+  const displayStyle = result.popupDisplayStyle || 'full';
+  updateActionBadge(isEnabled);
+  updateContextMenuState(isEnabled, displayStyle);
+}
+
+// 統一設置擴展狀態（保存、更新 UI、通知 Tab）
+async function setExtensionState(isEnabled) {
+  // 保存新狀態
+  await chrome.storage.sync.set({ enabled: isEnabled });
+
+  // 更新圖標 badge 和右鍵選單
+  updateActionBadge(isEnabled);
+  updateContextMenuState(isEnabled, null);
 
   // 記錄開關事件
-  GoogleAnalytics.fireEvent('toggle_extension', { enabled: newEnabledState });
+  GoogleAnalytics.fireEvent('toggle_extension', { enabled: isEnabled });
 
   // 通知所有標籤頁更新狀態
   const tabs = await chrome.tabs.query({});
@@ -461,19 +564,26 @@ chrome.action.onClicked.addListener(async (tab) => {
     try {
       chrome.tabs.sendMessage(t.id, {
         action: 'toggleEnabled',
-        enabled: newEnabledState
+        enabled: isEnabled
       }).catch(() => {}); // 忽略無法接收消息的頁面
     } catch (e) {}
   }
-});
+}
 
-// 啟動或安裝時初始化 badge
-chrome.runtime.onStartup.addListener(initBadge);
-chrome.runtime.onInstalled.addListener(initBadge);
-
-async function initBadge() {
-  const result = await chrome.storage.local.get(['enabled']);
-  updateActionBadge(result.enabled !== false);
+function updateContextMenuState(isEnabled, displayStyle) {
+  if (isEnabled !== null) {
+    const title = isEnabled 
+      ? (chrome.i18n.getMessage("ctxMenuDisable") || "暫停粵語懸浮詞典")
+      : (chrome.i18n.getMessage("ctxMenuEnable") || "開啟粵語懸浮詞典");
+    
+    chrome.contextMenus.update("toggle-jyutping", { title: title }).catch(() => {});
+  }
+  
+  if (displayStyle !== null) {
+    const isFull = displayStyle !== 'compact';
+    chrome.contextMenus.update("mode-full", { checked: isFull }).catch(() => {});
+    chrome.contextMenus.update("mode-compact", { checked: !isFull }).catch(() => {});
+  }
 }
 
 function updateActionBadge(isEnabled) {

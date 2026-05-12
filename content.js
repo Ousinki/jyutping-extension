@@ -40,7 +40,6 @@
 
   // 翻譯
   let translatePopup = null; // 用於句子選區的獨立浮窗
-  let selectionClickTimer = null; // 用於延遲 TTS（可被 dblclick 取消）
   let pendingTranslateWord = null; // 保存待翻譯的詞（給 dblclick 用）
 
   // AI 翻譯
@@ -889,9 +888,8 @@
       azureTtsVoice = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
       ttsRate = result.ttsRate || 0.9;
     });
-    // enabled 狀態同時從 local storage 讀取（工具欄按鈕寫入 local storage）
-    chrome.storage.local.get(['enabled', 'aiEnabled'], (result) => {
-      if (result.enabled !== undefined) isEnabled = result.enabled !== false;
+    // aiEnabled 狀態從 local storage 讀取
+    chrome.storage.local.get(['aiEnabled'], (result) => {
       aiEnabled = result.aiEnabled === true;
       console.log('[AI] loadSettings, aiEnabled:', aiEnabled);
     });
@@ -914,11 +912,22 @@
   }
   
   function stopSpeakerAnimation() {
+    let wasSelectionSpeaker = false;
     if (activeSpeakerBtn) {
+      if (popup && popup.classList.contains('compact-mode')) {
+        const compactPronunciation = activeSpeakerBtn.closest('.compact-pronunciation');
+        if (compactPronunciation && !popup.querySelector('.compact-text')) {
+          wasSelectionSpeaker = true;
+        }
+      }
       activeSpeakerBtn.classList.remove('speaking');
       activeSpeakerBtn = null;
     }
     if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
+    
+    if (wasSelectionSpeaker) {
+      hidePopup();
+    }
   }
   
   // 輔助函數：將 Data URI 轉換為 Blob URL 以繞過 CSP 限制
@@ -1146,20 +1155,11 @@
           }
           if (clickInSelection) {
             e.preventDefault();
-            // 用延遲區分單擊（TTS）和雙擊（翻譯）
-            if (selectionClickTimer) {
-              // 第二次點擊 → 取消 TTS，觸發翻譯
-              clearTimeout(selectionClickTimer);
-              selectionClickTimer = null;
-              requestTranslation(selection.toString().trim());
-            } else {
-              // 第一次點擊 → 延遲觸發 TTS
-              const textToSpeak = selection.toString().trim();
-              selectionClickTimer = setTimeout(() => {
-                selectionClickTimer = null;
-                speakCantonese(textToSpeak);
-              }, 250);
-            }
+            // 立即觸發 TTS
+            const textToSpeak = selection.toString().trim();
+            const rangeRect = range.getBoundingClientRect();
+            const btn = showSelectionSpeakerPopup(rangeRect, textToSpeak);
+            speakCantonese(textToSpeak, btn);
 
             // 長按 500ms → 觸發 AI 翻譯（直接從 storage 讀取，避免變量未同步）
             chrome.storage.local.get(['aiEnabled'], (res) => {
@@ -1182,11 +1182,6 @@
                 aiLongPressTimer = null;
                 cancelLongPressAnimation();
                 console.log('[AI] 長按 500ms 觸發! word:', selectedWord);
-                // 取消已排隊的 TTS 和 Bing 翻譯
-                if (selectionClickTimer) {
-                  clearTimeout(selectionClickTimer);
-                  selectionClickTimer = null;
-                }
                 requestAiTranslation(selectedWord);
               }, 650);
             });
@@ -1195,6 +1190,7 @@
         }
         // 點擊在選區外 → 清除選區
         hasUserSelection = false;
+        window.getSelection().removeAllRanges();
         hideTranslatePopup();
         cancelLongPressAnimation();
       }
@@ -1219,21 +1215,10 @@
 
           // 保存當前詞，供 dblclick 使用
           pendingTranslateWord = currentWord;
-          // 取消之前的計時器，防止重複 TTS
-          if (selectionClickTimer) {
-            clearTimeout(selectionClickTimer);
-            selectionClickTimer = null;
-          }
-
           const wordToSpeak = currentWord;
 
-          // 延遲 TTS，如果用戶拖拽/雙擊則取消
-          selectionClickTimer = setTimeout(() => {
-            selectionClickTimer = null;
-            if (!isDragging) {
-              speakCantonese(wordToSpeak);
-            }
-          }, 300);
+          // 立即觸發 TTS
+          speakCantonese(wordToSpeak);
 
           // 長按 500ms → 觸發 AI 翻譯（同樣可被拖拽取消）
           chrome.storage.local.get(['aiEnabled'], (res) => {
@@ -1249,10 +1234,6 @@
               aiLongPressTimer = null;
               cancelLongPressAnimation();
               if (!isDragging) {
-                if (selectionClickTimer) {
-                  clearTimeout(selectionClickTimer);
-                  selectionClickTimer = null;
-                }
                 requestAiTranslation(wordToSpeak);
               }
             }, 650);
@@ -1267,11 +1248,6 @@
               isSelecting = true;
               currentWord = null;
               hidePopup();
-              // 取消 TTS 和 AI 計時器
-              if (selectionClickTimer) {
-                clearTimeout(selectionClickTimer);
-                selectionClickTimer = null;
-              }
               if (aiLongPressTimer) {
                 clearTimeout(aiLongPressTimer);
                 aiLongPressTimer = null;
@@ -1314,15 +1290,11 @@
 
     // 雙擊 → 觸發翻譯（比 timer 更可靠）
     document.addEventListener('dblclick', (e) => {
-      // 取消待執行的 TTS
-      if (selectionClickTimer) {
-        clearTimeout(selectionClickTimer);
-        selectionClickTimer = null;
-      }
-
       // 情況 1：雙擊高亮詞
       if (pendingTranslateWord) {
         e.preventDefault();
+        // 清除雙擊產生的原生選區，避免覆蓋原本的高亮背景色
+        window.getSelection().removeAllRanges();
         requestTranslation(pendingTranslateWord);
         pendingTranslateWord = null;
         return;
@@ -1761,6 +1733,95 @@
       utterance.rate = ttsRate;
       speechSynthesis.speak(utterance);
     }
+  }
+
+  // ========== 選區發音彈窗：僅顯示喇叭 ==========
+  function showSelectionSpeakerPopup(rect, textToSpeak) {
+    if (!popup) return null;
+
+    const popupMain = popup.querySelector('.popup-main');
+    const popupExamples = popup.querySelector('.popup-examples');
+    const popupTranslate = popup.querySelector('.popup-translate');
+    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
+    const reportForm = popup.querySelector('.popup-report-form');
+
+    // 重置/隱藏非必要元素
+    if (popupExamples) popupExamples.style.display = 'none';
+    if (popupTranslate) popupTranslate.style.display = 'none';
+    if (actionsWrapper) actionsWrapper.style.display = 'none';
+    if (reportForm) reportForm.style.display = 'none';
+    popup.classList.remove('expanded-mode');
+    
+    // 隱藏翻譯浮窗
+    hideTranslatePopup();
+
+    popup.style.width = 'auto';
+    popup.classList.add('compact-mode');
+
+    // 構建喇叭內容
+    popupMain.innerHTML = `
+      <div class="compact-pronunciation" style="padding: 2px 8px;">
+        <button class="tts-speaker-btn speaking" title="播放發音" style="background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; margin: 0; color: var(--popup-accent);">
+          <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    const speakerBtn = popupMain.querySelector('.tts-speaker-btn');
+    if (speakerBtn) {
+      speakerBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speakCantonese(textToSpeak, speakerBtn);
+      });
+    }
+
+    // 定位
+    if (rect) {
+      popup.style.visibility = 'hidden';
+      popup.style.display = 'block';
+      
+      const popupWidth = popup.offsetWidth || 44;
+      const popupHeight = popup.offsetHeight || 36;
+      const viewportWidth = window.innerWidth;
+      const ARROW_HEIGHT = 8;
+      const GAP = 2;
+
+      let left = rect.left + rect.width / 2 - popupWidth / 2;
+      if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
+      if (left < 5) left = 5;
+
+      let top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+      let arrowDirection = 'down';
+
+      if (top < 5) {
+        top = rect.bottom + GAP + ARROW_HEIGHT;
+        arrowDirection = 'up';
+      }
+
+      popup.style.position = 'fixed';
+      popup.style.left = left + 'px';
+      popup.style.top = top + 'px';
+
+      if (popupArrow) {
+        popupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
+        const highlightCenterX = rect.left + rect.width / 2;
+        let arrowCenter = highlightCenterX - left;
+        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+        popupArrow.style.left = arrowCenter + 'px';
+      }
+      
+      popup.style.visibility = 'visible';
+    } else {
+      popup.style.display = 'block';
+      if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
+    }
+    popup.style.pointerEvents = 'auto';
+
+    return speakerBtn;
   }
 
   // ========== 精簡模式彈窗：僅顯示音標 ==========

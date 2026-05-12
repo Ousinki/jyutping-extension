@@ -114,5 +114,17 @@
   "optSent": {
     "message": "已發送！",
     "description": "optSent"
+  },
+  "ctxMenuEnable": {
+    "message": "開啟粵語懸浮詞典",
+    "description": "Context menu to enable extension"
+  },
+  "ctxMenuDisable": {
+    "message": "暫停粵語懸浮詞典",
+    "description": "Context menu to disable extension"
+  },
+  "ctxMenuSettings": {
+    "message": "詞典設定...",
+    "description": "Context menu to open settings"
   }
 }

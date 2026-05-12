@@ -407,18 +407,22 @@
 }
 
 #cantonese-popup-dict .popup-translate .translate-label {
-  font-size: 10px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--popup-accent);
-  border-radius: 3px;
-  padding: 0px 4px;
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--popup-accent);
+  background: var(--popup-divider-strong);
+  background: color-mix(in srgb, var(--popup-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--popup-accent) 25%, transparent);
+  border-radius: 4px;
+  padding: 1px 4px;
   flex-shrink: 0;
-  line-height: 1.5;
+  line-height: 1.2;
 }
 
 #cantonese-popup-dict .popup-translate .translate-row:last-child .translate-label {
-  background: #9c27b0;
+  color: var(--popup-def-yue);
+  background: color-mix(in srgb, var(--popup-def-yue) 12%, transparent);
+  border-color: color-mix(in srgb, var(--popup-def-yue) 25%, transparent);
 }
 
 #cantonese-popup-dict .popup-translate .translate-text {
@@ -467,17 +471,21 @@
 
 #cantonese-translate-popup .translate-label {
   font-size: 11px;
-  font-weight: 600;
-  color: #fff;
-  background: var(--popup-accent);
-  border-radius: 3px;
+  font-weight: 500;
+  color: var(--popup-accent);
+  background: var(--popup-divider-strong);
+  background: color-mix(in srgb, var(--popup-accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--popup-accent) 25%, transparent);
+  border-radius: 4px;
   padding: 1px 5px;
   flex-shrink: 0;
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 #cantonese-translate-popup .translate-row:last-child .translate-label {
-  background: #9c27b0;
+  color: var(--popup-def-yue);
+  background: color-mix(in srgb, var(--popup-def-yue) 12%, transparent);
+  border-color: color-mix(in srgb, var(--popup-def-yue) 25%, transparent);
 }
 
 #cantonese-translate-popup .translate-text {

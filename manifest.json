@@ -7,7 +7,8 @@
   "permissions": [
     "storage",
     "tts",
-    "fontSettings"
+    "fontSettings",
+    "contextMenus"
   ],
   "background": {
     "service_worker": "background.js",

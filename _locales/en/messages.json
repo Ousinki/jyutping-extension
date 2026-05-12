@@ -114,5 +114,17 @@
   "optSent": {
     "message": "Sent!",
     "description": "optSent"
+  },
+  "ctxMenuEnable": {
+    "message": "Enable Jyutping Dictionary",
+    "description": "Context menu to enable extension"
+  },
+  "ctxMenuDisable": {
+    "message": "Disable Jyutping Dictionary",
+    "description": "Context menu to disable extension"
+  },
+  "ctxMenuSettings": {
+    "message": "Dictionary Settings...",
+    "description": "Context menu to open settings"
   }
 }
