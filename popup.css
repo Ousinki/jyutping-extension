@@ -513,6 +513,34 @@
   font-size: inherit !important;
 }
 
+/* 高亮色：黃色（預設） */
+.jyutping-highlight.hl-yellow { background-color: rgba(255, 220, 80, 0.45) !important; }
+/* 高亮色：藍色 */
+.jyutping-highlight.hl-blue { background-color: rgba(96, 165, 250, 0.35) !important; }
+/* 高亮色：紅色 */
+.jyutping-highlight.hl-red { background-color: rgba(248, 113, 113, 0.35) !important; }
+/* 高亮色：綠色 */
+.jyutping-highlight.hl-green { background-color: rgba(74, 222, 128, 0.35) !important; }
+/* 高亮色：灰色 */
+.jyutping-highlight.hl-gray { background-color: rgba(156, 163, 175, 0.3) !important; }
+
+/* 虛線下劃線 */
+.jyutping-highlight.hl-underline-dashed {
+  background-color: transparent !important;
+  text-decoration: underline dashed !important;
+  text-decoration-color: #888 !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 1.5px !important;
+}
+
+/* 虛線邊框 */
+.jyutping-highlight.hl-border-dashed {
+  background-color: transparent !important;
+  outline: 1.5px dashed #888 !important;
+  outline-offset: 2px !important;
+  border-radius: 3px !important;
+}
+
 /* ========== AI 長按進度環 ========== */
 #jyutping-longpress-ring {
   position: fixed;
@@ -646,4 +674,57 @@
   #cantonese-popup-dict .pronunciation-text {
     font-size: 14px;
   }
+}
+
+/* ========== 精簡模式（compact）========== */
+#cantonese-popup-dict.compact-mode {
+  width: auto !important;
+  min-width: unset;
+  max-width: 400px;
+  transition: none;
+}
+
+#cantonese-popup-dict.compact-mode .popup-main {
+  width: auto;
+  min-width: unset;
+  padding: 2px 8px !important;
+}
+
+#cantonese-popup-dict.compact-mode .popup-inner {
+  border-radius: 0 !important;
+  border: 1px solid #d0d0d0 !important;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+  background: #ffffff !important;
+}
+
+.compact-pronunciation {
+  display: flex;
+  align-items: center;
+  white-space: nowrap;
+}
+
+.compact-text {
+  display: inline-block;
+  font-size: 15px !important;
+  font-weight: 500 !important;
+  color: #1890ff !important;
+  font-family: system-ui, -apple-system, sans-serif !important;
+  letter-spacing: 0 !important;
+  line-height: 1.2 !important;
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+.compact-text:hover {
+  opacity: 0.75;
+}
+
+@keyframes compactPopClick {
+  0% { transform: scale(1); }
+  50% { transform: scale(0.92); }
+  100% { transform: scale(1); }
+}
+
+.compact-text.playing {
+  animation: compactPopClick 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  color: #096dd9 !important;
 }

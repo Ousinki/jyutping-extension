@@ -594,6 +594,168 @@
             />
           </div>
 
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optPopupStyle">懸浮窗樣式</span>
+              <span class="setting-desc" data-i18n="optPopupStyleDesc">完整模式顯示詞義；精簡模式僅顯示音標</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="popupDisplayStyle">
+                <option value="full" data-i18n="optStyleFull">完整模式</option>
+                <option value="compact" data-i18n="optStyleCompact">精簡音標</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+            <div class="setting-info" style="margin-bottom: 10px;">
+              <span class="setting-label" data-i18n="optHighlightStyle">高亮樣式</span>
+              <span class="setting-desc" data-i18n="optHighlightStyleDesc">選擇懸停詞語時的高亮效果</span>
+            </div>
+            <div id="highlightStylePicker" style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- 背景色選項 -->
+              <label class="hl-option" data-value="yellow" title="黃色背景">
+                <input type="radio" name="highlightStyle" value="yellow" checked>
+                <span class="hl-swatch" style="background: rgba(255, 220, 80, 0.6);"></span>
+              </label>
+              <label class="hl-option" data-value="blue" title="藍色背景">
+                <input type="radio" name="highlightStyle" value="blue">
+                <span class="hl-swatch" style="background: rgba(96, 165, 250, 0.5);"></span>
+              </label>
+              <label class="hl-option" data-value="red" title="紅色背景">
+                <input type="radio" name="highlightStyle" value="red">
+                <span class="hl-swatch" style="background: rgba(248, 113, 113, 0.5);"></span>
+              </label>
+              <label class="hl-option" data-value="green" title="綠色背景">
+                <input type="radio" name="highlightStyle" value="green">
+                <span class="hl-swatch" style="background: rgba(74, 222, 128, 0.5);"></span>
+              </label>
+              <label class="hl-option" data-value="gray" title="灰色背景">
+                <input type="radio" name="highlightStyle" value="gray">
+                <span class="hl-swatch" style="background: rgba(156, 163, 175, 0.45);"></span>
+              </label>
+              <!-- 虛線選項 -->
+              <label class="hl-option" data-value="underline-dashed" title="虛線下劃線">
+                <input type="radio" name="highlightStyle" value="underline-dashed">
+                <span class="hl-swatch hl-swatch-text" style="border-bottom: 2px dashed #888;">A</span>
+              </label>
+              <label class="hl-option" data-value="border-dashed" title="虛線邊框">
+                <input type="radio" name="highlightStyle" value="border-dashed">
+                <span class="hl-swatch hl-swatch-text" style="border: 1.5px dashed #888; background: transparent;">A</span>
+              </label>
+            </div>
+            <style>
+              .hl-option {
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .hl-option input { display: none; }
+              .hl-swatch {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                width: 36px;
+                height: 28px;
+                border-radius: 6px;
+                border: 2px solid transparent;
+                transition: border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+              }
+              .hl-swatch-text {
+                font-size: 14px;
+                font-weight: 600;
+                color: var(--text-secondary, #666);
+                background: var(--bg-input, #f8f8f8);
+              }
+              .hl-option:hover .hl-swatch {
+                transform: scale(1.08);
+                box-shadow: 0 2px 6px rgba(0,0,0,0.12);
+              }
+              .hl-option input:checked + .hl-swatch {
+                border-color: var(--primary, #1890ff);
+                box-shadow: 0 0 0 2px rgba(24, 144, 255, 0.2);
+              }
+            </style>
+          </div>
+
+          <!-- Compact Mode Animation Demo -->
+          <div id="compactDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">
+            <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em; margin: 0 auto;">
+              <!-- Split into word groups for per-word highlighting -->
+              <span class="demo-word" data-pinyin="gam1 jat6" style="position: relative; display: inline;">今日</span><span class="demo-word demo-word-target" data-pinyin="tin1 hei3" style="position: relative; display: inline;">天氣</span><span class="demo-word" data-pinyin="hou2 hou2" style="position: relative; display: inline;">好好</span>
+
+              <!-- Highlight only on the target word "天氣" -->
+              <div class="demo-compact-highlight" style="position: absolute; top: -2px; height: calc(100% + 4px); background: rgba(255, 220, 80, 0.45); z-index: -1; border-radius: 3px;"></div>
+
+              <!-- Compact popup badge (above the target word) -->
+              <div class="demo-compact-popup" style="position: absolute; bottom: calc(100% + 10px); pointer-events: none;">
+                <!-- Arrow pointing down -->
+                <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 7px solid #d0d0d0; z-index: 1;"></div>
+                <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #fff; z-index: 2; margin-top: -1px;"></div>
+                <!-- Badge body — matches actual compact popup style -->
+                <div style="background: #fff; border: 1px solid #d0d0d0; border-radius: 0; padding: 2px 8px; filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.1)); white-space: nowrap; line-height: 1.2;">
+                  <span style="font-size: 15px; font-weight: 500; color: #1890ff; font-family: system-ui, -apple-system, sans-serif; letter-spacing: 0;">tin1 hei3</span>
+                </div>
+              </div>
+
+              <!-- Simulated Cursor -->
+              <div class="demo-compact-cursor" style="position: absolute; width: 22px; height: 22px; z-index: 10;">
+                <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%;">
+                  <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+                </svg>
+              </div>
+            </div>
+
+            <style>
+              /* Highlight covers only the 2nd word (33%–67% of total width) */
+              .demo-compact-highlight {
+                opacity: 0;
+                animation: compactHighlight 4s ease-in-out infinite;
+              }
+
+              /* Popup positioned above the 2nd word */
+              .demo-compact-popup {
+                left: 50%;
+                transform: translateX(-50%);
+                opacity: 0;
+                animation: compactPopupShow 4s ease-in-out infinite;
+              }
+
+              .demo-compact-cursor {
+                top: 20px; left: -30px;
+                opacity: 0;
+                animation: compactCursorMove 4s ease-in-out infinite;
+              }
+
+              @keyframes compactCursorMove {
+                0%, 8%   { top: 18px; left: -30px; opacity: 0; }
+                18%      { top: 4px; left: 10%; opacity: 1; }
+                /* Move to the 2nd word center (~50%) */
+                35%, 70% { top: 4px; left: 46%; opacity: 1; }
+                /* Drift out */
+                88%      { top: 4px; left: 85%; opacity: 1; }
+                95%      { top: 18px; left: 105%; opacity: 0; }
+                100%     { top: 18px; left: 105%; opacity: 0; }
+              }
+
+              @keyframes compactHighlight {
+                0%, 30%  { left: 33.3%; width: 0; opacity: 0; }
+                36%      { left: 33.3%; width: 33.3%; opacity: 1; }
+                72%      { left: 33.3%; width: 33.3%; opacity: 1; }
+                80%, 100% { left: 33.3%; width: 0; opacity: 0; }
+              }
+
+              @keyframes compactPopupShow {
+                0%, 33%  { opacity: 0; transform: translateX(-50%) translateY(4px); }
+                38%, 70% { opacity: 1; transform: translateX(-50%) translateY(0); }
+                76%, 100% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+              }
+            </style>
+          </div>
+
+          <!-- 懸浮窗主題（僅完整模式顯示） -->
+          <div id="themeSection">
           <div
             class="setting-item"
             style="flex-direction: column; align-items: stretch"
@@ -681,6 +843,7 @@
                 <span id="previewYue">打招呼嘅用語</span>
               </div>
             </div>
+          </div>
           </div>
         </div>
       </div>

@@ -12,7 +12,9 @@ const i18nDict = {
   "zh-HK": {
     optTitle: "粵語懸浮詞典", optSubtitle: "Cantonese Popup Dictionary Settings", optGenSettings: "一般設定",
     optEnable: "啟用詞典", optEnableDesc: "在網頁上顯示粵語發音提示", optFormat: "發音顯示格式",
-    optFormatDesc: "選擇粵語拼音系統", optTheme: "懸浮窗主題", optThemeDesc: "選擇詞典彈窗的配色風格",
+    optFormatDesc: "選擇粵語拼音系統", optPopupStyle: "懸浮窗樣式", optPopupStyleDesc: "完整模式顯示詞義；精簡模式僅顯示音標",
+    optStyleFull: "完整模式", optStyleCompact: "精簡音標",
+    optTheme: "懸浮窗主題", optThemeDesc: "選擇詞典彈窗的配色風格",
     optFontSettings: "字體設定", optZhFont: "中文字體", optZhFontDesc: "設定詞典顯示的中文字體（留空為預設）",
     optEnFont: "拼音字體", optEnFontDesc: "設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）",
     optTransSettings: "翻譯設定", optTransDesc1: "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
@@ -57,7 +59,9 @@ const i18nDict = {
   "en": {
     optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
     optEnable: "Enable Dictionary", optEnableDesc: "Show Cantonese pronunciation on hover", optFormat: "Pronunciation System",
-    optFormatDesc: "Select romanization format", optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
+    optFormatDesc: "Select romanization format", optPopupStyle: "Popup Display Style", optPopupStyleDesc: "Full mode shows definitions; Compact shows phonetics only",
+    optStyleFull: "Full Mode", optStyleCompact: "Compact Phonetics",
+    optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
     optFontSettings: "Font Settings", optZhFont: "Chinese Font", optZhFontDesc: "Set font for Chinese text (leave empty for default)",
     optEnFont: "Pinyin Font", optEnFontDesc: "Set the exclusive font for Pinyin text (monospace recommended, leave empty for default)",
     optTransSettings: "Translation Settings", optTransDesc1: "Double-click selected text to show Mandarin and English translation",
@@ -152,6 +156,7 @@ function applyI18n(lang) {
 
   const enabledToggle = document.getElementById('enabledToggle');
   const displayModeSelect = document.getElementById('displayMode');
+  const popupDisplayStyleSelect = document.getElementById('popupDisplayStyle');
   const popupThemeSelect = document.getElementById('popupTheme');
   
   // 字體設定
@@ -236,11 +241,18 @@ function applyI18n(lang) {
 
   // 載入已保存的設定
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'popupTheme', 'customZhFont', 'customEnFont', 'ttsEnabled', 
+    'enabled', 'displayMode', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   ], (result) => {
     enabledToggle.checked = result.enabled !== false;
     displayModeSelect.value = result.displayMode || 'jyutping';
+    popupDisplayStyleSelect.value = result.popupDisplayStyle || 'full';
+    updateCompactDemoVisibility();
+    
+    // 載入高亮樣式
+    const savedHL = result.highlightStyle || 'yellow';
+    const hlRadio = document.querySelector(`input[name="highlightStyle"][value="${savedHL}"]`);
+    if (hlRadio) hlRadio.checked = true;
     
     const theme = result.popupTheme || 'classic';
     popupThemeSelect.value = theme;
@@ -362,6 +374,69 @@ function applyI18n(lang) {
     chrome.storage.sync.set({ displayMode: mode });
     GoogleAnalytics.fireEvent('change_setting', { setting: 'displayMode', value: mode });
     notifyContentScripts({ action: 'changeDisplayMode', mode });
+  });
+
+  // 監聽懸浮窗樣式切換
+  const compactDemo = document.getElementById('compactDemo');
+  const themeSection = document.getElementById('themeSection');
+  function updateCompactDemoVisibility() {
+    const isCompact = popupDisplayStyleSelect.value === 'compact';
+    if (compactDemo) compactDemo.style.display = isCompact ? 'flex' : 'none';
+    if (themeSection) themeSection.style.display = isCompact ? 'none' : 'block';
+  }
+  updateCompactDemoVisibility(); // 初始化
+
+  popupDisplayStyleSelect.addEventListener('change', () => {
+    const style = popupDisplayStyleSelect.value;
+    chrome.storage.sync.set({ popupDisplayStyle: style });
+    GoogleAnalytics.fireEvent('change_setting', { setting: 'popupDisplayStyle', value: style });
+    updateCompactDemoVisibility();
+    notifyContentScripts({ action: 'changePopupDisplayStyle', style });
+  });
+
+  // 高亮樣式選擇器
+  const highlightStylePicker = document.getElementById('highlightStylePicker');
+  const highlightRadios = highlightStylePicker ? highlightStylePicker.querySelectorAll('input[name="highlightStyle"]') : [];
+
+  // 更新 Demo 高亮動畫顏色
+  function updateDemoHighlightStyle(style) {
+    const demoHL = document.querySelector('.demo-compact-highlight');
+    if (!demoHL) return;
+    // 重置所有樣式
+    demoHL.style.background = '';
+    demoHL.style.outline = '';
+    demoHL.style.outlineOffset = '';
+    demoHL.style.borderBottom = '';
+
+    const colors = {
+      yellow: 'rgba(255, 220, 80, 0.45)',
+      blue: 'rgba(96, 165, 250, 0.35)',
+      red: 'rgba(248, 113, 113, 0.35)',
+      green: 'rgba(74, 222, 128, 0.35)',
+      gray: 'rgba(156, 163, 175, 0.3)',
+    };
+    if (colors[style]) {
+      demoHL.style.background = colors[style];
+    } else if (style === 'underline-dashed') {
+      demoHL.style.background = 'transparent';
+      demoHL.style.borderBottom = '2px dashed #888';
+      demoHL.style.height = '100%';
+      demoHL.style.top = '0';
+    } else if (style === 'border-dashed') {
+      demoHL.style.background = 'transparent';
+      demoHL.style.outline = '1.5px dashed #888';
+      demoHL.style.outlineOffset = '2px';
+    }
+  }
+
+  highlightRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      const style = radio.value;
+      chrome.storage.sync.set({ highlightStyle: style });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'highlightStyle', value: style });
+      updateDemoHighlightStyle(style);
+      notifyContentScripts({ action: 'changeHighlightStyle', style });
+    });
   });
 
   // 監聽主題切換

@@ -15,6 +15,7 @@
   let popupArrow = null; // 彈窗箭頭元素
   let isEnabled = true;
   let displayMode = 'jyutping'; // 'jyutping' 或 'yale'
+  let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
   let popupTheme = 'classic'; // 懸浮窗主題
   let ttsEnabled = true; // TTS 開關
   let ttsEngine = 'webSpeech'; // TTS 引擎: webSpeech, chromeTts, edgeTts, azureTts
@@ -30,6 +31,7 @@
   let customEnFont = ''; // 自定義英文字體
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
+  let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
   let currentWord = null; // 追蹤當前顯示的詞
   let currentContextSentence = ''; // 當前高亮詞語所在的上下文句子
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
@@ -867,15 +869,17 @@
   // 載入用戶設定
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'popupTheme', 'customZhFont', 'customEnFont', 'ttsEnabled', 
+      'enabled', 'displayMode', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
       displayMode = result.displayMode || 'jyutping';
+      popupDisplayStyle = result.popupDisplayStyle || 'full';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
       customEnFont = result.customEnFont || '';
+      highlightStyle = result.highlightStyle || 'yellow';
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
       ttsEngine = result.ttsEngine || 'chromeTts';
@@ -1758,6 +1762,100 @@
     }
   }
 
+  // ========== 精簡模式彈窗：僅顯示音標 ==========
+  function showCompactPopup(result, entry, pronunciation, rect) {
+    if (!pronunciation) {
+      hidePopup();
+      return;
+    }
+
+    const popupMain = popup.querySelector('.popup-main');
+    const popupExamples = popup.querySelector('.popup-examples');
+    const popupTranslate = popup.querySelector('.popup-translate');
+    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
+    const reportForm = popup.querySelector('.popup-report-form');
+
+    // 重置/隱藏非必要元素
+    popupExamples.style.display = 'none';
+    popupExamples.innerHTML = '';
+    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
+    if (actionsWrapper) actionsWrapper.style.display = 'none';
+    if (reportForm) reportForm.style.display = 'none';
+    popup.classList.remove('expanded-mode');
+
+    // 設定精簡模式的寬度為 auto
+    popup.style.width = 'auto';
+    popup.classList.add('compact-mode');
+
+    // 構建精簡內容：僅拼音文字（點擊可發聲）
+    popupMain.innerHTML = `
+      <div class="compact-pronunciation">
+        <span class="compact-text">${pronunciation}</span>
+      </div>
+    `;
+
+    // 綁定 TTS（點擊拼音文字即可播放）
+    const compactText = popupMain.querySelector('.compact-text');
+    if (compactText) {
+      compactText.style.cursor = 'pointer';
+      compactText.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speakCantonese(entry.traditional);
+        
+        // 觸發點擊動畫
+        compactText.classList.remove('playing');
+        void compactText.offsetWidth; // 強制瀏覽器重繪
+        compactText.classList.add('playing');
+      });
+    }
+
+    // 定位：固定顯示在文字上方
+    if (rect) {
+      popup.style.visibility = 'hidden';
+      popup.style.display = 'block';
+      
+      const popupWidth = popup.offsetWidth || 120;
+      const popupHeight = popup.offsetHeight || 36;
+      const viewportWidth = window.innerWidth;
+      const ARROW_HEIGHT = 8;
+      const GAP = 2;
+
+      // 水平：居中對齊高亮文字
+      let left = rect.left + rect.width / 2 - popupWidth / 2;
+      if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
+      if (left < 5) left = 5;
+
+      // 垂直：優先顯示在上方
+      let top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+      let arrowDirection = 'down'; // 箭頭朝下指向文字
+
+      if (top < 5) {
+        // 上方空間不足，放下方
+        top = rect.bottom + GAP + ARROW_HEIGHT;
+        arrowDirection = 'up';
+      }
+
+      popup.style.position = 'fixed';
+      popup.style.left = left + 'px';
+      popup.style.top = top + 'px';
+
+      // 箭頭
+      if (popupArrow) {
+        popupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
+        const highlightCenterX = rect.left + rect.width / 2;
+        let arrowCenter = highlightCenterX - left;
+        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+        popupArrow.style.left = arrowCenter + 'px';
+      }
+      
+      popup.style.visibility = 'visible';
+    } else {
+      popup.style.display = 'block';
+      if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
+    }
+    popup.style.pointerEvents = 'auto';
+  }
+
   // 顯示彈窗
   // rect: { left, right, top, bottom, width, height }
   function showPopup(result, rect) {
@@ -1767,6 +1865,12 @@
     const pronunciation = displayMode === 'yale' 
       ? (entry.yale || entry.jyutping)
       : entry.jyutping;
+
+    // ========== 精簡模式：僅顯示音標 ==========
+    if (popupDisplayStyle === 'compact') {
+      showCompactPopup(result, entry, pronunciation, rect);
+      return;
+    }
 
     // 構建 HTML 內容
     let html = `
@@ -1803,7 +1907,13 @@
     if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
     popupMain.innerHTML = '';
     popup.classList.remove('expanded-mode');
+    popup.classList.remove('compact-mode');
     popup.style.width = '320px'; // 默認寬度
+    // 恢復完整模式下的操作按鈕
+    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
+    if (actionsWrapper) actionsWrapper.style.display = 'flex';
+    const reportForm = popup.querySelector('.popup-report-form');
+    if (reportForm) reportForm.style.display = 'none';
 
     // 清空之前的 html 内容，只保留 Header (词头+拼音)
     // 注意：目前的 html 變量包含了 Header。
@@ -2119,7 +2229,7 @@
       
       // 使用 span 包裹高亮文字（替代原生 Selection）
       const highlightSpan = document.createElement('span');
-      highlightSpan.className = 'jyutping-highlight';
+      highlightSpan.className = 'jyutping-highlight hl-' + (highlightStyle || 'yellow');
       range.surroundContents(highlightSpan);
       
       highlightSpans.push(highlightSpan);
@@ -2167,6 +2277,10 @@
       if (!isEnabled) hidePopup();
     } else if (request.action === 'changeDisplayMode') {
       displayMode = request.mode;
+    } else if (request.action === 'changePopupDisplayStyle') {
+      popupDisplayStyle = request.style;
+    } else if (request.action === 'changeHighlightStyle') {
+      highlightStyle = request.style;
     } else if (request.action === 'changePopupTheme') {
       popupTheme = request.theme;
       applyPopupTheme(popupTheme);
