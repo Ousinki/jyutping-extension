@@ -34,6 +34,7 @@
   let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
   let currentWord = null; // 追蹤當前顯示的詞
   let currentContextSentence = ''; // 當前高亮詞語所在的上下文句子
+  let hoverModifier = 'none'; // 懸停觸發按鍵
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
   let justNavigated = false; // 是否剛進行鏈接導航
@@ -866,12 +867,13 @@
   // 載入用戶設定
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
+      'enabled', 'displayMode', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
       displayMode = result.displayMode || 'jyutping';
+      hoverModifier = result.hoverModifier || 'none';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
@@ -1075,11 +1077,15 @@
   // 設置事件監聽器
   function setupEventListeners() {
     let lastX = 0, lastY = 0;
+    let currentMouseX = 0, currentMouseY = 0; // 用於記錄絕對鼠標位置
     let isThrottled = false;
     let isSelecting = false; // 用戶正在拖拽選擇文字
 
     // 使用 mousemove 實現實時跟隨
     document.addEventListener('mousemove', (e) => {
+      currentMouseX = e.clientX;
+      currentMouseY = e.clientY;
+
       if (!isEnabled || isSelecting) return;
 
       // 如果用戶有手動選中的文本，不要觸發懸停查詞（防止覆蓋選區）
@@ -1356,14 +1362,34 @@
       cancelLongPressAnimation();
     }, true);
 
-    // 按 ESC 關閉
+    // 監聽按鍵
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
         hidePopup();
         hideTranslatePopup();
         hasUserSelection = false;
       }
+      
+      // 如果按下了設定的修飾鍵，立刻觸發懸停查詞
+      if (hoverModifier !== 'none') {
+        const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
+        if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+          // 模擬滑鼠移動觸發查詞，強制更新最後已知坐標以通過防抖
+          lastX = currentMouseX;
+          lastY = currentMouseY;
+          handleMouseOver({ 
+            clientX: currentMouseX, 
+            clientY: currentMouseY,
+            altKey: e.altKey || e.key === 'Alt',
+            ctrlKey: e.ctrlKey || e.key === 'Control',
+            shiftKey: e.shiftKey || e.key === 'Shift',
+            metaKey: e.metaKey || e.key === 'Meta'
+          });
+        }
+      }
     });
+
+
   }
 
   // 檢查元素是否可編輯（輸入框、文本域、contenteditable）
@@ -1492,6 +1518,13 @@
     if (!isEnabled) return;
     if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
     
+    // 檢查修飾鍵是否按下
+    const modifierPressed = hoverModifier === 'none' ||
+      (hoverModifier === 'alt' && e.altKey) ||
+      (hoverModifier === 'ctrl' && e.ctrlKey) ||
+      (hoverModifier === 'shift' && e.shiftKey) ||
+      (hoverModifier === 'meta' && e.metaKey);
+
     // 如果是用戶正在瀏覽的導航彈窗，且滑鼠不在彈窗上
     // 此時不應該讓移動滑鼠打斷導航，除非用戶再次進入
     // (這部分邏輯已在 setupEventListeners 中處理)
@@ -1505,6 +1538,14 @@
       if (hideTimeout) {
         clearTimeout(hideTimeout);
         hideTimeout = null;
+      }
+      
+      // 如果按下了修飾鍵，且彈窗目前隱藏，則直接顯示彈窗（不需要重新解析文字）
+      if (modifierPressed && popup && popup.style.display === 'none' && currentWord && dictionary[currentWord]) {
+        const result = { word: currentWord, entry: dictionary[currentWord] };
+        showPopup(result, currentRange ? currentRange.getBoundingClientRect() : {
+          left: clientX, right: clientX, top: clientY, bottom: clientY, width: 0, height: 0
+        });
       }
       return;
     }
@@ -1605,14 +1646,22 @@
           }
         }
         
-        showPopup(result, bestRect || currentRange.getBoundingClientRect());
+        if (modifierPressed) {
+          showPopup(result, bestRect || currentRange.getBoundingClientRect());
+        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
+          hidePopup(true);
+        }
       } else {
         // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
-        showPopup(result, {
-          left: clientX, right: clientX, 
-          top: clientY, bottom: clientY,
-          width: 0, height: 0
-        });
+        if (modifierPressed) {
+          showPopup(result, {
+            left: clientX, right: clientX, 
+            top: clientY, bottom: clientY,
+            width: 0, height: 0
+          });
+        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
+          hidePopup(true);
+        }
       }
     } else {
       // 未匹配到詞
@@ -2267,15 +2316,16 @@
   }
 
   // 隱藏彈窗
-  function hidePopup() {
+  function hidePopup(keepHighlight = false) {
     if (popup) {
       popup.style.display = 'none';
     }
     // 精簡模式下翻譯結果用獨立浮窗，一併隱藏
     hideTranslatePopup();
-    currentWord = null;
-    // 如果用戶有手動選中的文本，不清除選區
-    if (!hasUserSelection) {
+    
+    // 如果是用戶手動選中的文本，或者要求保留高亮，則不清除選區
+    if (!hasUserSelection && !keepHighlight) {
+      currentWord = null;
       removeHighlight();
     }
   }
@@ -2341,6 +2391,11 @@
     if (request.action === 'toggleEnabled') {
       isEnabled = request.enabled;
       if (!isEnabled) hidePopup();
+    } else if (request.action === 'changeHoverModifier') {
+      hoverModifier = request.modifier;
+      if (hoverModifier !== 'none' && popup && !isMouseOverPopup) {
+        hidePopup();
+      }
     } else if (request.action === 'changeDisplayMode') {
       displayMode = request.mode;
     } else if (request.action === 'changePopupDisplayStyle') {

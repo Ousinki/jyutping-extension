@@ -39,6 +39,34 @@
     "message": "Select romanization format",
     "description": "optFormatDesc"
   },
+  "optHoverModifier": {
+    "message": "Hover Trigger Key",
+    "description": "optHoverModifier"
+  },
+  "optHoverModifierDesc": {
+    "message": "Require holding a key to show popup",
+    "description": "optHoverModifierDesc"
+  },
+  "optKeyNone": {
+    "message": "None (Direct Hover)",
+    "description": "optKeyNone"
+  },
+  "optKeyAlt": {
+    "message": "Alt / Option (⌥)",
+    "description": "optKeyAlt"
+  },
+  "optKeyCtrl": {
+    "message": "Ctrl (⌃)",
+    "description": "optKeyCtrl"
+  },
+  "optKeyShift": {
+    "message": "Shift (⇧)",
+    "description": "optKeyShift"
+  },
+  "optKeyMeta": {
+    "message": "Command / Win",
+    "description": "optKeyMeta"
+  },
   "optTheme": {
     "message": "Popup Theme",
     "description": "optTheme"

@@ -25,7 +25,7 @@ const i18nDict = {
     optAIPromptLabel: "AI 翻譯 Prompt", optFeedback: "關於與意見反饋", optDev: "開發者:",
     optFeedbackForm: "意見反饋", optEmail: "電郵地址（選填）", optMsg: "輸入你的建議或遇到的問題...",
     optSend: "發送反饋", optSending: "發送中...", optSent: "已發送！",
-    optModelName: "模型名稱", optTestAI: " 測試 AI 連接", optTTSSettings: "語音設定 (TTS)",
+    optModelName: "模型名稱", optAILanguage: "目標語言", optTestAI: " 測試 AI 連接", optTTSSettings: "語音設定 (TTS)",
     optClickToSpeak: "點擊發聲", optClickToSpeakDesc: "點擊高亮文字朗讀粵語發音", optTTSEngine: "語音引擎",
     optTTSEngineDesc: "選擇 TTS 服務提供商", optEdgeSettings: "Edge TTS 設定",
     optEdgeSettingsDesc: "選擇使用預設伺服器或自定義地址", optAzureSettings: "Azure Speech 設定",
@@ -56,7 +56,10 @@ const i18nDict = {
     clDesc: "本次更新帶來了以下優化：",
     clItem1: "✨ 全新精簡音標模式：懸浮窗僅顯示拼音，點擊即可發聲，支持輕彈動畫反饋。",
     clItem2: "🎨 高亮樣式自定義：5 種背景色（黃、藍、紅、綠、灰）+ 虛線下劃線 + 虛線邊框，共 7 種選擇。",
-    clItem3: "🔧 修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。"
+    clItem3: "🔧 修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。",
+    clItem4: "✨ AI 語境翻譯：新增目標語言選擇（繁/簡/英/日），解釋更貼心。",
+    clItem5: "🖱️ 右鍵選單：新增快捷選單，可快速開啟/暫停詞典及切換顯示模式。",
+    clItem6: "⚡ 交互優化：移除發音延遲，單擊/雙擊即刻發聲，並修復了原生選區高亮衝突。"
   },
   "en": {
     optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
@@ -74,7 +77,7 @@ const i18nDict = {
     optAIPromptLabel: "System Prompt", optFeedback: "About & Feedback", optDev: "Developer:",
     optFeedbackForm: "Feedback", optEmail: "Email (Optional)", optMsg: "Tell us your suggestions or issues...",
     optSend: "Send Feedback", optSending: "Sending...", optSent: "Sent!",
-    optModelName: "Model Name", optTestAI: " Test AI Connection", optTTSSettings: "Speech Settings (TTS)",
+    optModelName: "Model Name", optAILanguage: "Target Language", optTestAI: " Test AI Connection", optTTSSettings: "Speech Settings (TTS)",
     optClickToSpeak: "Click to Speak", optClickToSpeakDesc: "Click highlighted text to read Cantonese pronunciation", optTTSEngine: "Speech Engine",
     optTTSEngineDesc: "Select TTS provider", optEdgeSettings: "Edge TTS Settings",
     optEdgeSettingsDesc: "Select default server or custom URL", optAzureSettings: "Azure Speech Settings",
@@ -105,7 +108,10 @@ const i18nDict = {
     clDesc: "This update brings the following improvements:",
     clItem1: "✨ New Compact Phonetics Mode: Popup shows only pronunciation — click to play TTS with a satisfying tap animation.",
     clItem2: "🎨 Customizable Highlight Styles: 5 background colors (yellow, blue, red, green, gray) + dashed underline + dashed border — 7 options total.",
-    clItem3: "🔧 Fixed translate popup centering, right-click triggering AI ring, and other minor bugs."
+    clItem3: "🔧 Fixed translate popup centering, right-click triggering AI ring, and other minor bugs.",
+    clItem4: "✨ AI Contextual Translation: Added target language selection (Traditional/Simplified/English/Japanese).",
+    clItem5: "🖱️ Context Menu: Quickly toggle dictionary and switch modes via right-click.",
+    clItem6: "⚡ Interaction Boost: Removed TTS delay for instant response and fixed native selection overlay bugs."
   }
 };
 
@@ -158,8 +164,9 @@ function applyI18n(lang) {
   });
 
 
-  const enabledToggle = document.getElementById('enabledToggle');
+
   const displayModeSelect = document.getElementById('displayMode');
+  const hoverModifierSelect = document.getElementById('hoverModifier');
   const popupDisplayStyleSelect = document.getElementById('popupDisplayStyle');
   const popupThemeSelect = document.getElementById('popupTheme');
   
@@ -191,6 +198,7 @@ function applyI18n(lang) {
   const aiBaseUrlInput = document.getElementById('aiBaseUrl');
   const aiApiKeyInput = document.getElementById('aiApiKey');
   const aiModelInput = document.getElementById('aiModel');
+  const aiLanguageSelect = document.getElementById('aiLanguage');
   const testAiBtn = document.getElementById('testAiBtn');
 
 
@@ -245,11 +253,11 @@ function applyI18n(lang) {
 
   // 載入已保存的設定
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
+    'enabled', 'displayMode', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   ], (result) => {
-    enabledToggle.checked = result.enabled !== false;
     displayModeSelect.value = result.displayMode || 'jyutping';
+    if (hoverModifierSelect) hoverModifierSelect.value = result.hoverModifier || 'none';
     popupDisplayStyleSelect.value = result.popupDisplayStyle || 'full';
     updateCompactDemoVisibility();
     
@@ -340,12 +348,15 @@ function applyI18n(lang) {
   });
 
   // AI 設定用 local storage（避免 sync 配額不足）
-  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel'], (result) => {
+  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage'], (result) => {
     aiEnabledToggle.checked = result.aiEnabled === true;
     aiSettings.style.display = result.aiEnabled ? 'block' : 'none';
     aiBaseUrlInput.value = result.aiBaseUrl || '';
     aiApiKeyInput.value = result.aiApiKey || '';
     aiModelInput.value = result.aiModel || '';
+    if (aiLanguageSelect) {
+      aiLanguageSelect.value = result.aiLanguage || '繁體中文';
+    }
   });
 
   // 更新引擎相關 UI
@@ -364,14 +375,6 @@ function applyI18n(lang) {
     edgeCustomSettings.style.display = mode === 'custom' ? 'block' : 'none';
   }
 
-  // 監聽詞典開關
-  enabledToggle.addEventListener('change', () => {
-    const enabled = enabledToggle.checked;
-    chrome.storage.sync.set({ enabled });
-    GoogleAnalytics.fireEvent('change_setting', { setting: 'enabled', value: enabled });
-    notifyContentScripts({ action: 'toggleEnabled', enabled });
-  });
-
   // 監聽顯示模式切換
   displayModeSelect.addEventListener('change', () => {
     const mode = displayModeSelect.value;
@@ -380,6 +383,15 @@ function applyI18n(lang) {
     notifyContentScripts({ action: 'changeDisplayMode', mode });
   });
 
+  if (hoverModifierSelect) {
+    hoverModifierSelect.addEventListener('change', () => {
+      const modifier = hoverModifierSelect.value;
+      chrome.storage.sync.set({ hoverModifier: modifier });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'hoverModifier', value: modifier });
+      notifyContentScripts({ action: 'changeHoverModifier', modifier });
+    });
+  }
+
   // 監聽懸浮窗樣式切換
   const compactDemo = document.getElementById('compactDemo');
   const themeSection = document.getElementById('themeSection');
@@ -387,6 +399,11 @@ function applyI18n(lang) {
     const isCompact = popupDisplayStyleSelect.value === 'compact';
     if (compactDemo) compactDemo.style.display = isCompact ? 'flex' : 'none';
     if (themeSection) themeSection.style.display = isCompact ? 'none' : 'block';
+    
+    const hoverModifierContainer = document.getElementById('hoverModifierContainer');
+    if (hoverModifierContainer) {
+      hoverModifierContainer.style.display = isCompact ? 'none' : 'flex';
+    }
   }
   updateCompactDemoVisibility(); // 初始化
 
@@ -618,6 +635,15 @@ function applyI18n(lang) {
     notifyContentScripts({ action: 'changeAiModel', aiModel: model });
   });
 
+  // AI 目標語言變更
+  if (aiLanguageSelect) {
+    aiLanguageSelect.addEventListener('change', () => {
+      const lang = aiLanguageSelect.value;
+      chrome.storage.local.set({ aiLanguage: lang });
+      notifyContentScripts({ action: 'changeAiLanguage', aiLanguage: lang });
+    });
+  }
+
   // 測試 AI 連接
   testAiBtn.addEventListener('click', async () => {
     const baseUrl = aiBaseUrlInput.value.trim();
@@ -633,6 +659,9 @@ function applyI18n(lang) {
     testAiBtn.textContent = t('optTestingAI');
 
     try {
+      const targetLang = aiLanguageSelect ? aiLanguageSelect.value : '繁體中文';
+      const testPrompt = `你好，請用${targetLang}回覆我一句簡短的問候語。`;
+      
       const url = baseUrl.replace(/\/$/, '') + '/chat/completions';
       const response = await fetch(url, {
         method: 'POST',
@@ -642,8 +671,8 @@ function applyI18n(lang) {
         },
         body: JSON.stringify({
           model: model,
-          messages: [{ role: 'user', content: '你好' }],
-          max_tokens: 20
+          messages: [{ role: 'user', content: testPrompt }],
+          max_tokens: 30
         })
       });
 

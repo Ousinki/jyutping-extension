@@ -39,6 +39,34 @@
     "message": "選擇粵語拼音系統",
     "description": "optFormatDesc"
   },
+  "optHoverModifier": {
+    "message": "懸停觸發按鍵",
+    "description": "optHoverModifier"
+  },
+  "optHoverModifierDesc": {
+    "message": "按住特定按鍵時才顯示詞典，避免日常干擾",
+    "description": "optHoverModifierDesc"
+  },
+  "optKeyNone": {
+    "message": "無 (直接懸停)",
+    "description": "optKeyNone"
+  },
+  "optKeyAlt": {
+    "message": "Alt / Option (⌥)",
+    "description": "optKeyAlt"
+  },
+  "optKeyCtrl": {
+    "message": "Ctrl (⌃)",
+    "description": "optKeyCtrl"
+  },
+  "optKeyShift": {
+    "message": "Shift (⇧)",
+    "description": "optKeyShift"
+  },
+  "optKeyMeta": {
+    "message": "Command (⌘) / Win",
+    "description": "optKeyMeta"
+  },
   "optTheme": {
     "message": "懸浮窗主題",
     "description": "optTheme"

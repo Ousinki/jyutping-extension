@@ -382,14 +382,15 @@ async function handleAiTranslate(request, tabId) {
   
   try {
     // 從 storage 讀取 AI 設定
-    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
-    const { aiBaseUrl, aiApiKey, aiModel } = settings;
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage']);
+    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage } = settings;
     
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
     
-    const prompt = `你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用繁體中文簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。
+    const targetLang = aiLanguage || '繁體中文';
+    const prompt = `你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用${targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。
 
 【詞語】${word}
 【句子】${sentence}`;

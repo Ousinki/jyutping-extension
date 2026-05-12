@@ -197,7 +197,7 @@
       }
 
       .toggle input:focus + .toggle-slider {
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
       }
 
       /* Select */
@@ -227,7 +227,7 @@
       .select-wrapper select:focus {
         outline: none;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
       }
 
       .select-wrapper::after {
@@ -261,7 +261,7 @@
         font-size: 14px;
         font-weight: 600;
         color: var(--primary);
-        background: rgba(79, 70, 229, 0.1);
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
         padding: 4px 10px;
         border-radius: 6px;
       }
@@ -285,7 +285,7 @@
         background: var(--primary);
         border-radius: 50%;
         cursor: pointer;
-        box-shadow: 0 2px 6px rgba(79, 70, 229, 0.4);
+        box-shadow: 0 2px 6px color-mix(in srgb, var(--primary) 40%, transparent);
         transition: var(--transition);
       }
 
@@ -346,7 +346,7 @@
       .text-input:focus {
         outline: none;
         border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.15);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
       }
 
       .text-input::placeholder {
@@ -526,16 +526,6 @@
         <div class="settings-section">
           <div class="section-title" data-i18n="optGenSettings">一般設定</div>
 
-          <div class="setting-item">
-            <div class="setting-info">
-              <span class="setting-label" data-i18n="optEnable">啟用詞典</span>
-              <span class="setting-desc" data-i18n="optEnableDesc">在網頁上顯示粵語發音提示</span>
-            </div>
-            <label class="toggle">
-              <input type="checkbox" id="enabledToggle" checked />
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -550,48 +540,49 @@
             </div>
           </div>
 
-          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
-            <div class="setting-info" style="margin-bottom: 8px;">
-              <span class="setting-label" data-i18n="optZhFont">中文字體</span>
-              <span class="setting-desc" data-i18n="optZhFontDesc">設定詞典顯示的中文字體（留空為預設）</span>
-            </div>
-            <select id="zhFontSelect" class="select-input" style="margin-bottom: 8px;">
-              <option value="">系統預設 (System UI)</option>
-              <option value="'Noto Sans TC', sans-serif">思源黑體 (Noto Sans TC)</option>
-              <option value="'PingFang HK', sans-serif">蘋方-港 (PingFang HK)</option>
-              <option value="'Microsoft JhengHei', sans-serif">微軟正黑體 (Microsoft JhengHei)</option>
-              <option value="'Songti TC', 'SimSun', serif">明體 / 宋體 (Songti / SimSun)</option>
-              <option value="'Kaiti TC', 'KaiTi', serif">楷體 (Kaiti)</option>
-              <option value="'HanaMinA', 'HanaMinB', serif">花園明朝 (HanaMin)</option>
-              <option value="custom">自定義輸入...</option>
-            </select>
-            <input
-              type="text"
-              id="customZhFont"
-              class="text-input"
-              style="display: none;"
-              placeholder="例如: 'Noto Sans TC', 'PingFang HK', sans-serif"
-            />
-          </div>
 
-          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
-            <div class="setting-info" style="margin-bottom: 8px;">
-              <span class="setting-label" data-i18n="optEnFont">拼音字體</span>
-              <span class="setting-desc" data-i18n="optEnFontDesc">設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）</span>
+          <div class="setting-item" style="align-items: flex-start; justify-content: flex-start; gap: 16px;">
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: stretch;">
+              <div class="setting-info" style="margin-bottom: 8px;">
+                <span class="setting-label" data-i18n="optZhFont">中文字體</span>
+              </div>
+              <select id="zhFontSelect" class="select-input" style="margin-bottom: 8px;">
+                <option value="">系統預設 (System UI)</option>
+                <option value="'Noto Sans TC', sans-serif">思源黑體 (Noto Sans TC)</option>
+                <option value="'PingFang HK', sans-serif">蘋方-港 (PingFang HK)</option>
+                <option value="'Microsoft JhengHei', sans-serif">微軟正黑體 (Microsoft JhengHei)</option>
+                <option value="'Songti TC', 'SimSun', serif">明體 / 宋體 (Songti / SimSun)</option>
+                <option value="'Kaiti TC', 'KaiTi', serif">楷體 (Kaiti)</option>
+                <option value="'HanaMinA', 'HanaMinB', serif">花園明朝 (HanaMin)</option>
+                <option value="custom">自定義輸入...</option>
+              </select>
+              <input
+                type="text"
+                id="customZhFont"
+                class="text-input"
+                style="display: none;"
+                placeholder="例如: 'Noto Sans TC', 'PingFang HK', sans-serif"
+              />
             </div>
-            <select id="enFontSelect" class="select-input" style="margin-bottom: 8px;">
-              <option value="">經典等寬字體 (Courier / 預設)</option>
-              <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">現代等寬字體 (SF Mono / Consolas)</option>
-              <option value="system-ui, -apple-system, sans-serif">系統無襯線體 (System UI)</option>
-              <option value="custom">自定義輸入...</option>
-            </select>
-            <input
-              type="text"
-              id="customEnFont"
-              class="text-input"
-              style="display: none;"
-              placeholder="例如: 'Courier New', monospace"
-            />
+
+            <div style="flex: 1; display: flex; flex-direction: column; align-items: stretch;">
+              <div class="setting-info" style="margin-bottom: 8px;">
+                <span class="setting-label" data-i18n="optEnFont">拼音字體</span>
+              </div>
+              <select id="enFontSelect" class="select-input" style="margin-bottom: 8px;">
+                <option value="">經典等寬字體 (Courier / 預設)</option>
+                <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">現代等寬字體 (SF Mono / Consolas)</option>
+                <option value="system-ui, -apple-system, sans-serif">系統無襯線體 (System UI)</option>
+                <option value="custom">自定義輸入...</option>
+              </select>
+              <input
+                type="text"
+                id="customEnFont"
+                class="text-input"
+                style="display: none;"
+                placeholder="例如: 'Courier New', monospace"
+              />
+            </div>
           </div>
 
           <div class="setting-item">
@@ -603,6 +594,22 @@
               <select id="popupDisplayStyle">
                 <option value="full" data-i18n="optStyleFull">完整模式</option>
                 <option value="compact" data-i18n="optStyleCompact">精簡音標</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item" id="hoverModifierContainer">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optHoverModifier">懸停觸發按鍵</span>
+              <span class="setting-desc" data-i18n="optHoverModifierDesc">按住特定按鍵時才顯示完整詞典，避免日常干擾</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="hoverModifier">
+                <option value="none" data-i18n="optKeyNone">無 (直接懸停)</option>
+                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
+                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
+                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
+                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
               </select>
             </div>
           </div>
@@ -1175,6 +1182,20 @@
               />
             </div>
 
+            <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+              <div class="setting-info" style="margin-bottom: 8px;">
+                <span class="setting-label" data-i18n="optAILanguage">目標語言</span>
+              </div>
+              <div class="select-wrapper">
+                <select id="aiLanguage">
+                  <option value="繁體中文">繁體中文</option>
+                  <option value="簡體中文">簡體中文</option>
+                  <option value="英文">英文 (English)</option>
+                  <option value="日文">日文 (日本語)</option>
+                </select>
+              </div>
+            </div>
+
             <div class="setting-item" style="padding-top: 16px;">
               <button id="testAiBtn" class="test-btn">
                 <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -1630,6 +1651,9 @@
           <li data-i18n="clItem1">✨ 全新精簡音標模式：懸浮窗僅顯示拼音，點擊即可發聲，支持輕彈動畫反饋。</li>
           <li data-i18n="clItem2">🎨 高亮樣式自定義：5 種背景色（黃、藍、紅、綠、灰）+ 虛線下劃線 + 虛線邊框，共 7 種選擇。</li>
           <li data-i18n="clItem3">🔧 修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。</li>
+          <li data-i18n="clItem4">✨ AI 語境翻譯：新增目標語言選擇（繁/簡/英/日），解釋更貼心。</li>
+          <li data-i18n="clItem5">🖱️ 右鍵選單：新增快捷選單，可快速開啟/暫停詞典及切換顯示模式。</li>
+          <li data-i18n="clItem6">⚡ 交互優化：移除發音延遲，單擊/雙擊即刻發聲，並修復了原生選區高亮衝突。</li>
         </ul>
       </div>
     </div>
