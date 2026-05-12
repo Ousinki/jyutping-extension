@@ -14,8 +14,9 @@ const i18nDict = {
     optEnable: "啟用詞典", optEnableDesc: "在網頁上顯示粵語發音提示", optFormat: "發音顯示格式",
     optFormatDesc: "選擇粵語拼音系統", optPopupStyle: "懸浮窗樣式", optPopupStyleDesc: "完整模式顯示詞義；精簡模式僅顯示音標",
     optStyleFull: "完整模式", optStyleCompact: "精簡音標",
-    optTheme: "懸浮窗主題", optThemeDesc: "選擇詞典彈窗的配色風格",
-    optFontSettings: "字體設定", optZhFont: "中文字體", optZhFontDesc: "設定詞典顯示的中文字體（留空為預設）",
+    optTheme: "懸浮窗主題", optThemeDesc: "選擇懸浮窗的顏色風格",
+    optHighlightStyle: "高亮樣式", optHighlightStyleDesc: "選擇懸停詞語時的高亮效果",
+    optFontSettings: "字體設置", optZhFont: "中文字體", optZhFontDesc: "指定中文的字體名稱（留空為默認）",
     optEnFont: "拼音字體", optEnFontDesc: "設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）",
     optTransSettings: "翻譯設定", optTransDesc1: "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
     optTransDesc2: "使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）", optAISettings: "✨ AI 語境翻譯",
@@ -53,8 +54,9 @@ const i18nDict = {
     optGreeting: "你好，歡迎使用粵語詞典",
     clTitle: "🚀 最新更新",
     clDesc: "本次更新帶來了以下優化：",
-    clItem1: "🚩 新增快速報錯：懸浮查詞時，滑鼠移至齒輪圖標即可展開「報告」按鈕，直接在懸浮窗內提交讀音或釋義錯誤。",
-    clItem2: "🔄 修復詞典緩存：解決了詞典更新後瀏覽器仍載入舊版數據的問題，現在始終獲取最新詞典。"
+    clItem1: "✨ 全新精簡音標模式：懸浮窗僅顯示拼音，點擊即可發聲，支持輕彈動畫反饋。",
+    clItem2: "🎨 高亮樣式自定義：5 種背景色（黃、藍、紅、綠、灰）+ 虛線下劃線 + 虛線邊框，共 7 種選擇。",
+    clItem3: "🔧 修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。"
   },
   "en": {
     optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
@@ -62,6 +64,7 @@ const i18nDict = {
     optFormatDesc: "Select romanization format", optPopupStyle: "Popup Display Style", optPopupStyleDesc: "Full mode shows definitions; Compact shows phonetics only",
     optStyleFull: "Full Mode", optStyleCompact: "Compact Phonetics",
     optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
+    optHighlightStyle: "Highlight Style", optHighlightStyleDesc: "Select the highlight effect for hovered words",
     optFontSettings: "Font Settings", optZhFont: "Chinese Font", optZhFontDesc: "Set font for Chinese text (leave empty for default)",
     optEnFont: "Pinyin Font", optEnFontDesc: "Set the exclusive font for Pinyin text (monospace recommended, leave empty for default)",
     optTransSettings: "Translation Settings", optTransDesc1: "Double-click selected text to show Mandarin and English translation",
@@ -100,8 +103,9 @@ const i18nDict = {
     optGreeting: "Hello, welcome to Jyutping Dictionary",
     clTitle: "🚀 What's New",
     clDesc: "This update brings the following improvements:",
-    clItem1: "🚩 Quick Error Report: Hover over a word, move to the gear icon to reveal the \"Report\" button, and submit pronunciation or definition errors directly from the popup.",
-    clItem2: "🔄 Dictionary Cache Fix: Fixed an issue where the browser loaded outdated dictionary data after updates."
+    clItem1: "✨ New Compact Phonetics Mode: Popup shows only pronunciation — click to play TTS with a satisfying tap animation.",
+    clItem2: "🎨 Customizable Highlight Styles: 5 background colors (yellow, blue, red, green, gray) + dashed underline + dashed border — 7 options total.",
+    clItem3: "🔧 Fixed translate popup centering, right-click triggering AI ring, and other minor bugs."
   }
 };
 

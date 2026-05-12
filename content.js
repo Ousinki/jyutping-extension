@@ -396,17 +396,15 @@
     const ARROW_HEIGHT = 8;
     const GAP = 2;
 
-    let left = rect.left;
+    let left;
     let top;
     let arrowDirection = 'up';
 
-    // 水平位置限制
-    if (left + 5 + popupWidth > viewportWidth) {
-      left = viewportWidth - popupWidth - 10;
-      if (left < 5) left = 5;
-    } else {
-      left = left + 5;
-    }
+    // 水平位置：居中對齊高亮詞
+    const highlightCenterX = rect.left + rect.width / 2;
+    left = highlightCenterX - popupWidth / 2;
+    if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
+    if (left < 5) left = 5;
 
     // 垂直位置限制 (相對於 viewport 計算，最後加 scrollX/Y)
     if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
@@ -450,8 +448,8 @@
 
   // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
   function showTranslatePopup(originalText, mandarin, english, loading) {
-    // 如果詞典彈窗正在顯示，將翻譯結果插入其中
-    if (popup && popup.style.display !== 'none') {
+    // 如果詞典彈窗正在顯示（且非精簡模式），將翻譯結果插入其中
+    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode')) {
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
         if (loading) {
@@ -561,8 +559,8 @@
 
   // 顯示 AI 翻譯結果
   function showAiResult(word, explanation) {
-    // 如果詞典彈窗正在顯示，插入其中
-    if (popup && popup.style.display !== 'none') {
+    // 如果詞典彈窗正在顯示（且非精簡模式），插入其中
+    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode')) {
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
         translateDiv.innerHTML = `
@@ -1124,6 +1122,9 @@
     // 點擊時的邏輯
 
     document.addEventListener('mousedown', (e) => {
+      // 只處理左鍵點擊，右鍵不觸發 TTS / AI 長按
+      if (e.button !== 0) return;
+
       // 如果點擊在彈窗內部，不隱藏
       if (popup && popup.contains(e.target)) {
         return;
@@ -1782,6 +1783,8 @@
     if (actionsWrapper) actionsWrapper.style.display = 'none';
     if (reportForm) reportForm.style.display = 'none';
     popup.classList.remove('expanded-mode');
+    // 隱藏上一次的獨立翻譯浮窗（避免殘留）
+    hideTranslatePopup();
 
     // 設定精簡模式的寬度為 auto
     popup.style.width = 'auto';
@@ -2207,6 +2210,8 @@
     if (popup) {
       popup.style.display = 'none';
     }
+    // 精簡模式下翻譯結果用獨立浮窗，一併隱藏
+    hideTranslatePopup();
     currentWord = null;
     // 如果用戶有手動選中的文本，不清除選區
     if (!hasUserSelection) {
