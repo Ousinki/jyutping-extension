@@ -31,6 +31,7 @@
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
   let currentWord = null; // 追蹤當前顯示的詞
+  let currentContextSentence = ''; // 當前高亮詞語所在的上下文句子
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
   let justNavigated = false; // 是否剛進行鏈接導航
@@ -43,6 +44,7 @@
   // AI 翻譯
   let aiEnabled = false;
   let aiLongPressTimer = null; // 長按計時器
+  let aiAnimationTimer = null; // 長按動畫延遲計時器
 
 
   // ========== i18n 系統 ==========
@@ -370,6 +372,10 @@
   }
 
   function cancelLongPressAnimation() {
+    if (aiAnimationTimer) {
+      clearTimeout(aiAnimationTimer);
+      aiAnimationTimer = null;
+    }
     if (!longPressRing) return;
     longPressRing.style.opacity = '0';
     const progressCircle = longPressRing.querySelector('.ring-progress');
@@ -620,34 +626,190 @@
     // 內部結構：左側主要內容 + 右側例句 + 翻譯（全部包裹在 overflow hidden 容器中，以免內容溢出圓角）
     popup.innerHTML = `
       <div class="popup-inner" style="border-radius: inherit; overflow: hidden; width: 100%; height: 100%; display: flex; flex-direction: column; position: relative;">
-        <!-- 設定按鈕 -->
-        <div class="popup-settings-btn" title="設定" style="position: absolute; top: 10px; right: 10px; cursor: pointer; opacity: 0.4; transition: opacity 0.2s; z-index: 10; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
+        <!-- 右上角操作按鈕區（包含報告和設定） -->
+        <div class="popup-actions-wrapper" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; z-index: 10;">
+          <!-- 報告錯誤按鈕 (預設隱藏，hover wrapper 時滑出) -->
+          <div class="popup-report-btn" title="報告錯誤" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); font-size: 12px; white-space: nowrap; padding: 0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+              <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+              <line x1="4" y1="22" x2="4" y2="15"></line>
+            </svg>
+            <span style="transform: translateY(-0.5px)">報告</span>
+          </div>
+          <!-- 設定按鈕 -->
+          <div class="popup-settings-btn" title="設定" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </div>
         </div>
         <div class="popup-container">
           <div class="popup-main"></div>
           <div class="popup-examples" style="display:none;"></div>
         </div>
         <div class="popup-translate" style="display:none;"></div>
+        
+        <!-- 內聯報告表單 (預設隱藏) -->
+        <div class="popup-report-form" style="display:none; padding: 12px; flex-direction: column; gap: 8px;">
+          <div style="font-weight: bold; color: var(--popup-text); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
+            <span>報告錯誤</span>
+            <span class="report-cancel-icon" style="cursor: pointer; opacity: 0.6;">✕</span>
+          </div>
+          <div style="font-size: 13px; color: var(--popup-text-muted); background: var(--popup-bg); padding: 6px; border-radius: 4px; border: 1px solid var(--popup-divider);">
+            <div><strong>詞語：</strong><span class="report-word-preview"></span></div>
+            <div style="margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>句子：</strong><span class="report-sentence-preview"></span></div>
+          </div>
+          <textarea class="report-textarea" placeholder="請描述具体的错误（例如读音不正确、释义有误等）..." style="width: 100%; height: 60px; padding: 6px; border: 1px solid var(--popup-border); border-radius: 4px; background: var(--popup-bg); color: var(--popup-text); font-size: 13px; resize: none; outline: none !important; box-shadow: none !important; -webkit-appearance: none; box-sizing: border-box;"></textarea>
+          <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
+            <button class="report-cancel-btn" style="padding: 4px 10px; border: 1px solid var(--popup-border); background: transparent; color: var(--popup-text); border-radius: 4px; cursor: pointer; font-size: 12px;">取消</button>
+            <button class="report-send-btn" style="padding: 4px 10px; border: none; background: var(--popup-accent); color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">呼叫郵件發送</button>
+          </div>
+        </div>
       </div>
     `;
     popup.appendChild(popupArrow);
     
     document.body.appendChild(popup);
 
-    // 設定按鈕事件
+    // 操作按鈕區事件
+    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
     const settingsBtn = popup.querySelector('.popup-settings-btn');
-    settingsBtn.addEventListener('mouseenter', () => {
+    const reportBtn = popup.querySelector('.popup-report-btn');
+    const popupContainer = popup.querySelector('.popup-container');
+    const popupTranslate = popup.querySelector('.popup-translate');
+    const reportForm = popup.querySelector('.popup-report-form');
+
+    // Hover 整個 wrapper 時：設定按鈕變亮，報告按鈕向左滑出
+    actionsWrapper.addEventListener('mouseenter', () => {
+      // 如果報告表單正在顯示，則不顯示按鈕
+      if (reportForm.style.display === 'flex') return;
+      
       settingsBtn.style.opacity = '1';
       settingsBtn.style.backgroundColor = 'var(--popup-divider)';
+      
+      reportBtn.style.opacity = '1';
+      reportBtn.style.width = '60px'; // 展開寬度
+      reportBtn.style.padding = '0 8px';
+      reportBtn.style.marginRight = '4px';
     });
-    settingsBtn.addEventListener('mouseleave', () => {
+    
+    actionsWrapper.addEventListener('mouseleave', () => {
       settingsBtn.style.opacity = '0.4';
       settingsBtn.style.backgroundColor = 'transparent';
+      
+      reportBtn.style.opacity = '0';
+      reportBtn.style.width = '0';
+      reportBtn.style.padding = '0';
+      reportBtn.style.marginRight = '0';
+      reportBtn.style.backgroundColor = 'var(--popup-divider)'; // reset hover
     });
+
+    // Report 按鈕獨立 hover 效果
+    reportBtn.addEventListener('mouseenter', () => {
+      reportBtn.style.backgroundColor = 'var(--popup-divider-strong)';
+    });
+    reportBtn.addEventListener('mouseleave', () => {
+      reportBtn.style.backgroundColor = 'var(--popup-divider)';
+    });
+
+    // 點擊報告錯誤：展開內聯表單
+    reportBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // 隱藏主內容，顯示表單
+      popupContainer.style.display = 'none';
+      if (popupTranslate) popupTranslate.style.display = 'none';
+      reportForm.style.display = 'flex';
+      actionsWrapper.style.display = 'none'; // 隱藏右上角按鈕
+      
+      // 填充預覽數據
+      popup.querySelector('.report-word-preview').textContent = currentWord || '未知';
+      popup.querySelector('.report-sentence-preview').textContent = currentContextSentence || '未知';
+      
+      // 清空輸入框
+      popup.querySelector('.report-textarea').value = '';
+    });
+    
+    // 取消按鈕
+    const closeReportForm = (e) => {
+      if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+      }
+      reportForm.style.display = 'none';
+      popupContainer.style.display = 'block';
+      actionsWrapper.style.display = 'flex';
+    };
+    popup.querySelector('.report-cancel-btn').addEventListener('click', closeReportForm);
+    popup.querySelector('.report-cancel-icon').addEventListener('click', closeReportForm);
+    
+    // 發送按鈕
+    popup.querySelector('.report-send-btn').addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const btn = e.currentTarget;
+      const originalText = btn.textContent;
+      const originalBg = btn.style.backgroundColor;
+      
+      // 按鈕變為發送中狀態
+      btn.textContent = '發送中...';
+      btn.style.opacity = '0.8';
+      btn.style.pointerEvents = 'none';
+      
+      const userDesc = popup.querySelector('.report-textarea').value;
+      const subject = `[Jyutping Extension] 錯誤報告: ${currentWord || '未知'}`;
+      const message = `【單詞】：${currentWord || '未知'}\n【上下文】：${currentContextSentence || '未知'}\n\n【錯誤描述】：\n${userDesc || '未提供具體描述'}`;
+      
+      try {
+        // 使用 Web3Forms API 靜默發送郵件 (需替換為你的 Access Key)
+        // 获取 Key: https://web3forms.com/ (输入邮箱 ousinki@outlook.com 即可免费获取)
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+          },
+          body: JSON.stringify({
+            access_key: "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c",
+            subject: subject,
+            from_name: "Jyutping Extension",
+            message: message
+          })
+        });
+
+        const result = await response.json();
+        
+        if (response.status === 200) {
+          // 發送成功
+          btn.textContent = '✓ 報告已送出';
+          btn.style.backgroundColor = '#4caf50'; // 綠色
+        } else {
+          // 服務器返回錯誤
+          btn.textContent = '❌ 發送失敗';
+          btn.style.backgroundColor = '#f44336'; // 紅色
+          console.error('Email API Error:', result);
+        }
+      } catch (error) {
+        // 網絡錯誤
+        btn.textContent = '❌ 網絡錯誤';
+        btn.style.backgroundColor = '#f44336'; // 紅色
+        console.error('Network Error:', error);
+      }
+      
+      // 1.5秒後關閉表單並恢復按鈕狀態
+      setTimeout(() => {
+        btn.textContent = originalText;
+        btn.style.backgroundColor = originalBg;
+        btn.style.opacity = '1';
+        btn.style.pointerEvents = 'auto';
+        closeReportForm();
+      }, 1500);
+    });
+
+    // 點擊設定
     settingsBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -678,6 +840,12 @@
 
     // 點擊彈窗內部不關閉，且不影響背景選區
     popup.addEventListener('mousedown', (e) => {
+      // 允許表單元素獲取焦點
+      const tag = e.target.tagName.toLowerCase();
+      if (tag === 'textarea' || tag === 'input') {
+        e.stopPropagation();
+        return;
+      }
       e.preventDefault();
       e.stopPropagation();
     });
@@ -686,8 +854,9 @@
   // 載入詞典數據
   async function loadDictionary() {
     try {
-      const url = chrome.runtime.getURL('dictionary.json');
-      const response = await fetch(url);
+      const manifest = chrome.runtime.getManifest();
+      const url = chrome.runtime.getURL('dictionary.json') + '?v=' + manifest.version;
+      const response = await fetch(url, { cache: 'no-cache' });
       dictionary = await response.json();
       console.log('粵語詞典已載入，詞條數：', Object.keys(dictionary).length);
     } catch (error) {
@@ -750,6 +919,26 @@
     if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
   }
   
+  // 輔助函數：將 Data URI 轉換為 Blob URL 以繞過 CSP 限制
+  function createBlobUrlFromDataUri(dataURI) {
+    try {
+      if (!dataURI.startsWith('data:')) return dataURI;
+      const parts = dataURI.split(',');
+      const byteString = atob(parts[1]);
+      const mimeString = parts[0].split(':')[1].split(';')[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      console.error('Data URI to Blob URL failed:', e);
+      return dataURI;
+    }
+  }
+
   async function speakCantonese(text, targetBtn = null) {
     if (!ttsEnabled) return;
     
@@ -980,7 +1169,9 @@
               const selectedWord = selection.toString().trim();
               console.log('[AI] 長按計時器啟動, word:', selectedWord);
               
-              startLongPressAnimation(e.clientX, e.clientY);
+              aiAnimationTimer = setTimeout(() => {
+                startLongPressAnimation(e.clientX, e.clientY);
+              }, 150);
               
               aiLongPressTimer = setTimeout(() => {
                 aiLongPressTimer = null;
@@ -992,7 +1183,7 @@
                   selectionClickTimer = null;
                 }
                 requestAiTranslation(selectedWord);
-              }, 500);
+              }, 650);
             });
             return;
           }
@@ -1046,7 +1237,9 @@
               clearTimeout(aiLongPressTimer);
               cancelLongPressAnimation();
             }
-            startLongPressAnimation(e.clientX, e.clientY);
+            aiAnimationTimer = setTimeout(() => {
+              startLongPressAnimation(e.clientX, e.clientY);
+            }, 150);
             aiLongPressTimer = setTimeout(() => {
               aiLongPressTimer = null;
               cancelLongPressAnimation();
@@ -1057,7 +1250,7 @@
                 }
                 requestAiTranslation(wordToSpeak);
               }
-            }, 500);
+            }, 650);
           });
 
           // 監聽拖拽：如果移動超過 5px，切換到選擇模式
@@ -1377,6 +1570,7 @@
 
     // 提取文字內容
     const text = textNode.textContent;
+    currentContextSentence = text.trim();
     
     // 從當前位置往後取 15 個字符（標準查詞行為：只匹配光標後的詞）
     // 這樣符合大多數詞典插件（如 Zhongwen, Rikaikun）的習慣
@@ -2003,18 +2197,24 @@
       const myId = document.documentElement.getAttribute('data-jyutping-tts-owner');
       if (myId !== contentScriptId) return;
       
+      const audioSrc = request.audioData.startsWith('data:') ? createBlobUrlFromDataUri(request.audioData) : request.audioData;
+
       // 緩存音頻數據
       if (pendingTtsText) {
         if (ttsCache.size >= TTS_CACHE_MAX) {
           // 刪除最舊的緩存條目
           const firstKey = ttsCache.keys().next().value;
+          const oldAudioSrc = ttsCache.get(firstKey);
+          if (oldAudioSrc && oldAudioSrc.startsWith('blob:')) {
+            URL.revokeObjectURL(oldAudioSrc);
+          }
           ttsCache.delete(firstKey);
         }
-        ttsCache.set(pendingTtsText, request.audioData);
+        ttsCache.set(pendingTtsText, audioSrc);
         pendingTtsText = '';
       }
       // 播放音頻
-      const audio = new Audio(request.audioData);
+      const audio = new Audio(audioSrc);
       audio.onended = stopSpeakerAnimation;
       audio.onerror = stopSpeakerAnimation;
       audio.play();

@@ -48,9 +48,11 @@ const i18nDict = {
     optSuccess: "✅ 連接成功！\n模型回覆：",
     optFail: "❌ 連接失敗：",
     optNoReply: "（無回覆）",
-    optGreeting: "你好，歡迎使用粵語詞典"
-
-
+    optGreeting: "你好，歡迎使用粵語詞典",
+    clTitle: "🚀 最新更新",
+    clDesc: "本次更新帶來了以下優化：",
+    clItem1: "🚩 新增快速報錯：懸浮查詞時，滑鼠移至齒輪圖標即可展開「報告」按鈕，直接在懸浮窗內提交讀音或釋義錯誤。",
+    clItem2: "🔄 修復詞典緩存：解決了詞典更新後瀏覽器仍載入舊版數據的問題，現在始終獲取最新詞典。"
   },
   "en": {
     optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
@@ -91,9 +93,11 @@ const i18nDict = {
     optSuccess: "✅ Connection Successful!\nModel replied: ",
     optFail: "❌ Connection Failed: ",
     optNoReply: "(No reply)",
-    optGreeting: "Hello, welcome to Jyutping Dictionary"
-
-
+    optGreeting: "Hello, welcome to Jyutping Dictionary",
+    clTitle: "🚀 What's New",
+    clDesc: "This update brings the following improvements:",
+    clItem1: "🚩 Quick Error Report: Hover over a word, move to the gear icon to reveal the \"Report\" button, and submit pronunciation or definition errors directly from the popup.",
+    clItem2: "🔄 Dictionary Cache Fix: Fixed an issue where the browser loaded outdated dictionary data after updates."
   }
 };
 
@@ -963,6 +967,33 @@ function applyI18n(lang) {
           feedbackResult.style.display = 'none';
         }, 5000);
       }
+    });
+  }
+
+  // === Changelog Notice Board Logic ===
+  const currentVersion = chrome.runtime.getManifest().version;
+  const changelogBoard = document.getElementById('changelogBoard');
+  const closeChangelogBtn = document.getElementById('closeChangelogBtn');
+  const changelogVersionBadge = document.getElementById('changelogVersionBadge');
+
+  if (changelogBoard && closeChangelogBtn && changelogVersionBadge) {
+    changelogVersionBadge.textContent = 'v' + currentVersion;
+
+    chrome.storage.local.get(['lastSeenVersion'], (result) => {
+      const lastSeenVersion = result.lastSeenVersion;
+
+      if (lastSeenVersion !== currentVersion) {
+        // Show board after a slight delay for smooth entry
+        setTimeout(() => {
+          changelogBoard.classList.add('show');
+        }, 300);
+      }
+    });
+
+    closeChangelogBtn.addEventListener('click', () => {
+      changelogBoard.classList.remove('show');
+      // Save the current version to storage so it doesn't show again
+      chrome.storage.local.set({ lastSeenVersion: currentVersion });
     });
   }
 });

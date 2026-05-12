@@ -396,10 +396,103 @@
         }
       }
 
-      /* Reduced motion */
-      @media (prefers-reduced-motion: reduce) {
-        * {
-          transition: none !important;
+      /* Changelog Board */
+      .changelog-board {
+        position: fixed;
+        top: 40px;
+        right: 40px;
+        width: 320px;
+        background: var(--bg-card);
+        border-radius: var(--radius);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+        border: 1px solid var(--border);
+        padding: 24px;
+        z-index: 100;
+        opacity: 0;
+        transform: translateX(20px);
+        transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        pointer-events: none;
+      }
+
+      .changelog-board.show {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+
+      .changelog-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+      }
+
+      .changelog-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .changelog-version {
+        font-size: 12px;
+        background: var(--primary);
+        color: white;
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-weight: 600;
+      }
+
+      .changelog-close {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 4px;
+        transition: var(--transition);
+      }
+
+      .changelog-close:hover {
+        background: var(--bg-input);
+        color: var(--text-primary);
+      }
+
+      .changelog-content {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+      }
+
+      .changelog-list {
+        margin-top: 12px;
+        padding-left: 20px;
+      }
+
+      .changelog-list li {
+        margin-bottom: 8px;
+      }
+
+      .changelog-list li:last-child {
+        margin-bottom: 0;
+      }
+
+      @media (max-width: 1080px) {
+        .changelog-board {
+          top: 50%;
+          right: auto;
+          left: 50%;
+          transform: translate(-50%, -40%);
+          width: 90%;
+          max-width: 360px;
+        }
+        .changelog-board.show {
+          transform: translate(-50%, -50%);
         }
       }
     </style>
@@ -1202,6 +1295,113 @@
             <span data-i18n="optFeedbackDesc">如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！</span>
           </p>
 
+          <!-- Report Feature CSS Animation Demo -->
+          <style>
+            .report-demo-outer {
+              background: var(--bg-input);
+              border: 1px solid var(--border);
+              border-radius: 8px;
+              padding: 16px;
+              margin-top: 16px;
+              margin-bottom: 24px;
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+            }
+            .report-demo-stage {
+              position: relative;
+              width: 260px;
+              height: 110px;
+              margin-top: 16px;
+            }
+            .report-demo-box {
+              background: var(--bg-card);
+              border: 1px solid var(--border);
+              border-radius: 8px;
+              position: absolute;
+              top: 0; left: 0; right: 0;
+              height: 90px;
+              box-shadow: var(--shadow);
+              overflow: hidden;
+            }
+            .demo-cursor-svg {
+              position: absolute;
+              top: 80px;
+              left: 180px;
+              width: 18px;
+              height: 24px;
+              z-index: 10;
+              pointer-events: none;
+              animation: cursorMove 5s infinite ease-in-out;
+            }
+            @keyframes cursorMove {
+              0%, 12%  { top: 80px;  left: 180px; }
+              28%, 42% { top: 14px;  left: 238px; }
+              55%, 68% { top: 14px;  left: 178px; }
+              71%      { top: 14px;  left: 178px; transform: scale(0.85); }
+              74%      { top: 14px;  left: 178px; transform: scale(1); }
+              88%, 100%{ top: 80px;  left: 180px; }
+            }
+            @keyframes settingsAnim {
+              0%, 22% { opacity: 0.5; }
+              28%, 78% { opacity: 1; background: rgba(138, 28, 28, 0.1); }
+              84%, 100% { opacity: 0.5; background: transparent; }
+            }
+            @keyframes reportSlide {
+              0%, 22% { max-width: 0; opacity: 0; padding: 0; margin-right: 0; }
+              28%, 78% { max-width: 60px; opacity: 1; padding: 0 6px; margin-right: 4px; }
+              84%, 100% { max-width: 0; opacity: 0; padding: 0; margin-right: 0; }
+            }
+            @keyframes reportHover {
+              0%, 50% { background: rgba(138, 28, 28, 0.1); color: var(--primary); }
+              55%, 68% { background: var(--primary); color: #fff; }
+              78%, 100% { background: rgba(138, 28, 28, 0.1); color: var(--primary); }
+            }
+            .demo-settings-icon { animation: settingsAnim 5s infinite ease-in-out; }
+            .demo-report-pill {
+              animation: reportSlide 5s infinite ease-in-out,
+                         reportHover 5s infinite ease-in-out;
+            }
+          </style>
+
+          <div class="report-demo-outer">
+            <div style="font-size: 13px; color: var(--text-secondary); font-weight: 500; display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              <span>小提示：現在可以在網頁查詞時，直接通過懸浮窗快速報錯！</span>
+            </div>
+
+            <div class="report-demo-stage">
+              <!-- Dictionary card -->
+              <div class="report-demo-box">
+                <div style="padding: 12px; text-align: left;">
+                  <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 2px;">靚 <span style="font-size: 13px; font-weight: normal; color: var(--primary-light); margin-left: 4px;">leng3</span></div>
+                  <div style="font-size: 13px; color: var(--text-secondary);">漂亮，好看。</div>
+                </div>
+                <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center;">
+                  <div class="demo-report-pill" style="height: 24px; display: flex; align-items: center; border-radius: 4px; overflow: hidden; white-space: nowrap; font-size: 11px; color: var(--primary);">
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px; flex-shrink: 0;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
+                    <span>報告</span>
+                  </div>
+                  <div class="demo-settings-icon" style="width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mouse cursor: OUTSIDE overflow:hidden box, same positioning parent -->
+              <svg class="demo-cursor-svg" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <g filter="url(#cursorShadow)">
+                  <path d="M7 2L7 22L12 17L17 25L20 23.5L15 15.5L22 15.5L7 2Z" fill="white" stroke="black" stroke-width="1.5" stroke-linejoin="round"/>
+                </g>
+                <defs>
+                  <filter id="cursorShadow" x="0" y="0" width="28" height="28" filterUnits="userSpaceOnUse">
+                    <feDropShadow dx="1" dy="2" stdDeviation="1" flood-opacity="0.3"/>
+                  </filter>
+                </defs>
+              </svg>
+            </div>
+          </div>
+
           <form id="feedbackForm" style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
             <input type="hidden" name="access_key" value="d19a0594-b64b-4593-b0e1-baf1cbeb6a4c">
             
@@ -1245,6 +1445,28 @@
           & <a href="https://cc-cedict.org" target="_blank">CC-CEDICT</a>
         </p>
         <p><span data-i18n="optFooterLicense">授權：</span>CC BY-SA 3.0</p>
+      </div>
+    </div>
+    <!-- Changelog Notice Board -->
+    <div id="changelogBoard" class="changelog-board">
+      <div class="changelog-header">
+        <div class="changelog-title">
+          <span data-i18n="clTitle">🚀 最新更新</span>
+          <span class="changelog-version" id="changelogVersionBadge">v1.4.3</span>
+        </div>
+        <button id="closeChangelogBtn" class="changelog-close" title="關閉">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      <div class="changelog-content">
+        <p data-i18n="clDesc">本次更新帶來了以下優化：</p>
+        <ul class="changelog-list">
+          <li data-i18n="clItem1">🚩 新增快速報錯：懸浮查詞時，滑鼠移至齒輪圖標即可展開「報告」按鈕，直接在懸浮窗內提交讀音或釋義錯誤。</li>
+          <li data-i18n="clItem2">🔄 修復詞典緩存：解決了詞典更新後瀏覽器仍載入舊版數據的問題，現在始終獲取最新詞典。</li>
+        </ul>
       </div>
     </div>
 
