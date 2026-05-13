@@ -692,6 +692,12 @@
   transition: none;
 }
 
+#cantonese-popup-dict.compact-mode .popup-arrow::before {
+  background-color: #ffffff !important;
+  border-color: #d0d0d0 !important;
+}
+
+
 #cantonese-popup-dict.compact-mode .popup-main {
   width: auto;
   min-width: unset;
