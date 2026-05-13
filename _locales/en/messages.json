@@ -172,7 +172,7 @@
     "description": "Changelog description"
   },
   "clItem1": {
-    "message": "✨ <b>New Compact Mode</b>: The popup can now display only the phonetics, with a <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> button to expand to the full dictionary. Click to pronounce with a satisfying visual bounce.",
+    "message": "✨ <b>New Compact Mode</b>: The popup can now display only the phonetics (supports tone numbers as superscripts), with a <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> button to expand to the full dictionary. Click to pronounce with a satisfying visual bounce.",
     "description": "Changelog item 1"
   },
   "clItem2": {

@@ -172,7 +172,7 @@
     "description": "Changelog description"
   },
   "clItem1": {
-    "message": "✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，並支援點擊 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。",
+    "message": "✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，支援聲調數字右上角角標顯示，並可點擊 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。",
     "description": "Changelog item 1"
   },
   "clItem2": {
