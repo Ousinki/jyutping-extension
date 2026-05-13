@@ -10,7 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 const i18nDict = {
   "zh-HK": {
-    optTitle: "粵語懸浮詞典", optSubtitle: "Cantonese Popup Dictionary Settings", optGenSettings: "一般設定",
+    optTitle: "粵語懸浮詞典", optSubtitle: "Jyutping Hover Dictionary", optGenSettings: "一般設定",
     optEnable: "啟用詞典", optEnableDesc: "在網頁上顯示粵語發音提示", optFormat: "發音顯示格式",
     optFormatDesc: "選擇粵語拼音系統", optPopupStyle: "懸浮窗樣式", optPopupStyleDesc: "完整模式顯示詞義；精簡模式僅顯示音標",
     optStyleFull: "完整模式", optStyleCompact: "精簡音標",
