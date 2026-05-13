@@ -15,6 +15,7 @@
   let popupArrow = null; // 彈窗箭頭元素
   let isEnabled = true;
   let displayMode = 'jyutping'; // 'jyutping' 或 'yale'
+  let toneStyle = 'superscript'; // 'superscript' 數字為上標 或 'inline' 數字跟在後方
   let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
   let popupTheme = 'classic'; // 懸浮窗主題
   let ttsEnabled = true; // TTS 開關
@@ -38,6 +39,8 @@
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
   let justNavigated = false; // 是否剛進行鏈接導航
+  let compactExpandBtn = true; // 精簡模式展開按鈕
+  let expandLockTimer = null; // 展開按鈕冷卻鎖計時器
 
   // 翻譯
   let translatePopup = null; // 用於句子選區的獨立浮窗
@@ -867,18 +870,20 @@
   // 載入用戶設定
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
+      'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
       displayMode = result.displayMode || 'jyutping';
+      toneStyle = result.toneStyle || 'superscript';
       hoverModifier = result.hoverModifier || 'none';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
       customEnFont = result.customEnFont || '';
       highlightStyle = result.highlightStyle || 'yellow';
+      compactExpandBtn = result.compactExpandBtn !== false;
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
       ttsEngine = result.ttsEngine || 'chromeTts';
@@ -1371,20 +1376,22 @@
       }
       
       // 如果按下了設定的修飾鍵，立刻觸發懸停查詞
-      if (hoverModifier !== 'none') {
-        const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
-        if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
-          // 模擬滑鼠移動觸發查詞，強制更新最後已知坐標以通過防抖
-          lastX = currentMouseX;
-          lastY = currentMouseY;
-          handleMouseOver({ 
-            clientX: currentMouseX, 
-            clientY: currentMouseY,
-            altKey: e.altKey || e.key === 'Alt',
-            ctrlKey: e.ctrlKey || e.key === 'Control',
-            shiftKey: e.shiftKey || e.key === 'Shift',
-            metaKey: e.metaKey || e.key === 'Meta'
-          });
+      const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
+      if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+        // 模擬滑鼠移動觸發查詞，強制更新最後已知坐標以通過防抖
+        lastX = currentMouseX;
+        lastY = currentMouseY;
+        handleMouseOver({ 
+          clientX: currentMouseX, 
+          clientY: currentMouseY,
+          altKey: e.altKey || e.key === 'Alt',
+          ctrlKey: e.ctrlKey || e.key === 'Control',
+          shiftKey: e.shiftKey || e.key === 'Shift',
+          metaKey: e.metaKey || e.key === 'Meta'
+        });
+        // 完整模式下按修飾鍵觸發時，自動發音
+        if (popupDisplayStyle === 'full' && ttsEnabled && currentWord && dictionary[currentWord]) {
+          speakCantonese(dictionary[currentWord].traditional || currentWord);
         }
       }
     });
@@ -1517,9 +1524,10 @@
   function handleMouseOver(e) {
     if (!isEnabled) return;
     if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
+    if (expandLockTimer) return; // 展開按鈕冷卻期內不重新渲染
     
-    // 檢查修飾鍵是否按下
-    const modifierPressed = hoverModifier === 'none' ||
+    // 檢查修飾鍵是否按下（精簡模式不需要修飾鍵）
+    const modifierPressed = popupDisplayStyle === 'compact' || hoverModifier === 'none' ||
       (hoverModifier === 'alt' && e.altKey) ||
       (hoverModifier === 'ctrl' && e.ctrlKey) ||
       (hoverModifier === 'shift' && e.shiftKey) ||
@@ -1907,6 +1915,28 @@
       </div>
     `;
 
+    // 如果開啟了展開按鈕，添加到精簡彈窗中
+    if (compactExpandBtn) {
+      const expandBtn = document.createElement('span');
+      expandBtn.className = 'compact-expand-btn';
+      expandBtn.innerHTML = '<img src="' + chrome.runtime.getURL('icon_favicon.svg') + '" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block;" />';
+      expandBtn.title = 'Show full dictionary';
+      expandBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        // 設定冷卻鎖：在 400ms 內阻止 scheduleHidePopup 和 handleMouseOver 隱藏彈窗
+        if (expandLockTimer) clearTimeout(expandLockTimer);
+        expandLockTimer = setTimeout(() => { expandLockTimer = null; }, 400);
+        // 以完整模式重新渲染
+        const savedStyle = popupDisplayStyle;
+        popupDisplayStyle = 'full';
+        showPopup(result, rect);
+        popupDisplayStyle = savedStyle;
+      });
+      const compactPron = popupMain.querySelector('.compact-pronunciation');
+      if (compactPron) compactPron.appendChild(expandBtn);
+    }
+
     // 綁定 TTS（點擊拼音文字即可播放）
     const compactText = popupMain.querySelector('.compact-text');
     if (compactText) {
@@ -1975,9 +2005,13 @@
     const entry = result.entry;
     
     // 選擇顯示的拼音格式
-    const pronunciation = displayMode === 'yale' 
+    let pronunciation = displayMode === 'yale' 
       ? (entry.yale || entry.jyutping)
       : entry.jyutping;
+
+    if (pronunciation && toneStyle === 'superscript' && popupDisplayStyle === 'compact') {
+      pronunciation = pronunciation.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
+    }
 
     // ========== 精簡模式：僅顯示音標 ==========
     if (popupDisplayStyle === 'compact') {
@@ -2305,6 +2339,7 @@
   // 延遲隱藏（給用戶時間移動到彈窗上）
   function scheduleHidePopup(delay = 200) {
     if (hideTimeout) return;
+    if (expandLockTimer) return; // 展開按鈕冷卻期內不隱藏
     hideTimeout = setTimeout(() => {
       // 只有在滑鼠移出且不是粘滯的情況下隱藏
       // 現在主要依賴點擊隱藏，但離開彈窗也會隱藏
@@ -2398,8 +2433,12 @@
       }
     } else if (request.action === 'changeDisplayMode') {
       displayMode = request.mode;
+    } else if (request.action === 'changeToneStyle') {
+      toneStyle = request.style;
     } else if (request.action === 'changePopupDisplayStyle') {
       popupDisplayStyle = request.style;
+    } else if (request.action === 'changeCompactExpandBtn') {
+      compactExpandBtn = request.enabled;
     } else if (request.action === 'changeHighlightStyle') {
       highlightStyle = request.style;
     } else if (request.action === 'changePopupTheme') {

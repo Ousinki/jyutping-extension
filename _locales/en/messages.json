@@ -11,8 +11,12 @@
     "message": "Toggle Jyutping Hover Dictionary",
     "description": "extActionTitle"
   },
+  "optToneStyleToggle": {
+    "message": "Display tone numbers as superscript",
+    "description": "Checkbox label for tone style"
+  },
   "optTitle": {
-    "message": "Jyutping Dictionary",
+    "message": "Jyutping Hover Dictionary",
     "description": "optTitle"
   },
   "optSubtitle": {
@@ -66,6 +70,10 @@
   "optKeyMeta": {
     "message": "Command / Win",
     "description": "optKeyMeta"
+  },
+  "optCompactExpandBtn": {
+    "message": "Show <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> button to expand to full dictionary",
+    "description": "optCompactExpandBtn"
   },
   "optTheme": {
     "message": "Popup Theme",
@@ -154,5 +162,37 @@
   "ctxMenuSettings": {
     "message": "Dictionary Settings...",
     "description": "Context menu to open settings"
+  },
+  "clTitle": {
+    "message": "🚀 What's New",
+    "description": "Changelog title"
+  },
+  "clDesc": {
+    "message": "This update brings the following improvements:",
+    "description": "Changelog description"
+  },
+  "clItem1": {
+    "message": "✨ <b>New Compact Mode</b>: The popup can now display only the phonetics, with a <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> button to expand to the full dictionary. Click to pronounce with a satisfying visual bounce.",
+    "description": "Changelog item 1"
+  },
+  "clItem2": {
+    "message": "🔊 <b>Interaction & Audio</b>: In full mode, holding the modifier key to trigger the dictionary will now automatically play the pronunciation. Removed audio delay for instant pronunciation on click/double-click.",
+    "description": "Changelog item 2"
+  },
+  "clItem3": {
+    "message": "🎨 <b>UI Customization</b>: Optimized the settings page layout. Expanded highlight styles to 7 options (5 background colors + 2 dashed borders).",
+    "description": "Changelog item 3"
+  },
+  "clItem4": {
+    "message": "🌐 <b>AI Contextual Translation</b>: Added target language selection (Traditional/Simplified/English/Japanese) for tailored explanations.",
+    "description": "Changelog item 4"
+  },
+  "clItem5": {
+    "message": "🖱️ <b>Context Menu</b>: Added a right-click menu to quickly enable/disable the dictionary and switch display modes.",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🔧 <b>Bug Fixes</b>: Fixed translation popup centering and native text selection highlight conflicts.",
+    "description": "Changelog item 6"
   }
 }

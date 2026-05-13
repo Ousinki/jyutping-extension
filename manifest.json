@@ -24,7 +24,7 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["dictionary.json", "fonts/HanaMinB.ttf"],
+      "resources": ["dictionary.json", "fonts/HanaMinB.ttf", "icon16.png", "icon_favicon.svg"],
       "matches": ["<all_urls>"]
     }
   ],

@@ -16,6 +16,8 @@ const i18nDict = {
     optStyleFull: "完整模式", optStyleCompact: "精簡音標",
     optTheme: "懸浮窗主題", optThemeDesc: "選擇懸浮窗的顏色風格",
     optHighlightStyle: "高亮樣式", optHighlightStyleDesc: "選擇懸停詞語時的高亮效果",
+    optHoverModifier: "懸停觸發按鍵", optHoverModifierDesc: "按住特定按鍵時才顯示完整詞典，避免日常干擾",
+    optKeyNone: "無 (直接懸停)", optKeyAlt: "Alt / Option (⌥)", optKeyCtrl: "Ctrl (⌃)", optKeyShift: "Shift (⇧)", optKeyMeta: "Command (⌘) / Win",
     optFontSettings: "字體設置", optZhFont: "中文字體", optZhFontDesc: "指定中文的字體名稱（留空為默認）",
     optEnFont: "拼音字體", optEnFontDesc: "設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）",
     optTransSettings: "翻譯設定", optTransDesc1: "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
@@ -52,22 +54,25 @@ const i18nDict = {
     optFail: "❌ 連接失敗：",
     optNoReply: "（無回覆）",
     optGreeting: "你好，歡迎使用粵語詞典",
+    optCompactExpandBtn: '在音標旁顯示 <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> 展開完整詞典按鈕',
     clTitle: "🚀 最新更新",
     clDesc: "本次更新帶來了以下優化：",
-    clItem1: "✨ 全新精簡音標模式：懸浮窗僅顯示拼音，點擊即可發聲，支持輕彈動畫反饋。",
-    clItem2: "🎨 高亮樣式自定義：5 種背景色（黃、藍、紅、綠、灰）+ 虛線下劃線 + 虛線邊框，共 7 種選擇。",
-    clItem3: "🔧 修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。",
-    clItem4: "✨ AI 語境翻譯：新增目標語言選擇（繁/簡/英/日），解釋更貼心。",
-    clItem5: "🖱️ 右鍵選單：新增快捷選單，可快速開啟/暫停詞典及切換顯示模式。",
-    clItem6: "⚡ 交互優化：移除發音延遲，單擊/雙擊即刻發聲，並修復了原生選區高亮衝突。"
+    clItem1: '✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，並支援點擊 <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> 展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。',
+    clItem2: "🔊 <b>交互與發音優化</b>：完整模式下按輔助鍵懸停可自動發音；移除發音延遲，並修復選區高亮衝突。",
+    clItem3: "🎨 <b>介面自定義</b>：優化設定頁面排版；高亮樣式新增至 7 種（5 款背景色 + 2 款虛線邊框）。",
+    clItem4: "🌐 <b>AI 語境翻譯</b>：新增目標語言選擇（繁/簡/英/日），解釋更貼心。",
+    clItem5: "🖱️ <b>右鍵快捷選單</b>：新增右鍵選單，可快速開啟/暫停詞典及切換顯示模式。",
+    clItem6: "🔧 <b>問題修復</b>：修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。"
   },
   "en": {
-    optTitle: "Jyutping Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
+    optTitle: "Jyutping Hover Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
     optEnable: "Enable Dictionary", optEnableDesc: "Show Cantonese pronunciation on hover", optFormat: "Pronunciation System",
     optFormatDesc: "Select romanization format", optPopupStyle: "Popup Display Style", optPopupStyleDesc: "Full mode shows definitions; Compact shows phonetics only",
     optStyleFull: "Full Mode", optStyleCompact: "Compact Phonetics",
     optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
     optHighlightStyle: "Highlight Style", optHighlightStyleDesc: "Select the highlight effect for hovered words",
+    optHoverModifier: "Hover Trigger Key", optHoverModifierDesc: "Only show full dictionary when holding specific keys, avoiding daily interference",
+    optKeyNone: "None (Direct Hover)", optKeyAlt: "Alt / Option (⌥)", optKeyCtrl: "Ctrl (⌃)", optKeyShift: "Shift (⇧)", optKeyMeta: "Command (⌘) / Win",
     optFontSettings: "Font Settings", optZhFont: "Chinese Font", optZhFontDesc: "Set font for Chinese text (leave empty for default)",
     optEnFont: "Pinyin Font", optEnFontDesc: "Set the exclusive font for Pinyin text (monospace recommended, leave empty for default)",
     optTransSettings: "Translation Settings", optTransDesc1: "Double-click selected text to show Mandarin and English translation",
@@ -104,14 +109,15 @@ const i18nDict = {
     optFail: "❌ Connection Failed: ",
     optNoReply: "(No reply)",
     optGreeting: "Hello, welcome to Jyutping Dictionary",
+    optCompactExpandBtn: 'Show <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> button to expand to full dictionary',
     clTitle: "🚀 What's New",
     clDesc: "This update brings the following improvements:",
-    clItem1: "✨ New Compact Phonetics Mode: Popup shows only pronunciation — click to play TTS with a satisfying tap animation.",
-    clItem2: "🎨 Customizable Highlight Styles: 5 background colors (yellow, blue, red, green, gray) + dashed underline + dashed border — 7 options total.",
-    clItem3: "🔧 Fixed translate popup centering, right-click triggering AI ring, and other minor bugs.",
-    clItem4: "✨ AI Contextual Translation: Added target language selection (Traditional/Simplified/English/Japanese).",
-    clItem5: "🖱️ Context Menu: Quickly toggle dictionary and switch modes via right-click.",
-    clItem6: "⚡ Interaction Boost: Removed TTS delay for instant response and fixed native selection overlay bugs."
+    clItem1: '✨ <b>New Compact Mode</b>: The popup can now display only the phonetics, with a <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> button to expand to the full dictionary. Click to pronounce with a satisfying visual bounce.',
+    clItem2: "🔊 <b>Interaction & Audio</b>: In full mode, holding the modifier key to trigger the dictionary will now automatically play the pronunciation. Removed audio delay for instant pronunciation on click/double-click.",
+    clItem3: "🎨 <b>UI Customization</b>: Optimized the settings page layout. Expanded highlight styles to 7 options (5 background colors + 2 dashed borders).",
+    clItem4: "🌐 <b>AI Contextual Translation</b>: Added target language selection (Traditional/Simplified/English/Japanese) for tailored explanations.",
+    clItem5: "🖱️ <b>Context Menu</b>: Added a right-click menu to quickly enable/disable the dictionary and switch display modes.",
+    clItem6: "🔧 <b>Bug Fixes</b>: Fixed translation popup centering and native text selection highlight conflicts."
   }
 };
 
@@ -131,7 +137,7 @@ function applyI18n(lang) {
       } else {
         // preserve child nodes like svgs if any by just setting text node?
         // Actually mostly it's simple text. For buttons with svg we need care.
-        if (el.children.length > 0) {
+        if (el.children.length > 0 && !key.startsWith('clItem') && key !== 'optCompactExpandBtn') {
             // Find the text node and replace it
             for (let child of el.childNodes) {
                 if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length > 0) {
@@ -167,6 +173,7 @@ function applyI18n(lang) {
 
   const displayModeSelect = document.getElementById('displayMode');
   const hoverModifierSelect = document.getElementById('hoverModifier');
+  const toneStyleToggle = document.getElementById('toneStyleToggle');
   const popupDisplayStyleSelect = document.getElementById('popupDisplayStyle');
   const popupThemeSelect = document.getElementById('popupTheme');
   
@@ -253,13 +260,24 @@ function applyI18n(lang) {
 
   // 載入已保存的設定
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'ttsEnabled', 
+    'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   ], (result) => {
     displayModeSelect.value = result.displayMode || 'jyutping';
+    if (toneStyleToggle) toneStyleToggle.checked = result.toneStyle !== 'inline'; // 預設為 'superscript'
     if (hoverModifierSelect) hoverModifierSelect.value = result.hoverModifier || 'none';
     popupDisplayStyleSelect.value = result.popupDisplayStyle || 'full';
     updateCompactDemoVisibility();
+    
+    // 載入展開按鈕設定
+    const compactExpandBtnToggle = document.getElementById('compactExpandBtnToggle');
+    const demoCompactExpandBtn = document.getElementById('demoCompactExpandBtn');
+    if (compactExpandBtnToggle) {
+      compactExpandBtnToggle.checked = result.compactExpandBtn !== false;
+      if (demoCompactExpandBtn) {
+        demoCompactExpandBtn.style.display = compactExpandBtnToggle.checked ? 'inline-flex' : 'none';
+      }
+    }
     
     // 載入高亮樣式
     const savedHL = result.highlightStyle || 'yellow';
@@ -380,8 +398,31 @@ function applyI18n(lang) {
     const mode = displayModeSelect.value;
     chrome.storage.sync.set({ displayMode: mode });
     GoogleAnalytics.fireEvent('change_setting', { setting: 'displayMode', value: mode });
+    updateDemoText();
     notifyContentScripts({ action: 'changeDisplayMode', mode });
   });
+
+  if (toneStyleToggle) {
+    toneStyleToggle.addEventListener('change', () => {
+      const style = toneStyleToggle.checked ? 'superscript' : 'inline';
+      chrome.storage.sync.set({ toneStyle: style });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'toneStyle', value: style });
+      updateDemoText();
+      notifyContentScripts({ action: 'changeToneStyle', style });
+    });
+  }
+
+  function updateDemoText() {
+    const demoCompactText = document.getElementById('demoCompactText');
+    if (demoCompactText) {
+      let text = displayModeSelect.value === 'yale' ? 'tin1 hei3' : 'tin1 hei3'; // Default string with numbers
+      if (toneStyleToggle && toneStyleToggle.checked) {
+        text = text.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
+      }
+      demoCompactText.innerHTML = text;
+    }
+  }
+  updateDemoText(); // Initialize on load
 
   if (hoverModifierSelect) {
     hoverModifierSelect.addEventListener('change', () => {
@@ -404,6 +445,11 @@ function applyI18n(lang) {
     if (hoverModifierContainer) {
       hoverModifierContainer.style.display = isCompact ? 'none' : 'flex';
     }
+    
+    const compactSettingsContainer = document.getElementById('compactSettingsContainer');
+    if (compactSettingsContainer) {
+      compactSettingsContainer.style.display = isCompact ? 'flex' : 'none';
+    }
   }
   updateCompactDemoVisibility(); // 初始化
 
@@ -414,6 +460,30 @@ function applyI18n(lang) {
     updateCompactDemoVisibility();
     notifyContentScripts({ action: 'changePopupDisplayStyle', style });
   });
+
+  // 展開按鈕開關
+  const compactExpandBtnToggle = document.getElementById('compactExpandBtnToggle');
+  const demoCompactExpandBtn = document.getElementById('demoCompactExpandBtn');
+  if (compactExpandBtnToggle) {
+    compactExpandBtnToggle.addEventListener('change', () => {
+      const enabled = compactExpandBtnToggle.checked;
+      chrome.storage.sync.set({ compactExpandBtn: enabled });
+      if (demoCompactExpandBtn) {
+        demoCompactExpandBtn.style.display = enabled ? 'inline-flex' : 'none';
+      }
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'compactExpandBtn', value: enabled });
+      notifyContentScripts({ action: 'changeCompactExpandBtn', enabled });
+    });
+  }
+
+  if (compactDemo) {
+    compactDemo.style.cursor = 'pointer';
+    compactDemo.addEventListener('click', (e) => {
+      e.stopPropagation();
+      popupDisplayStyleSelect.value = 'full';
+      popupDisplayStyleSelect.dispatchEvent(new Event('change'));
+    });
+  }
 
   // 高亮樣式選擇器
   const highlightStylePicker = document.getElementById('highlightStylePicker');

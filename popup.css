@@ -736,3 +736,36 @@
   animation: compactPopClick 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   color: #096dd9 !important;
 }
+
+.compact-expand-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 4px;
+  font-size: 12px;
+  cursor: pointer;
+  opacity: 0.5;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  vertical-align: middle;
+  line-height: 1;
+  user-select: none;
+}
+
+.compact-expand-btn:hover {
+  opacity: 1;
+  transform: scale(1.15);
+}
+
+.compact-expand-btn:hover img {
+  filter: grayscale(0%) !important;
+}
+
+/* 粵拼聲調數字右上角角標樣式 */
+.popup-main .jyutping-tone {
+  font-size: 0.55em !important;
+  font-weight: 300 !important;
+  opacity: 0.6 !important;
+  line-height: 1 !important;
+  vertical-align: top !important;
+  margin-left: 1px !important;
+}

@@ -11,6 +11,10 @@
     "message": "粵語拼音懸浮詞典",
     "description": "extActionTitle"
   },
+  "optToneStyleToggle": {
+    "message": "聲調數字以右上角角標顯示",
+    "description": "Checkbox label for tone style"
+  },
   "optTitle": {
     "message": "粵語懸浮詞典",
     "description": "optTitle"
@@ -66,6 +70,10 @@
   "optKeyMeta": {
     "message": "Command (⌘) / Win",
     "description": "optKeyMeta"
+  },
+  "optCompactExpandBtn": {
+    "message": "在音標旁顯示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展開完整詞典按鈕",
+    "description": "optCompactExpandBtn"
   },
   "optTheme": {
     "message": "懸浮窗主題",
@@ -154,5 +162,37 @@
   "ctxMenuSettings": {
     "message": "詞典設定...",
     "description": "Context menu to open settings"
+  },
+  "clTitle": {
+    "message": "🚀 最新更新",
+    "description": "Changelog title"
+  },
+  "clDesc": {
+    "message": "本次更新帶來了以下優化：",
+    "description": "Changelog description"
+  },
+  "clItem1": {
+    "message": "✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，並支援點擊 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。",
+    "description": "Changelog item 1"
+  },
+  "clItem2": {
+    "message": "🔊 <b>交互與發音優化</b>：完整模式下按輔助鍵懸停可自動發音；移除發音延遲，並修復選區高亮衝突。",
+    "description": "Changelog item 2"
+  },
+  "clItem3": {
+    "message": "🎨 <b>介面自定義</b>：優化設定頁面排版；高亮樣式新增至 7 種（5 款背景色 + 2 款虛線邊框）。",
+    "description": "Changelog item 3"
+  },
+  "clItem4": {
+    "message": "🌐 <b>AI 語境翻譯</b>：新增目標語言選擇（繁/簡/英/日），解釋更貼心。",
+    "description": "Changelog item 4"
+  },
+  "clItem5": {
+    "message": "🖱️ <b>右鍵快捷選單</b>：新增右鍵選單，可快速開啟/暫停詞典及切換顯示模式。",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🔧 <b>問題修復</b>：修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。",
+    "description": "Changelog item 6"
   }
 }

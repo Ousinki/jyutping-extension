@@ -598,22 +598,6 @@
             </div>
           </div>
 
-          <div class="setting-item" id="hoverModifierContainer">
-            <div class="setting-info">
-              <span class="setting-label" data-i18n="optHoverModifier">懸停觸發按鍵</span>
-              <span class="setting-desc" data-i18n="optHoverModifierDesc">按住特定按鍵時才顯示完整詞典，避免日常干擾</span>
-            </div>
-            <div class="select-wrapper">
-              <select id="hoverModifier">
-                <option value="none" data-i18n="optKeyNone">無 (直接懸停)</option>
-                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
-                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
-                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
-                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
-              </select>
-            </div>
-          </div>
-
           <div class="setting-item" style="flex-direction: column; align-items: stretch;">
             <div class="setting-info" style="margin-bottom: 10px;">
               <span class="setting-label" data-i18n="optHighlightStyle">高亮樣式</span>
@@ -686,6 +670,22 @@
             </style>
           </div>
 
+          <div class="setting-item" id="hoverModifierContainer">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optHoverModifier">懸停觸發按鍵</span>
+              <span class="setting-desc" data-i18n="optHoverModifierDesc">按住特定按鍵時才顯示完整詞典，避免日常干擾</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="hoverModifier">
+                <option value="none" data-i18n="optKeyNone">無 (直接懸停)</option>
+                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
+                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
+                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
+                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Compact Mode Animation Demo -->
           <div id="compactDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">
             <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em; margin: 0 auto;">
@@ -701,8 +701,9 @@
                 <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-left: 7px solid transparent; border-right: 7px solid transparent; border-top: 7px solid #d0d0d0; z-index: 1;"></div>
                 <div style="position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border-left: 6px solid transparent; border-right: 6px solid transparent; border-top: 6px solid #fff; z-index: 2; margin-top: -1px;"></div>
                 <!-- Badge body — matches actual compact popup style -->
-                <div style="background: #fff; border: 1px solid #d0d0d0; border-radius: 0; padding: 2px 8px; filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.1)); white-space: nowrap; line-height: 1.2;">
-                  <span style="font-size: 15px; font-weight: 500; color: #1890ff; font-family: system-ui, -apple-system, sans-serif; letter-spacing: 0;">tin1 hei3</span>
+                <div style="background: #fff; border: 1px solid #d0d0d0; border-radius: 0; padding: 2px 8px; filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.1)); white-space: nowrap; line-height: 1.2; display: flex; align-items: center;">
+                  <span id="demoCompactText" style="font-size: 15px; font-weight: 500; color: #1890ff; font-family: system-ui, -apple-system, sans-serif; letter-spacing: 0;">tin<sup class="jyutping-tone">1</sup> hei<sup class="jyutping-tone">3</sup></span>
+                  <span id="demoCompactExpandBtn" style="display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; font-size: 12px; opacity: 0.5; vertical-align: middle; line-height: 1;"><img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block;" /></span>
                 </div>
               </div>
 
@@ -715,10 +716,24 @@
             </div>
 
             <style>
+              /* 粵拼聲調數字右上角角標樣式 (同步自 popup.css) */
+              .jyutping-tone {
+                font-size: 0.55em !important;
+                font-weight: 300 !important;
+                opacity: 0.6 !important;
+                line-height: 1 !important;
+                vertical-align: top !important;
+                margin-left: 1px !important;
+              }
+
               /* Highlight covers only the 2nd word (33%–67% of total width) */
               .demo-compact-highlight {
                 opacity: 0;
                 animation: compactHighlight 4s ease-in-out infinite;
+              }
+
+              #demoCompactExpandBtn:hover img {
+                filter: grayscale(0%) !important;
               }
 
               /* Popup positioned above the 2nd word */
@@ -759,6 +774,18 @@
                 76%, 100% { opacity: 0; transform: translateX(-50%) translateY(4px); }
               }
             </style>
+          </div>
+
+          <!-- 精簡模式附加選項（僅精簡模式顯示） -->
+          <div id="compactSettingsContainer" style="display: none; margin-top: 4px; margin-bottom: 8px; flex-direction: column; gap: 8px;">
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--text-secondary, #666);">
+              <input type="checkbox" id="toneStyleToggle" style="margin: 0; accent-color: var(--primary, #1890ff);" />
+              <span data-i18n="optToneStyleToggle">聲調數字以右上角角標顯示</span>
+            </label>
+            <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--text-secondary, #666);">
+              <input type="checkbox" id="compactExpandBtnToggle" style="margin: 0; accent-color: var(--primary, #1890ff);" />
+              <span data-i18n="optCompactExpandBtn">在音標旁顯示 <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> 展開完整詞典按鈕</span>
+            </label>
           </div>
 
           <!-- 懸浮窗主題（僅完整模式顯示） -->
@@ -1648,12 +1675,12 @@
       <div class="changelog-content">
         <p data-i18n="clDesc">本次更新帶來了以下優化：</p>
         <ul class="changelog-list">
-          <li data-i18n="clItem1">✨ 全新精簡音標模式：懸浮窗僅顯示拼音，點擊即可發聲，支持輕彈動畫反饋。</li>
-          <li data-i18n="clItem2">🎨 高亮樣式自定義：5 種背景色（黃、藍、紅、綠、灰）+ 虛線下劃線 + 虛線邊框，共 7 種選擇。</li>
-          <li data-i18n="clItem3">🔧 修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。</li>
-          <li data-i18n="clItem4">✨ AI 語境翻譯：新增目標語言選擇（繁/簡/英/日），解釋更貼心。</li>
-          <li data-i18n="clItem5">🖱️ 右鍵選單：新增快捷選單，可快速開啟/暫停詞典及切換顯示模式。</li>
-          <li data-i18n="clItem6">⚡ 交互優化：移除發音延遲，單擊/雙擊即刻發聲，並修復了原生選區高亮衝突。</li>
+          <li data-i18n="clItem1">✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，並支援展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。</li>
+          <li data-i18n="clItem2">🔊 <b>交互與發音優化</b>：完整模式下按輔助鍵懸停可自動發音；移除發音延遲，並修復選區高亮衝突。</li>
+          <li data-i18n="clItem3">🎨 <b>介面自定義</b>：優化設定頁面排版；高亮樣式新增至 7 種（5 款背景色 + 2 款虛線邊框）。</li>
+          <li data-i18n="clItem4">🌐 <b>AI 語境翻譯</b>：新增目標語言選擇（繁/簡/英/日），解釋更貼心。</li>
+          <li data-i18n="clItem5">🖱️ <b>右鍵快捷選單</b>：新增右鍵選單，可快速開啟/暫停詞典及切換顯示模式。</li>
+          <li data-i18n="clItem6">🔧 <b>問題修復</b>：修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。</li>
         </ul>
       </div>
     </div>
