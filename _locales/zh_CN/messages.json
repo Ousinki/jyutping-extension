@@ -1,0 +1,198 @@
+{
+  "extName": {
+    "message": "粤语悬浮词典",
+    "description": "extName"
+  },
+  "extDescription": {
+    "message": "鼠标悬停中文字即可显示粤语发音（粤拼/Yale）及英文解释，支持 AI 语境翻译",
+    "description": "extDescription"
+  },
+  "extActionTitle": {
+    "message": "粤语拼音悬浮词典",
+    "description": "extActionTitle"
+  },
+  "optToneStyleToggle": {
+    "message": "声调数字以右上角角标显示",
+    "description": "Checkbox label for tone style"
+  },
+  "optTitle": {
+    "message": "粤语悬浮词典",
+    "description": "optTitle"
+  },
+  "optSubtitle": {
+    "message": "Jyutping Hover Dictionary",
+    "description": "optSubtitle"
+  },
+  "optGenSettings": {
+    "message": "常规设置",
+    "description": "optGenSettings"
+  },
+  "optEnable": {
+    "message": "启用词典",
+    "description": "optEnable"
+  },
+  "optEnableDesc": {
+    "message": "在网页上显示粤语发音提示",
+    "description": "optEnableDesc"
+  },
+  "optFormat": {
+    "message": "发音显示格式",
+    "description": "optFormat"
+  },
+  "optFormatDesc": {
+    "message": "选择粤语拼音系统",
+    "description": "optFormatDesc"
+  },
+  "optHoverModifier": {
+    "message": "悬停触发按键",
+    "description": "optHoverModifier"
+  },
+  "optHoverModifierDesc": {
+    "message": "按住特定按键时才显示词典，避免日常干扰",
+    "description": "optHoverModifierDesc"
+  },
+  "optKeyNone": {
+    "message": "无 (直接悬停)",
+    "description": "optKeyNone"
+  },
+  "optKeyAlt": {
+    "message": "Alt / Option (⌥)",
+    "description": "optKeyAlt"
+  },
+  "optKeyCtrl": {
+    "message": "Ctrl (⌃)",
+    "description": "optKeyCtrl"
+  },
+  "optKeyShift": {
+    "message": "Shift (⇧)",
+    "description": "optKeyShift"
+  },
+  "optKeyMeta": {
+    "message": "Command (⌘) / Win",
+    "description": "optKeyMeta"
+  },
+  "optCompactExpandBtn": {
+    "message": "在音标旁显示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展开完整词典按钮",
+    "description": "optCompactExpandBtn"
+  },
+  "optTheme": {
+    "message": "悬浮窗主题",
+    "description": "optTheme"
+  },
+  "optThemeDesc": {
+    "message": "选择词典弹窗的配色风格",
+    "description": "optThemeDesc"
+  },
+  "optTransSettings": {
+    "message": "翻译设置",
+    "description": "optTransSettings"
+  },
+  "optTransDesc1": {
+    "message": "选中粤语文本后双击选区，同时显示普通话和英文翻译",
+    "description": "optTransDesc1"
+  },
+  "optTransDesc2": {
+    "message": "使用 Bing 翻译引擎（原生支持粤语，免费无需配置）",
+    "description": "optTransDesc2"
+  },
+  "optAISettings": {
+    "message": "✨ AI 语境翻译",
+    "description": "optAISettings"
+  },
+  "optAIEnable": {
+    "message": "启用 AI 翻译",
+    "description": "optAIEnable"
+  },
+  "optAIEnableDesc": {
+    "message": "选中文本后长按选区，AI 根据上下文语境解释词义",
+    "description": "optAIEnableDesc"
+  },
+  "optAIBaseUrlDesc": {
+    "message": "OpenAI 兼容接口地址（支持所有厂商）",
+    "description": "optAIBaseUrlDesc"
+  },
+  "optAIModelLabel": {
+    "message": "AI 模型",
+    "description": "optAIModelLabel"
+  },
+  "optAIPromptLabel": {
+    "message": "AI 翻译 Prompt",
+    "description": "optAIPromptLabel"
+  },
+  "optFeedback": {
+    "message": "关于与意见反馈",
+    "description": "optFeedback"
+  },
+  "optDev": {
+    "message": "开发者",
+    "description": "optDev"
+  },
+  "optFeedbackForm": {
+    "message": "意见反馈",
+    "description": "optFeedbackForm"
+  },
+  "optEmail": {
+    "message": "电邮地址（选填）",
+    "description": "optEmail"
+  },
+  "optMsg": {
+    "message": "输入你的建议或遇到的问题...",
+    "description": "optMsg"
+  },
+  "optSend": {
+    "message": "发送反馈",
+    "description": "optSend"
+  },
+  "optSending": {
+    "message": "发送中...",
+    "description": "optSending"
+  },
+  "optSent": {
+    "message": "已发送！",
+    "description": "optSent"
+  },
+  "ctxMenuEnable": {
+    "message": "开启粤语悬浮词典",
+    "description": "Context menu to enable extension"
+  },
+  "ctxMenuDisable": {
+    "message": "暂停粤语悬浮词典",
+    "description": "Context menu to disable extension"
+  },
+  "ctxMenuSettings": {
+    "message": "词典设置...",
+    "description": "Context menu to open settings"
+  },
+  "clTitle": {
+    "message": "🚀 最新更新",
+    "description": "Changelog title"
+  },
+  "clDesc": {
+    "message": "本次更新带来了以下优化：",
+    "description": "Changelog description"
+  },
+  "clItem1": {
+    "message": "✨ <b>全新精简模式</b>：悬浮窗可仅显示拼音，支持声调数字右上角角标显示，并可点击 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展开完整词典；点击即可发声，支持轻弹动画反馈。",
+    "description": "Changelog item 1"
+  },
+  "clItem2": {
+    "message": "🔊 <b>交互与发音优化</b>：完整模式下按辅助键悬停可自动发音；移除发音延迟，并修复选区高亮冲突。",
+    "description": "Changelog item 2"
+  },
+  "clItem3": {
+    "message": "🎨 <b>界面自定义</b>：优化设置页面排版；高亮样式新增至 7 种（5 款背景色 + 2 款虚线边框）。",
+    "description": "Changelog item 3"
+  },
+  "clItem4": {
+    "message": "🌐 <b>AI 语境翻译</b>：新增目标语言选择（繁/简/英/日），解释更贴心。",
+    "description": "Changelog item 4"
+  },
+  "clItem5": {
+    "message": "🖱️ <b>右键快捷菜单</b>：新增右键菜单，可快速开启/暂停词典及切换显示模式。",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🔧 <b>问题修复</b>：修复翻译浮窗居中定位、右键误触 AI 进度环等问题。",
+    "description": "Changelog item 6"
+  }
+}
