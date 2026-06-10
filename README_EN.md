@@ -2,7 +2,7 @@
   <img src="icon_15.png" width="128" alt="Cantonese Popup Dictionary Logo" />
 </p>
 <p align="center">
-  <a href="README.md">🇭🇰 繁體中文</a> | <strong>🇬🇧 English</strong>
+  <a href="README.md">繁體中文</a> | <strong>English</strong>
 </p>
 
 # Cantonese Popup Dictionary (粵語懸浮詞典)
@@ -16,7 +16,7 @@ A Chrome extension that instantly displays Cantonese pronunciation (Jyutping/Yal
 ![Demo - Web Page Test](assets/promo_wenweipo.jpg)
 
 
-## ✨ Features
+## Features
 
 - **Instant Hover Lookup**: Move your mouse over any Chinese character to instantly see Cantonese pronunciation
 - **Dual Romanization**: Supports both Jyutping and Yale systems
@@ -24,31 +24,31 @@ A Chrome extension that instantly displays Cantonese pronunciation (Jyutping/Yal
 - **230,000+ Entries**: Covers common vocabulary, idioms, and slang
 - **Click to Speak**: Click any highlighted text to hear Cantonese pronunciation
 - **Bing Translate**: Double-click selected text for instant Mandarin & English translation
-- **✨ AI Contextual Translation**: Long-press highlighted text for ~0.5s — AI explains meaning based on surrounding context
+- **AI Contextual Translation**: Long-press highlighted text for ~0.5s — AI explains meaning based on surrounding context
 - **Multiple Themes**: 8 curated themes (Classic, Hong Kong Red, Deep Night, Ink Wash, Ocean, Warm Sun, Mint, Frosted Glass)
-- **🌐 Multilingual Interface**: Switch between Traditional Chinese and English UI
-- **✨ Interactive Settings Page**: High-fidelity CSS animations demonstrate how to use double-click translation, AI long-press, and click-to-speak
-- **🛡️ Style Isolation**: Strict CSS isolation prevents host page styles from interfering with popup layout and font sizes
+- **Multilingual Interface**: Switch between Traditional Chinese and English UI
+- **Interactive Settings Page**: High-fidelity CSS animations demonstrate how to use double-click translation, AI long-press, and click-to-speak
+- **Style Isolation**: Strict CSS isolation prevents host page styles from interfering with popup layout and font sizes
 - **Shadow DOM Support**: Compatible with modern websites using Web Components (e.g. Bilibili)
 
-## 🔊 Text-to-Speech (TTS)
+## Text-to-Speech (TTS)
 
 Supports 4 TTS engines for different use cases:
 
 | Engine | Setup Required? | Quality | Cost |
 |--------|----------------|---------|------|
-| **Chrome TTS** | No setup needed | ⭐⭐⭐ | Free |
-| **Edge TTS** | No setup (built-in server) / Customizable | ⭐⭐⭐⭐ | Free |
-| **Azure Speech** | No setup (built-in API) / Custom key available | ⭐⭐⭐⭐⭐ | Built-in free / Custom pay-per-use |
-| **Bert-VITS2** | Server address required | ⭐⭐⭐⭐ | Depends on provider |
+| **Chrome TTS** | No setup needed | ★★★ | Free |
+| **Edge TTS** | No setup (built-in server) / Customizable | ★★★★ | Free |
+| **Azure Speech** | No setup (built-in API) / Custom key available | ★★★★★ | Built-in free / Custom pay-per-use |
+| **Bert-VITS2** | Server address required | ★★★★ | Depends on provider |
 
 ### Azure Speech Voices
 
 Azure Speech offers 3 premium Cantonese voices:
 
-- 🎙️ **HiuMaan** (Female)
-- 🎙️ **HiuGaai** (Female)
-- 🎙️ **WanLung** (Male)
+- **HiuMaan** (Female)
+- **HiuGaai** (Female)
+- **WanLung** (Male)
 
 ### Speed Control
 
@@ -58,7 +58,7 @@ All engines support 0.5x – 1.5x speed adjustment.
 
 Built-in smart audio cache (up to 20 entries) — clicking the same word again plays instantly without re-fetching from the API.
 
-## 🌐 Translation
+## Translation
 
 ### Bing Translate (Free, No Setup)
 
@@ -67,13 +67,13 @@ Select Cantonese text and **double-click the selection** for instant Mandarin an
 - Parallel requests: Translates to Mandarin and English simultaneously
 - Token optimization: Concurrent requests share a single token to avoid redundant fetches
 
-### ✨ AI Contextual Translation (API Required)
+### AI Contextual Translation (API Required)
 
 **Long-press** a highlighted word or manual selection for ~0.5 seconds — AI analyzes the surrounding context and explains the word's specific meaning in Traditional Chinese.
 
 #### How to Use
 
-1. Enable "✨ AI Contextual Translation" in Settings
+1. Enable "AI Contextual Translation" in Settings
 2. Configure your API (see below)
 3. Hover to highlight a word → **long-press 0.5s** → AI analysis appears in the popup
 4. Or manually select text → **long-press the selection for 0.5s** → AI analysis appears in a floating panel
@@ -98,7 +98,7 @@ Uses a unified **OpenAI-compatible API format** — just fill in 3 fields to con
 | **Ollama (Local)** | `http://localhost:11434/v1` | `gemma3:4b` |
 | **Groq** | `https://api.groq.com/openai/v1` | `llama-3.3-70b-versatile` |
 
-> 💡 Any service compatible with the OpenAI `/chat/completions` endpoint can be used, including self-hosted proxies and relay services.
+> Any service compatible with the OpenAI `/chat/completions` endpoint can be used, including self-hosted proxies and relay services.
 
 #### AI Prompt Design
 
@@ -114,7 +114,7 @@ Only reply with the explanation itself, without any formatting marks.
 【Sentence】{surrounding paragraph}
 ```
 
-## 💡 Quick Reference
+## Quick Reference
 
 | Action | Trigger | Effect |
 |--------|---------|--------|
@@ -124,15 +124,15 @@ Only reply with the explanation itself, without any formatting marks.
 | AI Translation | Long-press highlighted word or selection ~0.5s | AI explains meaning in context |
 | Expand Examples | Click English definition in popup | View more example sentences and details |
 
-## 📦 Installation
+## Installation
 
-### Chrome Web Store (Recommended)
-
-👉 [Install Cantonese Popup Dictionary](https://chromewebstore.google.com/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/nkghannminfkihhnkebcjhodfcoamkkm)
-
-### Microsoft Edge Add-ons
-
-👉 [Install Cantonese Popup Dictionary (Edge)](https://microsoftedge.microsoft.com/addons/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/akejhmlcbfmnoodfibchikfjkgjjbfpc)
+<a href="https://chromewebstore.google.com/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/nkghannminfkihhnkebcjhodfcoamkkm" target="_blank">
+  <img src="assets/chrome-web-store-badge.png" height="40" alt="Available in the Chrome Web Store" />
+</a>
+&nbsp;&nbsp;
+<a href="https://microsoftedge.microsoft.com/addons/detail/%E7%B2%B5%E8%AA%9E%E6%87%B8%E6%B5%AE%E8%A9%9E%E5%85%B8/akejhmlcbfmnoodfibchikfjkgjjbfpc" target="_blank">
+  <img src="assets/microsoft-edge-badge.png" height="40" alt="Get it from Microsoft Edge" />
+</a>
 
 ### Manual Installation
 1. Download or clone this repository
@@ -141,7 +141,7 @@ Only reply with the explanation itself, without any formatting marks.
 4. Click "Load unpacked"
 5. Select the project folder
 
-## ⚙️ Settings
+## Settings
 
 Click the extension icon → More Settings:
 
@@ -153,7 +153,7 @@ Click the extension icon → More Settings:
 ### Translation
 - **Bing Translate**: Free, no setup needed — triggered by double-clicking a selection
 
-### ✨ AI Contextual Translation
+### AI Contextual Translation
 - **Enable Toggle**: Turn AI translation on/off
 - **API Base URL**: OpenAI-compatible endpoint
 - **API Key**: Provider secret key
@@ -166,25 +166,25 @@ Click the extension icon → More Settings:
 - **Speed**: 0.5x – 1.5x
 - **Edge TTS / Azure Speech**: Supports built-in servers (no setup) or custom addresses/keys
 
-## 📚 Data Sources
+## Data Sources
 
 - [words.hk](https://words.hk/) — Cantonese Open Dictionary
 - [CC-Canto](https://cantonese.org/) — Cantonese Dictionary
 - [CC-CEDICT](https://cc-cedict.org/) — Chinese-English Dictionary
 - [PyCantonese](https://pycantonese.org/) — Jyutping Supplement
 
-## 🔒 Privacy Policy
+## Privacy Policy
 
 This extension does not collect any user data. AI translation uses the user's own API configuration — data is sent directly to the AI provider of their choice, without passing through any intermediary server. See [Privacy Policy](privacy-policy.html).
 
-## 📄 License
+## License
 
 This project is licensed under the [GNU General Public License v3.0](LICENSE).
 
-## 🤝 Contributing
+## Contributing
 
 Issues and Pull Requests are welcome!
 
-## 📞 Contact
+## Contact
 
 For questions or suggestions, please reach out via GitHub Issues.
