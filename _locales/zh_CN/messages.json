@@ -1,103 +1,56 @@
 {
-  "extName": {
-    "message": "粤语悬浮词典",
-    "description": "extName"
+  "clDesc": {
+    "message": "本次更新带来了以下优化：",
+    "description": "Changelog description"
   },
-  "extDescription": {
-    "message": "鼠标悬停中文字即可显示粤语发音（粤拼/Yale）及英文解释，支持 AI 语境翻译",
-    "description": "extDescription"
+  "clItem1": {
+    "message": "📖 <b>全文注音功能</b>：新增网页全文拼音标注，支持精美的“字典风格”排版，提供如同实体字典般的沉浸式阅读体验。",
+    "description": "Changelog item 1"
+  },
+  "clItem2": {
+    "message": "⚙️ <b>自定义翻译触发方式</b>：在设置中新增了“API 翻译触发方式”的选项，你可以根据习惯自由选择“双击”或“单击”来调起翻译悬浮窗。"
+  },
+  "clItem3": {
+    "message": "🐛 <b>修复翻译触发与状态同步问题</b>：修复了切换单击/双击翻译无反应、切换字典风格未显示灰度选项，以及关闭扩展后事件仍错误执行的问题。"
+  },
+  "clTitle": {
+    "message": "🚀 最新更新",
+    "description": "Changelog title"
+  },
+  "cmdInspectRuby": {
+    "message": "区块粤语注音切换"
+  },
+  "ctxMenuDisable": {
+    "message": "暂停粤语悬浮词典",
+    "description": "Context menu to disable extension"
+  },
+  "ctxMenuEnable": {
+    "message": "开启粤语悬浮词典",
+    "description": "Context menu to enable extension"
+  },
+  "ctxMenuSettings": {
+    "message": "设置...",
+    "description": "Context menu to open settings"
+  },
+  "ctxMenuToggleRuby": {
+    "message": "全文粤语注音",
+    "description": "Context menu to toggle full page ruby annotations"
   },
   "extActionTitle": {
     "message": "粤语拼音悬浮词典",
     "description": "extActionTitle"
   },
-  "optToneStyleToggle": {
-    "message": "声调数字以右上角角标显示",
-    "description": "Checkbox label for tone style"
+  "extDescription": {
+    "message": "鼠标悬停中文字即可显示粤语发音（粤拼/Yale）及英文解释，支持 AI 语境翻译",
+    "description": "extDescription"
   },
-  "optTitle": {
+  "extName": {
     "message": "粤语悬浮词典",
-    "description": "optTitle"
+    "description": "extName"
   },
-  "optSubtitle": {
-    "message": "Jyutping Hover Dictionary",
-    "description": "optSubtitle"
-  },
-  "optGenSettings": {
-    "message": "常规设置",
-    "description": "optGenSettings"
-  },
-  "optEnable": {
-    "message": "启用词典",
-    "description": "optEnable"
-  },
-  "optEnableDesc": {
-    "message": "在网页上显示粤语发音提示",
-    "description": "optEnableDesc"
-  },
-  "optFormat": {
-    "message": "发音显示格式",
-    "description": "optFormat"
-  },
-  "optFormatDesc": {
-    "message": "选择粤语拼音系统",
-    "description": "optFormatDesc"
-  },
-  "optHoverModifier": {
-    "message": "悬停触发按键",
-    "description": "optHoverModifier"
-  },
-  "optHoverModifierDesc": {
-    "message": "按住特定按键时才显示词典，避免日常干扰",
-    "description": "optHoverModifierDesc"
-  },
-  "optKeyNone": {
-    "message": "无 (直接悬停)",
-    "description": "optKeyNone"
-  },
-  "optKeyAlt": {
-    "message": "Alt / Option (⌥)",
-    "description": "optKeyAlt"
-  },
-  "optKeyCtrl": {
-    "message": "Ctrl (⌃)",
-    "description": "optKeyCtrl"
-  },
-  "optKeyShift": {
-    "message": "Shift (⇧)",
-    "description": "optKeyShift"
-  },
-  "optKeyMeta": {
-    "message": "Command (⌘) / Win",
-    "description": "optKeyMeta"
-  },
-  "optCompactExpandBtn": {
-    "message": "在音标旁显示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展开完整词典按钮",
-    "description": "optCompactExpandBtn"
-  },
-  "optTheme": {
-    "message": "悬浮窗主题",
-    "description": "optTheme"
-  },
-  "optThemeDesc": {
-    "message": "选择词典弹窗的配色风格",
-    "description": "optThemeDesc"
-  },
-  "optTransSettings": {
-    "message": "翻译设置",
-    "description": "optTransSettings"
-  },
-  "optTransDesc1": {
-    "message": "选中粤语文本后双击选区，同时显示普通话和英文翻译",
-    "description": "optTransDesc1"
-  },
-  "optTransDesc2": {
-    "message": "使用 Bing 翻译引擎（原生支持粤语，免费无需配置）",
-    "description": "optTransDesc2"
-  },
-  "optAISettings": {
-    "message": "✨ AI 语境翻译",
-    "description": "optAISettings"
+  "optAIBaseUrlDesc": {
+    "message": "OpenAI 兼容接口地址（支持所有厂商）",
+    "description": "optAIBaseUrlDesc"
   },
   "optAIEnable": {
     "message": "启用 AI 翻译",
@@ -107,9 +60,21 @@
     "message": "选中文本后长按选区，AI 根据上下文语境解释词义",
     "description": "optAIEnableDesc"
   },
-  "optAIBaseUrlDesc": {
-    "message": "OpenAI 兼容接口地址（支持所有厂商）",
-    "description": "optAIBaseUrlDesc"
+  "optAILangCN": {
+    "message": "简体中文"
+  },
+  "optAILangEN": {
+    "message": "英文 (English)"
+  },
+  "optAILangJA": {
+    "message": "日文 (日本語)"
+  },
+  "optAILangTW": {
+    "message": "繁体中文"
+  },
+  "optAILanguage": {
+    "message": "目标语言",
+    "description": "optAILanguage"
   },
   "optAIModelLabel": {
     "message": "AI 模型",
@@ -119,25 +84,342 @@
     "message": "AI 翻译 Prompt",
     "description": "optAIPromptLabel"
   },
-  "optFeedback": {
-    "message": "关于与意见反馈",
-    "description": "optFeedback"
+  "optAISettings": {
+    "message": "✨ AI 语境翻译",
+    "description": "optAISettings"
+  },
+  "optAITip1": {
+    "message": "常用：OpenAI",
+    "description": "optAITip1"
+  },
+  "optAITip2": {
+    "message": "DeepSeek",
+    "description": "optAITip2"
+  },
+  "optAITip3": {
+    "message": "Ollama",
+    "description": "optAITip3"
+  },
+  "optAzureSettings": {
+    "message": "Azure Speech 设定",
+    "description": "optAzureSettings"
+  },
+  "optAzureSettingsDesc": {
+    "message": "选择使用默认 API 或自定义密钥",
+    "description": "optAzureSettingsDesc"
+  },
+  "optClickToSpeak": {
+    "message": "点击发声",
+    "description": "optClickToSpeak"
+  },
+  "optClickToSpeakDesc": {
+    "message": "点击高亮文字朗读粤语发音",
+    "description": "optClickToSpeakDesc"
+  },
+  "optColorDarkGray": {
+    "message": "深灰 (#777)"
+  },
+  "optColorLightGray": {
+    "message": "浅灰 (#999)"
+  },
+  "optCompactExpandBtn": {
+    "message": "在音标旁显示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展开完整词典按钮",
+    "description": "optCompactExpandBtn"
+  },
+  "optCustomInput": {
+    "message": "自定义输入..."
+  },
+  "optCustomKey": {
+    "message": "自定义密钥（直连 Azure）",
+    "description": "optCustomKey"
+  },
+  "optCustomUrl": {
+    "message": "自定义地址",
+    "description": "optCustomUrl"
+  },
+  "optDefaultAPI": {
+    "message": "默认 API（免配置）",
+    "description": "optDefaultAPI"
+  },
+  "optDefaultServer": {
+    "message": "默认服务器（免配置）",
+    "description": "optDefaultServer"
+  },
+  "optDemoReportBtn": {
+    "message": "报告"
+  },
+  "optDemoTranslation": {
+    "message": "漂亮，好看。"
   },
   "optDev": {
     "message": "开发者",
     "description": "optDev"
   },
-  "optFeedbackForm": {
-    "message": "意见反馈",
-    "description": "optFeedbackForm"
+  "optEdgeSettings": {
+    "message": "Edge TTS 设定",
+    "description": "optEdgeSettings"
+  },
+  "optEdgeSettingsDesc": {
+    "message": "选择使用默认服务器或自定义地址",
+    "description": "optEdgeSettingsDesc"
   },
   "optEmail": {
     "message": "电邮地址（选填）",
     "description": "optEmail"
   },
+  "optEmailLabel": {
+    "message": "联系电邮",
+    "description": "optEmailLabel"
+  },
+  "optEmailPlaceholder": {
+    "message": "your@email.com (方便回复您)",
+    "description": "optEmailPlaceholder"
+  },
+  "optEnFont": {
+    "message": "拼音字体",
+    "description": "optEnFont"
+  },
+  "optEnFontCourier": {
+    "message": "经典等宽字体 (Courier / 默认)"
+  },
+  "optEnFontModern": {
+    "message": "现代等宽字体 (SF Mono / Consolas)"
+  },
+  "optEnFontSystem": {
+    "message": "系统无衬线体 (System UI)"
+  },
+  "optEnable": {
+    "message": "启用词典",
+    "description": "optEnable"
+  },
+  "optEnableDesc": {
+    "message": "在网页上显示粤语发音提示",
+    "description": "optEnableDesc"
+  },
+  "optEngineAzure": {
+    "message": "Azure Speech (官方云端语音)",
+    "description": "optEngineAzure"
+  },
+  "optEngineBert": {
+    "message": "Bert-VITS2 (粤语神经语音)",
+    "description": "optEngineBert"
+  },
+  "optFeedback": {
+    "message": "关于与意见反馈",
+    "description": "optFeedback"
+  },
+  "optFeedbackDesc": {
+    "message": "如果您有任何功能建议或遇到 Bug，欢迎在这里直接告诉我，或者发送电邮至 ousinki@outlook.com！",
+    "description": "optFeedbackDesc"
+  },
+  "optFeedbackForm": {
+    "message": "意见反馈",
+    "description": "optFeedbackForm"
+  },
+  "optFeedbackHint": {
+    "message": "小提示：现在可以在网页查词时，直接通过悬浮窗快速报错！"
+  },
+  "optFeedbackLabel": {
+    "message": "反馈内容",
+    "description": "optFeedbackLabel"
+  },
+  "optFeedbackPlaceholder": {
+    "message": "请填写您的建议或遇到的问题...",
+    "description": "optFeedbackPlaceholder"
+  },
+  "optFeedbackTitle": {
+    "message": "💡 意见与反馈",
+    "description": "optFeedbackTitle"
+  },
+  "optFontCustom": {
+    "message": "自定义输入..."
+  },
+  "optFontHei": {
+    "message": "字典黑体 (Chiron Hei / 雅黑)"
+  },
+  "optFontMono": {
+    "message": "默认等宽字体 (Consolas / SF Mono / ui-monospace)"
+  },
+  "optFontSans": {
+    "message": "系统无衬线体 (System UI / Arial)"
+  },
+  "optFontSerif": {
+    "message": "优雅衬线体 (Georgia / Times)"
+  },
+  "optFooterData": {
+    "message": "数据来源：",
+    "description": "optFooterData"
+  },
+  "optFooterLicense": {
+    "message": "授权：",
+    "description": "optFooterLicense"
+  },
+  "optFormat": {
+    "message": "发音显示格式",
+    "description": "optFormat"
+  },
+  "optFormatDesc": {
+    "message": "选择粤语拼音系统",
+    "description": "optFormatDesc"
+  },
+  "optFormatJyutping": {
+    "message": "粤拼 (Jyutping)"
+  },
+  "optFormatYale": {
+    "message": "耶鲁拼音 (Yale)"
+  },
+  "optGenSettings": {
+    "message": "常规设置",
+    "description": "optGenSettings"
+  },
+  "optHighlightStyle": {
+    "message": "高亮样式",
+    "description": "optHighlightStyle"
+  },
+  "optHighlightStyleDesc": {
+    "message": "选择悬停词语时的高亮效果",
+    "description": "optHighlightStyleDesc"
+  },
+  "optHoverModifier": {
+    "message": "悬停触发按键",
+    "description": "optHoverModifier"
+  },
+  "optHoverModifierDesc": {
+    "message": "按住特定按键时才显示完整词典，避免日常干扰",
+    "description": "optHoverModifierDesc"
+  },
+  "optInspectDictColorDesc": {
+    "message": "调整字典风格下的音标颜色深度。"
+  },
+  "optInspectDictColorTitle": {
+    "message": "字典风格颜色"
+  },
+  "optInspectFontDesc": {
+    "message": "自定义注音文本的字体，留空则使用默认等宽字体。"
+  },
+  "optInspectFontTitle": {
+    "message": "角标拼音字体"
+  },
+  "optInspectModeTitle": {
+    "message": "交互式区块注音 (Inspect Mode)"
+  },
+  "optInspectOpacityDesc": {
+    "message": "调整上方注音的透明度。"
+  },
+  "optInspectOpacityTitle": {
+    "message": "音标不透明度"
+  },
+  "optInspectShortcutBtn": {
+    "message": "修改快捷键"
+  },
+  "optInspectShortcutCurrent": {
+    "message": "当前快捷键："
+  },
+  "optInspectShortcutDesc": {
+    "message": "推荐快捷键为 <kbd>Ctrl+Shift+X</kbd> (Mac 为 <kbd>⌘+Shift+X</kbd>)。如未生效，请点击右侧按钮手动绑定。",
+    "description": "optInspectShortcutDesc"
+  },
+  "optInspectShortcutModifyHint": {
+    "message": "点击右侧按钮修改或绑定。"
+  },
+  "optInspectShortcutNone": {
+    "message": "未设置快捷键。"
+  },
+  "optInspectShortcutTitle": {
+    "message": "区块粤语注音快捷键"
+  },
+  "optInspectStyleDesc": {
+    "message": "选择上方注音的视觉风格（斜体、颜色等）。"
+  },
+  "optInspectStyleTitle": {
+    "message": "音标排版风格"
+  },
+  "optInspectToneStyleDesc": {
+    "message": "选择区块注音时，音调数字是显示在后方还是右上角角标。"
+  },
+  "optInspectToneStyleTitle": {
+    "message": "音调数字显示方式"
+  },
+  "optKeyAlt": {
+    "message": "Alt / Option (⌥)",
+    "description": "optKeyAlt"
+  },
+  "optKeyCtrl": {
+    "message": "Ctrl (⌃)",
+    "description": "optKeyCtrl"
+  },
+  "optKeyMeta": {
+    "message": "Command (⌘) / Win",
+    "description": "optKeyMeta"
+  },
+  "optKeyNone": {
+    "message": "无 (直接悬停)",
+    "description": "optKeyNone"
+  },
+  "optKeyShift": {
+    "message": "Shift (⇧)",
+    "description": "optKeyShift"
+  },
+  "optModelName": {
+    "message": "模型名称",
+    "description": "optModelName"
+  },
   "optMsg": {
     "message": "输入你的建议或遇到的问题...",
     "description": "optMsg"
+  },
+  "optNameLabel": {
+    "message": "您的称呼",
+    "description": "optNameLabel"
+  },
+  "optNamePlaceholder": {
+    "message": "如何称呼您？",
+    "description": "optNamePlaceholder"
+  },
+  "optOpacity100": {
+    "message": "100% (完全不透明)"
+  },
+  "optOpacity40": {
+    "message": "40% (较淡)"
+  },
+  "optOpacity60": {
+    "message": "60% (半透明)"
+  },
+  "optOpacity85": {
+    "message": "85% (默认微透)"
+  },
+  "optOptional": {
+    "message": "(选填)",
+    "description": "optOptional"
+  },
+  "optPopupStyle": {
+    "message": "悬浮窗样式",
+    "description": "optPopupStyle"
+  },
+  "optPopupStyleDesc": {
+    "message": "完整模式显示词义；精简模式仅显示音标",
+    "description": "optPopupStyleDesc"
+  },
+  "optPopupStyleHanaMin": {
+    "message": "花园明朝 (HanaMin)"
+  },
+  "optPopupStyleJhengHei": {
+    "message": "微软雅黑 (Microsoft YaHei)"
+  },
+  "optPopupStyleKaiti": {
+    "message": "楷体 (Kaiti)"
+  },
+  "optPopupStyleNoto": {
+    "message": "思源黑体 (Noto Sans SC)"
+  },
+  "optPopupStylePingFang": {
+    "message": "苹方-简 (PingFang SC)"
+  },
+  "optPopupStyleSongti": {
+    "message": "明体 / 宋体 (Songti / SimSun)"
+  },
+  "optPopupStyleSystem": {
+    "message": "系统默认 (System UI)"
   },
   "optSend": {
     "message": "发送反馈",
@@ -151,48 +433,210 @@
     "message": "已发送！",
     "description": "optSent"
   },
-  "ctxMenuEnable": {
-    "message": "开启粤语悬浮词典",
-    "description": "Context menu to enable extension"
+  "optSpeed": {
+    "message": "语速",
+    "description": "optSpeed"
   },
-  "ctxMenuDisable": {
-    "message": "暂停粤语悬浮词典",
-    "description": "Context menu to disable extension"
+  "optStyleCompact": {
+    "message": "精简音标",
+    "description": "optStyleCompact"
   },
-  "ctxMenuSettings": {
-    "message": "词典设置...",
-    "description": "Context menu to open settings"
+  "optStyleDefault": {
+    "message": "默认 (正体字，颜色跟随汉字)"
   },
-  "clTitle": {
-    "message": "🚀 最新更新",
-    "description": "Changelog title"
+  "optStyleDict": {
+    "message": "字典风格 (斜体，自定灰度)"
   },
-  "clDesc": {
-    "message": "本次更新带来了以下优化：",
-    "description": "Changelog description"
+  "optStyleFull": {
+    "message": "完整模式",
+    "description": "optStyleFull"
   },
-  "clItem1": {
-    "message": "✨ <b>全新精简模式</b>：悬浮窗可仅显示拼音，支持声调数字右上角角标显示，并可点击 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展开完整词典；点击即可发声，支持轻弹动画反馈。",
-    "description": "Changelog item 1"
+  "optSubtitle": {
+    "message": "Jyutping Hover Dictionary",
+    "description": "optSubtitle"
   },
-  "clItem2": {
-    "message": "🔊 <b>交互与发音优化</b>：完整模式下按辅助键悬停可自动发音；移除发音延迟，并修复选区高亮冲突。",
-    "description": "Changelog item 2"
+  "optTTSEngine": {
+    "message": "语音引擎",
+    "description": "optTTSEngine"
   },
-  "clItem3": {
-    "message": "🎨 <b>界面自定义</b>：优化设置页面排版；高亮样式新增至 7 种（5 款背景色 + 2 款虚线边框）。",
-    "description": "Changelog item 3"
+  "optTTSEngineDesc": {
+    "message": "选择 TTS 服务提供商",
+    "description": "optTTSEngineDesc"
   },
-  "clItem4": {
-    "message": "🌐 <b>AI 语境翻译</b>：新增目标语言选择（繁/简/英/日），解释更贴心。",
-    "description": "Changelog item 4"
+  "optTTSSettings": {
+    "message": "语音设定 (TTS)",
+    "description": "optTTSSettings"
   },
-  "clItem5": {
-    "message": "🖱️ <b>右键快捷菜单</b>：新增右键菜单，可快速开启/暂停词典及切换显示模式。",
-    "description": "Changelog item 5"
+  "optTestAI": {
+    "message": " 测试 AI 连接",
+    "description": "optTestAI"
   },
-  "clItem6": {
-    "message": "🔧 <b>问题修复</b>：修复翻译浮窗居中定位、右键误触 AI 进度环等问题。",
-    "description": "Changelog item 6"
+  "optTestTTS": {
+    "message": " 测试语音",
+    "description": "optTestTTS"
+  },
+  "optTheme": {
+    "message": "悬浮窗主题",
+    "description": "optTheme"
+  },
+  "optThemeClassic": {
+    "message": "经典",
+    "description": "optThemeClassic"
+  },
+  "optThemeDark": {
+    "message": "深邃夜色",
+    "description": "optThemeDark"
+  },
+  "optThemeDesc": {
+    "message": "选择悬浮窗的颜色风格",
+    "description": "optThemeDesc"
+  },
+  "optThemeGlass": {
+    "message": "毛玻璃",
+    "description": "optThemeGlass"
+  },
+  "optThemeHK": {
+    "message": "香港红",
+    "description": "optThemeHK"
+  },
+  "optThemeInk": {
+    "message": "墨韵",
+    "description": "optThemeInk"
+  },
+  "optThemeMint": {
+    "message": "薄荷绿",
+    "description": "optThemeMint"
+  },
+  "optThemeOcean": {
+    "message": "海洋蓝",
+    "description": "optThemeOcean"
+  },
+  "optThemeWarm": {
+    "message": "暖阳",
+    "description": "optThemeWarm"
+  },
+  "optTitle": {
+    "message": "粤语悬浮词典",
+    "description": "optTitle"
+  },
+  "optToneHidden": {
+    "message": "隐藏音调 (如 jyut)"
+  },
+  "optToneNormal": {
+    "message": "默认 (后方，如 jyut6)"
+  },
+  "optToneStyleToggle": {
+    "message": "声调数字以右上角角标显示",
+    "description": "Checkbox label for tone style"
+  },
+  "optToneSuperscript": {
+    "message": "右上角角标 (如 jyut⁶)"
+  },
+  "optTransDesc1": {
+    "message": "选中粤语文本后双击选区，同时显示普通话和英文翻译",
+    "description": "optTransDesc1"
+  },
+  "optTransDesc2": {
+    "message": "使用 Bing 翻译引擎（原生支持粤语，免费无需配置）",
+    "description": "optTransDesc2"
+  },
+  "optTransEnglish": {
+    "message": "英文",
+    "description": "optTransEnglish"
+  },
+  "optTransJapanese": {
+    "message": "日文",
+    "description": "optTransJapanese"
+  },
+  "optTransKorean": {
+    "message": "韩文",
+    "description": "optTransKorean"
+  },
+  "optTransLang": {
+    "message": "显示语言",
+    "description": "optTransLang"
+  },
+  "optTransLangDesc": {
+    "message": "选择悬浮窗中显示的翻译语言",
+    "description": "optTransLangDesc"
+  },
+  "optTransMandarin": {
+    "message": "普通话",
+    "description": "optTransMandarin"
+  },
+  "optTransSettings": {
+    "message": "翻译设定",
+    "description": "optTransSettings"
+  },
+  "optTransTrigger": {
+    "message": "翻译触发方式",
+    "description": "optTransTrigger"
+  },
+  "optTransTriggerClick": {
+    "message": "单击词语或选区",
+    "description": "optTransTriggerClick"
+  },
+  "optTransTriggerDblclick": {
+    "message": "双击词语或选区 (默认)",
+    "description": "optTransTriggerDblclick"
+  },
+  "optTransTriggerDesc": {
+    "message": "选择如何触发 Bing 翻译功能",
+    "description": "optTransTriggerDesc"
+  },
+  "optVoice": {
+    "message": "语音音色",
+    "description": "optVoice"
+  },
+  "optVoice1": {
+    "message": "晓曼 HiuMaan（女声）⭐⭐⭐⭐⭐ · 响应 ~1s",
+    "description": "optVoice1"
+  },
+  "optVoice2": {
+    "message": "晓佳 HiuGaai（女声）⭐⭐⭐⭐⭐ · 响应 ~1s",
+    "description": "optVoice2"
+  },
+  "optVoice3": {
+    "message": "云龙 WanLung（男声）⭐⭐⭐⭐⭐ · 响应 ~1s",
+    "description": "optVoice3"
+  },
+  "optZhFont": {
+    "message": "中文字体",
+    "description": "optZhFont"
+  },
+  "titleClose": {
+    "message": "关闭"
+  },
+  "toastRubyDisabled": {
+    "message": "全文粤语注音已关闭。<br>如遇排版异常，请刷新网页 (F5)。",
+    "description": "Toast shown when full page ruby is disabled"
+  },
+  "toastRubyEnabled": {
+    "message": "全文粤语注音已开启。<br>如遇排版重叠，请刷新网页 (F5) 以适应高度。",
+    "description": "Toast shown when full page ruby is enabled"
+  },
+  "optPlaying": {
+    "message": "正在播放..."
+  },
+  "optTestingAI": {
+    "message": "正在测试..."
+  },
+  "optSuccess": {
+    "message": "✅ 连接成功！\n模型回复："
+  },
+  "optFail": {
+    "message": "❌ 连接失败："
+  },
+  "optNoReply": {
+    "message": "（无回复）"
+  },
+  "optAIPrompt": {
+    "message": "自定义提示词 (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "设置发送给 AI 的提示词模板，支持变量 {word}（选中词语）和 {sentence}（整句语境）。若留空则使用默认值。"
+  },
+  "optAIDefaultPrompt": {
+    "message": "你是一个粤语语言专家。用户在阅读粤语文章时选中了一个词语，请根据上下文语境，用{targetLang}简要解释这个词在句中的具体含义（1-2句话）。只需要回复解释内容本身，不需要任何格式标记。\n\n【词语】{word}\n【句子】{sentence}"
   }
 }

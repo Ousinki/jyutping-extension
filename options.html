@@ -506,7 +506,10 @@
           <style>#langToggle:focus { outline: none; box-shadow: none; border-color: #cbd5e1; }</style>
           <select id="langToggle" style="padding: 4px 8px; border-radius: 6px; border: 1px solid #e2e8f0; font-size: 13px; background: white; cursor: pointer; outline: none;">
             <option value="zh-HK">繁體中文</option>
+            <option value="zh-CN">简体中文</option>
             <option value="en">English</option>
+            <option value="ja">日本語</option>
+            <option value="ko">한국어</option>
           </select>
         </div>
         <div class="header-icon">
@@ -534,8 +537,8 @@
             </div>
             <div class="select-wrapper">
               <select id="displayMode">
-                <option value="jyutping">粵拼 (Jyutping)</option>
-                <option value="yale">耶魯拼音 (Yale)</option>
+                <option value="jyutping" data-i18n="optFormatJyutping">粵拼 (Jyutping)</option>
+                <option value="yale" data-i18n="optFormatYale">耶魯拼音 (Yale)</option>
               </select>
             </div>
           </div>
@@ -547,14 +550,14 @@
                 <span class="setting-label" data-i18n="optZhFont">中文字體</span>
               </div>
               <select id="zhFontSelect" class="select-input" style="margin-bottom: 8px;">
-                <option value="">系統預設 (System UI)</option>
-                <option value="'Noto Sans TC', sans-serif">思源黑體 (Noto Sans TC)</option>
-                <option value="'PingFang HK', sans-serif">蘋方-港 (PingFang HK)</option>
-                <option value="'Microsoft JhengHei', sans-serif">微軟正黑體 (Microsoft JhengHei)</option>
-                <option value="'Songti TC', 'SimSun', serif">明體 / 宋體 (Songti / SimSun)</option>
-                <option value="'Kaiti TC', 'KaiTi', serif">楷體 (Kaiti)</option>
-                <option value="'HanaMinA', 'HanaMinB', serif">花園明朝 (HanaMin)</option>
-                <option value="custom">自定義輸入...</option>
+                <option value="" data-i18n="optPopupStyleSystem">系統預設 (System UI)</option>
+                <option value="'Noto Sans TC', sans-serif" data-i18n="optPopupStyleNoto">思源黑體 (Noto Sans TC)</option>
+                <option value="'PingFang HK', sans-serif" data-i18n="optPopupStylePingFang">蘋方-港 (PingFang HK)</option>
+                <option value="'Microsoft JhengHei', sans-serif" data-i18n="optPopupStyleJhengHei">微軟正黑體 (Microsoft JhengHei)</option>
+                <option value="'Songti TC', 'SimSun', serif" data-i18n="optPopupStyleSongti">明體 / 宋體 (Songti / SimSun)</option>
+                <option value="'Kaiti TC', 'KaiTi', serif" data-i18n="optPopupStyleKaiti">楷體 (Kaiti)</option>
+                <option value="'HanaMinA', 'HanaMinB', serif" data-i18n="optPopupStyleHanaMin">花園明朝 (HanaMin)</option>
+                <option value="custom" data-i18n="optCustomInput">自定義輸入...</option>
               </select>
               <input
                 type="text"
@@ -570,10 +573,10 @@
                 <span class="setting-label" data-i18n="optEnFont">拼音字體</span>
               </div>
               <select id="enFontSelect" class="select-input" style="margin-bottom: 8px;">
-                <option value="">經典等寬字體 (Courier / 預設)</option>
-                <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace">現代等寬字體 (SF Mono / Consolas)</option>
-                <option value="system-ui, -apple-system, sans-serif">系統無襯線體 (System UI)</option>
-                <option value="custom">自定義輸入...</option>
+                <option value="" data-i18n="optEnFontCourier">經典等寬字體 (Courier / 預設)</option>
+                <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" data-i18n="optEnFontModern">現代等寬字體 (SF Mono / Consolas)</option>
+                <option value="system-ui, -apple-system, sans-serif" data-i18n="optEnFontSystem">系統無襯線體 (System UI)</option>
+                <option value="custom" data-i18n="optCustomInput">自定義輸入...</option>
               </select>
               <input
                 type="text"
@@ -686,6 +689,7 @@
             </div>
           </div>
 
+
           <!-- Compact Mode Animation Demo -->
           <div id="compactDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">
             <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em; margin: 0 auto;">
@@ -703,7 +707,7 @@
                 <!-- Badge body — matches actual compact popup style -->
                 <div style="background: #fff; border: 1px solid #d0d0d0; border-radius: 0; padding: 2px 8px; filter: drop-shadow(0px 2px 6px rgba(0,0,0,0.1)); white-space: nowrap; line-height: 1.2; display: flex; align-items: center;">
                   <span id="demoCompactText" style="font-size: 15px; font-weight: 500; color: #1890ff; font-family: system-ui, -apple-system, sans-serif; letter-spacing: 0;">tin<sup class="jyutping-tone">1</sup> hei<sup class="jyutping-tone">3</sup></span>
-                  <span id="demoCompactExpandBtn" style="display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; font-size: 12px; opacity: 0.5; vertical-align: middle; line-height: 1;"><img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block;" /></span>
+                  <span id="demoCompactExpandBtn" style="display: inline-flex; align-items: center; justify-content: center; margin-left: 4px; font-size: 12px; opacity: 0.5; line-height: 1;"><img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; display: block;" /></span>
                 </div>
               </div>
 
@@ -882,8 +886,212 @@
         </div>
       </div>
 
+      <!-- Inspect Mode Settings -->
+      <div class="settings-card">
+        <div class="settings-section">
+          <div class="section-title" data-i18n="optInspectModeTitle">交互式區塊注音 (Inspect Mode)</div>
 
-      <!-- Translation Settings -->
+          <div class="setting-item" id="rubyShortcutContainer">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optInspectShortcutTitle">區塊粵語注音快捷鍵</span>
+              <span class="setting-desc" id="inspectShortcutDesc">未設定快捷鍵。</span>
+            </div>
+            <div style="flex-shrink: 0;">
+              <button id="modifyShortcutBtn" class="test-btn" style="padding: 6px 12px; font-size: 13px; border-radius: 6px; width: auto;" data-i18n="optInspectShortcutBtn">
+                修改快捷鍵
+              </button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optInspectToneStyleTitle">音調數字顯示方式</span>
+              <span class="setting-desc" data-i18n="optInspectToneStyleDesc">選擇區塊注音時，音調數字是顯示在後方還是右上角上標。</span>
+            </div>
+            <select id="toneDisplayStyle" class="setting-select">
+              <option value="normal" data-i18n="optToneNormal">預設 (後方，如 jyut6)</option>
+              <option value="superscript" data-i18n="optToneSuperscript">右上角上標 (如 jyut⁶)</option>
+              <option value="hidden" data-i18n="optToneHidden">隱藏音調 (如 jyut)</option>
+            </select>
+          </div>
+
+          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+            <div class="setting-info" style="margin-bottom: 8px;">
+              <span class="setting-label" data-i18n="optInspectFontTitle">上標拼音字體</span>
+              <span class="setting-desc" data-i18n="optInspectFontDesc">自定義注音文本的字體，留空則使用預設等寬字體。</span>
+            </div>
+            <select id="rubyTextFontSelect" class="setting-select" style="margin-bottom: 8px;">
+              <option value="" data-i18n="optFontMono">預設等寬字體 (Consolas / SF Mono / ui-monospace)</option>
+              <option value="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" data-i18n="optFontSans">系統無襯線體 (System UI / Arial)</option>
+              <option value="Georgia, 'Times New Roman', Times, serif" data-i18n="optFontSerif">優雅襯線體 (Georgia / Times)</option>
+              <option value="'Chiron Hei HK WS', 'Microsoft YaHei', sans-serif" data-i18n="optFontHei">字典黑體 (Chiron Hei / 雅黑)</option>
+              <option value="custom" data-i18n="optFontCustom" data-i18n="optCustomInput">自定義輸入...</option>
+            </select>
+            <input type="text" id="rubyTextFont" class="setting-input" placeholder="如: Arial, sans-serif" style="display: none; width: 100%;">
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optInspectStyleTitle">音標排版風格</span>
+              <span class="setting-desc" data-i18n="optInspectStyleDesc">選擇上方注音的視覺風格（斜體、顏色等）。</span>
+            </div>
+            <select id="rubyTextStyle" class="setting-select">
+              <option value="default" data-i18n="optStyleDefault">預設 (正體字，顏色跟隨漢字)</option>
+              <option value="dictionary" data-i18n="optStyleDict">字典風格 (斜體，自訂灰度)</option>
+            </select>
+          </div>
+
+          <div class="setting-item" id="rubyTextOpacityContainer">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optInspectOpacityTitle">音標不透明度</span>
+              <span class="setting-desc" data-i18n="optInspectOpacityDesc">調整上方注音的透明度。</span>
+            </div>
+            <select id="rubyTextOpacity" class="setting-select">
+              <option value="1" data-i18n="optOpacity100">100% (完全不透明)</option>
+              <option value="0.85" data-i18n="optOpacity85">85% (預設微透)</option>
+              <option value="0.6" data-i18n="optOpacity60">60% (半透明)</option>
+              <option value="0.4" data-i18n="optOpacity40">40% (較淡)</option>
+            </select>
+          </div>
+
+          <div class="setting-item" id="rubyDictionaryColorContainer" style="display: none;">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optInspectDictColorTitle">字典風格顏色</span>
+              <span class="setting-desc" data-i18n="optInspectDictColorDesc">調整字典風格下的音標顏色深度。</span>
+            </div>
+            <select id="rubyDictionaryColor" class="setting-select">
+              <option value="#777777" data-i18n="optColorDarkGray">深灰 (#777)</option>
+              <option value="#999999" data-i18n="optColorLightGray">淺灰 (#999)</option>
+            </select>
+          </div>
+
+          <!-- Inspect Mode Animation Demo -->
+          <div id="inspectDemo" style="margin-top: 12px; margin-bottom: 8px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 0 24px; position: relative; display: flex; justify-content: center; align-items: center; height: 140px; overflow: hidden;">
+            
+            <div class="demo-inspect-block" style="position: relative; padding: 8px 12px; border-radius: 6px; color: var(--text-primary); font-weight: 500; font-size: 16px; transition: all 0.2s ease; border: 2px solid transparent; background-color: transparent;">
+              
+              <!-- The Ruby annotations that fade in -->
+              <div class="demo-inspect-rubies" style="position: absolute; top: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 0px; opacity: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 9px; color: #1565c0; letter-spacing: -0.5px; transform: scale(0.9); transform-origin: center bottom;">
+                <span style="flex: 1; text-align: center;">dim2</span>
+                <span style="flex: 1; text-align: center;">gik1</span>
+                <span style="flex: 1; text-align: center;">gou1</span>
+                <span style="flex: 1; text-align: center;">loeng6</span>
+                <span style="flex: 1; text-align: center;">au1</span>
+                <span style="flex: 1; text-align: center;">faai3</span>
+              </div>
+
+              <span style="position: relative; z-index: 1;">點擊高亮區塊</span>
+
+              <!-- Highlight effect background -->
+              <div class="demo-inspect-highlight-bg" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 6px; z-index: 0; opacity: 0;"></div>
+            </div>
+
+            <!-- Simulated Cursor -->
+            <div class="demo-inspect-cursor" style="position: absolute; width: 22px; height: 22px; z-index: 10;">
+              <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%;">
+                <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+              </svg>
+            </div>
+            
+            <!-- Click ripple effect -->
+            <div class="demo-inspect-ripple" style="position: absolute; width: 20px; height: 20px; border-radius: 50%; background: rgba(245, 158, 11, 0.5); z-index: 9; opacity: 0; pointer-events: none; transform: translate(-50%, -50%);"></div>
+
+            <!-- Simulated Keyboard Shortcut -->
+            <div class="demo-inspect-keys" style="position: absolute; bottom: 12px; right: 16px; display: flex; gap: 4px; z-index: 5; opacity: 0;">
+              <div class="demo-key demo-key-cmd">⌘</div>
+              <div class="demo-key demo-key-shift">⇧</div>
+              <div class="demo-key demo-key-x">X</div>
+            </div>
+
+            <style>
+              .demo-inspect-cursor {
+                opacity: 0;
+                animation: inspectCursorAnim 5s infinite;
+              }
+              
+              .demo-inspect-block {
+                animation: inspectBlockAnim 5s infinite;
+              }
+
+              .demo-inspect-rubies {
+                animation: inspectRubiesAnim 5s infinite;
+              }
+
+              .demo-inspect-ripple {
+                animation: inspectRippleAnim 5s infinite;
+              }
+
+              .demo-key {
+                background: #ffffff;
+                border: 1px solid #d0d0d0;
+                border-radius: 4px;
+                padding: 2px 5px;
+                font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+                font-size: 11px;
+                font-weight: 500;
+                color: #555555;
+                box-shadow: 0 2px 0 #d0d0d0;
+                transition: all 0.1s ease;
+              }
+
+              .demo-inspect-keys {
+                animation: inspectKeysAnim 5s infinite;
+              }
+
+              @keyframes inspectKeysAnim {
+                0%, 2% { opacity: 0; transform: translateY(4px); }
+                5%, 20% { opacity: 1; transform: translateY(0); }
+                25%, 100% { opacity: 0; transform: translateY(4px); }
+              }
+
+              @keyframes inspectKeyPressAnim {
+                0%, 8% { box-shadow: 0 2px 0 #d0d0d0; transform: translateY(0) scale(1); background: #ffffff; }
+                9%, 18% { box-shadow: 0 0px 0 #d0d0d0; transform: translateY(2px) scale(0.95); background: #f1f5f9; }
+                19%, 100% { box-shadow: 0 2px 0 #d0d0d0; transform: translateY(0) scale(1); background: #ffffff; }
+              }
+
+              /* Cursor moves in, hovers, clicks, leaves */
+              @keyframes inspectCursorAnim {
+                0%, 15% { top: 80px; left: 10%; opacity: 0; }
+                25%     { top: 50px; left: 45%; opacity: 1; }
+                40%     { top: 50px; left: 45%; opacity: 1; transform: scale(1); }
+                45%     { top: 50px; left: 45%; opacity: 1; transform: scale(0.85); } /* Click press */
+                50%     { top: 50px; left: 45%; opacity: 1; transform: scale(1); }   /* Click release */
+                60%, 80%{ top: 80px; left: 80%; opacity: 1; } /* move away */
+                90%, 100%{ top: 80px; left: 80%; opacity: 0; }
+              }
+
+              /* Block highlight and expansion */
+              @keyframes inspectBlockAnim {
+                0%, 25% { outline: none; border-color: transparent; background-color: transparent; font-size: 16px; padding-top: 8px; }
+                /* Hover state */
+                30%, 45% { border-color: transparent; outline: 2px dashed #f59e0b; background-color: rgba(245, 158, 11, 0.1); font-size: 16px; padding-top: 8px; }
+                /* Clicked -> Expanding state */
+                50%, 85% { border-color: transparent; outline: none; background-color: transparent; font-size: 20px; padding-top: 20px; }
+                95%, 100%{ outline: none; border-color: transparent; background-color: transparent; font-size: 16px; padding-top: 8px; }
+              }
+
+              /* Rubies fade in */
+              @keyframes inspectRubiesAnim {
+                0%, 48% { opacity: 0; transform: scale(0.9) translateY(4px); }
+                52%, 85% { opacity: 1; transform: scale(0.9) translateY(0); }
+                90%, 100% { opacity: 0; transform: scale(0.9) translateY(4px); }
+              }
+
+              /* Click Ripple */
+              @keyframes inspectRippleAnim {
+                0%, 44% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); top: 50px; left: 45%; }
+                45%     { opacity: 1; transform: translate(-50%, -50%) scale(1); top: 50px; left: 45%; }
+                55%     { opacity: 0; transform: translate(-50%, -50%) scale(2); top: 50px; left: 45%; }
+                100%    { opacity: 0; top: 50px; left: 45%; }
+              }
+            </style>
+          </div>
+
+        </div>
+      </div>
+
+
       <div class="settings-card">
         <div class="settings-section">
           <div class="section-title" data-i18n="optTransSettings">翻譯設定</div>
@@ -894,8 +1102,40 @@
             <span data-i18n="optTransDesc2">使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）</span>
           </p>
 
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optTransLang">顯示語言</span>
+              <span class="setting-desc" data-i18n="optTransLangDesc">選擇懸浮窗中顯示的翻譯語言</span>
+            </div>
+            <div id="transLangsContainer" style="display: flex; gap: 12px; flex-wrap: wrap; margin-top: 4px;">
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" name="transLangs" value="zh-Hans" style="accent-color: var(--primary, #1890ff);"> <span data-i18n="optTransMandarin">普通話</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" name="transLangs" value="en" style="accent-color: var(--primary, #1890ff);"> <span data-i18n="optTransEnglish">英文</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" name="transLangs" value="ja" style="accent-color: var(--primary, #1890ff);"> <span data-i18n="optTransJapanese">日文</span>
+              </label>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 13px; cursor: pointer;">
+                <input type="checkbox" name="transLangs" value="ko" style="accent-color: var(--primary, #1890ff);"> <span data-i18n="optTransKorean">韓文</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optTransTrigger">翻譯觸發方式</span>
+              <span class="setting-desc" data-i18n="optTransTriggerDesc">選擇如何觸發 Bing 翻譯功能</span>
+            </div>
+            <select id="transTriggerSelect" class="setting-select">
+              <option value="dblclick" data-i18n="optTransTriggerDblclick">雙擊詞語或選區 (預設)</option>
+              <option value="click" data-i18n="optTransTriggerClick">單擊詞語或選區</option>
+            </select>
+          </div>
+
           <!-- Animation Demo -->
-          <div style="margin-top: 20px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px 90px 24px; position: relative; display: flex; justify-content: center; align-items: flex-start; min-height: 140px;">
+          <div id="translateDemoContainer" style="margin-top: 20px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px 140px 24px; position: relative; display: flex; justify-content: center; align-items: flex-start; min-height: 190px; overflow: hidden;">
             <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em;">
               <span>歡迎嚟到香港</span>
               
@@ -905,13 +1145,21 @@
               <!-- Simulated Translate Popup (Now Below) -->
               <div class="demo-popup" style="position: absolute; top: calc(100% + 12px); left: 50%; transform: translateX(-50%); background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 10px 14px; width: max-content; box-shadow: var(--shadow); pointer-events: none; text-align: left;">
                 <div style="display: flex; flex-direction: column; gap: 6px;">
-                  <div style="display: flex; align-items: center; gap: 8px;">
+                  <div id="demoTransZhHans" style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 11px; background: #fee2e2; color: #b91c1c; padding: 2px 6px; border-radius: 4px; font-weight: 600;">普</span>
                     <span style="font-size: 13px; color: var(--text-primary);">欢迎来到香港</span>
                   </div>
-                  <div style="display: flex; align-items: center; gap: 8px;">
+                  <div id="demoTransEn" style="display: flex; align-items: center; gap: 8px;">
                     <span style="font-size: 11px; background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-weight: 600;">英</span>
                     <span style="font-size: 13px; color: var(--text-primary); font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;">Welcome to Hong Kong</span>
+                  </div>
+                  <div id="demoTransJa" style="display: none; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-weight: 600;">日</span>
+                    <span style="font-size: 13px; color: var(--text-primary);">香港へようこそ</span>
+                  </div>
+                  <div id="demoTransKo" style="display: none; align-items: center; gap: 8px;">
+                    <span style="font-size: 11px; background: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-weight: 600;">韓</span>
+                    <span style="font-size: 13px; color: var(--text-primary);">홍콩에 오신 것을 환영합니다</span>
                   </div>
                 </div>
                 
@@ -962,10 +1210,10 @@
                 20% { top: 5px; left: -5px; } /* Start of text */
                 35% { top: 5px; left: 100%; } /* End of text */
                 45% { top: 12px; left: 50%; } /* Middle of text */
-                50% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 1 */
-                51% { top: 12px; left: 50%; transform: scale(1); }
-                53% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 2 */
-                54% { top: 12px; left: 50%; transform: scale(1); }
+                49% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 1 down */
+                50.5% { top: 12px; left: 50%; transform: scale(1); } /* Click 1 up */
+                52% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 2 down */
+                53.5% { top: 12px; left: 50%; transform: scale(1); } /* Click 2 up */
                 75% { top: 12px; left: 50%; opacity: 1; }
                 85% { top: 30px; left: 120%; opacity: 0; }
                 100% { top: 30px; left: 120%; opacity: 0; }
@@ -979,18 +1227,56 @@
               }
 
               @keyframes showPopup {
-                0%, 54% { opacity: 0; transform: translate(-50%, -10px); }
-                58%, 75% { opacity: 1; transform: translate(-50%, 0); }
+                0%, 55% { opacity: 0; transform: translate(-50%, -10px); }
+                59%, 75% { opacity: 1; transform: translate(-50%, 0); }
                 80%, 100% { opacity: 0; transform: translate(-50%, -10px); }
               }
 
               @keyframes rippleClick {
-                0%, 49% { opacity: 0; transform: scale(0.2); }
-                50% { opacity: 1; transform: scale(0.2); }
-                51% { opacity: 0; transform: scale(1.5); }
-                52% { opacity: 1; transform: scale(0.2); }
-                53% { opacity: 0; transform: scale(1.5); }
-                54%, 100% { opacity: 0; }
+                0%, 48.9% { opacity: 0; transform: scale(0.5); }
+                49% { opacity: 0.8; transform: scale(0.5); }
+                51.5% { opacity: 0; transform: scale(2.2); }
+                51.9% { opacity: 0; transform: scale(0.5); }
+                52% { opacity: 0.8; transform: scale(0.5); }
+                54.5% { opacity: 0; transform: scale(2.2); }
+                55%, 100% { opacity: 0; }
+              }
+
+              /* Single Click Variants */
+              .single-click-demo .demo-cursor {
+                animation: moveCursorSingle 5s ease-in-out infinite;
+              }
+              .single-click-demo .demo-ripple {
+                animation: rippleClickSingle 5s infinite;
+              }
+              .single-click-demo .demo-popup {
+                animation: showPopupSingle 5s cubic-bezier(0.34, 1.56, 0.64, 1) infinite;
+              }
+
+              @keyframes moveCursorSingle {
+                0%, 5% { top: 30px; left: -50px; opacity: 0; }
+                10% { opacity: 1; }
+                20% { top: 5px; left: -5px; } /* Start of text */
+                35% { top: 5px; left: 100%; } /* End of text */
+                45% { top: 12px; left: 50%; } /* Middle of text */
+                49% { top: 12px; left: 50%; transform: scale(0.85); } /* Click 1 down */
+                51.5% { top: 12px; left: 50%; transform: scale(1); } /* Click 1 up */
+                75% { top: 12px; left: 50%; opacity: 1; }
+                85% { top: 30px; left: 120%; opacity: 0; }
+                100% { top: 30px; left: 120%; opacity: 0; }
+              }
+
+              @keyframes rippleClickSingle {
+                0%, 48.9% { opacity: 0; transform: scale(0.5); }
+                49% { opacity: 0.8; transform: scale(0.5); }
+                52.5% { opacity: 0; transform: scale(2.2); }
+                53%, 100% { opacity: 0; }
+              }
+
+              @keyframes showPopupSingle {
+                0%, 52% { opacity: 0; transform: translate(-50%, -10px); }
+                56%, 75% { opacity: 1; transform: translate(-50%, 0); }
+                80%, 100% { opacity: 0; transform: translate(-50%, -10px); }
               }
             </style>
           </div>
@@ -1014,7 +1300,7 @@
           </div>
 
           <!-- AI Animation Demo -->
-          <div style="margin-top: 16px; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px 100px 24px; position: relative; display: flex; justify-content: center; align-items: flex-start; min-height: 150px;">
+          <div style="margin-top: 16px; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px 100px 24px; position: relative; display: flex; justify-content: center; align-items: flex-start; min-height: 150px; overflow: hidden;">
             <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em;">
               <span>我真係好鍾意香港</span>
               
@@ -1215,12 +1501,26 @@
               </div>
               <div class="select-wrapper">
                 <select id="aiLanguage">
-                  <option value="繁體中文">繁體中文</option>
-                  <option value="簡體中文">簡體中文</option>
-                  <option value="英文">英文 (English)</option>
-                  <option value="日文">日文 (日本語)</option>
+                  <option value="繁體中文" data-i18n="optAILangTW">繁體中文</option>
+                  <option value="簡體中文" data-i18n="optAILangCN">簡體中文</option>
+                  <option value="英文" data-i18n="optAILangEN">英文 (English)</option>
+                  <option value="日文" data-i18n="optAILangJA">日文 (日本語)</option>
                 </select>
               </div>
+            </div>
+
+            <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+              <div class="setting-info" style="margin-bottom: 8px;">
+                <span class="setting-label" data-i18n="optAIPrompt">自訂提示詞 (System Prompt)</span>
+                <span class="setting-desc" data-i18n="optAIPromptDesc">設定發送給 AI 的提示詞範本，支援變數 {word}（選中詞語）和 {sentence}（整句語境）。若留空則使用預設值。</span>
+              </div>
+              <textarea
+                id="aiPrompt"
+                class="text-input"
+                rows="4"
+                data-i18n="optAIDefaultPrompt"
+                style="resize: vertical; font-family: inherit; line-height: 1.5; padding: 8px 12px; height: auto;"
+              ></textarea>
             </div>
 
             <div class="setting-item" style="padding-top: 16px;">
@@ -1578,7 +1878,7 @@
           <div class="report-demo-outer">
             <div style="font-size: 13px; color: var(--text-secondary); font-weight: 500; display: flex; align-items: center; gap: 6px;">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              <span>小提示：現在可以在網頁查詞時，直接通過懸浮窗快速報錯！</span>
+              <span data-i18n="optFeedbackHint">小提示：現在可以在網頁查詞時，直接通過懸浮窗快速報錯！</span>
             </div>
 
             <div class="report-demo-stage">
@@ -1586,12 +1886,12 @@
               <div class="report-demo-box">
                 <div style="padding: 12px; text-align: left;">
                   <div style="font-size: 16px; font-weight: bold; color: var(--primary); margin-bottom: 2px;">靚 <span style="font-size: 13px; font-weight: normal; color: var(--primary-light); margin-left: 4px;">leng3</span></div>
-                  <div style="font-size: 13px; color: var(--text-secondary);">漂亮，好看。</div>
+                  <div style="font-size: 13px; color: var(--text-secondary);" data-i18n="optDemoTranslation">漂亮，好看。</div>
                 </div>
                 <div style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center;">
                   <div class="demo-report-pill" style="height: 24px; display: flex; align-items: center; border-radius: 4px; overflow: hidden; white-space: nowrap; font-size: 11px; color: var(--primary);">
                     <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px; flex-shrink: 0;"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>
-                    <span>報告</span>
+                    <span data-i18n="optDemoReportBtn">報告</span>
                   </div>
                   <div class="demo-settings-icon" style="width: 24px; height: 24px; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: var(--primary);">
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
@@ -1663,9 +1963,9 @@
       <div class="changelog-header">
         <div class="changelog-title">
           <span data-i18n="clTitle">🚀 最新更新</span>
-          <span class="changelog-version" id="changelogVersionBadge">v1.5.0</span>
+          <span class="changelog-version" id="changelogVersionBadge">v1.5.4</span>
         </div>
-        <button id="closeChangelogBtn" class="changelog-close" title="關閉">
+        <button id="closeChangelogBtn" class="changelog-close" title="關閉" data-i18n="titleClose">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"></line>
             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -1675,12 +1975,9 @@
       <div class="changelog-content">
         <p data-i18n="clDesc">本次更新帶來了以下優化：</p>
         <ul class="changelog-list">
-          <li data-i18n="clItem1">✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，支援聲調數字右上角角標顯示，並可點擊 <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> 展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。</li>
-          <li data-i18n="clItem2">🔊 <b>交互與發音優化</b>：完整模式下按輔助鍵懸停可自動發音；移除發音延遲，並修復選區高亮衝突。</li>
-          <li data-i18n="clItem3">🎨 <b>介面自定義</b>：優化設定頁面排版；高亮樣式新增至 7 種（5 款背景色 + 2 款虛線邊框）。</li>
-          <li data-i18n="clItem4">🌐 <b>AI 語境翻譯</b>：新增目標語言選擇（繁/簡/英/日），解釋更貼心。</li>
-          <li data-i18n="clItem5">🖱️ <b>右鍵快捷選單</b>：新增右鍵選單，可快速開啟/暫停詞典及切換顯示模式。</li>
-          <li data-i18n="clItem6">🔧 <b>問題修復</b>：修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。</li>
+          <li data-i18n="clItem1">📖 <b>全文注音功能</b>：新增網頁全文拼音標註，支援精美的「字典風格」排版，提供如同實體字典般的沉浸式閱讀體驗。</li>
+          <li data-i18n="clItem2">⚙️ <b>自訂翻譯觸發方式</b>：在設定中新增了「API 翻譯觸發方式」的選項，你可以根據習慣自由選擇「雙擊」或「單擊」來調起翻譯懸浮窗。</li>
+          <li data-i18n="clItem3">🐛 <b>修復翻譯觸發與狀態同步問題</b>：修復了切換單擊/雙擊翻譯無反應、切換字典風格未顯示灰度選項，以及關閉擴充後事件仍錯誤執行的問題。</li>
         </ul>
       </div>
     </div>

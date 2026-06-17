@@ -1,186 +1,17 @@
 {
-  "extName": {
-    "message": "広東語ホバー辞書",
-    "description": "extName"
-  },
-  "extDescription": {
-    "message": "中国語の文字にマウスを合わせるだけで、広東語の発音（Jyutping / Yale）と英語の意味が表示されます。AIによる文脈翻訳にも対応しています。",
-    "description": "extDescription"
-  },
-  "extActionTitle": {
-    "message": "広東語ピンインホバー辞書",
-    "description": "extActionTitle"
-  },
-  "optToneStyleToggle": {
-    "message": "声調数字を右上の上付き文字として表示",
-    "description": "Checkbox label for tone style"
-  },
-  "optTitle": {
-    "message": "広東語ホバー辞書",
-    "description": "optTitle"
-  },
-  "optSubtitle": {
-    "message": "Jyutping Hover Dictionary",
-    "description": "optSubtitle"
-  },
-  "optGenSettings": {
-    "message": "一般設定",
-    "description": "optGenSettings"
-  },
-  "optEnable": {
-    "message": "辞書を有効にする",
-    "description": "optEnable"
-  },
-  "optEnableDesc": {
-    "message": "ウェブページ上で広東語の発音ヒントを表示します",
-    "description": "optEnableDesc"
-  },
-  "optFormat": {
-    "message": "発音表示フォーマット",
-    "description": "optFormat"
-  },
-  "optFormatDesc": {
-    "message": "広東語のピンインシステムを選択",
-    "description": "optFormatDesc"
-  },
-  "optHoverModifier": {
-    "message": "ホバー時のトリガーキー",
-    "description": "optHoverModifier"
-  },
-  "optHoverModifierDesc": {
-    "message": "日常の操作の邪魔にならないよう、特定のキーを押している時だけ辞書を表示します",
-    "description": "optHoverModifierDesc"
-  },
-  "optKeyNone": {
-    "message": "なし (直接ホバー)",
-    "description": "optKeyNone"
-  },
-  "optKeyAlt": {
-    "message": "Alt / Option (⌥)",
-    "description": "optKeyAlt"
-  },
-  "optKeyCtrl": {
-    "message": "Ctrl (⌃)",
-    "description": "optKeyCtrl"
-  },
-  "optKeyShift": {
-    "message": "Shift (⇧)",
-    "description": "optKeyShift"
-  },
-  "optKeyMeta": {
-    "message": "Command (⌘) / Win",
-    "description": "optKeyMeta"
-  },
-  "optCompactExpandBtn": {
-    "message": "発音記号の横に <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 完全版辞書の展開ボタンを表示する",
-    "description": "optCompactExpandBtn"
-  },
-  "optTheme": {
-    "message": "ホバーウィンドウのテーマ",
-    "description": "optTheme"
-  },
-  "optThemeDesc": {
-    "message": "辞書ポップアップのカラースタイルを選択",
-    "description": "optThemeDesc"
-  },
-  "optTransSettings": {
-    "message": "翻訳設定",
-    "description": "optTransSettings"
-  },
-  "optTransDesc1": {
-    "message": "広東語テキストを選択してダブルクリックすると、標準中国語と英語の翻訳を同時に表示します",
-    "description": "optTransDesc1"
-  },
-  "optTransDesc2": {
-    "message": "Bing翻訳エンジンを使用（広東語ネイティブサポート、無料で設定不要）",
-    "description": "optTransDesc2"
-  },
-  "optAISettings": {
-    "message": "✨ AI 文脈翻訳",
-    "description": "optAISettings"
-  },
-  "optAIEnable": {
-    "message": "AI翻訳を有効にする",
-    "description": "optAIEnable"
-  },
-  "optAIEnableDesc": {
-    "message": "テキストを選択して長押しすると、AIが文脈に基づいて意味を解説します",
-    "description": "optAIEnableDesc"
-  },
-  "optAIBaseUrlDesc": {
-    "message": "OpenAI 互換APIのエンドポイント（各社対応）",
-    "description": "optAIBaseUrlDesc"
-  },
-  "optAIModelLabel": {
-    "message": "AI モデル",
-    "description": "optAIModelLabel"
-  },
-  "optAIPromptLabel": {
-    "message": "AI 翻訳プロンプト",
-    "description": "optAIPromptLabel"
-  },
-  "optFeedback": {
-    "message": "情報とフィードバック",
-    "description": "optFeedback"
-  },
-  "optDev": {
-    "message": "開発者",
-    "description": "optDev"
-  },
-  "optFeedbackForm": {
-    "message": "フィードバック",
-    "description": "optFeedbackForm"
-  },
-  "optEmail": {
-    "message": "メールアドレス（任意）",
-    "description": "optEmail"
-  },
-  "optMsg": {
-    "message": "提案や問題点をご記入ください...",
-    "description": "optMsg"
-  },
-  "optSend": {
-    "message": "送信する",
-    "description": "optSend"
-  },
-  "optSending": {
-    "message": "送信中...",
-    "description": "optSending"
-  },
-  "optSent": {
-    "message": "送信しました！",
-    "description": "optSent"
-  },
-  "ctxMenuEnable": {
-    "message": "広東語ホバー辞書をオンにする",
-    "description": "Context menu to enable extension"
-  },
-  "ctxMenuDisable": {
-    "message": "広東語ホバー辞書を一時停止する",
-    "description": "Context menu to disable extension"
-  },
-  "ctxMenuSettings": {
-    "message": "辞書設定...",
-    "description": "Context menu to open settings"
-  },
-  "clTitle": {
-    "message": "🚀 最新のアップデート",
-    "description": "Changelog title"
-  },
   "clDesc": {
-    "message": "今回のアップデートでの主な最適化内容：",
+    "message": "このアップデートには以下の改善が含まれています：",
     "description": "Changelog description"
   },
   "clItem1": {
-    "message": "✨ <b>新コンパクトモード</b>：ホバーウィンドウにピンインのみを表示可能。声調数字の右上の上付き文字表示をサポートし、<img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> をクリックして完全な辞書を展開できます。クリックで発音、バウンスアニメーションのフィードバックにも対応。",
+    "message": "📖 <b>フルテキストルビ機能</b>：ウェブページ全体にピンインルビを追加し、美しい「辞書スタイル」の組版をサポートします。実際の印刷された辞書のような没入感のある読書体験を提供します。",
     "description": "Changelog item 1"
   },
   "clItem2": {
-    "message": "🔊 <b>インタラクションと発音の最適化</b>：フルモード時、修飾キーを押しながらホバーすると自動で発音します。発音の遅延を取り除き、選択範囲のハイライトの競合を修正しました。",
-    "description": "Changelog item 2"
+    "message": "⚙️ <b>翻訳トリガーのカスタマイズ</b>：設定に「API翻訳トリガー」オプションを追加し、翻訳ポップアップを呼び出すために「ダブルクリック」または「シングルクリック」を自由に選択できるようになりました。"
   },
   "clItem3": {
-    "message": "🎨 <b>インターフェースのカスタマイズ</b>：設定画面のレイアウトを最適化。ハイライトスタイルを7種類（背景色5種 + 破線ボーダー2種）に増やしました。",
+    "message": "🐛 <b>翻訳トリガーと状態同期の修正</b>：シングル/ダブルクリック翻訳切り替えの不具合、辞書スタイルでの配色オプション表示不具合、および拡張機能オフ後もイベントが実行される問題を修正しました。",
     "description": "Changelog item 3"
   },
   "clItem4": {
@@ -194,5 +25,631 @@
   "clItem6": {
     "message": "🔧 <b>バグ修正</b>：翻訳ポップアップの中央揃えや、右クリック時のAI進行インジケーターの誤作動などの問題を修正しました。",
     "description": "Changelog item 6"
+  },
+  "clTitle": {
+    "message": "🚀 新機能",
+    "description": "Changelog title"
+  },
+  "cmdInspectRuby": {
+    "message": "ブロック粤語注音の切り替え"
+  },
+  "ctxMenuDisable": {
+    "message": "広東語ホバー辞書を一時停止する",
+    "description": "Context menu to disable extension"
+  },
+  "ctxMenuEnable": {
+    "message": "広東語ホバー辞書をオンにする",
+    "description": "Context menu to enable extension"
+  },
+  "ctxMenuSettings": {
+    "message": "設定...",
+    "description": "Context menu to open settings"
+  },
+  "ctxMenuToggleRuby": {
+    "message": "全ページ広東語ルビ",
+    "description": "Context menu to toggle full page ruby annotations"
+  },
+  "extActionTitle": {
+    "message": "広東語ピンインホバー辞書",
+    "description": "extActionTitle"
+  },
+  "extDescription": {
+    "message": "中国語の文字にマウスを合わせるだけで、広東語の発音（Jyutping / Yale）と英語の意味が表示されます。AIによる文脈翻訳にも対応しています。",
+    "description": "extDescription"
+  },
+  "extName": {
+    "message": "広東語ホバー辞書",
+    "description": "extName"
+  },
+  "optAIBaseUrlDesc": {
+    "message": "OpenAI互換のAPIエンドポイント",
+    "description": "optAIBaseUrlDesc"
+  },
+  "optAIEnable": {
+    "message": "AI翻訳を有効にする",
+    "description": "optAIEnable"
+  },
+  "optAIEnableDesc": {
+    "message": "選択したテキストを長押しして、AIに文脈に応じた意味を説明させる",
+    "description": "optAIEnableDesc"
+  },
+  "optAILangCN": {
+    "message": "簡体字中国語"
+  },
+  "optAILangEN": {
+    "message": "英語 (English)"
+  },
+  "optAILangJA": {
+    "message": "日本語"
+  },
+  "optAILangTW": {
+    "message": "繁体字中国語"
+  },
+  "optAILanguage": {
+    "message": "ターゲット言語",
+    "description": "optAILanguage"
+  },
+  "optAIModelLabel": {
+    "message": "AI モデル",
+    "description": "optAIModelLabel"
+  },
+  "optAIPromptLabel": {
+    "message": "AI 翻訳プロンプト",
+    "description": "optAIPromptLabel"
+  },
+  "optAISettings": {
+    "message": "✨ AI 文脈翻訳",
+    "description": "optAISettings"
+  },
+  "optAITip1": {
+    "message": "一般: OpenAI",
+    "description": "optAITip1"
+  },
+  "optAITip2": {
+    "message": "DeepSeek",
+    "description": "optAITip2"
+  },
+  "optAITip3": {
+    "message": "Ollama",
+    "description": "optAITip3"
+  },
+  "optAzureSettings": {
+    "message": "Azure Speech 設定",
+    "description": "optAzureSettings"
+  },
+  "optAzureSettingsDesc": {
+    "message": "デフォルトAPIまたはカスタムキーを選択",
+    "description": "optAzureSettingsDesc"
+  },
+  "optClickToSpeak": {
+    "message": "クリックで発音",
+    "description": "optClickToSpeak"
+  },
+  "optClickToSpeakDesc": {
+    "message": "ハイライトされたテキストをクリックして広東語の発音を読み上げる",
+    "description": "optClickToSpeakDesc"
+  },
+  "optColorDarkGray": {
+    "message": "ダークグレー (#777)"
+  },
+  "optColorLightGray": {
+    "message": "ライトグレー (#999)"
+  },
+  "optCompactExpandBtn": {
+    "message": "<img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> ボタンを表示して完全な辞書に展開する",
+    "description": "optCompactExpandBtn"
+  },
+  "optCustomInput": {
+    "message": "カスタム..."
+  },
+  "optCustomKey": {
+    "message": "カスタムキー（Azureへ直接接続）",
+    "description": "optCustomKey"
+  },
+  "optCustomUrl": {
+    "message": "カスタムURL",
+    "description": "optCustomUrl"
+  },
+  "optDefaultAPI": {
+    "message": "デフォルトAPI（設定不要）",
+    "description": "optDefaultAPI"
+  },
+  "optDefaultServer": {
+    "message": "デフォルトサーバー（設定不要）",
+    "description": "optDefaultServer"
+  },
+  "optDemoReportBtn": {
+    "message": "報告"
+  },
+  "optDemoTranslation": {
+    "message": "綺麗、美しい。"
+  },
+  "optDev": {
+    "message": "開発者",
+    "description": "optDev"
+  },
+  "optEdgeSettings": {
+    "message": "Edge TTS 設定",
+    "description": "optEdgeSettings"
+  },
+  "optEdgeSettingsDesc": {
+    "message": "デフォルトサーバーまたはカスタムURLを選択",
+    "description": "optEdgeSettingsDesc"
+  },
+  "optEmail": {
+    "message": "メールアドレス（任意）",
+    "description": "optEmail"
+  },
+  "optEmailLabel": {
+    "message": "連絡先メールアドレス",
+    "description": "optEmailLabel"
+  },
+  "optEmailPlaceholder": {
+    "message": "your@email.com (返信用)",
+    "description": "optEmailPlaceholder"
+  },
+  "optEnFont": {
+    "message": "ピンインフォント",
+    "description": "optEnFont"
+  },
+  "optEnFontCourier": {
+    "message": "等幅フォント (Courier)"
+  },
+  "optEnFontModern": {
+    "message": "モダン等幅フォント (SF Mono / Consolas)"
+  },
+  "optEnFontSystem": {
+    "message": "システムサンセリフ"
+  },
+  "optEnable": {
+    "message": "辞書を有効にする",
+    "description": "optEnable"
+  },
+  "optEnableDesc": {
+    "message": "ウェブページ上で広東語の発音ヒントを表示します",
+    "description": "optEnableDesc"
+  },
+  "optEngineAzure": {
+    "message": "Azure Speech (公式クラウド音声)",
+    "description": "optEngineAzure"
+  },
+  "optEngineBert": {
+    "message": "Bert-VITS2 (広東語ニューラル音声)",
+    "description": "optEngineBert"
+  },
+  "optFeedback": {
+    "message": "情報とフィードバック",
+    "description": "optFeedback"
+  },
+  "optFeedbackDesc": {
+    "message": "機能の提案やバグに遭遇した場合は、ここでお知らせいただくか、ousinki@outlook.com までメールでお問い合わせください！",
+    "description": "optFeedbackDesc"
+  },
+  "optFeedbackForm": {
+    "message": "フィードバック",
+    "description": "optFeedbackForm"
+  },
+  "optFeedbackHint": {
+    "message": "ヒント：ポップアップから直接問題を報告できるようになりました！"
+  },
+  "optFeedbackLabel": {
+    "message": "フィードバック内容",
+    "description": "optFeedbackLabel"
+  },
+  "optFeedbackPlaceholder": {
+    "message": "提案や遭遇した問題を記入してください...",
+    "description": "optFeedbackPlaceholder"
+  },
+  "optFeedbackTitle": {
+    "message": "💡 フィードバックと提案",
+    "description": "optFeedbackTitle"
+  },
+  "optFontCustom": {
+    "message": "カスタム入力..."
+  },
+  "optFontHei": {
+    "message": "辞書ゴシック (Chiron Hei / YaHei)"
+  },
+  "optFontMono": {
+    "message": "デフォルト等幅 (Consolas / SF Mono / ui-monospace)"
+  },
+  "optFontSans": {
+    "message": "システムサンセリフ (System UI / Arial)"
+  },
+  "optFontSerif": {
+    "message": "エレガントセリフ (Georgia / Times)"
+  },
+  "optFooterData": {
+    "message": "データソース：",
+    "description": "optFooterData"
+  },
+  "optFooterLicense": {
+    "message": "ライセンス：",
+    "description": "optFooterLicense"
+  },
+  "optFormat": {
+    "message": "発音表示形式",
+    "description": "optFormat"
+  },
+  "optFormatDesc": {
+    "message": "広東語のピンインシステムを選択",
+    "description": "optFormatDesc"
+  },
+  "optFormatJyutping": {
+    "message": "Jyutping (粤拼)"
+  },
+  "optFormatYale": {
+    "message": "Yale (イェール)"
+  },
+  "optGenSettings": {
+    "message": "一般設定",
+    "description": "optGenSettings"
+  },
+  "optHighlightStyle": {
+    "message": "ハイライトスタイル",
+    "description": "optHighlightStyle"
+  },
+  "optHighlightStyleDesc": {
+    "message": "ホバーした単語のハイライト効果を選択",
+    "description": "optHighlightStyleDesc"
+  },
+  "optHoverModifier": {
+    "message": "ホバートリガーキー",
+    "description": "optHoverModifier"
+  },
+  "optHoverModifierDesc": {
+    "message": "特定のキーを押している間だけ完全な辞書を表示し、日常的な干渉を避ける",
+    "description": "optHoverModifierDesc"
+  },
+  "optInspectDictColorDesc": {
+    "message": "辞書スタイルの発音記号の色の深さを調整します。"
+  },
+  "optInspectDictColorTitle": {
+    "message": "辞書スタイルの色"
+  },
+  "optInspectFontDesc": {
+    "message": "ルビテキストのカスタムフォントです。空白にするとデフォルトの等幅フォントが使用されます。"
+  },
+  "optInspectFontTitle": {
+    "message": "上付き文字フォント"
+  },
+  "optInspectModeTitle": {
+    "message": "インタラクティブブロックルビ (Inspect Mode)"
+  },
+  "optInspectOpacityDesc": {
+    "message": "上付きテキストの不透明度を調整します。"
+  },
+  "optInspectOpacityTitle": {
+    "message": "ルビテキストの不透明度"
+  },
+  "optInspectShortcutBtn": {
+    "message": "ショートカットを変更"
+  },
+  "optInspectShortcutCurrent": {
+    "message": "現在のショートカット："
+  },
+  "optInspectShortcutDesc": {
+    "message": "推奨ショートカットは <kbd>Ctrl+Shift+X</kbd> (Mac は <kbd>⌘+Shift+X</kbd>) です。機能しない場合は、右側のボタンをクリックして手動で設定してください。",
+    "description": "optInspectShortcutDesc"
+  },
+  "optInspectShortcutModifyHint": {
+    "message": "右側のボタンをクリックして変更またはバインドします。"
+  },
+  "optInspectShortcutNone": {
+    "message": "ショートカットが設定されていません。"
+  },
+  "optInspectShortcutTitle": {
+    "message": "ブロック広東語ルビショートカット"
+  },
+  "optInspectStyleDesc": {
+    "message": "上付きテキストの視覚スタイル（斜体、色など）。"
+  },
+  "optInspectStyleTitle": {
+    "message": "ルビテキストスタイル"
+  },
+  "optInspectToneStyleDesc": {
+    "message": "Inspect Modeで声調番号をどのように表示するかを選択します。"
+  },
+  "optInspectToneStyleTitle": {
+    "message": "声調番号の表示"
+  },
+  "optKeyAlt": {
+    "message": "Alt / Option (⌥)",
+    "description": "optKeyAlt"
+  },
+  "optKeyCtrl": {
+    "message": "Ctrl (⌃)",
+    "description": "optKeyCtrl"
+  },
+  "optKeyMeta": {
+    "message": "Command (⌘) / Win",
+    "description": "optKeyMeta"
+  },
+  "optKeyNone": {
+    "message": "なし (直接ホバー)",
+    "description": "optKeyNone"
+  },
+  "optKeyShift": {
+    "message": "Shift (⇧)",
+    "description": "optKeyShift"
+  },
+  "optModelName": {
+    "message": "モデル名",
+    "description": "optModelName"
+  },
+  "optMsg": {
+    "message": "提案や問題点をご記入ください...",
+    "description": "optMsg"
+  },
+  "optNameLabel": {
+    "message": "お名前",
+    "description": "optNameLabel"
+  },
+  "optNamePlaceholder": {
+    "message": "どのようにお呼びすればよろしいですか？",
+    "description": "optNamePlaceholder"
+  },
+  "optOpacity100": {
+    "message": "100% (完全不透明)"
+  },
+  "optOpacity40": {
+    "message": "40% (明るい)"
+  },
+  "optOpacity60": {
+    "message": "60% (半透明)"
+  },
+  "optOpacity85": {
+    "message": "85% (やや透明)"
+  },
+  "optOptional": {
+    "message": "(任意)",
+    "description": "optOptional"
+  },
+  "optPopupStyle": {
+    "message": "ポップアップスタイル",
+    "description": "optPopupStyle"
+  },
+  "optPopupStyleDesc": {
+    "message": "完全モードは意味を表示し、コンパクトモードは発音記号のみを表示します",
+    "description": "optPopupStyleDesc"
+  },
+  "optPopupStyleHanaMin": {
+    "message": "花園明朝 (HanaMin)"
+  },
+  "optPopupStyleJhengHei": {
+    "message": "メイリオ (Meiryo)"
+  },
+  "optPopupStyleKaiti": {
+    "message": "楷書体 (Kaiti)"
+  },
+  "optPopupStyleNoto": {
+    "message": "Noto Sans"
+  },
+  "optPopupStylePingFang": {
+    "message": "PingFang"
+  },
+  "optPopupStyleSongti": {
+    "message": "明朝体 (Mincho)"
+  },
+  "optPopupStyleSystem": {
+    "message": "システムデフォルト"
+  },
+  "optSend": {
+    "message": "フィードバックを送信",
+    "description": "optSend"
+  },
+  "optSending": {
+    "message": "送信中...",
+    "description": "optSending"
+  },
+  "optSent": {
+    "message": "送信しました！",
+    "description": "optSent"
+  },
+  "optSpeed": {
+    "message": "話す速度",
+    "description": "optSpeed"
+  },
+  "optStyleCompact": {
+    "message": "コンパクト（発音記号のみ）",
+    "description": "optStyleCompact"
+  },
+  "optStyleDefault": {
+    "message": "デフォルト (通常のテキスト、色を継承)"
+  },
+  "optStyleDict": {
+    "message": "辞書スタイル (斜体、カスタムグレースケール)"
+  },
+  "optStyleFull": {
+    "message": "完全モード",
+    "description": "optStyleFull"
+  },
+  "optSubtitle": {
+    "message": "拡張機能の設定",
+    "description": "optSubtitle"
+  },
+  "optTTSEngine": {
+    "message": "音声エンジン",
+    "description": "optTTSEngine"
+  },
+  "optTTSEngineDesc": {
+    "message": "TTSプロバイダーを選択",
+    "description": "optTTSEngineDesc"
+  },
+  "optTTSSettings": {
+    "message": "音声設定 (TTS)",
+    "description": "optTTSSettings"
+  },
+  "optTestAI": {
+    "message": " AI接続をテスト",
+    "description": "optTestAI"
+  },
+  "optTestTTS": {
+    "message": " 音声をテスト",
+    "description": "optTestTTS"
+  },
+  "optTheme": {
+    "message": "ポップアップテーマ",
+    "description": "optTheme"
+  },
+  "optThemeClassic": {
+    "message": "クラシック",
+    "description": "optThemeClassic"
+  },
+  "optThemeDark": {
+    "message": "ディープナイト",
+    "description": "optThemeDark"
+  },
+  "optThemeDesc": {
+    "message": "ポップアップのカラースキームを選択",
+    "description": "optThemeDesc"
+  },
+  "optThemeGlass": {
+    "message": "すりガラス",
+    "description": "optThemeGlass"
+  },
+  "optThemeHK": {
+    "message": "香港レッド",
+    "description": "optThemeHK"
+  },
+  "optThemeInk": {
+    "message": "インク",
+    "description": "optThemeInk"
+  },
+  "optThemeMint": {
+    "message": "ミントグリーン",
+    "description": "optThemeMint"
+  },
+  "optThemeOcean": {
+    "message": "オーシャンブルー",
+    "description": "optThemeOcean"
+  },
+  "optThemeWarm": {
+    "message": "ウォームサン",
+    "description": "optThemeWarm"
+  },
+  "optTitle": {
+    "message": "Jyutping Hover Dictionary",
+    "description": "optTitle"
+  },
+  "optToneHidden": {
+    "message": "非表示 (例：jyut)"
+  },
+  "optToneNormal": {
+    "message": "デフォルト (末尾、例：jyut6)"
+  },
+  "optToneStyleToggle": {
+    "message": "声調番号を上付き文字で表示する",
+    "description": "Checkbox label for tone style"
+  },
+  "optToneSuperscript": {
+    "message": "上付き文字 (例：jyut⁶)"
+  },
+  "optTransDesc1": {
+    "message": "選択したテキストをダブルクリックして、北京語と英語の翻訳を表示",
+    "description": "optTransDesc1"
+  },
+  "optTransDesc2": {
+    "message": "Bing Translatorを使用（広東語をネイティブサポート、設定不要）",
+    "description": "optTransDesc2"
+  },
+  "optTransEnglish": {
+    "message": "英語",
+    "description": "optTransEnglish"
+  },
+  "optTransJapanese": {
+    "message": "日本語",
+    "description": "optTransJapanese"
+  },
+  "optTransKorean": {
+    "message": "韓国語",
+    "description": "optTransKorean"
+  },
+  "optTransLang": {
+    "message": "表示言語",
+    "description": "optTransLang"
+  },
+  "optTransLangDesc": {
+    "message": "ポップアップに表示する翻訳言語を選択",
+    "description": "optTransLangDesc"
+  },
+  "optTransMandarin": {
+    "message": "北京語",
+    "description": "optTransMandarin"
+  },
+  "optTransSettings": {
+    "message": "翻訳設定",
+    "description": "optTransSettings"
+  },
+  "optTransTrigger": {
+    "message": "翻訳トリガー",
+    "description": "optTransTrigger"
+  },
+  "optTransTriggerClick": {
+    "message": "単語または選択範囲をシングルクリック",
+    "description": "optTransTriggerClick"
+  },
+  "optTransTriggerDblclick": {
+    "message": "単語または選択範囲をダブルクリック (デフォルト)",
+    "description": "optTransTriggerDblclick"
+  },
+  "optTransTriggerDesc": {
+    "message": "Bing翻訳機能のトリガー方法を選択",
+    "description": "optTransTriggerDesc"
+  },
+  "optVoice": {
+    "message": "音声（ボイス）",
+    "description": "optVoice"
+  },
+  "optVoice1": {
+    "message": "暁曼 HiuMaan（女性声）⭐⭐⭐⭐⭐ · レスポンス ~1s",
+    "description": "optVoice1"
+  },
+  "optVoice2": {
+    "message": "暁佳 HiuGaai（女性声）⭐⭐⭐⭐⭐ · レスポンス ~1s",
+    "description": "optVoice2"
+  },
+  "optVoice3": {
+    "message": "雲龍 WanLung（男性声）⭐⭐⭐⭐⭐ · レスポンス ~1s",
+    "description": "optVoice3"
+  },
+  "optZhFont": {
+    "message": "中国語フォント",
+    "description": "optZhFont"
+  },
+  "titleClose": {
+    "message": "閉じる"
+  },
+  "toastRubyDisabled": {
+    "message": "全ページ広東語ルビが無効になりました。<br>表示がおかしい場合は、ページを更新 (F5) してください。",
+    "description": "Toast shown when full page ruby is disabled"
+  },
+  "toastRubyEnabled": {
+    "message": "全ページ広東語ルビが有効になりました。<br>レイアウトが崩れる場合は、ページを更新 (F5) してください。",
+    "description": "Toast shown when full page ruby is enabled"
+  },
+  "optPlaying": {
+    "message": "再生中..."
+  },
+  "optTestingAI": {
+    "message": "テスト中..."
+  },
+  "optSuccess": {
+    "message": "✅ 接続成功！\nモデルの返答："
+  },
+  "optFail": {
+    "message": "❌ 接続失敗："
+  },
+  "optNoReply": {
+    "message": "（応答なし）"
+  },
+  "optAIPrompt": {
+    "message": "カスタムプロンプト (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "AIに送信するプロンプトテンプレートを設定します。変数 {word}（選択された単語）と {sentence}（文脈文）をサポートします。空欄の場合はデフォルトが使用されます。"
+  },
+  "optAIDefaultPrompt": {
+    "message": "あなたは広東語の言語専門家です。ユーザーが広東語の記事を読んでいるときに単語を選択しました。文脈に基づいて、この文におけるその単語の具体的な意味を{targetLang}で簡潔に説明してください（1〜2文）。説明内容のみを返信し、フォーマットマークアップは不要です。\n\n【単語】{word}\n【文】{sentence}"
   }
 }

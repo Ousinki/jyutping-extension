@@ -23,8 +23,13 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       lang: request.options.lang || 'zh-HK',
       rate: request.options.rate || 0.9,
       onEvent: (event) => {
-        if (event.type === 'error') {
-          console.error('Chrome TTS error:', event.errorMessage);
+        if (event.type === 'end' || event.type === 'interrupted' || event.type === 'cancelled' || event.type === 'error') {
+          if (event.type === 'error') {
+            console.error('Chrome TTS error:', event.errorMessage);
+          }
+          if (sender && sender.tab) {
+            chrome.tabs.sendMessage(sender.tab.id, { action: 'ttsEnded' }).catch(() => {});
+          }
         }
       }
     });
@@ -46,6 +51,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'aiTranslate') {
     GoogleAnalytics.fireEvent('translate', { type: 'ai' });
     handleAiTranslate(request, sender.tab.id);
+  } else if (request.action === 'aiChatQuery') {
+    handleAiChatQuery(request, sendResponse);
+    return true; // Keep channel open
   } else if (request.action === 'openOptionsPage') {
     chrome.runtime.openOptionsPage();
   }
@@ -78,7 +86,7 @@ async function handleEdgeTts(text, baseUrl, rate, tabId) {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
         audioData: reader.result
-      });
+      }).catch(() => {});
     };
     reader.readAsDataURL(blob);
     
@@ -124,7 +132,7 @@ async function handleAzureTts(text, apiKey, region, voice, rate, tabId) {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
         audioData: reader.result
-      });
+      }).catch(() => {});
     };
     reader.readAsDataURL(blob);
     
@@ -156,7 +164,7 @@ async function handleAzureTtsProxy(text, voice, rate, tabId) {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
         audioData: reader.result
-      });
+      }).catch(() => {});
     };
     reader.readAsDataURL(blob);
     
@@ -271,7 +279,7 @@ async function handleBertVits2(text, rate, tabId) {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
         audioData: reader.result
-      });
+      }).catch(() => {});
     };
     reader.readAsDataURL(blob);
     
@@ -282,33 +290,53 @@ async function handleBertVits2(text, rate, tabId) {
 
 // ==================== 翻譯功能（免費 API，無需配置） ====================
 
-// 主翻譯處理函數：將粵語同時翻譯成普通話和英文
+// 主翻譯處理函數：將粵語同時翻譯成多個語言
 async function handleTranslate(request, tabId) {
-  const { text } = request;
+  const { text, transLang, transLangs } = request;
   
+  let targetLangs = [];
+  if (transLangs && Array.isArray(transLangs)) {
+    targetLangs = transLangs;
+  } else if (transLang) {
+    if (transLang === 'both') targetLangs = ['zh-Hans', 'en'];
+    else if (transLang === 'mandarin') targetLangs = ['zh-Hans'];
+    else if (transLang === 'english') targetLangs = ['en'];
+    else targetLangs = ['zh-Hans', 'en'];
+  } else {
+    targetLangs = ['zh-Hans', 'en']; // fallback
+  }
+
   try {
-    // 預先確保 token 已獲取，避免兩個翻譯請求同時去搶 token
+    // 預先確保 token 已獲取，避免多個翻譯請求同時去搶 token
     await getBingAccessToken();
     
-    // Bing 原生支持 yue（粵語），並行發送兩個翻譯請求
-    const [mandarin, english] = await Promise.all([
-      translateWithBing(text, 'yue', 'zh-Hans'),
-      translateWithBing(text, 'yue', 'en')
-    ]);
+    // Bing 原生支持 yue（粵語），並行發送需要的翻譯請求
+    const promises = targetLangs.map(lang => translateWithBing(text, 'yue', lang));
+    const results = await Promise.all(promises);
     
+    const translations = {};
+    for (let i = 0; i < targetLangs.length; i++) {
+      translations[targetLangs[i]] = results[i];
+    }
+    
+    // 兼容舊版
+    const mandarin = translations['zh-Hans'] || null;
+    const english = translations['en'] || null;
+
     chrome.tabs.sendMessage(tabId, {
       action: 'translateResult',
       success: true,
-      mandarin: mandarin,
-      english: english
-    });
+      translations: translations,
+      mandarin: mandarin, // fallback compatibility
+      english: english // fallback compatibility
+    }).catch(() => {});
   } catch (error) {
     console.error('翻譯失敗:', error);
     chrome.tabs.sendMessage(tabId, {
       action: 'translateResult',
       success: false,
       error: error.message
-    });
+    }).catch(() => {});
   }
 }
 
@@ -377,23 +405,55 @@ async function translateWithBing(text, from, to) {
 
 // ==================== AI 語境翻譯 ====================
 
+const localeFolders = {
+  'zh-HK': 'zh_TW',
+  'zh-CN': 'zh_CN',
+  'en': 'en',
+  'ja': 'ja',
+  'ko': 'ko'
+};
+
+async function getDefaultPrompt(uiLang) {
+  const folder = localeFolders[uiLang] || 'zh_TW';
+  try {
+    const res = await fetch(chrome.runtime.getURL(`_locales/${folder}/messages.json`));
+    const data = await res.json();
+    return data.optAIDefaultPrompt?.message || '';
+  } catch (err) {
+    console.error('Failed to load default prompt:', err);
+    return '';
+  }
+}
+
 async function handleAiTranslate(request, tabId) {
   const { word, sentence } = request;
   
   try {
     // 從 storage 讀取 AI 設定
-    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage']);
-    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage } = settings;
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'aiPrompt', 'uiLang']);
+    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage, aiPrompt, uiLang } = settings;
     
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
     
     const targetLang = aiLanguage || '繁體中文';
-    const prompt = `你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用${targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。
+    let promptTemplate = aiPrompt ? aiPrompt.trim() : '';
+    if (!promptTemplate) {
+      const dynamicDefault = await getDefaultPrompt(uiLang);
+      promptTemplate = dynamicDefault || `你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用{targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。
 
-【詞語】${word}
-【句子】${sentence}`;
+【詞語】{word}
+【句子】{sentence}`;
+    }
+
+    const prompt = promptTemplate
+      .replace(/{targetLang}/g, targetLang)
+      .replace(/\${targetLang}/g, targetLang)
+      .replace(/{word}/g, word)
+      .replace(/\${word}/g, word)
+      .replace(/{sentence}/g, sentence)
+      .replace(/\${sentence}/g, sentence);
     
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
     const response = await fetch(url, {
@@ -427,7 +487,7 @@ async function handleAiTranslate(request, tabId) {
       success: true,
       explanation: explanation,
       word: word
-    });
+    }).catch(() => {});
   } catch (error) {
     console.error('AI 翻譯失敗:', error);
     chrome.tabs.sendMessage(tabId, {
@@ -435,9 +495,26 @@ async function handleAiTranslate(request, tabId) {
       success: false,
       error: error.message,
       word: word
-    });
+    }).catch(() => {});
   }
 }
+
+// ==================== 快捷鍵命令 ====================
+chrome.commands.onCommand.addListener((command) => {
+  console.log('[Background] Received command:', command);
+  if (command === 'inspect-ruby') {
+    chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
+      console.log('[Background] Found active tabs:', tabs);
+      if (tabs.length > 0) {
+        console.log('[Background] Sending toggleRuby message to tab:', tabs[0].id);
+        chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleRuby' }).catch(err => {
+          // Do not use console.error here as it triggers extension error badges for chrome:// URLs or unrefreshed tabs
+          console.warn('[Background] Failed to send toggleRuby message (page might need refresh or is a chrome:// URL):', err.message);
+        });
+      }
+    });
+  }
+});
 
 // ==================== 快捷開關 (單擊圖標) ====================
 
@@ -474,6 +551,7 @@ chrome.runtime.onInstalled.addListener(() => {
     contexts: ["all"]
   });
 
+
   chrome.contextMenus.create({
     id: "mode-full",
     parentId: "jyutping-parent",
@@ -487,6 +565,20 @@ chrome.runtime.onInstalled.addListener(() => {
     parentId: "jyutping-parent",
     title: chrome.i18n.getMessage("optStyleCompact") || "精簡音標",
     type: "radio",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "sep-ruby",
+    parentId: "jyutping-parent",
+    type: "separator",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "toggle-ruby-menu",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("ctxMenuToggleRuby") || "全文粵語注音",
     contexts: ["all"]
   });
 
@@ -513,6 +605,11 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const result = await chrome.storage.sync.get(['enabled']);
     const newEnabledState = !(result.enabled !== false);
     await setExtensionState(newEnabledState);
+  } else if (info.menuItemId === "toggle-ruby-menu") {
+    if (tab && tab.id) {
+      const options = info.frameId !== undefined ? { frameId: info.frameId } : {};
+      chrome.tabs.sendMessage(tab.id, { action: 'toggleRuby' }, options).catch(() => {});
+    }
   } else if (info.menuItemId === "mode-full") {
     await chrome.storage.sync.set({ popupDisplayStyle: 'full' });
     GoogleAnalytics.fireEvent('change_setting_context', { setting: 'popupDisplayStyle', value: 'full' });
@@ -610,5 +707,89 @@ function updateActionBadge(isEnabled) {
         "128": "icon_action_gray.png"
       }
     });
+  }
+}
+
+// ==================== AI 隨身問答 ====================
+
+async function handleAiChatQuery(request, sendResponse) {
+  const { word, sentence, originalTranslation, question, history } = request;
+
+  try {
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage']);
+    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage } = settings;
+
+    if (!aiBaseUrl || !aiApiKey || !aiModel) {
+      throw new Error('請先在設定頁面配置 AI 翻譯');
+    }
+
+    const targetLang = aiLanguage || '繁體中文';
+
+    const messages = [];
+
+    // System instruction
+    messages.push({
+      role: 'system',
+      content: `你是一個粵語語言專家。請用${targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。`
+    });
+
+    // Conversation history
+    if (history && Array.isArray(history)) {
+      for (const msg of history) {
+        messages.push({
+          role: msg.role,
+          content: msg.content
+        });
+      }
+    }
+
+    // New user question: Send selected phrase, context sentence, and question together to the AI
+    let userMsg = '';
+    if (word) {
+      userMsg += `選中短語：「${word}」\n`;
+      userMsg += `所在句子：「${sentence || ''}」\n`;
+    } else {
+      userMsg += `選中句子：「${sentence || ''}」\n`;
+    }
+    if (originalTranslation) {
+      userMsg += `初始翻譯：「${originalTranslation}」\n`;
+    }
+    userMsg += `追問：${question}`;
+
+    messages.push({
+      role: 'user',
+      content: userMsg
+    });
+
+    const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiApiKey}`
+      },
+      body: JSON.stringify({
+        model: aiModel,
+        messages: messages,
+        max_tokens: 300,
+        temperature: 0.5
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`API 錯誤 (${response.status}): ${errText.substring(0, 100)}`);
+    }
+
+    const data = await response.json();
+    const reply = data.choices?.[0]?.message?.content?.trim() || '';
+
+    if (!reply) {
+      throw new Error('AI 返回空結果');
+    }
+
+    sendResponse({ success: true, reply: reply });
+  } catch (error) {
+    sendResponse({ success: false, error: error.message });
   }
 }

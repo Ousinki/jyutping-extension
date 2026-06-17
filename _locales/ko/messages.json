@@ -1,0 +1,594 @@
+{
+  "clDesc": {
+    "message": "이번 업데이트에는 다음과 같은 개선 사항이 포함되어 있습니다:"
+  },
+  "clItem1": {
+    "message": "📖 <b>전체 텍스트 루비 주석</b>: 아름다운 \"사전 스타일\"로 웹페이지 전체에 병음 루비를 추가하여 인쇄된 사전과 같은 몰입감 있는 읽기 경험을 제공합니다."
+  },
+  "clItem2": {
+    "message": "⚙️ <b>맞춤 번역 트리거</b>: 설정에 \"API 번역 트리거\" 옵션을 추가하여 \"더블 클릭\"과 \"원 클릭\" 중에서 번역 팝업을 여는 방식을 선택할 수 있습니다."
+  },
+  "clItem3": {
+    "message": "🐛 <b>번역 트리거 및 상태 동기화 수정</b>: 설정에서 단일/더블 클릭 번역 방식을 변경해도 적용되지 않는 문제와 사전 스타일 선택 시 색상 옵션이 올바르게 표시되지 않는 문제를 수정했습니다."
+  },
+  "clTitle": {
+    "message": "🚀 새로운 기능"
+  },
+  "cmdInspectRuby": {
+    "message": "블록 광둥어 발음기호 전환"
+  },
+  "ctxMenuDisable": {
+    "message": "Jyutping Dictionary 사용 안 함"
+  },
+  "ctxMenuEnable": {
+    "message": "Jyutping Dictionary 사용"
+  },
+  "ctxMenuSettings": {
+    "message": "설정..."
+  },
+  "ctxMenuToggleRuby": {
+    "message": "전체 페이지 광둥어 발음기호",
+    "description": "Context menu to toggle full page ruby annotations"
+  },
+  "extActionTitle": {
+    "message": "Jyutping Hover Dictionary 켜기/끄기"
+  },
+  "extDescription": {
+    "message": "한자 위에 마우스를 올리면 광둥어 발음(월병/예일)과 영어 의미, 그리고 AI 문맥 번역을 볼 수 있습니다."
+  },
+  "extName": {
+    "message": "Jyutping Hover Dictionary"
+  },
+  "optAIBaseUrlDesc": {
+    "message": "OpenAI 호환 API 주소"
+  },
+  "optAIEnable": {
+    "message": "AI 번역 사용"
+  },
+  "optAIEnableDesc": {
+    "message": "선택한 텍스트를 길게 눌러 AI 문맥 설명 보기"
+  },
+  "optAILangCN": {
+    "message": "간체 중국어"
+  },
+  "optAILangEN": {
+    "message": "영어 (English)"
+  },
+  "optAILangJA": {
+    "message": "일본어 (日本語)"
+  },
+  "optAILangTW": {
+    "message": "번체 중국어"
+  },
+  "optAILanguage": {
+    "message": "대상 언어",
+    "description": "optAILanguage"
+  },
+  "optAIModelLabel": {
+    "message": "AI 모델"
+  },
+  "optAIPromptLabel": {
+    "message": "시스템 프롬프트"
+  },
+  "optAISettings": {
+    "message": "✨ AI 문맥 번역"
+  },
+  "optAITip1": {
+    "message": "일반: OpenAI",
+    "description": "optAITip1"
+  },
+  "optAITip2": {
+    "message": "DeepSeek",
+    "description": "optAITip2"
+  },
+  "optAITip3": {
+    "message": "Ollama",
+    "description": "optAITip3"
+  },
+  "optAzureSettings": {
+    "message": "Azure Speech 설정",
+    "description": "optAzureSettings"
+  },
+  "optAzureSettingsDesc": {
+    "message": "기본 API 또는 사용자 정의 키 선택",
+    "description": "optAzureSettingsDesc"
+  },
+  "optClickToSpeak": {
+    "message": "클릭하여 말하기",
+    "description": "optClickToSpeak"
+  },
+  "optClickToSpeakDesc": {
+    "message": "강조 표시된 텍스트를 클릭하여 광둥어 발음 읽기",
+    "description": "optClickToSpeakDesc"
+  },
+  "optColorDarkGray": {
+    "message": "진한 회색 (#777)"
+  },
+  "optColorLightGray": {
+    "message": "밝은 회색 (#999)"
+  },
+  "optCompactExpandBtn": {
+    "message": "<img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 버튼을 표시하여 전체 사전으로 확장"
+  },
+  "optCustomInput": {
+    "message": "사용자 지정..."
+  },
+  "optCustomKey": {
+    "message": "사용자 정의 키 (Azure에 직접 연결)",
+    "description": "optCustomKey"
+  },
+  "optCustomUrl": {
+    "message": "사용자 정의 URL",
+    "description": "optCustomUrl"
+  },
+  "optDefaultAPI": {
+    "message": "기본 API (설정 불필요)",
+    "description": "optDefaultAPI"
+  },
+  "optDefaultServer": {
+    "message": "기본 서버 (설정 불필요)",
+    "description": "optDefaultServer"
+  },
+  "optDemoReportBtn": {
+    "message": "신고"
+  },
+  "optDemoTranslation": {
+    "message": "예쁘다, 보기 좋다."
+  },
+  "optDev": {
+    "message": "개발자"
+  },
+  "optEdgeSettings": {
+    "message": "Edge TTS 설정",
+    "description": "optEdgeSettings"
+  },
+  "optEdgeSettingsDesc": {
+    "message": "기본 서버 또는 사용자 정의 URL 선택",
+    "description": "optEdgeSettingsDesc"
+  },
+  "optEmail": {
+    "message": "이메일 (선택 사항)"
+  },
+  "optEmailLabel": {
+    "message": "연락처 이메일",
+    "description": "optEmailLabel"
+  },
+  "optEmailPlaceholder": {
+    "message": "your@email.com (답변용)",
+    "description": "optEmailPlaceholder"
+  },
+  "optEnFont": {
+    "message": "병음 폰트",
+    "description": "optEnFont"
+  },
+  "optEnFontCourier": {
+    "message": "고정폭 글꼴 (Courier)"
+  },
+  "optEnFontModern": {
+    "message": "모던 고정폭 (SF Mono / Consolas)"
+  },
+  "optEnFontSystem": {
+    "message": "시스템 산세리프"
+  },
+  "optEnable": {
+    "message": "사전 사용"
+  },
+  "optEnableDesc": {
+    "message": "마우스를 올렸을 때 광둥어 발음 표시"
+  },
+  "optEngineAzure": {
+    "message": "Azure Speech (공식 클라우드 음성)",
+    "description": "optEngineAzure"
+  },
+  "optEngineBert": {
+    "message": "Bert-VITS2 (광둥어 신경망 음성)",
+    "description": "optEngineBert"
+  },
+  "optFeedback": {
+    "message": "정보 및 피드백"
+  },
+  "optFeedbackDesc": {
+    "message": "기능 제안이나 버그를 발견하시면 여기로 알려주시거나 ousinki@outlook.com 으로 이메일을 보내주세요!",
+    "description": "optFeedbackDesc"
+  },
+  "optFeedbackForm": {
+    "message": "피드백"
+  },
+  "optFeedbackHint": {
+    "message": "팁: 이제 팝업에서 직접 문제를 신고할 수 있습니다!"
+  },
+  "optFeedbackLabel": {
+    "message": "피드백 내용",
+    "description": "optFeedbackLabel"
+  },
+  "optFeedbackPlaceholder": {
+    "message": "제안 사항이나 겪으신 문제를 적어주세요...",
+    "description": "optFeedbackPlaceholder"
+  },
+  "optFeedbackTitle": {
+    "message": "💡 피드백 및 제안",
+    "description": "optFeedbackTitle"
+  },
+  "optFontCustom": {
+    "message": "사용자 정의 입력..."
+  },
+  "optFontHei": {
+    "message": "사전 고딕 (Chiron Hei / YaHei)"
+  },
+  "optFontMono": {
+    "message": "기본 고정폭 (Consolas / SF Mono / ui-monospace)"
+  },
+  "optFontSans": {
+    "message": "시스템 산세리프 (System UI / Arial)"
+  },
+  "optFontSerif": {
+    "message": "우아한 세리프 (Georgia / Times)"
+  },
+  "optFooterData": {
+    "message": "데이터 출처:",
+    "description": "optFooterData"
+  },
+  "optFooterLicense": {
+    "message": "라이선스:",
+    "description": "optFooterLicense"
+  },
+  "optFormat": {
+    "message": "발음 표기법"
+  },
+  "optFormatDesc": {
+    "message": "로마자 표기법 선택"
+  },
+  "optFormatJyutping": {
+    "message": "Jyutping (월병)"
+  },
+  "optFormatYale": {
+    "message": "Yale (예일)"
+  },
+  "optGenSettings": {
+    "message": "일반 설정"
+  },
+  "optHighlightStyle": {
+    "message": "하이라이트 스타일",
+    "description": "optHighlightStyle"
+  },
+  "optHighlightStyleDesc": {
+    "message": "마우스를 올린 단어의 하이라이트 효과 선택",
+    "description": "optHighlightStyleDesc"
+  },
+  "optHoverModifier": {
+    "message": "호버 트리거 키"
+  },
+  "optHoverModifierDesc": {
+    "message": "특정 키를 누르고 있을 때만 팝업 표시 (일상적인 간섭 방지)"
+  },
+  "optInspectDictColorDesc": {
+    "message": "사전 스타일의 발음 기호 색상 깊이를 조정합니다."
+  },
+  "optInspectDictColorTitle": {
+    "message": "사전 스타일 색상"
+  },
+  "optInspectFontDesc": {
+    "message": "루비 텍스트의 사용자 정의 폰트입니다. 비워두면 기본 고정폭 폰트를 사용합니다."
+  },
+  "optInspectFontTitle": {
+    "message": "위첨자 폰트"
+  },
+  "optInspectModeTitle": {
+    "message": "대화형 블록 루비 (Inspect Mode)"
+  },
+  "optInspectOpacityDesc": {
+    "message": "위첨자 텍스트의 불투명도를 조정합니다."
+  },
+  "optInspectOpacityTitle": {
+    "message": "루비 텍스트 불투명도"
+  },
+  "optInspectShortcutBtn": {
+    "message": "단축키 변경"
+  },
+  "optInspectShortcutCurrent": {
+    "message": "현재 단축키: "
+  },
+  "optInspectShortcutDesc": {
+    "message": "권장 단축키: <kbd>Ctrl+Shift+X</kbd> (Mac: <kbd>⌘+Shift+X</kbd>). 작동하지 않으면 버튼을 클릭하여 수동으로 설정하세요.",
+    "description": "optInspectShortcutDesc"
+  },
+  "optInspectShortcutModifyHint": {
+    "message": "오른쪽 버튼을 클릭하여 수정하거나 바인딩하세요."
+  },
+  "optInspectShortcutNone": {
+    "message": "단축키가 설정되지 않았습니다."
+  },
+  "optInspectShortcutTitle": {
+    "message": "블록 루비 단축키"
+  },
+  "optInspectStyleDesc": {
+    "message": "위첨자 텍스트의 시각적 스타일(기울임꼴, 색상 등)입니다."
+  },
+  "optInspectStyleTitle": {
+    "message": "루비 텍스트 스타일"
+  },
+  "optInspectToneStyleDesc": {
+    "message": "Inspect Mode에서 성조 숫자가 표시되는 방식을 선택하세요."
+  },
+  "optInspectToneStyleTitle": {
+    "message": "성조 숫자 표시"
+  },
+  "optKeyAlt": {
+    "message": "Alt / Option (⌥)"
+  },
+  "optKeyCtrl": {
+    "message": "Ctrl (⌃)"
+  },
+  "optKeyMeta": {
+    "message": "Command (⌘) / Win"
+  },
+  "optKeyNone": {
+    "message": "없음 (직접 호버)"
+  },
+  "optKeyShift": {
+    "message": "Shift (⇧)"
+  },
+  "optModelName": {
+    "message": "모델명",
+    "description": "optModelName"
+  },
+  "optMsg": {
+    "message": "제안 사항이나 문제를 알려주세요..."
+  },
+  "optNameLabel": {
+    "message": "이름",
+    "description": "optNameLabel"
+  },
+  "optNamePlaceholder": {
+    "message": "어떻게 불러드릴까요?",
+    "description": "optNamePlaceholder"
+  },
+  "optOpacity100": {
+    "message": "100% (완전 불투명)"
+  },
+  "optOpacity40": {
+    "message": "40% (밝음)"
+  },
+  "optOpacity60": {
+    "message": "60% (반투명)"
+  },
+  "optOpacity85": {
+    "message": "85% (약간 투명)"
+  },
+  "optOptional": {
+    "message": "(선택 사항)",
+    "description": "optOptional"
+  },
+  "optPopupStyle": {
+    "message": "팝업 스타일",
+    "description": "optPopupStyle"
+  },
+  "optPopupStyleDesc": {
+    "message": "완전 모드는 의미를 표시하고, 콤팩트 모드는 발음 기호만 표시합니다.",
+    "description": "optPopupStyleDesc"
+  },
+  "optPopupStyleHanaMin": {
+    "message": "HanaMin"
+  },
+  "optPopupStyleJhengHei": {
+    "message": "맑은 고딕 (Malgun Gothic)"
+  },
+  "optPopupStyleKaiti": {
+    "message": "해서체 (Kaiti)"
+  },
+  "optPopupStyleNoto": {
+    "message": "Noto Sans"
+  },
+  "optPopupStylePingFang": {
+    "message": "PingFang"
+  },
+  "optPopupStyleSongti": {
+    "message": "바탕체 (Batang)"
+  },
+  "optPopupStyleSystem": {
+    "message": "시스템 기본값"
+  },
+  "optSend": {
+    "message": "피드백 보내기"
+  },
+  "optSending": {
+    "message": "보내는 중..."
+  },
+  "optSent": {
+    "message": "전송됨!"
+  },
+  "optSpeed": {
+    "message": "말하기 속도",
+    "description": "optSpeed"
+  },
+  "optStyleCompact": {
+    "message": "콤팩트 (발음 기호만)",
+    "description": "optStyleCompact"
+  },
+  "optStyleDefault": {
+    "message": "기본 (일반 텍스트, 색상 상속)"
+  },
+  "optStyleDict": {
+    "message": "사전 스타일 (기울임꼴, 사용자 정의 회색조)"
+  },
+  "optStyleFull": {
+    "message": "완전 모드",
+    "description": "optStyleFull"
+  },
+  "optSubtitle": {
+    "message": "확장 프로그램 설정"
+  },
+  "optTTSEngine": {
+    "message": "음성 엔진",
+    "description": "optTTSEngine"
+  },
+  "optTTSEngineDesc": {
+    "message": "TTS 제공자 선택",
+    "description": "optTTSEngineDesc"
+  },
+  "optTTSSettings": {
+    "message": "음성 설정 (TTS)",
+    "description": "optTTSSettings"
+  },
+  "optTestAI": {
+    "message": " AI 연결 테스트",
+    "description": "optTestAI"
+  },
+  "optTestTTS": {
+    "message": " 음성 테스트",
+    "description": "optTestTTS"
+  },
+  "optTheme": {
+    "message": "팝업 테마"
+  },
+  "optThemeClassic": {
+    "message": "클래식",
+    "description": "optThemeClassic"
+  },
+  "optThemeDark": {
+    "message": "딥 나이트",
+    "description": "optThemeDark"
+  },
+  "optThemeDesc": {
+    "message": "팝업 색상 테마 선택"
+  },
+  "optThemeGlass": {
+    "message": "불투명 유리",
+    "description": "optThemeGlass"
+  },
+  "optThemeHK": {
+    "message": "홍콩 레드",
+    "description": "optThemeHK"
+  },
+  "optThemeInk": {
+    "message": "잉크",
+    "description": "optThemeInk"
+  },
+  "optThemeMint": {
+    "message": "민트 그린",
+    "description": "optThemeMint"
+  },
+  "optThemeOcean": {
+    "message": "오션 블루",
+    "description": "optThemeOcean"
+  },
+  "optThemeWarm": {
+    "message": "웜 선",
+    "description": "optThemeWarm"
+  },
+  "optTitle": {
+    "message": "Jyutping Hover Dictionary"
+  },
+  "optToneHidden": {
+    "message": "숨김 (예: jyut)"
+  },
+  "optToneNormal": {
+    "message": "기본 (후행, 예: jyut6)"
+  },
+  "optToneStyleToggle": {
+    "message": "성조 숫자를 위첨자로 표시"
+  },
+  "optToneSuperscript": {
+    "message": "위첨자 (예: jyut⁶)"
+  },
+  "optTransDesc1": {
+    "message": "선택한 텍스트를 더블 클릭하여 북경어 및 영어 번역 표시"
+  },
+  "optTransDesc2": {
+    "message": "Bing Translator 기반 (광둥어 기본 지원, 설정 불필요)"
+  },
+  "optTransEnglish": {
+    "message": "영어",
+    "description": "optTransEnglish"
+  },
+  "optTransJapanese": {
+    "message": "일본어",
+    "description": "optTransJapanese"
+  },
+  "optTransKorean": {
+    "message": "한국어",
+    "description": "optTransKorean"
+  },
+  "optTransLang": {
+    "message": "표시 언어",
+    "description": "optTransLang"
+  },
+  "optTransLangDesc": {
+    "message": "팝업에 표시할 번역 언어 선택",
+    "description": "optTransLangDesc"
+  },
+  "optTransMandarin": {
+    "message": "북경어",
+    "description": "optTransMandarin"
+  },
+  "optTransSettings": {
+    "message": "번역 설정"
+  },
+  "optTransTrigger": {
+    "message": "번역 트리거 방식"
+  },
+  "optTransTriggerClick": {
+    "message": "단어 또는 전체 선택 영역 한 번 클릭"
+  },
+  "optTransTriggerDblclick": {
+    "message": "단어 또는 선택 영역 더블 클릭 (기본값)"
+  },
+  "optTransTriggerDesc": {
+    "message": "Bing 번역 기능을 실행할 방법 선택"
+  },
+  "optVoice": {
+    "message": "음색 (보이스)",
+    "description": "optVoice"
+  },
+  "optVoice1": {
+    "message": "효만 HiuMaan (여성) ⭐⭐⭐⭐⭐ · 반응 ~1s",
+    "description": "optVoice1"
+  },
+  "optVoice2": {
+    "message": "효가 HiuGaai (여성) ⭐⭐⭐⭐⭐ · 반응 ~1s",
+    "description": "optVoice2"
+  },
+  "optVoice3": {
+    "message": "운룡 WanLung (남성) ⭐⭐⭐⭐⭐ · 반응 ~1s",
+    "description": "optVoice3"
+  },
+  "optZhFont": {
+    "message": "중국어 폰트",
+    "description": "optZhFont"
+  },
+  "titleClose": {
+    "message": "닫기"
+  },
+  "toastRubyDisabled": {
+    "message": "전체 페이지 광둥어 발음기호가 비활성화되었습니다.<br>표시가 비정상적이면 페이지를 새로고침(F5) 해주세요.",
+    "description": "Toast shown when full page ruby is disabled"
+  },
+  "toastRubyEnabled": {
+    "message": "전체 페이지 광둥어 발음기호가 활성화되었습니다.<br>레이아웃이 겹치면 페이지를 새로고침(F5) 해주세요.",
+    "description": "Toast shown when full page ruby is enabled"
+  },
+  "optPlaying": {
+    "message": "재생 중..."
+  },
+  "optTestingAI": {
+    "message": "테스트 중..."
+  },
+  "optSuccess": {
+    "message": "✅ 연결 성공!\n모델 응답:"
+  },
+  "optFail": {
+    "message": "❌ 연결 실패:"
+  },
+  "optNoReply": {
+    "message": "(응답 없음)"
+  },
+  "optAIPrompt": {
+    "message": "사용자 정의 프롬프트 (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "AI에 보낼 프롬프트 템플릿을 설정합니다. 변수 {word}(선택된 단어) 및 {sentence}(맥락 문장)을 지원합니다. 비워두면 기본값이 사용됩니다."
+  },
+  "optAIDefaultPrompt": {
+    "message": "귀하는 광둥어 언어 전문가입니다. 사용자가 광둥어 기사를 읽는 중 단어를 선택했습니다. 문맥에 따라 이 문장에서 해당 단어의 구체적인 의미를 {targetLang}(으)로 간략하게 설명해 주세요(1~2문장). 설명 내용 자체만 회신하고 서식 마크업은 제외해 주세요.\n\n【단어】{word}\n【문장】{sentence}"
+  }
+}

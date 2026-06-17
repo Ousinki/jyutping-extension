@@ -41,6 +41,7 @@ zip -r "$OUTPUT" \
     icon_action_gray.png \
     _locales/ \
     fonts/ \
+    scripts/google-analytics.js \
     -x "*.DS_Store"
 
 echo "✅ 打包完成: $OUTPUT ($(du -h "$OUTPUT" | cut -f1))"
@@ -100,6 +101,22 @@ for icon in $BG_ICONS; do
         echo "  ❌ background.js 引用的 $icon 不在 zip 中！"
         ERRORS=$((ERRORS + 1))
     fi
+done
+
+# 5) 校驗 JS 文件中的 import 模組引用
+echo "  📋 校驗 JS 模組導入引用..."
+JS_FILES=$(echo "$ZIP_LIST" | grep '\.js$')
+for js in $JS_FILES; do
+    IMPORTS=$(grep -E "import[[:space:]]+.*[[:space:]]+from[[:space:]]+['\"](\.[^'\"]+)['\"]" "$js" 2>/dev/null \
+        | sed -E "s/.*from[[:space:]]+['\"](\.[^'\"]+)['\"].*/\1/" \
+        | sed 's/^\.\///' \
+        | sort -u)
+    for imp in $IMPORTS; do
+        if ! echo "$ZIP_LIST" | grep -qx "$imp"; then
+            echo "  ❌ $js 導入的 $imp 不在 zip 中！"
+            ERRORS=$((ERRORS + 1))
+        fi
+    done
 done
 
 echo ""

@@ -8,164 +8,69 @@ import GoogleAnalytics from './scripts/google-analytics.js';
 document.addEventListener('DOMContentLoaded', () => {
   GoogleAnalytics.trackPageView('Options Page', '/options.html');
 
-const i18nDict = {
-  "zh-HK": {
-    optTitle: "粵語懸浮詞典", optSubtitle: "Jyutping Hover Dictionary", optGenSettings: "一般設定",
-    optEnable: "啟用詞典", optEnableDesc: "在網頁上顯示粵語發音提示", optFormat: "發音顯示格式",
-    optFormatDesc: "選擇粵語拼音系統", optPopupStyle: "懸浮窗樣式", optPopupStyleDesc: "完整模式顯示詞義；精簡模式僅顯示音標",
-    optStyleFull: "完整模式", optStyleCompact: "精簡音標",
-    optTheme: "懸浮窗主題", optThemeDesc: "選擇懸浮窗的顏色風格",
-    optHighlightStyle: "高亮樣式", optHighlightStyleDesc: "選擇懸停詞語時的高亮效果",
-    optHoverModifier: "懸停觸發按鍵", optHoverModifierDesc: "按住特定按鍵時才顯示完整詞典，避免日常干擾",
-    optKeyNone: "無 (直接懸停)", optKeyAlt: "Alt / Option (⌥)", optKeyCtrl: "Ctrl (⌃)", optKeyShift: "Shift (⇧)", optKeyMeta: "Command (⌘) / Win",
-    optFontSettings: "字體設置", optZhFont: "中文字體", optZhFontDesc: "指定中文的字體名稱（留空為默認）",
-    optEnFont: "拼音字體", optEnFontDesc: "設定拼音顯示的專屬字體（推薦等寬字體，留空為預設）",
-    optTransSettings: "翻譯設定", optTransDesc1: "選中粵語文本後雙擊選區，同時顯示普通話和英文翻譯",
-    optTransDesc2: "使用 Bing 翻譯引擎（原生支持粵語，免費無需配置）", optAISettings: "✨ AI 語境翻譯",
-    optAIEnable: "啟用 AI 翻譯", optAIEnableDesc: "選中文本後長按選區，AI 根據上下文語境解釋詞義",
-    optAIBaseUrlDesc: "OpenAI 兼容接口地址（支持所有廠商）", optAIModelLabel: "模型名稱",
-    optAIPromptLabel: "AI 翻譯 Prompt", optFeedback: "關於與意見反饋", optDev: "開發者:",
-    optFeedbackForm: "意見反饋", optEmail: "電郵地址（選填）", optMsg: "輸入你的建議或遇到的問題...",
-    optSend: "發送反饋", optSending: "發送中...", optSent: "已發送！",
-    optModelName: "模型名稱", optAILanguage: "目標語言", optTestAI: " 測試 AI 連接", optTTSSettings: "語音設定 (TTS)",
-    optClickToSpeak: "點擊發聲", optClickToSpeakDesc: "點擊高亮文字朗讀粵語發音", optTTSEngine: "語音引擎",
-    optTTSEngineDesc: "選擇 TTS 服務提供商", optEdgeSettings: "Edge TTS 設定",
-    optEdgeSettingsDesc: "選擇使用預設伺服器或自定義地址", optAzureSettings: "Azure Speech 設定",
-    optAzureSettingsDesc: "選擇使用預設 API 或自定義密鑰", optVoice: "語音音色", optSpeed: "語速",
-    optTestTTS: " 測試語音", optFeedbackTitle: "💡 意見與反饋", optFeedbackDesc: "如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我，或者發送電郵至 ousinki@outlook.com！",
-    optNameLabel: "您的稱呼", optOptional: "(選填)", optNamePlaceholder: "如何稱呼您？",
-    optEmailLabel: "聯絡電郵", optEmailPlaceholder: "your@email.com (方便回覆您)",
-    optFeedbackLabel: "反饋內容", optFeedbackPlaceholder: "請填寫您的建議或遇到的問題...",
-        optFooterData: "數據來源：", optFooterLicense: "授權：",
-    optThemeClassic: "經典", optThemeHK: "香港紅", optThemeDark: "深邃夜色", optThemeInk: "墨韻",
-    optThemeOcean: "海洋藍", optThemeWarm: "暖陽", optThemeMint: "薄荷綠", optThemeGlass: "毛玻璃",
-    optDefaultServer: "預設伺服器（免配置）", optCustomUrl: "自定義地址",
-    optDefaultAPI: "預設 API（免配置）", optCustomKey: "自定義密鑰（直連 Azure）",
-    optEngineAzure: "Azure Speech (官方雲端語音)", optEngineBert: "Bert-VITS2 (粵語神經語音)",
-    optVoice1: "曉曼 HiuMaan（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
-    optVoice2: "曉佳 HiuGaai（女聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
-    optVoice3: "雲龍 WanLung（男聲）⭐⭐⭐⭐⭐ · 響應 ~1s",
-    optAITip1: "常用：OpenAI",
-    optAITip2: "DeepSeek",
-    optAITip3: "Ollama",
-    optPlaying: "正在播放...",
-    optTestingAI: "正在測試...",
-    optSuccess: "✅ 連接成功！\n模型回覆：",
-    optFail: "❌ 連接失敗：",
-    optNoReply: "（無回覆）",
-    optGreeting: "你好，歡迎使用粵語詞典",
-    optCompactExpandBtn: '在音標旁顯示 <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> 展開完整詞典按鈕',
-    optToneStyleToggle: '聲調數字以右上角角標顯示',
-    clTitle: "🚀 最新更新",
-    clDesc: "本次更新帶來了以下優化：",
-    clItem1: '✨ <b>全新精簡模式</b>：懸浮窗可僅顯示拼音，支援聲調數字右上角角標顯示，並可點擊 <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> 展開完整詞典；點擊即可發聲，支持輕彈動畫反饋。',
-    clItem2: "🔊 <b>交互與發音優化</b>：完整模式下按輔助鍵懸停可自動發音；移除發音延遲，並修復選區高亮衝突。",
-    clItem3: "🎨 <b>介面自定義</b>：優化設定頁面排版；高亮樣式新增至 7 種（5 款背景色 + 2 款虛線邊框）。",
-    clItem4: "🌐 <b>AI 語境翻譯</b>：新增目標語言選擇（繁/簡/英/日），解釋更貼心。",
-    clItem5: "🖱️ <b>右鍵快捷選單</b>：新增右鍵選單，可快速開啟/暫停詞典及切換顯示模式。",
-    clItem6: "🔧 <b>問題修復</b>：修復翻譯浮窗居中定位、右鍵誤觸 AI 進度環等問題。"
-  },
-  "en": {
-    optTitle: "Jyutping Hover Dictionary", optSubtitle: "Extension Settings", optGenSettings: "General Settings",
-    optEnable: "Enable Dictionary", optEnableDesc: "Show Cantonese pronunciation on hover", optFormat: "Pronunciation System",
-    optFormatDesc: "Select romanization format", optPopupStyle: "Popup Display Style", optPopupStyleDesc: "Full mode shows definitions; Compact shows phonetics only",
-    optStyleFull: "Full Mode", optStyleCompact: "Compact Phonetics",
-    optTheme: "Popup Theme", optThemeDesc: "Select popup color scheme",
-    optHighlightStyle: "Highlight Style", optHighlightStyleDesc: "Select the highlight effect for hovered words",
-    optHoverModifier: "Hover Trigger Key", optHoverModifierDesc: "Only show full dictionary when holding specific keys, avoiding daily interference",
-    optKeyNone: "None (Direct Hover)", optKeyAlt: "Alt / Option (⌥)", optKeyCtrl: "Ctrl (⌃)", optKeyShift: "Shift (⇧)", optKeyMeta: "Command (⌘) / Win",
-    optFontSettings: "Font Settings", optZhFont: "Chinese Font", optZhFontDesc: "Set font for Chinese text (leave empty for default)",
-    optEnFont: "Pinyin Font", optEnFontDesc: "Set the exclusive font for Pinyin text (monospace recommended, leave empty for default)",
-    optTransSettings: "Translation Settings", optTransDesc1: "Double-click selected text to show Mandarin and English translation",
-    optTransDesc2: "Powered by Bing Translator (Native Cantonese support, no config)", optAISettings: "✨ AI Contextual Translation",
-    optAIEnable: "Enable AI Translation", optAIEnableDesc: "Long press selected text for AI contextual explanation",
-    optAIBaseUrlDesc: "OpenAI-compatible API endpoint", optAIModelLabel: "AI Model",
-    optAIPromptLabel: "System Prompt", optFeedback: "About & Feedback", optDev: "Developer:",
-    optFeedbackForm: "Feedback", optEmail: "Email (Optional)", optMsg: "Tell us your suggestions or issues...",
-    optSend: "Send Feedback", optSending: "Sending...", optSent: "Sent!",
-    optModelName: "Model Name", optAILanguage: "Target Language", optTestAI: " Test AI Connection", optTTSSettings: "Speech Settings (TTS)",
-    optClickToSpeak: "Click to Speak", optClickToSpeakDesc: "Click highlighted text to read Cantonese pronunciation", optTTSEngine: "Speech Engine",
-    optTTSEngineDesc: "Select TTS provider", optEdgeSettings: "Edge TTS Settings",
-    optEdgeSettingsDesc: "Select default server or custom URL", optAzureSettings: "Azure Speech Settings",
-    optAzureSettingsDesc: "Select default API or custom key", optVoice: "Voice Tone", optSpeed: "Speech Rate",
-    optTestTTS: " Test Voice", optFeedbackTitle: "💡 Feedback & Suggestions", optFeedbackDesc: "If you have any suggestions or encounter bugs, please tell me here, or email me at ousinki@outlook.com!",
-    optNameLabel: "Your Name", optOptional: "(Optional)", optNamePlaceholder: "How should we call you?",
-    optEmailLabel: "Email Address", optEmailPlaceholder: "your@email.com (For replying)",
-    optFeedbackLabel: "Feedback Content", optFeedbackPlaceholder: "Please describe your suggestions or issues...",
-        optFooterData: "Data Source:", optFooterLicense: "License:",
-    optThemeClassic: "Classic", optThemeHK: "Hong Kong Red", optThemeDark: "Deep Night", optThemeInk: "Ink",
-    optThemeOcean: "Ocean Blue", optThemeWarm: "Warm Sun", optThemeMint: "Mint Green", optThemeGlass: "Frosted Glass",
-    optDefaultServer: "Default Server (No config)", optCustomUrl: "Custom URL",
-    optDefaultAPI: "Default API (No config)", optCustomKey: "Custom Key (Direct to Azure)",
-    optEngineAzure: "Azure Speech (Official Cloud TTS)", optEngineBert: "Bert-VITS2 (Neural Cantonese TTS)",
-    optVoice1: "HiuMaan (Female) ⭐⭐⭐⭐⭐ · Latency ~1s",
-    optVoice2: "HiuGaai (Female) ⭐⭐⭐⭐⭐ · Latency ~1s",
-    optVoice3: "WanLung (Male) ⭐⭐⭐⭐⭐ · Latency ~1s",
-    optAITip1: "Common: OpenAI",
-    optAITip2: "DeepSeek",
-    optAITip3: "Ollama",
-    optPlaying: "Playing...",
-    optTestingAI: "Testing...",
-    optSuccess: "✅ Connection Successful!\nModel replied: ",
-    optFail: "❌ Connection Failed: ",
-    optNoReply: "(No reply)",
-    optGreeting: "Hello, welcome to Jyutping Dictionary",
-    optCompactExpandBtn: 'Show <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> button to expand to full dictionary',
-    optToneStyleToggle: 'Display tone numbers as superscript',
-    clTitle: "🚀 What's New",
-    clDesc: "This update brings the following improvements:",
-    clItem1: '✨ <b>New Compact Mode</b>: The popup can now display only the phonetics (supports tone numbers as superscripts), with a <img src="icon_favicon.svg" style="width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;" /> button to expand to the full dictionary. Click to pronounce with a satisfying visual bounce.',
-    clItem2: "🔊 <b>Interaction & Audio</b>: In full mode, holding the modifier key to trigger the dictionary will now automatically play the pronunciation. Removed audio delay for instant pronunciation on click/double-click.",
-    clItem3: "🎨 <b>UI Customization</b>: Optimized the settings page layout. Expanded highlight styles to 7 options (5 background colors + 2 dashed borders).",
-    clItem4: "🌐 <b>AI Contextual Translation</b>: Added target language selection (Traditional/Simplified/English/Japanese) for tailored explanations.",
-    clItem5: "🖱️ <b>Context Menu</b>: Added a right-click menu to quickly enable/disable the dictionary and switch display modes.",
-    clItem6: "🔧 <b>Bug Fixes</b>: Fixed translation popup centering and native text selection highlight conflicts."
-  }
+const localeFolders = {
+  'zh-HK': 'zh_TW',
+  'zh-CN': 'zh_CN',
+  'en': 'en',
+  'ja': 'ja',
+  'ko': 'ko'
 };
 
-function t(key) {
-  const lang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
-  const dict = i18nDict[lang] || i18nDict["zh-HK"];
-  return dict[key] || key;
+let activeDict = {};
+
+async function loadLanguage(lang) {
+  const folder = localeFolders[lang] || 'zh_TW';
+  try {
+    const res = await fetch(chrome.runtime.getURL(`_locales/${folder}/messages.json`));
+    const data = await res.json();
+    activeDict = {};
+    for (const [key, val] of Object.entries(data)) {
+      activeDict[key] = val.message;
+    }
+  } catch (err) {
+    console.error(`Failed to load ${lang} translations dynamically:`, err);
+  }
 }
 
-function applyI18n(lang) {
-  const dict = i18nDict[lang] || i18nDict["zh-HK"];
+function t(key) {
+  return activeDict[key] || key;
+}
+
+async function applyI18n(lang) {
+  await loadLanguage(lang);
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (dict[key]) {
+    if (activeDict[key]) {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
-        el.placeholder = dict[key];
+        el.placeholder = activeDict[key];
       } else {
-        // preserve child nodes like svgs if any by just setting text node?
-        // Actually mostly it's simple text. For buttons with svg we need care.
         if (el.children.length > 0 && !key.startsWith('clItem') && key !== 'optCompactExpandBtn') {
-            // Find the text node and replace it
             for (let child of el.childNodes) {
                 if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length > 0) {
-                    child.nodeValue = dict[key];
+                    child.nodeValue = activeDict[key];
                     break;
                 }
             }
         } else {
-            el.innerHTML = dict[key];
+            el.innerHTML = activeDict[key];
         }
       }
     }
   });
+  updateShortcutDesc(lang);
 }
 
   // Get saved language or default
-  chrome.storage.local.get(['uiLang'], (res) => {
+  chrome.storage.local.get(['uiLang'], async (res) => {
     const lang = res.uiLang || 'zh-HK';
     document.getElementById('langToggle').value = lang;
-    applyI18n(lang);
+    await applyI18n(lang);
   });
 
-  document.getElementById('langToggle').addEventListener('change', (e) => {
+  document.getElementById('langToggle').addEventListener('change', async (e) => {
     const lang = e.target.value;
     chrome.storage.local.set({ uiLang: lang, extensionLang: lang });
-    applyI18n(lang);
+    await applyI18n(lang);
     // Also refresh dynamically generated buttons
     if (typeof resetTestButton === 'function') resetTestButton();
     if (typeof resetAiTestButton === 'function') resetAiTestButton();
@@ -208,6 +113,7 @@ function applyI18n(lang) {
   const aiApiKeyInput = document.getElementById('aiApiKey');
   const aiModelInput = document.getElementById('aiModel');
   const aiLanguageSelect = document.getElementById('aiLanguage');
+  const aiPromptInput = document.getElementById('aiPrompt');
   const testAiBtn = document.getElementById('testAiBtn');
 
 
@@ -264,7 +170,57 @@ function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger' ], (result) => {
+
+    const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
+    const rubyTextFontSelect = document.getElementById('rubyTextFontSelect');
+    const rubyTextFontInput = document.getElementById('rubyTextFont');
+    const rubyTextStyleSelect = document.getElementById('rubyTextStyle');
+    const rubyTextOpacitySelect = document.getElementById('rubyTextOpacity');
+    const rubyDictionaryColorSelect = document.getElementById('rubyDictionaryColor');
+    const rubyTextOpacityContainer = document.getElementById('rubyTextOpacityContainer');
+    const rubyDictionaryColorContainer = document.getElementById('rubyDictionaryColorContainer');
+    const transLangsCheckboxes = document.querySelectorAll('input[name="transLangs"]');
+    const transTriggerSelect = document.getElementById('transTriggerSelect');
+
+    if (toneDisplayStyleSelect) toneDisplayStyleSelect.value = result.toneDisplayStyle || 'normal';
+    
+    if (rubyTextFontSelect) {
+      const savedFont = result.rubyTextFont || '';
+      if (['', 'sans-serif', 'serif', 'Chiron Hei HK, sans-serif'].includes(savedFont)) {
+        rubyTextFontSelect.value = savedFont;
+        if (rubyTextFontInput) rubyTextFontInput.style.display = 'none';
+      } else {
+        rubyTextFontSelect.value = 'custom';
+        if (rubyTextFontInput) {
+          rubyTextFontInput.style.display = 'block';
+          rubyTextFontInput.value = savedFont;
+        }
+      }
+    }
+
+    if (rubyTextStyleSelect) {
+      const savedStyle = result.rubyTextStyle || 'default';
+      rubyTextStyleSelect.value = savedStyle;
+      updateRubyTextStyleUI(savedStyle);
+    }
+
+    if (rubyTextOpacitySelect) rubyTextOpacitySelect.value = result.rubyTextOpacity || '0.85';
+    if (rubyDictionaryColorSelect) rubyDictionaryColorSelect.value = result.rubyDictionaryColor || '#888888';
+
+    const savedTransLangs = result.transLangs || ['zh-Hans', 'en'];
+    if (transLangsCheckboxes) {
+      transLangsCheckboxes.forEach(cb => {
+        cb.checked = savedTransLangs.includes(cb.value);
+      });
+      updateTransLangsDemo(savedTransLangs);
+    }
+
+    if (transTriggerSelect) {
+      transTriggerSelect.value = result.transTrigger || 'dblclick';
+      updateDemoTransTrigger(result.transTrigger || 'dblclick');
+    }
+
     displayModeSelect.value = result.displayMode || 'jyutping';
     if (toneStyleToggle) toneStyleToggle.checked = result.toneStyle !== 'inline'; // 預設為 'superscript'
     if (hoverModifierSelect) hoverModifierSelect.value = result.hoverModifier || 'none';
@@ -368,7 +324,7 @@ function applyI18n(lang) {
   });
 
   // AI 設定用 local storage（避免 sync 配額不足）
-  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage'], (result) => {
+  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'aiPrompt'], (result) => {
     aiEnabledToggle.checked = result.aiEnabled === true;
     aiSettings.style.display = result.aiEnabled ? 'block' : 'none';
     aiBaseUrlInput.value = result.aiBaseUrl || '';
@@ -376,6 +332,9 @@ function applyI18n(lang) {
     aiModelInput.value = result.aiModel || '';
     if (aiLanguageSelect) {
       aiLanguageSelect.value = result.aiLanguage || '繁體中文';
+    }
+    if (aiPromptInput) {
+      aiPromptInput.value = result.aiPrompt || '';
     }
   });
 
@@ -403,6 +362,136 @@ function applyI18n(lang) {
     updateDemoText();
     notifyContentScripts({ action: 'changeDisplayMode', mode });
   });
+
+  
+  const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
+  const rubyTextFontSelect = document.getElementById('rubyTextFontSelect');
+  const rubyTextFontInput = document.getElementById('rubyTextFont');
+  const rubyTextStyleSelect = document.getElementById('rubyTextStyle');
+  const rubyTextOpacitySelect = document.getElementById('rubyTextOpacity');
+  const rubyDictionaryColorSelect = document.getElementById('rubyDictionaryColor');
+  const transLangsCheckboxes = document.querySelectorAll('input[name="transLangs"]');
+  const transTriggerSelect = document.getElementById('transTriggerSelect');
+  const modifyShortcutBtn = document.getElementById('modifyShortcutBtn');
+  
+  if (modifyShortcutBtn) {
+    modifyShortcutBtn.addEventListener('click', () => {
+      chrome.tabs.create({ url: 'chrome://extensions/shortcuts' });
+    });
+  }
+
+  function updateTransLangsDemo(langs) {
+    const zhHans = document.getElementById('demoTransZhHans');
+    const en = document.getElementById('demoTransEn');
+    const ja = document.getElementById('demoTransJa');
+    const ko = document.getElementById('demoTransKo');
+    if (zhHans) zhHans.style.display = langs.includes('zh-Hans') ? 'flex' : 'none';
+    if (en) en.style.display = langs.includes('en') ? 'flex' : 'none';
+    if (ja) ja.style.display = langs.includes('ja') ? 'flex' : 'none';
+    if (ko) ko.style.display = langs.includes('ko') ? 'flex' : 'none';
+  }
+
+  function updateDemoTransTrigger(trigger) {
+    const demoContainer = document.getElementById('translateDemoContainer');
+    if (demoContainer) {
+      const animElements = demoContainer.querySelectorAll('.demo-selection, .demo-popup, .demo-cursor, .demo-ripple');
+      animElements.forEach(el => el.style.animation = 'none');
+      void demoContainer.offsetWidth;
+      if (trigger === 'click') {
+        demoContainer.classList.add('single-click-demo');
+      } else {
+        demoContainer.classList.remove('single-click-demo');
+      }
+      animElements.forEach(el => el.style.animation = '');
+    }
+  }
+
+  if (transLangsCheckboxes) {
+    transLangsCheckboxes.forEach(cb => {
+      cb.addEventListener('change', () => {
+        const selected = Array.from(transLangsCheckboxes).filter(c => c.checked).map(c => c.value);
+        chrome.storage.sync.set({ transLangs: selected });
+        updateTransLangsDemo(selected);
+        notifyContentScripts({ action: 'changeTransLangs', transLangs: selected });
+      });
+    });
+  }
+
+  if (transTriggerSelect) {
+    transTriggerSelect.addEventListener('change', () => {
+      const val = transTriggerSelect.value;
+      chrome.storage.sync.set({ transTrigger: val });
+      updateDemoTransTrigger(val);
+      notifyContentScripts({ action: 'changeTransTrigger', transTrigger: val });
+    });
+  }
+
+  if (toneDisplayStyleSelect) {
+    toneDisplayStyleSelect.addEventListener('change', () => {
+      chrome.storage.sync.set({ toneDisplayStyle: toneDisplayStyleSelect.value });
+      if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
+    });
+  }
+
+  if (rubyTextFontSelect) {
+    rubyTextFontSelect.addEventListener('change', () => {
+      if (rubyTextFontSelect.value === 'custom') {
+        if (rubyTextFontInput) {
+          rubyTextFontInput.style.display = 'block';
+          rubyTextFontInput.focus();
+        }
+      } else {
+        if (rubyTextFontInput) {
+          rubyTextFontInput.style.display = 'none';
+          rubyTextFontInput.value = rubyTextFontSelect.value;
+        }
+        chrome.storage.sync.set({ rubyTextFont: rubyTextFontSelect.value });
+        if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
+      }
+    });
+  }
+
+  if (rubyTextFontInput) {
+    rubyTextFontInput.addEventListener('input', () => {
+      chrome.storage.sync.set({ rubyTextFont: rubyTextFontInput.value });
+      if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
+    });
+  }
+
+  if (rubyTextStyleSelect) {
+    rubyTextStyleSelect.addEventListener('change', () => {
+      const val = rubyTextStyleSelect.value;
+      chrome.storage.sync.set({ rubyTextStyle: val });
+      updateRubyTextStyleUI(val);
+      if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
+    });
+  }
+
+  if (rubyTextOpacitySelect) {
+    rubyTextOpacitySelect.addEventListener('change', () => {
+      chrome.storage.sync.set({ rubyTextOpacity: rubyTextOpacitySelect.value });
+      if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
+    });
+  }
+
+  if (rubyDictionaryColorSelect) {
+    rubyDictionaryColorSelect.addEventListener('change', () => {
+      chrome.storage.sync.set({ rubyDictionaryColor: rubyDictionaryColorSelect.value });
+      if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
+    });
+  }
+
+  function updateRubyTextStyleUI(style) {
+    const rubyTextOpacityContainer = document.getElementById('rubyTextOpacityContainer');
+    const rubyDictionaryColorContainer = document.getElementById('rubyDictionaryColorContainer');
+    if (style === 'dictionary') {
+      if (rubyTextOpacityContainer) rubyTextOpacityContainer.style.display = 'none';
+      if (rubyDictionaryColorContainer) rubyDictionaryColorContainer.style.display = '';
+    } else {
+      if (rubyTextOpacityContainer) rubyTextOpacityContainer.style.display = '';
+      if (rubyDictionaryColorContainer) rubyDictionaryColorContainer.style.display = 'none';
+    }
+  }
 
   if (toneStyleToggle) {
     toneStyleToggle.addEventListener('change', () => {
@@ -716,6 +805,15 @@ function applyI18n(lang) {
     });
   }
 
+  // AI 提示詞變更
+  if (aiPromptInput) {
+    aiPromptInput.addEventListener('change', () => {
+      const prompt = aiPromptInput.value.trim();
+      chrome.storage.local.set({ aiPrompt: prompt });
+      notifyContentScripts({ action: 'changeAiPrompt', aiPrompt: prompt });
+    });
+  }
+
   // 測試 AI 連接
   testAiBtn.addEventListener('click', async () => {
     const baseUrl = aiBaseUrlInput.value.trim();
@@ -732,7 +830,22 @@ function applyI18n(lang) {
 
     try {
       const targetLang = aiLanguageSelect ? aiLanguageSelect.value : '繁體中文';
-      const testPrompt = `你好，請用${targetLang}回覆我一句簡短的問候語。`;
+      
+      let promptTemplate = aiPromptInput ? aiPromptInput.value.trim() : '';
+      if (!promptTemplate) {
+        promptTemplate = t('optAIDefaultPrompt');
+      }
+
+      const sampleWord = "廣東話";
+      const sampleSentence = "我哋平時講嘅廣東話，真係好得意。";
+
+      const testPrompt = promptTemplate
+        .replace(/{targetLang}/g, targetLang)
+        .replace(/\${targetLang}/g, targetLang)
+        .replace(/{word}/g, sampleWord)
+        .replace(/\${word}/g, sampleWord)
+        .replace(/{sentence}/g, sampleSentence)
+        .replace(/\${sentence}/g, sampleSentence);
       
       const url = baseUrl.replace(/\/$/, '') + '/chat/completions';
       const response = await fetch(url, {
@@ -744,7 +857,7 @@ function applyI18n(lang) {
         body: JSON.stringify({
           model: model,
           messages: [{ role: 'user', content: testPrompt }],
-          max_tokens: 30
+          max_tokens: 200
         })
       });
 
@@ -755,7 +868,26 @@ function applyI18n(lang) {
 
       const data = await response.json();
       const reply = data.choices?.[0]?.message?.content || t('optNoReply');
-      alert(`${t('optSuccess')}${reply}`);
+      
+      const lang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
+      const successTitle = {
+        'zh-HK': '連接成功！',
+        'zh-CN': '连接成功！',
+        'en': 'Connection Successful!',
+        'ja': '接続成功！',
+        'ko': '연결 성공!'
+      };
+      const labels = {
+        'zh-HK': { word: '測試字詞', sentence: '測試句子', reply: '模型回覆' },
+        'zh-CN': { word: '测试字词', sentence: '测试句子', reply: '模型回复' },
+        'en': { word: 'Test Word', sentence: 'Test Sentence', reply: 'Model Reply' },
+        'ja': { word: 'テスト単語', sentence: 'テスト文', reply: 'モデルの返答' },
+        'ko': { word: '테스트 단어', sentence: '테스트 문장', reply: '모델 응답' }
+      };
+      const title = successTitle[lang] || successTitle['zh-HK'];
+      const label = labels[lang] || labels['zh-HK'];
+
+      alert(`✅ ${title}\n\n${label.word}："${sampleWord}"\n${label.sentence}："${sampleSentence}"\n\n${label.reply}：\n${reply}`);
     } catch (error) {
       alert(`${t('optFail')}${error.message}`);
     }
@@ -1176,4 +1308,41 @@ function applyI18n(lang) {
       chrome.storage.local.set({ lastSeenVersion: currentVersion });
     });
   }
+
+  // 更新動態快捷鍵提示資訊
+  function updateShortcutDesc(lang) {
+    const descEl = document.getElementById('inspectShortcutDesc');
+    if (!descEl) return;
+
+    if (chrome.commands && chrome.commands.getAll) {
+      chrome.commands.getAll((commands) => {
+        let currentShortcut = '';
+        for (const cmd of commands) {
+          if (cmd.name === 'inspect-ruby') {
+            currentShortcut = cmd.shortcut;
+            break;
+          }
+        }
+
+        const prefix = activeDict['optInspectShortcutCurrent'] || '當前快捷鍵：';
+        const hint = activeDict['optInspectShortcutModifyHint'] || '點擊右側按鈕修改或綁定。';
+        const none = activeDict['optInspectShortcutNone'] || '未設定快捷鍵。';
+
+        if (currentShortcut) {
+          const formattedShortcut = currentShortcut.replace(/Command/g, '⌘').replace(/Ctrl/g, 'Ctrl');
+          descEl.innerHTML = `${prefix}<kbd>${formattedShortcut}</kbd>。${hint}`;
+        } else {
+          descEl.innerHTML = `${none}${hint}`;
+        }
+      });
+    } else {
+      descEl.innerText = "";
+    }
+  }
+
+  // 監聽視窗聚焦，當用戶從 chrome://extensions/shortcuts 返回時自動更新快捷鍵顯示
+  window.addEventListener('focus', () => {
+    const lang = document.getElementById('langToggle').value || 'zh-HK';
+    updateShortcutDesc(lang);
+  });
 });

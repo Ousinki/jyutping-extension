@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "__MSG_extName__",
-  "version": "1.5.0",
+  "version": "1.5.4",
   "description": "__MSG_extDescription__",
   "default_locale": "zh_TW",
   "permissions": [
@@ -19,7 +19,8 @@
       "matches": ["<all_urls>"],
       "js": ["content.js"],
       "css": ["popup.css"],
-      "run_at": "document_end"
+      "run_at": "document_end",
+      "all_frames": true
     }
   ],
   "web_accessible_resources": [
@@ -41,5 +42,14 @@
     "48": "icon48.png",
     "128": "icon128.png"
   },
-  "options_page": "options.html"
+  "options_page": "options.html",
+  "commands": {
+    "inspect-ruby": {
+      "suggested_key": {
+        "default": "Ctrl+Shift+X",
+        "mac": "Command+Shift+X"
+      },
+      "description": "__MSG_cmdInspectRuby__"
+    }
+  }
 }

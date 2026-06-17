@@ -1,6 +1,6 @@
 Cantonese Popup Dictionary — The best tool for learning Cantonese!
 
-Hover over any Chinese character to instantly see its Cantonese pronunciation (Jyutping & Yale romanization) and English definitions. A must-have Chrome extension for Cantonese learners, linguists, and native speakers.
+Hover over any Chinese character to instantly see its Cantonese pronunciation (Jyutping & Yale romanization) and English definitions. A must-have browser extension for Cantonese learners, linguists, and native speakers.
 
 Key Features:
 
@@ -12,16 +12,16 @@ Key Features:
 
 Text-to-Speech (v1.1):
 
-- 4 TTS Engines: Chrome TTS, Edge TTS, Azure Speech, Bert-VITS2
-- Azure Speech offers 3 premium Cantonese voices (HiuMaan, HiuGaai, WanLung)
-- Edge TTS & Azure Speech work out-of-the-box with built-in servers
+- Multiple TTS Options: Supports native browser speech synthesis, high-fidelity online voice services, and local voice generation models
+- Natural & Premium Voices: Integrates with premium speech synthesis services offering natural-sounding Cantonese voices
+- Zero Configuration: Works out-of-the-box with pre-configured speech servers, plus options to connect custom voice servers
 - Adjustable speed: 0.5x – 1.5x
 
 Translation (v1.2):
 
-- Bing Translate: Double-click selected text for instant Mandarin & English translation (free, no setup)
-- ✨ AI Contextual Translation: Long-press highlighted text for ~0.5s — AI explains meaning based on surrounding context
-- Compatible with all OpenAI-compatible APIs (DeepSeek, Volcengine, Ollama, OpenAI, etc.)
+- Built-in Translation: Double-click selected text for instant Mandarin & English translation (fully integrated, no setup required)
+- ✨ AI Contextual Translation: Long-press highlighted text for ~0.5s — AI explains the meaning based on the surrounding context
+- Customizable AI Providers: Compatible with custom large language model endpoints using industry-standard API formats and local/cloud-hosted offline models
 
 Multilingual Interface (v1.3):
 
@@ -32,6 +32,14 @@ UX Enhancements (v1.4):
 
 - ✨ Interactive Settings Page: High-fidelity CSS animations demonstrate how to use double-click translation, AI long-press, and click-to-speak
 - 🛡️ Style Isolation: Fixed font interference from host pages; popups now stay perfectly anchored during scrolling
+
+Compact Mode & Context Menu (v1.5):
+
+- ✨ New Compact Mode: Toggle the popup to display only phonetics (with superscript tone numbers) and expand to full details with a single click
+- 🔊 Better Audio & Interaction: Added instant pronunciation play options and eliminated lag
+- 🎨 UI Customization: Expanded highlight styles to 7 beautiful themes and optimized options layout
+- 🌐 AI Localization: Choose target languages (Traditional/Simplified Chinese, English, or Japanese) for tailored AI explanations
+- 🖱️ Context Menu: Right-click anywhere to quickly enable/disable the dictionary or switch display modes
 
 Dictionary Sources:
 
@@ -44,9 +52,9 @@ How to Use:
 
 - Hover over Chinese text to see Cantonese pronunciation
 - Click a highlighted word to hear it spoken
-- Double-click a selection to trigger Bing Translate
+- Double-click a selection to trigger instant translation
 - Long-press a highlighted word for 0.5s to trigger AI contextual translation
 
-Privacy: This extension does not collect any user data. AI translation uses the user's own API key — data is sent directly to the AI provider of their choice.
+Privacy: This extension does not collect any user data. AI translation uses the user's own API configuration — data is sent directly to the AI provider of their choice.
 
 License: CC BY-SA 3.0
