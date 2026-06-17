@@ -720,9 +720,9 @@
 
 /* ========== 精簡模式（compact）========== */
 #cantonese-popup-dict.compact-mode {
-  width: auto !important;
-  min-width: unset;
-  max-width: 400px;
+  width: max-content !important;
+  min-width: unset !important;
+  max-width: 320px !important;
   transition: none;
 }
 
@@ -733,16 +733,24 @@
 
 
 #cantonese-popup-dict.compact-mode .popup-main {
-  width: auto;
-  min-width: unset;
+  width: auto !important;
+  min-width: unset !important;
   padding: 2px 8px !important;
 }
 
 #cantonese-popup-dict.compact-mode .popup-inner {
+  width: auto !important;
+  max-width: 100% !important;
+  min-width: unset !important;
+  box-sizing: border-box !important;
   border-radius: 0 !important;
   border: 1px solid #d0d0d0 !important;
   box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
   background: #ffffff !important;
+}
+
+#cantonese-popup-dict.compact-mode .popup-container {
+  width: auto !important;
 }
 
 .compact-pronunciation {

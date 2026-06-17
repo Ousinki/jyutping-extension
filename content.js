@@ -2224,7 +2224,7 @@
     // 隱藏翻譯浮窗
     hideTranslatePopup();
 
-    popup.style.width = 'auto';
+    applyCompactStyles();
     popup.classList.add('compact-mode');
 
     // 構建喇叭內容
@@ -2293,6 +2293,60 @@
     return speakerBtn;
   }
 
+  // 套用精簡模式/選區喇叭的自適應寬度樣式，防止被完整模式的行內或 CSS 樣式干擾
+  function applyCompactStyles() {
+    if (!popup) return;
+    popup.style.setProperty('width', 'max-content', 'important');
+    popup.style.setProperty('min-width', 'unset', 'important');
+    popup.style.setProperty('max-width', '320px', 'important');
+
+    const inner = popup.querySelector('.popup-inner');
+    if (inner) {
+      inner.style.setProperty('width', 'auto', 'important');
+      inner.style.setProperty('min-width', 'unset', 'important');
+      inner.style.setProperty('height', 'auto', 'important');
+    }
+
+    const container = popup.querySelector('.popup-container');
+    if (container) {
+      container.style.setProperty('width', 'auto', 'important');
+    }
+
+    const popupMain = popup.querySelector('.popup-main');
+    if (popupMain) {
+      popupMain.style.setProperty('width', 'auto', 'important');
+      popupMain.style.setProperty('min-width', 'unset', 'important');
+      popupMain.style.setProperty('padding', '2px 8px', 'important');
+    }
+  }
+
+  // 清除精簡模式的行內樣式，恢復完整模式
+  function removeCompactStyles() {
+    if (!popup) return;
+    popup.style.removeProperty('width');
+    popup.style.removeProperty('min-width');
+    popup.style.removeProperty('max-width');
+
+    const inner = popup.querySelector('.popup-inner');
+    if (inner) {
+      inner.style.removeProperty('width');
+      inner.style.removeProperty('min-width');
+      inner.style.removeProperty('height');
+    }
+
+    const container = popup.querySelector('.popup-container');
+    if (container) {
+      container.style.removeProperty('width');
+    }
+
+    const popupMain = popup.querySelector('.popup-main');
+    if (popupMain) {
+      popupMain.style.removeProperty('width');
+      popupMain.style.removeProperty('min-width');
+      popupMain.style.removeProperty('padding');
+    }
+  }
+
   // ========== 精簡模式彈窗：僅顯示音標 ==========
   function showCompactPopup(result, entry, pronunciation, rect) {
     if (!pronunciation) {
@@ -2316,8 +2370,8 @@
     // 隱藏上一次的獨立翻譯浮窗（避免殘留）
     hideTranslatePopup();
 
-    // 設定精簡模式的寬度為 auto
-    popup.style.width = 'auto';
+    // 套用精簡模式自適應寬度樣式
+    applyCompactStyles();
     popup.classList.add('compact-mode');
 
     // 構建精簡內容：僅拼音文字（點擊可發聲）
@@ -2493,6 +2547,7 @@
     popupMain.innerHTML = '';
     popup.classList.remove('expanded-mode');
     popup.classList.remove('compact-mode');
+    removeCompactStyles();
     popup.style.width = '320px'; // 默認寬度
     // 恢復完整模式下的操作按鈕
     const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
@@ -2804,7 +2859,7 @@
   function hidePopup(keepHighlight = false) {
     if (popup) {
       popup.style.display = 'none';
-      popup.style.removeProperty('width');
+      removeCompactStyles();
       const qaContainer = popup.querySelector('.popup-qa-container');
       if (qaContainer) {
         qaContainer.remove();

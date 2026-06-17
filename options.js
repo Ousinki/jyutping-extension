@@ -302,7 +302,7 @@ async function applyI18n(lang) {
 
     ttsEnabledToggle.checked = result.ttsEnabled !== false;
     
-    const engine = result.ttsEngine || 'webSpeech';
+    const engine = result.ttsEngine || 'edgeTts';
     ttsEngineSelect.value = engine;
     updateEngineUI(engine);
     
