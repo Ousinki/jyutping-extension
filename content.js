@@ -19,7 +19,7 @@
   let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
   let popupTheme = 'classic'; // 懸浮窗主題
   let ttsEnabled = true; // TTS 開關
-  let ttsEngine = 'webSpeech'; // TTS 引擎: webSpeech, chromeTts, edgeTts, azureTts
+  let ttsEngine = 'edgeTts'; // TTS 引擎: webSpeech, chromeTts, edgeTts, azureTts
   let edgeTtsMode = 'default'; // Edge TTS 模式: default (預設伺服器) / custom (自定義)
   let edgeTtsUrl = ''; // Edge TTS 伺服器地址
   const EDGE_TTS_DEFAULT_URL = 'http://114.55.243.162:8090';
@@ -45,6 +45,7 @@
 
   let lastPopupResult = null;
   let lastPopupRect = null;
+  let lastTranslateRect = null;
   let currentMouseX = 0; // 用於記錄絕對鼠標 X 位置
   let currentMouseY = 0; // 用於記錄絕對鼠標 Y 位置
   
@@ -75,7 +76,7 @@
   let aiEnabled = false;
   let aiLongPressTimer = null; // 長按計時器
   let aiAnimationTimer = null; // 長按動畫延遲計時器
-
+  let ignoreNextRubyClick = false; // 忽略下一次點擊事件
 
   // ========== i18n 系統 ==========
   const popupI18n = {
@@ -427,14 +428,15 @@
     if (!longPressRing) createLongPressRing();
     longPressRing.style.left = x + 'px';
     longPressRing.style.top = y + 'px';
-    longPressRing.style.opacity = '1';
+    
+    // 移除之前的 done 類
+    longPressRing.classList.remove('done');
     
     // 強制重繪
     longPressRing.offsetHeight;
     
-    const progressCircle = longPressRing.querySelector('.ring-progress');
-    progressCircle.style.transition = 'stroke-dashoffset 0.5s linear';
-    progressCircle.style.strokeDashoffset = '0';
+    // 添加 active 類觸發 CSS 動畫（因為 popup.css 用了 !important，inline style 無效）
+    longPressRing.classList.add('active');
   }
 
   function cancelLongPressAnimation() {
@@ -443,22 +445,28 @@
       aiAnimationTimer = null;
     }
     if (!longPressRing) return;
+    longPressRing.classList.remove('active');
+    longPressRing.classList.remove('done');
+    
+    // 重置內聯樣式（防禦性代碼）
     longPressRing.style.opacity = '0';
     const progressCircle = longPressRing.querySelector('.ring-progress');
-    progressCircle.style.transition = 'none';
-    progressCircle.style.strokeDashoffset = '75.4';
+    if (progressCircle) {
+      progressCircle.style.transition = 'none';
+      progressCircle.style.strokeDashoffset = '69.1';
+    }
   }
 
-  // 對於跨行/多行選區，選取距離當前滑鼠最近的行/區塊 Rect
+  // 對於跨行/多行選區，選取距離當前滑鼠最近的行/區塊 Rect，並合併同行的 rects
   function getBestRectForRange(range) {
     if (!range) return null;
-    const rects = range.getClientRects();
+    const rects = Array.from(range.getClientRects());
     if (rects.length === 0) return null;
     if (rects.length === 1) return rects[0];
 
-    // 如果滑鼠位置為 0，可能是鍵盤觸發或未移動，預設返回最後一個
+    // 如果滑鼠位置為 0，預設使用整體 bounding rect
     if (currentMouseX === 0 && currentMouseY === 0) {
-      return rects[rects.length - 1];
+      return range.getBoundingClientRect();
     }
 
     // 尋找距離最後滑鼠位置最近的 rect
@@ -475,7 +483,35 @@
         bestRect = rect;
       }
     }
-    return bestRect;
+
+    // 將與 bestRect 處於同一行的所有 rect 合併（解決同行多個 span 的問題）
+    let minX = bestRect.left;
+    let maxX = bestRect.right;
+    let minY = bestRect.top;
+    let maxY = bestRect.bottom;
+    
+    for (let i = 0; i < rects.length; i++) {
+      const rect = rects[i];
+      // 判斷是否在同一行 (垂直有重疊)
+      if (rect.bottom > bestRect.top && rect.top < bestRect.bottom) {
+        minX = Math.min(minX, rect.left);
+        maxX = Math.max(maxX, rect.right);
+        minY = Math.min(minY, rect.top);
+        maxY = Math.max(maxY, rect.bottom);
+      }
+    }
+
+    // 計算整體的 top 和 bottom，以確保彈窗不會遮擋任何跨行的文字
+    const fullRect = range.getBoundingClientRect();
+
+    return {
+      left: minX,
+      right: maxX,
+      top: fullRect.top,
+      bottom: fullRect.bottom,
+      width: maxX - minX,
+      height: fullRect.bottom - fullRect.top
+    };
   }
 
   // 定位翻譯和AI浮窗（包含箭頭）
@@ -519,7 +555,7 @@
     const translatePopupArrow = translatePopup.querySelector('.popup-arrow');
     if (translatePopupArrow) {
       translatePopupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
-      const highlightCenterX = rect.left + rect.width / 2;
+      // 使用上面已計算（並可能已被修改置中）的 highlightCenterX
       let arrowCenter = highlightCenterX - left;
       arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
       translatePopupArrow.style.left = arrowCenter + 'px';
@@ -631,11 +667,22 @@
     if (selection.rangeCount > 0) {
       const range = selection.getRangeAt(0);
       posRect = getBestRectForRange(range);
+      
+      // 添加自定義高亮，避免輸入框獲取焦點時原生選區消失
+      if (typeof CSS !== 'undefined' && CSS.highlights) {
+        try {
+          const highlight = new Highlight(range);
+          CSS.highlights.set('jyutping-translate-hl', highlight);
+        } catch (e) {
+          console.warn('CSS Custom Highlights API failed:', e);
+        }
+      }
     }
     if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
       posRect = getBestRectForRange(currentRange);
     }
     if (posRect) {
+      lastTranslateRect = posRect;
       positionTranslatePopup(posRect);
     }
   }
@@ -670,6 +717,12 @@
         });
       }
     }
+    
+    // 移除翻譯浮窗的高亮
+    if (typeof CSS !== 'undefined' && CSS.highlights) {
+      CSS.highlights.delete('jyutping-translate-hl');
+    }
+    
     clearQAContext();
   }
 
@@ -709,7 +762,7 @@
   }
 
   // 請求 AI 翻譯
-  function requestAiTranslation(word) {
+  function requestAiTranslation(word, rectOverride = null) {
     if (!word) return;
     
     const sentence = getSurroundingSentence(currentRange);
@@ -721,8 +774,26 @@
     activeQAContext.originalTranslation = 'AI 翻譯中...';
     activeQAContext.history = [];
 
+    // 擷取並儲存當前目標位置，避免 fallback 到上一次的 popup 導致位置跳躍
+    let targetRect = rectOverride;
+    if (!targetRect) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        targetRect = getBestRectForRange(selection.getRangeAt(0));
+      } else if (typeof currentRange !== 'undefined' && currentRange) {
+        targetRect = getBestRectForRange(currentRange);
+      }
+    }
+    activeQAContext.targetRect = targetRect;
+
+    // 發起全新的翻譯請求前，清除可能殘留的舊獨立彈窗內容，避免錯誤追加到舊 QA 容器中或殘留舊狀態
+    if (translatePopup && translatePopup.style.display !== 'none') {
+      translatePopup.innerHTML = '';
+      translatePopup.style.display = 'none';
+    }
+
     // 顯示加載狀態
-    showAiResult(word, '✨ AI 分析中...');
+    showAiResult(word, '✨ AI 分析中...', targetRect);
     
     chrome.runtime.sendMessage({
       action: 'aiTranslate',
@@ -732,7 +803,7 @@
   }
 
   // 顯示 AI 翻譯結果
-  function showAiResult(word, explanation) {
+  function showAiResult(word, explanation, targetRect = null) {
     // 確保如果沒有前綴，預設補上 "✨ "
     let textToRender = explanation;
     if (!explanation.startsWith('✨') && !explanation.startsWith('❌')) {
@@ -744,11 +815,17 @@
     if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode')) {
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
-        translateDiv.innerHTML = `
-          <div class="ai-result">
-            <div class="ai-text" style="white-space: pre-wrap;">${renderedText}</div>
-          </div>
-        `;
+        // 如果已經有了 .ai-text，只更新內容，避免破壞可能存在的 Q&A
+        const existingAiText = translateDiv.querySelector('.ai-text');
+        if (existingAiText) {
+          existingAiText.innerHTML = renderedText;
+        } else {
+          translateDiv.innerHTML = `
+            <div class="ai-result">
+              <div class="ai-text" style="white-space: pre-wrap;">${renderedText}</div>
+            </div>
+          `;
+        }
         translateDiv.style.display = 'block';
         return;
       }
@@ -756,6 +833,22 @@
     
     // 否則用獨立浮窗
     if (!translatePopup) return;
+    
+    // 如果獨立浮窗已經在顯示，且包含 .ai-text，只需更新文字，以保護可能打開的 Q&A 界面
+    if (translatePopup.style.display !== 'none') {
+      const aiText = translatePopup.querySelector('.ai-text');
+      const isQA = translatePopup.querySelector('.popup-qa-container');
+      if (aiText && !isQA) {
+        aiText.innerHTML = renderedText;
+        const finalRect = targetRect || lastTranslateRect;
+        if (finalRect) {
+          lastTranslateRect = finalRect;
+          positionTranslatePopup(finalRect);
+        }
+        return;
+      }
+    }
+
     translatePopup.innerHTML = `
       <div class="popup-arrow"></div>
       <div class="popup-inner">
@@ -781,16 +874,23 @@
     if (typeof popupTheme !== 'undefined') applyPopupTheme(popupTheme);
 
     // 定位在選區下方
-    let posRect = null;
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      posRect = getBestRectForRange(range);
+    let posRect = targetRect;
+    if (!posRect) {
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0 && !selection.isCollapsed) {
+        const range = selection.getRangeAt(0);
+        posRect = getBestRectForRange(range);
+      }
+      if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
+        posRect = getBestRectForRange(currentRange);
+      }
+      if (!posRect && lastTranslateRect) {
+        posRect = lastTranslateRect;
+      }
     }
-    if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
-      posRect = getBestRectForRange(currentRange);
-    }
+    
     if (posRect) {
+      lastTranslateRect = posRect;
       positionTranslatePopup(posRect);
     }
   }
@@ -1084,6 +1184,7 @@
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
+
       displayMode = result.displayMode || 'jyutping';
       toneStyle = result.toneStyle || 'superscript';
       hoverModifier = result.hoverModifier || 'none';
@@ -1095,7 +1196,7 @@
       compactExpandBtn = result.compactExpandBtn !== false;
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
-      ttsEngine = result.ttsEngine || 'chromeTts';
+      ttsEngine = result.ttsEngine || 'edgeTts';
       edgeTtsMode = result.edgeTtsMode || 'default';
       edgeTtsUrl = result.edgeTtsUrl || '';
       azureTtsMode = result.azureTtsMode || 'default';
@@ -1483,6 +1584,9 @@
       if (popup && popup.contains(e.target)) {
         return;
       }
+      if (translatePopup && translatePopup.contains(e.target)) {
+        return;
+      }
 
       // 如果用戶有手動選中的文本，檢查點擊是否在選區內
       if (hasUserSelection) {
@@ -1491,9 +1595,10 @@
           const range = selection.getRangeAt(0);
           const rects = range.getClientRects();
           let clickInSelection = false;
+          const pad = 10; // 放寬 10px 容差處理 line-height
           for (const rect of rects) {
-            if (e.clientX >= rect.left && e.clientX <= rect.right &&
-                e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            if (e.clientX >= rect.left - pad && e.clientX <= rect.right + pad &&
+                e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad) {
               clickInSelection = true;
               break;
             }
@@ -1507,6 +1612,9 @@
             speakCantonese(textToSpeak, btn);
             
             let wasSelectionLongPressTriggered = false;
+            let isDragging = false;
+            const startX = e.clientX;
+            const startY = e.clientY;
 
             console.log('[AI-SelectionLongPress] isAiOn:', aiEnabled);
             if (aiEnabled) {
@@ -1523,25 +1631,46 @@
               
               aiLongPressTimer = setTimeout(() => {
                 aiLongPressTimer = null;
-                if (longPressRing) {
-                  longPressRing.classList.remove('active');
-                  longPressRing.classList.add('done');
-                  setTimeout(() => {
-                    longPressRing.classList.remove('done');
-                  }, 300);
+                if (!isDragging) {
+                  wasSelectionLongPressTriggered = true;
+                  console.log('[AI-SelectionLongPress] Triggered AI translation for:', selectedWord);
+                  if (longPressRing) {
+                    longPressRing.classList.add('done');
+                    setTimeout(() => {
+                      longPressRing.classList.remove('done');
+                      longPressRing.classList.remove('active');
+                    }, 300);
+                  }
+                  requestAiTranslation(selectedWord, rangeRect);
+                } else {
+                  cancelLongPressAnimation();
                 }
-                wasSelectionLongPressTriggered = true;
-                console.log('[AI-SelectionLongPress] Triggered AI translation for:', selectedWord);
-                requestAiTranslation(selectedWord);
               }, 650);
             }
             
+            // 監聽拖拽：如果移動超過 20px，取消長按
+            const onDragMove = (moveEvt) => {
+              const dx = moveEvt.clientX - startX;
+              const dy = moveEvt.clientY - startY;
+              if (dx * dx + dy * dy > 400) { // 20px 閾值
+                isDragging = true;
+                if (aiLongPressTimer) {
+                  clearTimeout(aiLongPressTimer);
+                  aiLongPressTimer = null;
+                  cancelLongPressAnimation();
+                }
+                document.removeEventListener('mousemove', onDragMove);
+              }
+            };
+            document.addEventListener('mousemove', onDragMove);
+            
             const onSelectionClickEnd = () => {
+              document.removeEventListener('mousemove', onDragMove);
               if (wasSelectionLongPressTriggered) {
                 ignoreNextRubyClick = true;
                 setTimeout(() => { ignoreNextRubyClick = false; }, 100);
               }
-              if (transTrigger === 'click' && !wasSelectionLongPressTriggered) {
+              if (transTrigger === 'click' && !wasSelectionLongPressTriggered && !isDragging) {
                 requestTranslation(textToSpeak);
               }
             };
@@ -1559,7 +1688,7 @@
 
       // 檢查是否點擊在高亮區域內，或者全文注音的 ruby 區塊內
       let clickedHighlightSpan = e.target.closest && e.target.closest('.jyutping-highlight');
-      let clickedRuby = e.target.closest && e.target.closest('.jyutping-ruby-injected');
+      let clickedRuby = e.target.closest && (e.target.closest('.jyutping-ruby-injected') || e.target.closest('.jyutping-hover-ruby'));
       
       let clickInHighlight = false;
       let wordToSpeak = null;
@@ -1591,18 +1720,29 @@
       // 如果點擊不在高亮區且不是 ruby，嘗試即時掃描滑鼠下方的文字以獲取單詞並高亮
       if (!clickInHighlight) {
         console.log('[AI-LongPress] Mousedown outside highlight, performing instant word scan...');
+        const previousWord = currentWord;
         handleMouseOver(e);
         
-        // 重新檢測
-        clickedHighlightSpan = e.target.closest && e.target.closest('.jyutping-highlight');
+        // 重新檢測（使用 elementFromPoint 獲取最新的 DOM 元素，因為 handleMouseOver 可能剛剛修改了 DOM）
+        // 不能用 e.target 因為 e.target 還是點擊發生時的舊元素
+        const newTarget = document.elementFromPoint(e.clientX, e.clientY);
+        clickedHighlightSpan = newTarget && newTarget.closest && newTarget.closest('.jyutping-highlight');
+        
         if (clickedHighlightSpan) {
           clickInHighlight = true;
           wordToSpeak = currentWord;
+        } else if (currentWord && currentRange && currentWord !== previousWord) {
+          // 如果 elementFromPoint 失敗（例如被遮擋），但 handleMouseOver 確實剛解析出了新詞
+          // 只要剛好查出了新詞，就認為用戶點擊了這個詞。
+          clickInHighlight = true;
+          wordToSpeak = currentWord;
         } else if (currentWord && currentRange) {
+          // 最後退路：使用 getBoundingClientRect，加上容差 (padding) 處理 line-height 點擊
           const rect = currentRange.getBoundingClientRect();
+          const pad = 10;
           if (rect.width > 0 && rect.height > 0 &&
-              e.clientX >= rect.left && e.clientX <= rect.right &&
-              e.clientY >= rect.top && e.clientY <= rect.bottom) {
+              e.clientX >= rect.left - pad && e.clientX <= rect.right + pad &&
+              e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad) {
             clickInHighlight = true;
             wordToSpeak = currentWord;
           }
@@ -1632,6 +1772,12 @@
         let wasWordLongPressTriggered = false;
 
         console.log('[AI-LongPress] isAiOn:', aiEnabled);
+        
+        let initialTargetRect = null;
+        if (typeof currentRange !== 'undefined' && currentRange) {
+          initialTargetRect = getBestRectForRange(currentRange);
+        }
+
         if (aiEnabled) {
           if (aiLongPressTimer) {
             clearTimeout(aiLongPressTimer);
@@ -1650,27 +1796,27 @@
               console.log('[AI-LongPress] Triggering AI translation for:', wordToSpeak);
               
               if (longPressRing) {
-                longPressRing.classList.remove('active');
                 longPressRing.classList.add('done');
                 setTimeout(() => {
                   longPressRing.classList.remove('done');
+                  longPressRing.classList.remove('active');
                 }, 300);
               }
               
-              requestAiTranslation(wordToSpeak);
+              requestAiTranslation(wordToSpeak, initialTargetRect);
             } else {
               cancelLongPressAnimation();
             }
           }, 650);
         }
 
-        // 監聽拖拽：如果移動超過 12px，切換到選擇模式（防止手指或滑鼠微抖誤判）
+        // 監聽拖拽：如果移動超過 20px，切換到選擇模式（防止手指或滑鼠微抖誤判）
         const onDragMove = (moveEvt) => {
           const dx = moveEvt.clientX - startX;
           const dy = moveEvt.clientY - startY;
           const distSq = dx * dx + dy * dy;
-          if (distSq > 144) { // 12px 閾值
-            console.log('[AI-LongPress] Drag detected (distance > 12px):', Math.sqrt(distSq), 'cancelling long press');
+          if (distSq > 400) { // 20px 閾值
+            console.log('[AI-LongPress] Drag detected (distance > 20px):', Math.sqrt(distSq), 'cancelling long press');
             isDragging = true;
             isSelecting = true;
             currentWord = null;
@@ -2004,17 +2150,35 @@
   // 處理滑鼠懸停事件
   function handleMouseOver(e) {
     if (!isEnabled) return;
+    
+    // 優先且絕對地忽略彈窗內部的任何滑鼠移動，防止因為 DOM 刷新或 isMouseOverPopup 狀態延遲而導致彈窗異常消失
+    const targetNode = e.target;
+    if (targetNode && targetNode.closest && (targetNode.closest('#cantonese-popup-dict') || targetNode.closest('#cantonese-translate-popup'))) {
+      return;
+    }
+    
     // 如果打開了 Q&A，則不處理懸停事件，保持 Q&A 窗口開啟
     if (popup && popup.querySelector('.popup-qa-container')) return;
     if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
+
+    // 如果正在顯示翻譯彈窗（如 AI 翻譯），為避免滑鼠移動到彈窗過程中導致高亮消失，
+    // 暫停新的懸停事件，直到翻譯彈窗關閉
+    if (translatePopup && translatePopup.style.display !== 'none') {
+      if (!isMouseOverPopup) {
+        scheduleHidePopup();
+      }
+      return;
+    }
     if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
     if (expandLockTimer) return; // 展開按鈕冷卻期內不重新渲染
     if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不重新渲染
     
-    // 檢查修飾鍵是否按下（精簡模式不需要修飾鍵）
-    const modifierPressed = popupDisplayStyle === 'compact' || hoverModifier === 'none' ||
+    // 檢查修飾鍵是否按下（精簡模式和 Ruby 模式不需要修飾鍵）
+    const modifierPressed = popupDisplayStyle === 'compact' || popupDisplayStyle === 'ruby' || hoverModifier === 'none' ||
       (hoverModifier === 'alt' && e.altKey) ||
       (hoverModifier === 'ctrl' && e.ctrlKey) ||
+      (hoverModifier === 'shift' && e.shiftKey) ||
+      (hoverModifier === 'meta' && e.metaKey);
       (hoverModifier === 'shift' && e.shiftKey) ||
       (hoverModifier === 'meta' && e.metaKey);
 
@@ -2027,6 +2191,9 @@
 
     // ★ 檢查是否懸停在已高亮的文字上
     const targetElement = document.elementFromPoint(clientX, clientY);
+    if (targetElement && (targetElement.closest('#cantonese-popup-dict') || targetElement.closest('#cantonese-translate-popup'))) {
+      return;
+    }
     
     // 如果是已經被全文注音的區域，則不顯示懸浮窗
     if (targetElement && targetElement.closest('.jyutping-ruby-injected')) {
@@ -2034,14 +2201,14 @@
       return;
     }
     
-    if (targetElement && targetElement.classList.contains('jyutping-highlight')) {
+    if (targetElement && (targetElement.classList.contains('jyutping-highlight') || targetElement.closest('.jyutping-hover-ruby'))) {
       if (hideTimeout) {
         clearTimeout(hideTimeout);
         hideTimeout = null;
       }
       
       // 如果按下了修飾鍵，且彈窗目前隱藏，則直接顯示彈窗（不需要重新解析文字）
-      if (modifierPressed && popup && popup.style.display === 'none' && currentWord && dictionary[currentWord]) {
+      if (modifierPressed && popupDisplayStyle !== 'ruby' && popup && popup.style.display === 'none' && currentWord && dictionary[currentWord]) {
         const result = { word: currentWord, entry: dictionary[currentWord] };
         showPopup(result, currentRange ? currentRange.getBoundingClientRect() : {
           left: clientX, right: clientX, top: clientY, bottom: clientY, width: 0, height: 0
@@ -2101,7 +2268,7 @@
       justNavigated = false;
 
       // 無論是否同詞，都重新應用高亮（因為上面已經移除了）
-      highlightText(textNode, offset, result.length);
+      highlightText(textNode, offset, result);
 
       // 如果是同一個詞，且彈窗已顯示，不需要重建彈窗內容
       if (previousWord === result.word && popup.style.display !== 'none') {
@@ -2119,41 +2286,16 @@
       
       // 使用文字本身的位置來定位彈窗（而非滑鼠位置）
       if (currentRange) {
-        // 對於多行文字，找出滑鼠所在的那個矩形
-        const rects = currentRange.getClientRects();
-        let bestRect = null;
+        const bestRect = getBestRectForRange(currentRange);
         
-        // 優先找包含滑鼠的矩形
-        for (const rect of rects) {
-          if (clientX >= rect.left && clientX <= rect.right &&
-              clientY >= rect.top && clientY <= rect.bottom) {
-            bestRect = rect;
-            break;
-          }
-        }
-        
-        // 如果沒找到（可能滑鼠在邊緣），找最近的
-        if (!bestRect && rects.length > 0) {
-          let minDistance = Infinity;
-          for (const rect of rects) {
-            const dx = Math.max(rect.left - clientX, 0, clientX - rect.right);
-            const dy = Math.max(rect.top - clientY, 0, clientY - rect.bottom);
-            const dist = dx * dx + dy * dy;
-            if (dist < minDistance) {
-              minDistance = dist;
-              bestRect = rect;
-            }
-          }
-        }
-        
-        if (modifierPressed) {
+        if (modifierPressed && popupDisplayStyle !== 'ruby') {
           showPopup(result, bestRect || currentRange.getBoundingClientRect());
         } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
           hidePopup(true);
         }
       } else {
         // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
-        if (modifierPressed) {
+        if (modifierPressed && popupDisplayStyle !== 'ruby') {
           showPopup(result, {
             left: clientX, right: clientX, 
             top: clientY, bottom: clientY,
@@ -2803,13 +2945,16 @@
       const ARROW_HEIGHT = 8; // 箭頭高度
       const GAP = 2; // 箭頭與文字的間距
 
-      // 水平位置：默認居中對齊或者靠左
-      if (x + 5 + popupWidth <= viewportWidth) {
-        left = x + 5;
-      } else {
-        // 右側空間不足，往左放
-        left = viewportWidth - popupWidth - 10;
-        if (left < 5) left = 5;
+      // 水平位置：居中對齊高亮詞
+      const highlightCenterX = rect.left + rect.width / 2;
+      left = highlightCenterX - popupWidth / 2;
+
+      // 邊界檢查
+      if (left + popupWidth > viewportWidth - 5) {
+        left = viewportWidth - popupWidth - 5;
+      }
+      if (left < 5) {
+        left = 5;
       }
 
       // 垂直位置：優先顯示在文字下方
@@ -2893,6 +3038,8 @@
     });
   }
 
+
+
   // 調整彈窗位置（當變寬時）
   function adjustPopupPosition() {
     const rect = popup.getBoundingClientRect();
@@ -2968,36 +3115,88 @@
     clearQAContext();
   }
 
-  // 選中文字（使用 CSS 高亮 span 代替原生 Selection）
-  function highlightText(textNode, offset, length) {
+  const SUPERSCRIPT_MAP = {
+    '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
+  };
+
+  function convertToSuperscriptTone(str) {
+    if (!str) return str;
+    return str.replace(/\d/g, match => SUPERSCRIPT_MAP[match] || match);
+  }
+
+  // 選中文字（使用 CSS 高亮 span 或內嵌 Ruby 代替原生 Selection）
+  function highlightText(textNode, offset, result) {
     try {
       // 先移除舊的高亮
       removeHighlight();
       
+      const length = result.length;
       const end = Math.min(offset + length, textNode.textContent.length);
+      const originalText = textNode.textContent.substring(offset, end);
       
       // 創建 Range 用於定位彈窗
       const range = document.createRange();
       range.setStart(textNode, offset);
       range.setEnd(textNode, end);
       
-      // 使用 span 包裹高亮文字（替代原生 Selection）
-      const highlightSpan = document.createElement('span');
-      highlightSpan.className = 'jyutping-highlight hl-' + (highlightStyle || 'yellow');
-      range.surroundContents(highlightSpan);
+      let wrapper;
       
-      highlightSpans.push(highlightSpan);
+      if (popupDisplayStyle === 'ruby') {
+        // 內嵌 Ruby 模式
+        const entry = result.entry;
+        
+        let jpString = '';
+        if (displayMode === 'jyutping') {
+          jpString = entry.jyutping ? (Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping) : '';
+        } else {
+          jpString = entry.yale ? (Array.isArray(entry.yale) ? entry.yale[0] : entry.yale) : '';
+        }
+        
+        wrapper = document.createElement('ruby');
+        wrapper.className = 'jyutping-hover-ruby hl-' + (highlightStyle || 'yellow');
+        wrapper.dataset.originalText = originalText;
+        wrapper.dataset.word = result.word;
+        
+        if (jpString) {
+          if (toneDisplayStyle === 'superscript') {
+            jpString = convertToSuperscriptTone(jpString);
+          } else if (toneDisplayStyle === 'hidden') {
+            jpString = jpString.replace(/\d/g, '');
+          }
+          
+          jpString = jpString.replace(/\u200A/g, ' '); // 將所有的分隔符轉換為普通空格，作為單一字串顯示
+          
+          wrapper.appendChild(document.createTextNode(originalText));
+          const rt = document.createElement('rt');
+          rt.textContent = jpString;
+          wrapper.appendChild(rt);
+        } else {
+          wrapper.appendChild(document.createTextNode(originalText));
+        }
+        
+        // 提取並替換內容
+        range.deleteContents();
+        range.insertNode(wrapper);
+        
+      } else {
+        // 標準高亮模式
+        wrapper = document.createElement('span');
+        wrapper.className = 'jyutping-highlight hl-' + (highlightStyle || 'yellow');
+        range.surroundContents(wrapper);
+      }
       
-      // 更新 currentRange 指向高亮 span 的範圍（用於彈窗定位）
+      highlightSpans.push(wrapper);
+      
+      // 更新 currentRange 指向高亮節點的範圍（用於彈窗定位）
       currentRange = document.createRange();
-      currentRange.selectNodeContents(highlightSpan);
+      currentRange.selectNodeContents(wrapper);
     } catch (e) {
       console.log('Highlight failed:', e);
-      // 回退方案：如果 surroundContents 失敗（跨元素），嘗試簡單 range
+      // 回退方案
       try {
         const range = document.createRange();
         range.setStart(textNode, offset);
-        range.setEnd(textNode, Math.min(offset + length, textNode.textContent.length));
+        range.setEnd(textNode, Math.min(offset + result.length, textNode.textContent.length));
         currentRange = range;
       } catch (e2) {
         console.log('Fallback range also failed:', e2);
@@ -3011,10 +3210,20 @@
     highlightSpans.forEach(span => {
       if (span && span.parentNode) {
         const parent = span.parentNode;
-        // 將 span 內容提取回父節點
-        while (span.firstChild) {
-          parent.insertBefore(span.firstChild, span);
+        
+        if (span.tagName === 'RUBY') {
+          // 對於 Ruby 模式，我們不能把 <rt> 標籤也提取出來，否則會變成普通文字顯示
+          // 我們只需要還原它原本的文字即可
+          const originalText = span.dataset.originalText || span.textContent.replace(/[a-zA-Z0-9\u200A]+/g, '');
+          const textNode = document.createTextNode(originalText);
+          parent.insertBefore(textNode, span);
+        } else {
+          // 將 span 內容提取回父節點
+          while (span.firstChild) {
+            parent.insertBefore(span.firstChild, span);
+          }
         }
+        
         parent.removeChild(span);
         // 合併相鄰的文字節點
         parent.normalize();
@@ -3130,12 +3339,12 @@
       }
     } else if (request.action === 'aiTranslateResult') {
       if (request.success) {
-        showAiResult(request.word, request.explanation);
+        showAiResult(request.word, request.explanation, activeQAContext.targetRect);
         if (activeQAContext.word === request.word) {
           activeQAContext.originalTranslation = request.explanation;
         }
       } else {
-        showAiResult(request.word, '❌ ' + request.error);
+        showAiResult(request.word, '❌ ' + request.error, activeQAContext.targetRect);
         if (activeQAContext.word === request.word) {
           activeQAContext.originalTranslation = '❌ ' + request.error;
         }
@@ -3246,10 +3455,6 @@
     setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
   }
 
-  const SUPERSCRIPT_MAP = {
-    '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
-  };
-
   // ========== Toast 系統 ==========
   let currentToastTimeout = null;
   let currentToastRemoveTimeout = null;
@@ -3291,11 +3496,6 @@
         }
       }, 300); // 等待動畫結束
     }, duration);
-  }
-
-  function convertToSuperscriptTone(str) {
-    if (!str) return str;
-    return str.replace(/\d/g, match => SUPERSCRIPT_MAP[match] || match);
   }
 
   function injectRubyAnnotations(rootElement) {
@@ -3557,6 +3757,11 @@
     inner.appendChild(qaUpperDisplay);
     inner.appendChild(qaContainer);
 
+    // 強制重繪後重新定位，避免彈窗寬度改變導致箭頭不居中
+    if (activePopup.id === 'cantonese-translate-popup' && lastTranslateRect) {
+      positionTranslatePopup(lastTranslateRect);
+    }
+
     const textarea = qaContainer.querySelector('.qa-input-textarea');
     const inputWrapper = qaContainer.querySelector('.qa-input-wrapper');
     const loadingWrapper = qaContainer.querySelector('.qa-loading-wrapper');
@@ -3574,10 +3779,27 @@
       adjustPopupVerticalPosition(activePopup);
     });
 
-    // 7. Enter 鍵提交
+    // 7. Enter 鍵提交 (使用終極雙保險機制)
+    let lastShiftState = false;
+    
     textarea.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && !e.shiftKey) {
+      lastShiftState = e.shiftKey;
+      
+      // 第一道防線：能攔截的直接攔截（避免視覺閃爍）
+      // 必須確保不是在 IME 組合中，且不是 229
+      if (!e.isComposing && e.keyCode !== 229 && (e.code === 'Enter' || e.code === 'NumpadEnter') && !e.shiftKey) {
         e.preventDefault();
+        setTimeout(() => sendMsg(), 10);
+      }
+    });
+
+    // 第二道防線：如果 Mac 輸入法偷偷把 keydown 吞了或者偽裝成 229/isComposing，
+    // 瀏覽器最終還是會執行默認行為（插入換行）。
+    // 所以只要監聽到插入換行，就說明輸入法根本沒處理它，這絕對是個發送指令！
+    textarea.addEventListener('input', (e) => {
+      if (e.inputType === 'insertLineBreak' && !lastShiftState) {
+        // 把剛才瀏覽器插進去的換行符刪掉
+        textarea.value = textarea.value.replace(/\n$/, '');
         sendMsg();
       }
     });
@@ -3645,8 +3867,8 @@
           qaUpperDisplay.innerHTML = `<div style="color: var(--popup-text-muted); font-size: 13px; line-height: 1.4;">❌ 錯誤: ${response ? response.error : '未知錯誤'}</div>`;
         }
         
-        // 滾動到底部并調整位置
-        qaUpperDisplay.scrollTop = qaUpperDisplay.scrollHeight;
+        // 回覆內容只有單條最新內容，所以應該滾動到頂部以便用戶從頭閱讀
+        qaUpperDisplay.scrollTop = 0;
         adjustPopupVerticalPosition(activePopup);
 
         // 聚焦輸入框以便繼續提問
@@ -3670,6 +3892,8 @@
     const lines = escaped.split(/\r?\n/);
     let htmlResult = '';
     const listStack = [];
+    let inTable = false;
+    let isTableHeader = false;
 
     function parseInlineMarkdown(text) {
       if (!text) return '';
@@ -3688,6 +3912,46 @@
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
       const trimmed = line.trim();
+
+      // 表格解析
+      const isTableLine = trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 1;
+      
+      if (!isTableLine && inTable) {
+        inTable = false;
+        htmlResult += '</tbody></table></div>';
+      }
+
+      if (isTableLine) {
+        if (!inTable) {
+          while (listStack.length > 0) {
+            const top = listStack.pop();
+            htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
+          }
+          inTable = true;
+          isTableHeader = true;
+          htmlResult += '<div style="overflow-x: auto; margin: 8px 0;"><table style="width: 100%; border-collapse: collapse; font-size: 0.95em; color: var(--popup-text);"><tbody>';
+        }
+
+        // 跳過分隔線 |---|---|
+        if (trimmed.replace(/\|/g, '').replace(/-/g, '').replace(/:/g, '').trim() === '') {
+          isTableHeader = false;
+          continue;
+        }
+
+        const cells = trimmed.split('|').slice(1, -1).map(cell => parseInlineMarkdown(cell.trim()));
+        htmlResult += '<tr>';
+        cells.forEach(cell => {
+          if (isTableHeader) {
+            htmlResult += `<th style="border: 1px solid var(--popup-divider, rgba(0,0,0,0.15)); padding: 6px 10px; background: var(--popup-active-bg, rgba(0,0,0,0.03)); font-weight: bold; text-align: left; line-height: 1.4;">${cell}</th>`;
+          } else {
+            htmlResult += `<td style="border: 1px solid var(--popup-divider, rgba(0,0,0,0.15)); padding: 6px 10px; line-height: 1.4;">${cell}</td>`;
+          }
+        });
+        htmlResult += '</tr>';
+        
+        isTableHeader = false;
+        continue;
+      }
 
       // 1. 分割線 (Horizontal Rule)
       if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
@@ -3795,10 +4059,13 @@
       htmlResult += `<div style="margin-bottom: 4px; line-height: 1.5;">${parsedContent}</div>`;
     }
 
-    // 關閉剩餘的列表
+    // 關閉剩餘的列表或表格
     while (listStack.length > 0) {
       const top = listStack.pop();
       htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
+    }
+    if (inTable) {
+      htmlResult += '</tbody></table></div>';
     }
 
     return htmlResult;

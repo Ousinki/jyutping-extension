@@ -172,6 +172,16 @@ async function applyI18n(lang) {
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger' ], (result) => {
 
+    // 總開關
+    const isEnabled = result.enabled !== false;
+    document.getElementById('enableToggle').checked = isEnabled;
+    document.body.classList.toggle('disabled', !isEnabled);
+
+    // 其他設置
+    document.getElementById('displayMode').value = result.displayMode || 'jyutping';
+    document.getElementById('hoverModifier').value = result.hoverModifier || 'none';
+    document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
+
     const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
     const rubyTextFontSelect = document.getElementById('rubyTextFontSelect');
     const rubyTextFontInput = document.getElementById('rubyTextFont');
@@ -226,6 +236,7 @@ async function applyI18n(lang) {
     if (hoverModifierSelect) hoverModifierSelect.value = result.hoverModifier || 'none';
     popupDisplayStyleSelect.value = result.popupDisplayStyle || 'full';
     updateCompactDemoVisibility();
+    updateDemoText();
     
     // 載入展開按鈕設定
     const compactExpandBtnToggle = document.getElementById('compactExpandBtnToggle');
@@ -302,7 +313,12 @@ async function applyI18n(lang) {
 
     ttsEnabledToggle.checked = result.ttsEnabled !== false;
     
-    const engine = result.ttsEngine || 'edgeTts';
+    let engine = result.ttsEngine || 'edgeTts';
+    const engineExists = Array.from(ttsEngineSelect.options).some(opt => opt.value === engine);
+    if (!engineExists) {
+      engine = 'edgeTts';
+      chrome.storage.sync.set({ ttsEngine: engine });
+    }
     ttsEngineSelect.value = engine;
     updateEngineUI(engine);
     
@@ -529,12 +545,15 @@ async function applyI18n(lang) {
   const themeSection = document.getElementById('themeSection');
   function updateCompactDemoVisibility() {
     const isCompact = popupDisplayStyleSelect.value === 'compact';
+    const isRuby = popupDisplayStyleSelect.value === 'ruby';
+    const isFull = popupDisplayStyleSelect.value === 'full';
+    
     if (compactDemo) compactDemo.style.display = isCompact ? 'flex' : 'none';
-    if (themeSection) themeSection.style.display = isCompact ? 'none' : 'block';
+    if (themeSection) themeSection.style.display = isFull ? 'block' : 'none';
     
     const hoverModifierContainer = document.getElementById('hoverModifierContainer');
     if (hoverModifierContainer) {
-      hoverModifierContainer.style.display = isCompact ? 'none' : 'flex';
+      hoverModifierContainer.style.display = isFull ? 'flex' : 'none';
     }
     
     const compactSettingsContainer = document.getElementById('compactSettingsContainer');

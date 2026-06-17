@@ -590,14 +590,22 @@
   z-index: 2147483647 !important;
   width: 28px !important;
   height: 28px !important;
-  transform: translate(-50%, -50%) !important;
+  transform: translate(-50%, -50%) scale(1) !important;
   opacity: 0 !important;
-  transition: opacity 0.1s ease !important;
+  transition: opacity 0.1s ease, transform 0s !important;
   display: block !important;
 }
 #jyutping-longpress-ring.active {
   opacity: 1 !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  transition: opacity 0.1s ease, transform 0s !important;
 }
+#jyutping-longpress-ring.done {
+  opacity: 0 !important;
+  transform: translate(-50%, -50%) scale(1) !important;
+  transition: opacity 0.2s ease-out !important;
+}
+
 #jyutping-longpress-ring svg {
   display: block !important;
   width: 28px !important;
@@ -614,26 +622,15 @@
   stroke: rgba(138, 28, 28, 0.85) !important;
   stroke-width: 3 !important;
   stroke-linecap: round !important;
-  /* 圓周 ≈ 2π×11 ≈ 69.115 */
   stroke-dasharray: 69.115 !important;
   stroke-dashoffset: 69.115 !important;
   transform: rotate(-90deg) !important;
   transform-origin: center !important;
+  transition: stroke-dashoffset 0s !important;
 }
 #jyutping-longpress-ring.active .ring-progress {
-  animation: jyutping-ring-fill 500ms linear forwards !important;
-}
-@keyframes jyutping-ring-fill {
-  to { stroke-dashoffset: 0; }
-}
-/* 完成時擴散效果 */
-#jyutping-longpress-ring.done {
-  animation: jyutping-ring-done 0.3s ease-out forwards !important;
-}
-@keyframes jyutping-ring-done {
-  0%   { transform: translate(-50%, -50%) scale(1) !important; opacity: 1 !important; }
-  50%  { transform: translate(-50%, -50%) scale(1.5) !important; opacity: 0.5 !important; }
-  100% { transform: translate(-50%, -50%) scale(1.8) !important; opacity: 0 !important; }
+  stroke-dashoffset: 0 !important;
+  transition: stroke-dashoffset 500ms linear !important;
 }
 
 /* ========== 彈窗箭頭樣式 ========== */
@@ -829,39 +826,34 @@
 }
 
 /* ========== 全文注音 (Ruby) 樣式 ========== */
-ruby.jyutping-ruby-injected {
-  ruby-align: center;
-  ruby-position: over;
-  /* 增加行高，避免注音擠壓到上一行文字 */
-  line-height: 2.0 !important;
-  /* 給每個詞組/單字之間加一點微小的間距，避免不同字的拼音粘連 */
-  margin: 0 0.15em !important;
+ruby.jyutping-hover-ruby {
   cursor: pointer;
+  line-height: inherit;
+  position: relative;
 }
 
-ruby.jyutping-ruby-injected:hover,
-ruby.jyutping-ruby-injected:hover rt,
-ruby.jyutping-ruby-injected.speaking,
-ruby.jyutping-ruby-injected.speaking rt {
-  color: #991b1b !important; /* 暗紅色 */
+ruby.jyutping-hover-ruby:hover,
+ruby.jyutping-hover-ruby:hover rt,
+ruby.jyutping-hover-ruby.speaking,
+ruby.jyutping-hover-ruby.speaking rt {
+  color: var(--popup-accent, #8A1C1C) !important;
 }
 
-ruby.jyutping-ruby-injected rt {
-  font-family: var(--jyutping-rt-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif) !important;
-  font-size: 0.5em !important; /* 縮小拼音字體，降低對寬度的撐開效應 */
-  font-weight: var(--jyutping-rt-font-weight, normal) !important;
-  font-style: var(--jyutping-rt-font-style, normal) !important;
-  letter-spacing: -0.05em !important; /* 讓拼音字母稍微緊湊一點 */
-  /* ★ 關鍵：給拼音左右加上 padding。當拼音比漢字寬時，瀏覽器會自動撐開底下的漢字間距，完美防止拼音重疊！ */
-  padding: 0 0.15em !important;
-  color: var(--jyutping-rt-color, inherit) !important;
-  opacity: var(--jyutping-rt-opacity, 0.6) !important;
-  user-select: none;
-  /* 避免 rt 換行 */
-  white-space: nowrap !important;
-  /* 使用 transform 進一步縮放（若瀏覽器有最小字號限制） */
-  transform: scale(0.9);
-  transform-origin: center bottom;
+ruby.jyutping-hover-ruby rt {
+  position: absolute;
+  bottom: calc(100% + 2px);
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: var(--jyutping-rt-font, system-ui, -apple-system, sans-serif) !important;
+  font-size: 0.55em !important;
+  opacity: var(--jyutping-rt-opacity, 0.85);
+  font-weight: normal;
+  text-transform: none;
+  line-height: 0;
+  text-align: center;
+  white-space: nowrap;
+  padding: 0 !important;
+  pointer-events: none;
 }
 
 /* ========== Toast 提示框樣式 ========== */
@@ -900,9 +892,16 @@ ruby.jyutping-ruby-injected rt {
   transform: translateX(0);
 }
 
+/* ========== Translation Highlight ========== */
+::highlight(jyutping-translate-hl) {
+  background-color: rgba(255, 213, 79, 0.5) !important;
+  color: inherit !important;
+}
+
 /* 根據不同的主題自動適配背景和文字顏色 */
-#cantonese-popup-dict.theme-dark ~ #jyutping-toast-container .jyutping-toast {
-  background: #1e1e1e;
-  color: #e0e0e0;
-  border-color: #333333;
+#cantonese-popup-dict.popup-theme-dark .jyutping-toast,
+#cantonese-popup-dict.popup-theme-glass-dark .jyutping-toast {
+  background: var(--popup-bg, #222222);
+  color: var(--popup-text, #eeeeee);
+  border-color: var(--popup-border, #444444);
 }
