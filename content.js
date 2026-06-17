@@ -1198,6 +1198,11 @@
         else if (tls === 'mandarin') transLangs = ['zh-Hans'];
         else if (tls === 'english') transLangs = ['en'];
       }
+    } else if (area === 'local') {
+      if (changes.aiEnabled) {
+        aiEnabled = changes.aiEnabled.newValue === true;
+        console.log('[AI] Dynamic update from storage.onChanged (local), aiEnabled:', aiEnabled);
+      }
     }
   });
 
@@ -1503,18 +1508,14 @@
             
             let wasSelectionLongPressTriggered = false;
 
-            // 長按 500ms → 觸發 AI 翻譯（直接從 storage 讀取，避免變量未同步）
-            chrome.storage.local.get(['aiEnabled'], (res) => {
-              const isAiOn = res.aiEnabled === true;
-              console.log('[AI] 檢查 AI 狀態:', isAiOn);
-              if (!isAiOn) return;
-
+            console.log('[AI-SelectionLongPress] isAiOn:', aiEnabled);
+            if (aiEnabled) {
               if (aiLongPressTimer) {
                 clearTimeout(aiLongPressTimer);
                 cancelLongPressAnimation();
               }
               const selectedWord = selection.toString().trim();
-              console.log('[AI] 長按計時器啟動, word:', selectedWord);
+              console.log('[AI-SelectionLongPress] Setting timers synchronously for word:', selectedWord);
               
               aiAnimationTimer = setTimeout(() => {
                 startLongPressAnimation(e.clientX, e.clientY);
@@ -1522,14 +1523,24 @@
               
               aiLongPressTimer = setTimeout(() => {
                 aiLongPressTimer = null;
-                cancelLongPressAnimation();
+                if (longPressRing) {
+                  longPressRing.classList.remove('active');
+                  longPressRing.classList.add('done');
+                  setTimeout(() => {
+                    longPressRing.classList.remove('done');
+                  }, 300);
+                }
                 wasSelectionLongPressTriggered = true;
-                console.log('[AI] 長按 500ms 觸發! word:', selectedWord);
+                console.log('[AI-SelectionLongPress] Triggered AI translation for:', selectedWord);
                 requestAiTranslation(selectedWord);
               }, 650);
-            });
+            }
             
             const onSelectionClickEnd = () => {
+              if (wasSelectionLongPressTriggered) {
+                ignoreNextRubyClick = true;
+                setTimeout(() => { ignoreNextRubyClick = false; }, 100);
+              }
               if (transTrigger === 'click' && !wasSelectionLongPressTriggered) {
                 requestTranslation(textToSpeak);
               }
@@ -1546,22 +1557,60 @@
         cancelLongPressAnimation();
       }
 
-      // 檢查是否點擊在高亮區域內（可以是最直觀的 .jyutping-highlight span 元素，或 fallback 座標比對）
-      const clickedHighlightSpan = e.target.closest && e.target.closest('.jyutping-highlight');
+      // 檢查是否點擊在高亮區域內，或者全文注音的 ruby 區塊內
+      let clickedHighlightSpan = e.target.closest && e.target.closest('.jyutping-highlight');
+      let clickedRuby = e.target.closest && e.target.closest('.jyutping-ruby-injected');
+      
       let clickInHighlight = false;
+      let wordToSpeak = null;
+
       if (clickedHighlightSpan) {
         clickInHighlight = true;
+        wordToSpeak = currentWord;
+      } else if (clickedRuby) {
+        clickInHighlight = true;
+        wordToSpeak = clickedRuby.dataset.word;
+        // 如果是 ruby 區塊，我們同時更新 currentWord / currentRange 以便 Q&A 獲取 context
+        if (wordToSpeak) {
+          currentWord = wordToSpeak;
+          try {
+            currentRange = document.createRange();
+            currentRange.selectNodeContents(clickedRuby);
+          } catch (err) {}
+        }
       } else if (currentWord && currentRange) {
         const rect = currentRange.getBoundingClientRect();
         if (rect.width > 0 && rect.height > 0 &&
             e.clientX >= rect.left && e.clientX <= rect.right &&
             e.clientY >= rect.top && e.clientY <= rect.bottom) {
           clickInHighlight = true;
+          wordToSpeak = currentWord;
         }
       }
 
-      if (clickInHighlight && currentWord) {
-        console.log('[AI-LongPress] Mousedown inside highlighted word:', currentWord);
+      // 如果點擊不在高亮區且不是 ruby，嘗試即時掃描滑鼠下方的文字以獲取單詞並高亮
+      if (!clickInHighlight) {
+        console.log('[AI-LongPress] Mousedown outside highlight, performing instant word scan...');
+        handleMouseOver(e);
+        
+        // 重新檢測
+        clickedHighlightSpan = e.target.closest && e.target.closest('.jyutping-highlight');
+        if (clickedHighlightSpan) {
+          clickInHighlight = true;
+          wordToSpeak = currentWord;
+        } else if (currentWord && currentRange) {
+          const rect = currentRange.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0 &&
+              e.clientX >= rect.left && e.clientX <= rect.right &&
+              e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            clickInHighlight = true;
+            wordToSpeak = currentWord;
+          }
+        }
+      }
+
+      if (clickInHighlight && wordToSpeak) {
+        console.log('[AI-LongPress] Mousedown inside target word:', wordToSpeak);
         // 不立即 preventDefault — 先觀察用戶是否在拖拽選擇文本
         const startX = e.clientX;
         const startY = e.clientY;
@@ -1575,25 +1624,20 @@
         }
 
         // 保存當前詞，供 dblclick 使用
-        pendingTranslateWord = currentWord;
-        const wordToSpeak = currentWord;
+        pendingTranslateWord = wordToSpeak;
 
         // 立即觸發 TTS
         speakCantonese(wordToSpeak);
 
         let wasWordLongPressTriggered = false;
 
-        // 長按 500ms → 觸發 AI 翻譯（同樣可被拖拽取消）
-        chrome.storage.local.get(['aiEnabled'], (res) => {
-          const isAiOn = res.aiEnabled === true;
-          console.log('[AI-LongPress] Storage check res.aiEnabled:', isAiOn);
-          if (!isAiOn) return;
-          
+        console.log('[AI-LongPress] isAiOn:', aiEnabled);
+        if (aiEnabled) {
           if (aiLongPressTimer) {
             clearTimeout(aiLongPressTimer);
             cancelLongPressAnimation();
           }
-          console.log('[AI-LongPress] Setting timers. delay before animation: 150ms, trigger: 650ms');
+          console.log('[AI-LongPress] Setting timers synchronously.');
           aiAnimationTimer = setTimeout(() => {
             console.log('[AI-LongPress] Starting animation');
             startLongPressAnimation(startX, startY);
@@ -1601,14 +1645,24 @@
           aiLongPressTimer = setTimeout(() => {
             console.log('[AI-LongPress] Trigger timer fired! isDragging:', isDragging);
             aiLongPressTimer = null;
-            cancelLongPressAnimation();
             if (!isDragging) {
               wasWordLongPressTriggered = true;
               console.log('[AI-LongPress] Triggering AI translation for:', wordToSpeak);
+              
+              if (longPressRing) {
+                longPressRing.classList.remove('active');
+                longPressRing.classList.add('done');
+                setTimeout(() => {
+                  longPressRing.classList.remove('done');
+                }, 300);
+              }
+              
               requestAiTranslation(wordToSpeak);
+            } else {
+              cancelLongPressAnimation();
             }
           }, 650);
-        });
+        }
 
         // 監聽拖拽：如果移動超過 12px，切換到選擇模式（防止手指或滑鼠微抖誤判）
         const onDragMove = (moveEvt) => {
@@ -1634,8 +1688,14 @@
 
         // mouseup 時清理拖拽監聽，並恢復選區（如果是單擊）
         const onDragEnd = () => {
-          console.log('[AI-LongPress] Mouseup on highlighted word. isDragging:', isDragging, 'wasWordLongPressTriggered:', wasWordLongPressTriggered);
+          console.log('[AI-LongPress] Mouseup on target word. isDragging:', isDragging, 'wasWordLongPressTriggered:', wasWordLongPressTriggered);
           document.removeEventListener('mousemove', onDragMove);
+          
+          if (wasWordLongPressTriggered) {
+            ignoreNextRubyClick = true;
+            setTimeout(() => { ignoreNextRubyClick = false; }, 100);
+          }
+          
           // 如果不是拖拽且之前有選區，恢復它
           if (!isDragging && savedRange) {
             const s = window.getSelection();
@@ -1664,11 +1724,12 @@
       }
       hidePopup();
       cancelLongPressAnimation();
-    });
+    }, true);
 
     // 點擊注音區塊發音
     document.addEventListener('click', (e) => {
       if (!isEnabled) return;
+      if (ignoreNextRubyClick) return;
       
       const ruby = e.target.closest('.jyutping-ruby-injected');
       if (ruby) {
@@ -1760,7 +1821,7 @@
           hasUserSelection = false;
         }
       }, 50);
-    });
+    }, true);
 
     // 滾動時隱藏彈窗
     document.addEventListener('scroll', () => {
