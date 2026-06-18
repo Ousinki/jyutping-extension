@@ -33,6 +33,7 @@
   let customEnFont = ''; // 自定義英文字體
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
+  let highlightedRubyElement = null; // 全文注音模式下高亮的 ruby 元素
   let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
   let rubyHoverStyle = 'ruby-red'; // Ruby 懸停樣式: ruby-red, ruby-blue, ruby-green, ruby-orange, ruby-purple, ruby-underline, ruby-border
   let currentWord = null; // 追蹤當前顯示的詞
@@ -2243,9 +2244,41 @@
       return;
     }
     
-    // 如果是已經被全文注音的區域，則不顯示懸浮窗
-    if (targetElement && targetElement.closest('.jyutping-ruby-injected')) {
-      scheduleHidePopup();
+    // 如果是已經被全文注音的區域，則顯示懸浮窗並高亮該 ruby 元素
+    const rubyElement = targetElement && targetElement.closest('.jyutping-ruby-injected');
+    if (rubyElement) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      
+      const word = rubyElement.dataset.word;
+      if (word && dictionary[word]) {
+        justNavigated = false;
+        
+        if (previousWord !== word || highlightedRubyElement !== rubyElement) {
+          removeHighlight(); // 移除舊的高亮
+          
+          rubyElement.classList.add('jyutping-highlight');
+          rubyElement.classList.add('hl-' + (highlightStyle || 'yellow'));
+          highlightedRubyElement = rubyElement;
+          
+          currentWord = word;
+          currentContextSentence = word;
+          
+          currentRange = document.createRange();
+          currentRange.selectNodeContents(rubyElement);
+        }
+        
+        const result = { word: word, entry: dictionary[word] };
+        if (modifierPressed && popupDisplayStyle !== 'ruby') {
+          showPopup(result, rubyElement.getBoundingClientRect());
+        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
+          hidePopup(true);
+        }
+      } else {
+        if (!justNavigated) scheduleHidePopup();
+      }
       return;
     }
     
@@ -3278,6 +3311,14 @@
       }
     });
     highlightSpans = [];
+    
+    // 移除全文注音模式下的 ruby 高亮
+    if (highlightedRubyElement) {
+      highlightedRubyElement.classList.remove('jyutping-highlight');
+      highlightedRubyElement.classList.remove('hl-yellow', 'hl-blue', 'hl-red', 'hl-green', 'hl-gray', 'hl-underline-dashed', 'hl-border-dashed');
+      highlightedRubyElement = null;
+    }
+    
     currentRange = null;
   }
 
