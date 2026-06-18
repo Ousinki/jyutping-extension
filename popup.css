@@ -72,6 +72,10 @@
 #cantonese-popup-dict {
   position: absolute;
   width: 320px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
   transition:
     width 0.2s ease-in-out,
     left 0.2s ease-in-out,
@@ -81,12 +85,18 @@
 #cantonese-translate-popup {
   position: absolute;
   width: 320px;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
 }
 
 /* 內容內部容器（提供實際的白底、邊框與圓角） */
 .popup-inner {
+  margin: 0 !important;
+  padding: 0 !important;
   background: var(--popup-bg);
-  border: 1px solid var(--popup-border);
+  border: 1px solid var(--popup-border) !important;
   border-radius: 8px;
   /* 此處移除 box-shadow，改由外層 drop-shadow 統一提供 */
   overflow: hidden;
