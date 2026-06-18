@@ -95,17 +95,16 @@
 .popup-inner {
   margin: 0 !important;
   padding: 0 !important;
-  background: var(--popup-bg);
+  background: var(--popup-bg) !important;
   border: 1px solid var(--popup-border) !important;
-  border-radius: 8px;
-  /* 此處移除 box-shadow，改由外層 drop-shadow 統一提供 */
-  overflow: hidden;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+  border-radius: 8px !important;
+  box-shadow: none !important; /* 確保防止宿主網站的全局 box-shadow 污染 */
+  overflow: hidden !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
   position: relative !important;
-  z-index: 1 !important;
 }
 
 /* 毛玻璃主題特殊樣式 */
@@ -667,7 +666,7 @@
   height: calc(var(--arrow-width) / 2 + var(--shadow-margin)) !important;
 
   pointer-events: none !important;
-  z-index: 2 !important;
+  box-shadow: none !important; /* 防止宿主網站對 div 污染陰影 */
   transform: translateX(-50%) !important;
 }
 
@@ -703,10 +702,6 @@
 
 .popup-arrow-up::before {
   transform: rotate(225deg) !important;
-  box-shadow:
-    0px 0.5px 0.5px rgba(100, 100, 100, 0.15),
-    2px 2px 1px rgba(100, 100, 100, 0.15),
-    4px 4px 8px rgba(100, 100, 100, 0.15) !important;
 }
 
 /* 箭頭朝下（彈窗在詞彙上方） */
@@ -718,10 +713,6 @@
 .popup-arrow-down::before {
   transform: rotate(45deg) !important;
   margin-top: calc(var(--square-side) / -2) !important;
-  box-shadow:
-    0px 0.5px 0.5px rgba(100, 100, 100, 0.15),
-    2px 2px 1px rgba(100, 100, 100, 0.15),
-    4px 4px 8px rgba(100, 100, 100, 0.15) !important;
 }
 
 /* 隱藏箭頭（導航模式） */
@@ -772,7 +763,7 @@
   box-sizing: border-box !important;
   border-radius: 0 !important;
   border: 1px solid #d0d0d0 !important;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1) !important;
+  box-shadow: none !important;
   background: #ffffff !important;
 }
 

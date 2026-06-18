@@ -706,10 +706,10 @@
     }
 
     translatePopup.innerHTML = `
-      <div class="popup-arrow"></div>
       <div class="popup-inner">
         ${innerContent}
       </div>
+      <div class="popup-arrow"></div>
     `;
 
     translatePopup.style.display = 'block';
