@@ -1204,7 +1204,7 @@
           dictionary = await response.json();
           console.log('粵語詞典已載入，詞條數：', Object.keys(dictionary).length);
         } catch (error) {
-          console.error('載入詞典失敗：', error);
+          console.warn('載入詞典失敗：', error.message || error);
         }
       })();
     }
@@ -3594,7 +3594,7 @@
   function injectRubyAnnotations(rootElement) {
     console.log('[Content] injectRubyAnnotations started on element:', rootElement);
     if (!dictionary || Object.keys(dictionary).length === 0) {
-      console.error('[Content] Dictionary not loaded or empty! Cannot inject rubies.');
+      console.warn('[Content] Dictionary not loaded or empty! Cannot inject rubies.');
       return;
     }
     console.log('[Content] Dictionary seems valid, total entries:', Object.keys(dictionary).length);

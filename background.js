@@ -489,7 +489,7 @@ async function handleAiTranslate(request, tabId) {
       word: word
     }).catch(() => {});
   } catch (error) {
-    console.error('AI 翻譯失敗:', error);
+    console.warn('AI 翻譯失敗:', error.message || error);
     chrome.tabs.sendMessage(tabId, {
       action: 'aiTranslateResult',
       success: false,

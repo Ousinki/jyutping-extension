@@ -116,7 +116,7 @@ class GoogleAnalytics {
         console.log(`GA4 Event Sent: ${eventName}`, payload);
       }
     } catch (error) {
-      console.error('GA4: Failed to send event', error);
+      console.warn('GA4: Failed to send event', error.message || error);
     }
   }
 
