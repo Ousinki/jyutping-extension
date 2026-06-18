@@ -1527,9 +1527,7 @@
                   <div style="flex: 1; background: var(--bg-input); border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center;">
                     <span class="demo-ai-qa-typewriter"></span><span class="demo-ai-qa-cursor">|</span>
                   </div>
-                  <div class="demo-ai-enter-btn" style="font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: var(--bg-card); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; transform-origin: center;">
-                    Enter ↵
-                  </div>
+                  <div class="demo-ai-send-btn" style="font-size: 11px; font-weight: 600; background: rgba(138, 28, 28, 0.85); border: none; border-radius: 6px; padding: 4px 10px; color: #fff; display: flex; align-items: center; justify-content: center; transform-origin: center; white-space: nowrap;">Send</div>
                 </div>
 
                 <!-- AI QA Reply -->
@@ -1555,18 +1553,24 @@
               </div>
             </div>
 
+            <!-- Floating Enter Key Indicator (bottom-right corner of demo area) -->
+            <div class="demo-ai-enter-key" style="position: absolute; bottom: 14px; right: 14px; font-size: 13px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: var(--bg-card); border: 1px solid var(--border); border-bottom-width: 3px; border-radius: 6px; padding: 4px 12px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; gap: 4px; transform-origin: center; box-shadow: 0 1px 3px rgba(0,0,0,0.15); z-index: 5; opacity: 0;">
+              Enter ↵
+            </div>
+
             <style>
               .demo-ai-selection { width: 0%; animation: selectAiText 15s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
               .demo-ai-popup { opacity: 0; transform: translate(-50%, -10px); animation: showAiPopup 15s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
               .demo-ai-cursor { top: 30px; left: -50px; opacity: 0; animation: moveAiCursor 15s ease-in-out infinite; transform-origin: top left; }
               .demo-ai-ring { opacity: 0; animation: showAiRing 15s infinite; }
-              .demo-ai-ring-progress { animation: fillAiRing 15s ease-out infinite; }
+              .demo-ai-ring-progress { animation: fillAiRing 15s linear infinite; }
               .demo-ai-typewriter::after { content: ""; animation: typeAiText 15s infinite; }
               
               .demo-ai-qa { overflow: hidden; max-height: 0; opacity: 0; animation: expandAiQa 15s infinite; }
               .demo-ai-qa-typewriter::after { content: ""; animation: typeAiQa 15s infinite; }
               
-              .demo-ai-enter-btn { animation: pressEnterBtn 15s infinite; transform-origin: center; }
+              .demo-ai-send-btn { animation: pressSendBtn 15s infinite; transform-origin: center; }
+              .demo-ai-enter-key { animation: showEnterKey 15s infinite; }
 
               .demo-ai-qa-reply { overflow: hidden; max-height: 0; opacity: 0; margin-top: 0; animation: expandAiReply 15s infinite; }
               .demo-ai-reply-typewriter::after { content: ""; animation: typeAiReply 15s infinite; }
@@ -1582,16 +1586,16 @@
                 14% { top: 5px; left: 100%; } /* End of text */
                 18% { top: 12px; left: 50%; transform: scale(1); } /* Middle of text */
                 19% { top: 12px; left: 50%; transform: scale(0.85); } /* Press down */
-                28% { top: 12px; left: 50%; transform: scale(0.85); } /* Hold */
-                29% { top: 12px; left: 50%; transform: scale(1); } /* Release */
-                34% { top: 12px; left: 50%; opacity: 1; }
-                35% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Move to popup */
-                36% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 1 down */
-                37% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 1 up */
-                38% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 2 down */
-                39% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 2 up */
-                43% { top: 80px; left: calc(50% + 100px); opacity: 1; transform: scale(1); } /* Move out of the way */
-                46% { top: 80px; left: calc(50% + 100px); opacity: 0; } /* Fade out */
+                23% { top: 12px; left: 50%; transform: scale(0.85); } /* Hold */
+                24% { top: 12px; left: 50%; transform: scale(1); } /* Release */
+                29% { top: 12px; left: 50%; opacity: 1; }
+                30% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Move to popup */
+                31% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 1 down */
+                32% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 1 up */
+                33% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 2 down */
+                34% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 2 up */
+                38% { top: 80px; left: calc(50% + 100px); opacity: 1; transform: scale(1); } /* Move out of the way */
+                41% { top: 80px; left: calc(50% + 100px); opacity: 0; } /* Fade out */
                 90%, 100% { top: 80px; left: 120%; opacity: 0; }
               }
 
@@ -1604,80 +1608,89 @@
 
               @keyframes showAiRing {
                 0%, 18% { opacity: 0; }
-                19%, 28% { opacity: 1; }
-                29%, 100% { opacity: 0; }
+                19%, 23% { opacity: 1; }
+                24%, 100% { opacity: 0; }
               }
 
               @keyframes fillAiRing {
                 0%, 19% { stroke-dashoffset: 113.1; }
-                28% { stroke-dashoffset: 0; }
-                29%, 100% { stroke-dashoffset: 0; }
+                22.5% { stroke-dashoffset: 0; }
+                23%, 100% { stroke-dashoffset: 0; }
               }
 
               @keyframes showAiPopup {
-                0%, 28% { opacity: 0; transform: translate(-50%, -10px); }
-                29%, 90% { opacity: 1; transform: translate(-50%, 0); }
+                0%, 23% { opacity: 0; transform: translate(-50%, -10px); }
+                24%, 90% { opacity: 1; transform: translate(-50%, 0); }
                 92%, 100% { opacity: 0; transform: translate(-50%, -10px); }
               }
 
               @keyframes typeAiText {
-                0%, 29% { content: ""; }
-                30% { content: "表"; }
-                31% { content: "表达"; }
-                32% { content: "表达强烈的"; }
-                33%, 100% { content: "表达强烈的喜爱之情。"; }
+                0%, 24% { content: ""; }
+                25% { content: "表"; }
+                26% { content: "表达"; }
+                27% { content: "表达强烈的"; }
+                28%, 100% { content: "表达强烈的喜爱之情。"; }
               }
 
               @keyframes expandAiQa {
-                0%, 38% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
-                39%, 90% { max-height: 40px; opacity: 1; padding-top: 8px; margin-top: 4px; border-top-color: var(--border); }
+                0%, 33% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
+                34%, 90% { max-height: 40px; opacity: 1; padding-top: 8px; margin-top: 4px; border-top-color: var(--border); }
                 92%, 100% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
               }
 
               @keyframes typeAiQa {
-                0%, 41% { content: ""; }
-                42% { content: "香港"; }
-                44% { content: "香港的美食"; }
-                46%, 100% { content: "香港的美食？"; }
+                0%, 36% { content: ""; }
+                37% { content: "香港"; }
+                39% { content: "香港的美食"; }
+                41%, 100% { content: "香港的美食？"; }
               }
 
-              @keyframes pressEnterBtn {
-                0%, 48% { transform: translateY(0) scale(1); border-bottom-width: 2px; color: var(--text-secondary); background: var(--bg-card); border-color: var(--border); }
-                49% { transform: translateY(1px) scale(0.95); border-bottom-width: 1px; color: rgba(138, 28, 28, 0.85); border-color: rgba(138, 28, 28, 0.3); background: rgba(138, 28, 28, 0.05); } /* Press down */
-                50%, 100% { transform: translateY(0) scale(1); border-bottom-width: 2px; color: var(--text-secondary); background: var(--bg-card); border-color: var(--border); }
+              @keyframes pressSendBtn {
+                0%, 43% { transform: scale(1); opacity: 1; background: rgba(138, 28, 28, 0.85); }
+                44% { transform: scale(0.9); opacity: 0.8; background: rgba(138, 28, 28, 1); } /* Press down */
+                45%, 100% { transform: scale(1); opacity: 1; background: rgba(138, 28, 28, 0.85); }
+              }
+
+              @keyframes showEnterKey {
+                0%, 43% { opacity: 0; transform: translateY(0) scale(1); border-bottom-width: 3px; }
+                43.5% { opacity: 1; transform: translateY(0) scale(1); border-bottom-width: 3px; }
+                44% { opacity: 1; transform: translateY(2px) scale(0.95); border-bottom-width: 1px; color: rgba(138, 28, 28, 0.85); border-color: rgba(138, 28, 28, 0.4); background: rgba(138, 28, 28, 0.08); } /* Press down */
+                45% { opacity: 1; transform: translateY(0) scale(1); border-bottom-width: 3px; color: var(--text-secondary); border-color: var(--border); background: var(--bg-card); }
+                48% { opacity: 1; }
+                50%, 100% { opacity: 0; }
               }
 
               @keyframes expandAiReply {
-                0%, 50% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
-                51%, 90% { max-height: 80px; opacity: 1; padding-top: 8px; padding-bottom: 8px; margin-top: 8px; }
+                0%, 45% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
+                46%, 90% { max-height: 80px; opacity: 1; padding-top: 8px; padding-bottom: 8px; margin-top: 8px; }
                 92%, 100% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
               }
 
               @keyframes typeAiReply {
-                0%, 52% { content: ""; }
-                53% { content: "比"; }
-                54% { content: "比如點心"; }
-                55% { content: "比如點心、燒賣"; }
-                56% { content: "比如點心、燒賣、菠蘿包"; }
-                57%, 100% { content: "比如點心、燒賣、菠蘿包..."; }
+                0%, 47% { content: ""; }
+                48% { content: "比"; }
+                49% { content: "比如點心"; }
+                50% { content: "比如點心、燒賣"; }
+                51% { content: "比如點心、燒賣、菠蘿包"; }
+                52%, 100% { content: "比如點心、燒賣、菠蘿包..."; }
               }
 
               @keyframes blink1 {
-                0%, 28% { opacity: 0; }
-                29% { opacity: 1; } 30% { opacity: 0; } 31% { opacity: 1; } 32% { opacity: 0; } 33% { opacity: 1; } 34% { opacity: 0; }
-                35%, 38% { opacity: 1; }
-                39%, 100% { opacity: 0; }
+                0%, 23% { opacity: 0; }
+                24% { opacity: 1; } 25% { opacity: 0; } 26% { opacity: 1; } 27% { opacity: 0; } 28% { opacity: 1; } 29% { opacity: 0; }
+                30%, 33% { opacity: 1; }
+                34%, 100% { opacity: 0; }
               }
               @keyframes blink2 {
-                0%, 38% { opacity: 0; }
-                39%, 40% { opacity: 1; } 41% { opacity: 0; } 42% { opacity: 1; } 43% { opacity: 0; } 44% { opacity: 1; } 45% { opacity: 0; }
-                46%, 49% { opacity: 1; }
-                50%, 100% { opacity: 0; }
+                0%, 33% { opacity: 0; }
+                34%, 35% { opacity: 1; } 36% { opacity: 0; } 37% { opacity: 1; } 38% { opacity: 0; } 39% { opacity: 1; } 40% { opacity: 0; }
+                41%, 44% { opacity: 1; }
+                45%, 100% { opacity: 0; }
               }
               @keyframes blink3 {
-                0%, 50% { opacity: 0; }
-                51%, 52% { opacity: 1; } 53% { opacity: 0; } 54% { opacity: 1; } 55% { opacity: 0; } 56% { opacity: 1; } 57% { opacity: 0; }
-                58%, 90% { opacity: 1; }
+                0%, 45% { opacity: 0; }
+                46%, 47% { opacity: 1; } 48% { opacity: 0; } 49% { opacity: 1; } 50% { opacity: 0; } 51% { opacity: 1; } 52% { opacity: 0; }
+                53%, 90% { opacity: 1; }
                 91%, 100% { opacity: 0; }
               }
             </style>
