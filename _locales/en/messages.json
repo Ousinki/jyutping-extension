@@ -662,5 +662,9 @@
   "optThemeLight": {
     "message": "Light",
     "description": "optThemeLight"
+  },
+  "clItem4": {
+    "message": "🌙 <b>Dark Mode</b>: Brand new dark mode is here! Supports auto-sync with system appearance for a comfortable night reading experience.",
+    "description": "Changelog item 4"
   }
 }

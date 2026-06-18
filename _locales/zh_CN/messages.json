@@ -662,5 +662,9 @@
   "optThemeLight": {
     "message": "浅色",
     "description": "optThemeLight"
+  },
+  "clItem4": {
+    "message": "🌙 <b>深色模式</b>：全新深色模式登场！支持跟随系统自动切换，提供更舒适的夜间阅读体验。",
+    "description": "Changelog item 4"
   }
 }

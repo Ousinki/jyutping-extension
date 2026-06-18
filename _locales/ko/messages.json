@@ -615,5 +615,9 @@
   "optThemeLight": {
     "message": "라이트",
     "description": "optThemeLight"
+  },
+  "clItem4": {
+    "message": "🌙 <b>다크 모드</b>: 새로운 다크 모드가 추가되었습니다! 시스템 테마 자동 동기화를 지원하여 편안한 야간 독서 환경을 제공합니다.",
+    "description": "Changelog item 4"
   }
 }
