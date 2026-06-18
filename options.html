@@ -1561,52 +1561,52 @@
             </div>
 
             <style>
-              .demo-ai-selection { width: 0%; animation: selectAiText 10s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
-              .demo-ai-popup { opacity: 0; transform: translate(-50%, -10px); animation: showAiPopup 10s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
-              .demo-ai-cursor { top: 30px; left: -50px; opacity: 0; animation: moveAiCursor 10s ease-in-out infinite; transform-origin: top left; }
-              .demo-ai-ring { opacity: 0; animation: showAiRing 10s infinite; }
-              .demo-ai-ring-progress { animation: fillAiRing 10s linear infinite; }
-              .demo-ai-typewriter::after { content: ""; animation: typeAiText 10s infinite; }
+              .demo-ai-selection { width: 0%; animation: selectAiText 12s cubic-bezier(0.4, 0, 0.2, 1) infinite; }
+              .demo-ai-popup { opacity: 0; transform: translate(-50%, -10px); animation: showAiPopup 12s cubic-bezier(0.34, 1.56, 0.64, 1) infinite; }
+              .demo-ai-cursor { top: 30px; left: -50px; opacity: 0; animation: moveAiCursor 12s ease-in-out infinite; transform-origin: top left; }
+              .demo-ai-ring { opacity: 0; animation: showAiRing 12s infinite; }
+              .demo-ai-ring-progress { animation: fillAiRing 12s linear infinite; }
+              .demo-ai-typewriter::after { content: ""; animation: typeAiText 12s infinite; }
               
-              .demo-ai-qa { overflow: hidden; max-height: 0; opacity: 0; animation: expandAiQa 10s infinite; }
-              .demo-ai-qa-typewriter::after { content: ""; animation: typeAiQa 10s infinite; }
+              .demo-ai-qa { overflow: hidden; max-height: 0; opacity: 0; animation: expandAiQa 12s infinite; }
+              .demo-ai-qa-typewriter::after { content: ""; animation: typeAiQa 12s infinite; }
               
-              .demo-ai-send-btn { animation: pressSendBtn 10s infinite; transform-origin: center; }
-              .demo-ai-enter-key { animation: showEnterKey 10s infinite; }
+              .demo-ai-send-btn { animation: pressSendBtn 12s infinite; transform-origin: center; }
+              .demo-ai-enter-key { animation: showEnterKey 12s infinite; }
 
-              .demo-ai-qa-reply { overflow: hidden; max-height: 0; opacity: 0; margin-top: 0; animation: expandAiReply 10s infinite; }
-              .demo-ai-reply-typewriter::after { content: ""; animation: typeAiReply 10s infinite; }
+              .demo-ai-qa-reply { overflow: hidden; max-height: 0; opacity: 0; margin-top: 0; animation: expandAiReply 12s infinite; }
+              .demo-ai-reply-typewriter::after { content: ""; animation: typeAiReply 12s infinite; }
 
-              .demo-ai-cursor-blink { font-weight: 400; color: #8b5cf6; animation: blink1 10s infinite; }
-              .demo-ai-qa-cursor { font-weight: 400; color: #8b5cf6; animation: blink2 10s infinite; }
-              .demo-ai-reply-cursor { font-weight: 400; color: #8b5cf6; animation: blink3 10s infinite; }
-              .demo-ai-ripple { animation: dblClickRipple 10s infinite; }
+              .demo-ai-cursor-blink { font-weight: 400; color: #8b5cf6; animation: blink1 12s infinite; }
+              .demo-ai-qa-cursor { font-weight: 400; color: #8b5cf6; animation: blink2 12s infinite; }
+              .demo-ai-reply-cursor { font-weight: 400; color: #8b5cf6; animation: blink3 12s infinite; }
+              .demo-ai-ripple { animation: dblClickRipple 12s infinite; }
 
               @keyframes moveAiCursor {
                 0%, 3% { top: 30px; left: -50px; opacity: 0; }
                 5% { opacity: 1; }
-                11% { top: 5px; left: -5px; } /* Start of text */
-                19% { top: 5px; left: 100%; } /* End of text */
-                24% { top: 12px; left: 50%; transform: scale(1); } /* Middle of text */
-                26% { top: 12px; left: 50%; transform: scale(0.85); } /* Press down */
-                31% { top: 12px; left: 50%; transform: scale(0.85); } /* Hold */
-                32% { top: 12px; left: 50%; transform: scale(1); } /* Release */
+                11% { top: 5px; left: -5px; }
+                19% { top: 5px; left: 100%; }
+                24% { top: 12px; left: 50%; transform: scale(1); }
+                26% { top: 12px; left: 50%; transform: scale(0.85); }
+                31% { top: 12px; left: 50%; transform: scale(0.85); }
+                32% { top: 12px; left: 50%; transform: scale(1); }
                 39% { top: 12px; left: 50%; opacity: 1; }
-                40% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Move to popup */
-                42% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 1 down */
-                43% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 1 up */
-                44% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 2 down */
-                46% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 2 up */
-                51% { top: 80px; left: calc(50% + 100px); opacity: 1; transform: scale(1); } /* Move out of the way */
-                55% { top: 80px; left: calc(50% + 100px); opacity: 0; } /* Fade out */
+                41% { top: 60px; left: calc(50% + 70px); transform: scale(1); }
+                43% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); }
+                44% { top: 60px; left: calc(50% + 70px); transform: scale(1); }
+                45.5% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); }
+                47% { top: 60px; left: calc(50% + 70px); transform: scale(1); }
+                54% { top: 80px; left: calc(50% + 100px); opacity: 1; transform: scale(1); }
+                58% { top: 80px; left: calc(50% + 100px); opacity: 0; }
                 95%, 100% { top: 80px; left: 120%; opacity: 0; }
               }
 
               @keyframes selectAiText {
                 0%, 11% { width: 0%; opacity: 0; }
                 12% { width: 0%; opacity: 1; }
-                19%, 88% { width: 100%; opacity: 1; }
-                91%, 100% { width: 0%; opacity: 0; }
+                19%, 89% { width: 100%; opacity: 1; }
+                92%, 100% { width: 0%; opacity: 0; }
               }
 
               @keyframes showAiRing {
@@ -1623,8 +1623,8 @@
 
               @keyframes showAiPopup {
                 0%, 31% { opacity: 0; transform: translate(-50%, -10px); }
-                32%, 90% { opacity: 1; transform: translate(-50%, 0); }
-                93%, 100% { opacity: 0; transform: translate(-50%, -10px); }
+                32%, 91% { opacity: 1; transform: translate(-50%, 0); }
+                94%, 100% { opacity: 0; transform: translate(-50%, -10px); }
               }
 
               @keyframes typeAiText {
@@ -1636,46 +1636,46 @@
               }
 
               @keyframes expandAiQa {
-                0%, 44% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
-                46%, 90% { max-height: 40px; opacity: 1; padding-top: 8px; margin-top: 4px; border-top-color: var(--border); }
-                93%, 100% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
+                0%, 48% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
+                51%, 91% { max-height: 40px; opacity: 1; padding-top: 8px; margin-top: 4px; border-top-color: var(--border); }
+                94%, 100% { max-height: 0; opacity: 0; padding-top: 0; margin-top: 0; border-top-color: transparent; }
               }
 
               @keyframes typeAiQa {
-                0%, 48% { content: ""; }
-                50% { content: "香港"; }
-                53% { content: "香港的美食"; }
-                55%, 100% { content: "香港的美食？"; }
+                0%, 55% { content: ""; }
+                57% { content: "香港"; }
+                60% { content: "香港的美食"; }
+                63%, 100% { content: "香港的美食？"; }
               }
 
               @keyframes pressSendBtn {
-                0%, 58% { transform: scale(1); opacity: 1; background: rgba(138, 28, 28, 0.85); }
-                60% { transform: scale(0.9); opacity: 0.8; background: rgba(138, 28, 28, 1); } /* Press down */
-                61%, 100% { transform: scale(1); opacity: 1; background: rgba(138, 28, 28, 0.85); }
+                0%, 67% { transform: scale(1); opacity: 1; background: rgba(138, 28, 28, 0.85); }
+                69% { transform: scale(0.9); opacity: 0.8; background: rgba(138, 28, 28, 1); }
+                70%, 100% { transform: scale(1); opacity: 1; background: rgba(138, 28, 28, 0.85); }
               }
 
               @keyframes showEnterKey {
-                0%, 58% { opacity: 0; transform: translateY(0) scale(1); border-bottom-width: 3px; }
-                59% { opacity: 1; transform: translateY(0) scale(1); border-bottom-width: 3px; }
-                60% { opacity: 1; transform: translateY(2px) scale(0.95); border-bottom-width: 1px; color: rgba(138, 28, 28, 0.85); border-color: rgba(138, 28, 28, 0.4); background: rgba(138, 28, 28, 0.08); } /* Press down */
-                61% { opacity: 1; transform: translateY(0) scale(1); border-bottom-width: 3px; color: var(--text-secondary); border-color: var(--border); background: var(--bg-card); }
-                65% { opacity: 1; }
-                67%, 100% { opacity: 0; }
+                0%, 67% { opacity: 0; transform: translateY(0) scale(1); border-bottom-width: 3px; }
+                68% { opacity: 1; transform: translateY(0) scale(1); border-bottom-width: 3px; }
+                69% { opacity: 1; transform: translateY(2px) scale(0.95); border-bottom-width: 1px; color: rgba(138, 28, 28, 0.85); border-color: rgba(138, 28, 28, 0.4); background: rgba(138, 28, 28, 0.08); }
+                70% { opacity: 1; transform: translateY(0) scale(1); border-bottom-width: 3px; color: var(--text-secondary); border-color: var(--border); background: var(--bg-card); }
+                73% { opacity: 1; }
+                75%, 100% { opacity: 0; }
               }
 
               @keyframes expandAiReply {
-                0%, 61% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
-                62%, 90% { max-height: 80px; opacity: 1; padding-top: 8px; padding-bottom: 8px; margin-top: 8px; }
-                93%, 100% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
+                0%, 74% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
+                77%, 91% { max-height: 80px; opacity: 1; padding-top: 8px; padding-bottom: 8px; margin-top: 8px; }
+                94%, 100% { max-height: 0; opacity: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; }
               }
 
               @keyframes typeAiReply {
-                0%, 63% { content: ""; }
-                65% { content: "比"; }
-                66% { content: "比如點心"; }
-                67% { content: "比如點心、燒賣"; }
-                69% { content: "比如點心、燒賣、菠蘿包"; }
-                70%, 100% { content: "比如點心、燒賣、菠蘿包..."; }
+                0%, 78% { content: ""; }
+                79% { content: "比"; }
+                80% { content: "比如點心"; }
+                81% { content: "比如點心、燒賣"; }
+                83% { content: "比如點心、燒賣、菠蘿包"; }
+                84%, 100% { content: "比如點心、燒賣、菠蘿包..."; }
               }
 
               @keyframes blink1 {
@@ -1685,26 +1685,26 @@
                 46%, 100% { opacity: 0; }
               }
               @keyframes blink2 {
-                0%, 44% { opacity: 0; }
-                46%, 47% { opacity: 1; } 48% { opacity: 0; } 50% { opacity: 1; } 52% { opacity: 0; } 53% { opacity: 1; } 54% { opacity: 0; }
-                55%, 59% { opacity: 1; }
-                61%, 100% { opacity: 0; }
+                0%, 48% { opacity: 0; }
+                51%, 52% { opacity: 1; } 53% { opacity: 0; } 54% { opacity: 1; } 55% { opacity: 0; } 56% { opacity: 1; } 57% { opacity: 0; }
+                58%, 67% { opacity: 1; }
+                69%, 100% { opacity: 0; }
               }
               @keyframes blink3 {
-                0%, 61% { opacity: 0; }
-                62%, 63% { opacity: 1; } 65% { opacity: 0; } 66% { opacity: 1; } 67% { opacity: 0; } 69% { opacity: 1; } 70% { opacity: 0; }
-                71%, 88% { opacity: 1; }
-                89%, 100% { opacity: 0; }
+                0%, 74% { opacity: 0; }
+                77%, 78% { opacity: 1; } 79% { opacity: 0; } 80% { opacity: 1; } 81% { opacity: 0; } 82% { opacity: 1; } 83% { opacity: 0; }
+                84%, 89% { opacity: 1; }
+                90%, 100% { opacity: 0; }
               }
 
               @keyframes dblClickRipple {
-                0%, 41% { opacity: 0; transform: scale(0); }
-                42% { opacity: 0.7; transform: scale(1); }
-                43% { opacity: 0; transform: scale(2.5); }
-                43.5% { opacity: 0; transform: scale(0); }
-                44.5% { opacity: 0.7; transform: scale(1); }
-                46% { opacity: 0; transform: scale(2.5); }
-                47%, 100% { opacity: 0; transform: scale(0); }
+                0%, 42.5% { opacity: 0; transform: scale(0); }
+                43% { opacity: 0.7; transform: scale(1); }
+                44% { opacity: 0; transform: scale(2.5); }
+                44.5% { opacity: 0; transform: scale(0); }
+                45.5% { opacity: 0.7; transform: scale(1); }
+                47% { opacity: 0; transform: scale(2.5); }
+                48%, 100% { opacity: 0; transform: scale(0); }
               }
             </style>
           </div>
