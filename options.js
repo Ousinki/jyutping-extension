@@ -206,16 +206,28 @@ async function applyI18n(lang) {
     document.getElementById('hoverModifier').value = result.hoverModifier || 'none';
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
 
-    const uiThemeSelect = document.getElementById('uiThemeSelect');
-    if (uiThemeSelect) {
-      uiThemeSelect.value = result.uiTheme || 'auto';
-      uiThemeSelect.addEventListener('change', () => {
-        const theme = uiThemeSelect.value;
-        chrome.storage.sync.set({ uiTheme: theme });
-        applyUITheme(theme);
-        notifyContentScripts({ action: 'changeUITheme', theme });
-      });
-    }
+
+    const updateThemeToggleUI = (theme) => {
+      document.getElementById('themeLight')?.classList.toggle('active', theme === 'light');
+      document.getElementById('themeDark')?.classList.toggle('active', theme === 'dark');
+      document.getElementById('themeAuto')?.classList.toggle('active', theme === 'auto');
+    };
+
+    const currentTheme = result.uiTheme || 'auto';
+    updateThemeToggleUI(currentTheme);
+
+    ['light', 'dark', 'auto'].forEach(theme => {
+      const btn = document.getElementById(`theme${theme.charAt(0).toUpperCase() + theme.slice(1)}`);
+      if (btn) {
+        btn.addEventListener('click', () => {
+          updateThemeToggleUI(theme);
+          chrome.storage.sync.set({ uiTheme: theme });
+          applyUITheme(theme);
+          notifyContentScripts({ action: 'changeUITheme', theme });
+        });
+      }
+    });
+
 
 
     const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
