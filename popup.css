@@ -104,6 +104,8 @@
   height: 100%;
   display: flex;
   flex-direction: column;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 /* 毛玻璃主題特殊樣式 */
@@ -665,7 +667,7 @@
   height: calc(var(--arrow-width) / 2 + var(--shadow-margin)) !important;
 
   pointer-events: none !important;
-  z-index: 2147483647 !important;
+  z-index: 2 !important;
   transform: translateX(-50%) !important;
 }
 
@@ -696,7 +698,7 @@
 /* 箭頭朝上（彈窗在詞彙下方） */
 .popup-arrow-up {
   top: calc(-1 * (var(--arrow-width) / 2 + var(--shadow-margin))) !important;
-  margin-top: 1px !important;
+  margin-top: 2px !important;
 }
 
 .popup-arrow-up::before {
@@ -710,7 +712,7 @@
 /* 箭頭朝下（彈窗在詞彙上方） */
 .popup-arrow-down {
   top: 100% !important;
-  margin-top: -1px !important;
+  margin-top: -2px !important;
 }
 
 .popup-arrow-down::before {
