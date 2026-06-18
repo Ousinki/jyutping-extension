@@ -3660,17 +3660,25 @@
     console.log(`[Content] Found ${nodesToProcess.length} text nodes containing Chinese characters.`);
 
     let replacedWordsCount = 0;
+    const BATCH_SIZE = 50; // 每批處理 50 個文本節點，避免阻塞主線程
 
-    nodesToProcess.forEach(node => {
+    function processNode(node) {
       const text = node.textContent;
       const fragment = document.createDocumentFragment();
       let currentIndex = 0;
+      let nonChineseBuffer = ''; // 緩衝非中文字符，合併為一個文本節點
 
       while (currentIndex < text.length) {
-        const remainingText = text.substring(currentIndex);
+        const char = text[currentIndex];
         
-        // Find if the current character is Chinese
-        if (/[\u4e00-\u9fff]/.test(remainingText[0])) {
+        if (/[\u4e00-\u9fff]/.test(char)) {
+          // 先清空非中文緩衝
+          if (nonChineseBuffer) {
+            fragment.appendChild(document.createTextNode(nonChineseBuffer));
+            nonChineseBuffer = '';
+          }
+          
+          const remainingText = text.substring(currentIndex);
           try {
             const match = lookupWord(remainingText);
             if (match && match.length > 0) {
@@ -3699,9 +3707,8 @@
                 ruby.dataset.word = wordText;
                 
                 const chars = wordText.split('');
-                const pinyins = jpString.split('\u200A'); // 用窄空格分割
+                const pinyins = jpString.split('\u200A');
                 
-                // 如果漢字數量和拼音音節數量一致，則進行逐字對齊
                 if (chars.length === pinyins.length) {
                   for (let i = 0; i < chars.length; i++) {
                     ruby.appendChild(document.createTextNode(chars[i]));
@@ -3710,7 +3717,6 @@
                     ruby.appendChild(rt);
                   }
                 } else {
-                  // 如果不一致（比如英文單詞或者特殊字典條目），則作為一個整體對齊
                   ruby.appendChild(document.createTextNode(wordText));
                   const rt = document.createElement('rt');
                   rt.textContent = jpString;
@@ -3724,26 +3730,29 @@
               }
               currentIndex += match.length;
             } else {
-              fragment.appendChild(document.createTextNode(remainingText[0]));
+              nonChineseBuffer += char;
               currentIndex++;
             }
           } catch (err) {
             console.error('lookupWord error:', err);
-            fragment.appendChild(document.createTextNode(remainingText[0]));
+            nonChineseBuffer += char;
             currentIndex++;
           }
         } else {
-          // Not Chinese, just copy character
-          fragment.appendChild(document.createTextNode(remainingText[0]));
+          nonChineseBuffer += char;
           currentIndex++;
         }
+      }
+      
+      // 清空剩餘的非中文緩衝
+      if (nonChineseBuffer) {
+        fragment.appendChild(document.createTextNode(nonChineseBuffer));
       }
       
       if (node.parentNode) {
         const parent = node.parentNode;
         parent.replaceChild(fragment, node);
         
-        // 給包含注音的父節點添加標記類別，並動態提高行高
         if (parent.tagName && parent.tagName.toLowerCase() !== 'body') {
           parent.classList.add('jyutping-ruby-parent');
           if (!parent.hasAttribute('data-jp-original-lh')) {
@@ -3752,13 +3761,30 @@
           }
         }
       }
-    });
-    console.log(`[Content] Finished injecting ruby annotations. Replacements made:`, replacedWordsCount);
-    
-    // 觸發全局 resize 事件，促使網頁上可能存在的 JS 動態佈局重新計算高度
-    // 使用 setTimeout 確保瀏覽器已經完成 DOM 的重繪 (Reflow)
-    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
-    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
+    }
+
+    // 分批異步處理，每批 BATCH_SIZE 個節點後讓出主線程
+    function processBatch(startIndex) {
+      const endIndex = Math.min(startIndex + BATCH_SIZE, nodesToProcess.length);
+      
+      for (let i = startIndex; i < endIndex; i++) {
+        processNode(nodesToProcess[i]);
+      }
+      
+      if (endIndex < nodesToProcess.length) {
+        // 讓出主線程，避免 "Page Unresponsive"
+        setTimeout(() => processBatch(endIndex), 0);
+      } else {
+        // 全部處理完畢
+        console.log(`[Content] Finished injecting ruby annotations. Replacements made:`, replacedWordsCount);
+        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
+        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
+      }
+    }
+
+    if (nodesToProcess.length > 0) {
+      processBatch(0);
+    }
   }
 
   // 顯示 AI 隨身問答界面
