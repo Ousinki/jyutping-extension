@@ -675,5 +675,9 @@
   "optThemeLight": {
     "message": "ライト",
     "description": "optThemeLight"
+  },
+  "optAIDblClickHint": {
+    "message": "AI 解説ボックスまたは API 翻訳ボックスをダブルクリックすると、AI フォローアップ会話を開始できます",
+    "description": "optAIDblClickHint"
   }
 }

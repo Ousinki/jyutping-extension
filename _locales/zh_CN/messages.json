@@ -666,5 +666,9 @@
   "clItem4": {
     "message": "🌙 <b>深色模式</b>：全新深色模式登场！支持跟随系统自动切换，提供更舒适的夜间阅读体验。",
     "description": "Changelog item 4"
+  },
+  "optAIDblClickHint": {
+    "message": "双击 AI 解释框或 API 翻译框，即可开启 AI 追问对话",
+    "description": "optAIDblClickHint"
   }
 }

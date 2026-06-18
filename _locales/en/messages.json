@@ -666,5 +666,9 @@
   "clItem4": {
     "message": "🌙 <b>Dark Mode</b>: Brand new dark mode is here! Supports auto-sync with system appearance for a comfortable night reading experience.",
     "description": "Changelog item 4"
+  },
+  "optAIDblClickHint": {
+    "message": "Double-click the AI explanation or API translation popup to start an AI follow-up conversation",
+    "description": "optAIDblClickHint"
   }
 }
