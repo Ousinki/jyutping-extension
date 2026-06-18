@@ -117,6 +117,31 @@
   });
   const pt = (key) => (popupI18n[currentLang] || popupI18n['zh-HK'])[key] || key;
 
+  // ========== Toast 多語言翻譯 ==========
+  const toastI18n = {
+    'zh-HK': {
+      toastRubyEnabled: '全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。',
+      toastRubyDisabled: '全文粵語注音已關閉。<br>如遇排版異常，請刷新網頁 (F5)。'
+    },
+    'zh-CN': {
+      toastRubyEnabled: '全文粤语注音已开启。<br>如遇排版重叠，请刷新网页 (F5) 以适应高度。',
+      toastRubyDisabled: '全文粤语注音已关闭。<br>如遇排版异常，请刷新网页 (F5)。'
+    },
+    'en': {
+      toastRubyEnabled: 'Full-page Cantonese Ruby enabled.<br>If layouts overlap, refresh page (F5) to adjust height.',
+      toastRubyDisabled: 'Full-page Cantonese Ruby disabled.<br>If layouts are abnormal, refresh page (F5).'
+    },
+    'ja': {
+      toastRubyEnabled: '全ページ広東語ルビが有効になりました。<br>レイアウトが崩れる場合は、ページを更新 (F5) してください。',
+      toastRubyDisabled: '全ページ広東語ルビが無効になりました。<br>表示がおかしい場合は、ページを更新 (F5) してください。'
+    },
+    'ko': {
+      toastRubyEnabled: '전체 페이지 광둥어 발음기호가 활성화되었습니다.<br>레이아웃이 겹치면 페이지를 새로고침(F5) 해주세요.',
+      toastRubyDisabled: '전체 페이지 광둥어 발음기호가 비활성화되었습니다.<br>표시가 비정상적이면 페이지를 새로고침(F5) 해주세요.'
+    }
+  };
+  const tt = (key) => (toastI18n[currentLang] || toastI18n['zh-HK'])[key] || key;
+
   // ========== 主题系统 ==========
 
   const POPUP_THEMES = {
@@ -3484,11 +3509,11 @@
     if (isFullPageRubyActive) {
       console.log('[Content] Jyutping Full Page Ruby: ON');
       injectRubyAnnotations(document.body);
-      showToast(chrome.i18n.getMessage("toastRubyEnabled") || "全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。", 2000, 'success');
+      showToast(tt('toastRubyEnabled'), 2000, 'success');
     } else {
       console.log('Jyutping Full Page Ruby: OFF');
       removeRubyAnnotations(document.body);
-      showToast(chrome.i18n.getMessage("toastRubyDisabled") || "全文粵語注音已關閉。<br>如遇排版異常，請刷新網頁 (F5)。", 2000, 'error');
+      showToast(tt('toastRubyDisabled'), 2000, 'error');
     }
   }
 
