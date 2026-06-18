@@ -1527,10 +1527,9 @@
                   <div style="flex: 1; background: var(--bg-input); border-radius: 6px; padding: 6px 10px; font-size: 12px; color: var(--text-secondary); display: flex; align-items: center;">
                     <span class="demo-ai-qa-typewriter"></span><span class="demo-ai-qa-cursor">|</span>
                   </div>
-                  <svg class="demo-ai-send-btn" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: rgba(138, 28, 28, 0.85);">
-                    <line x1="22" y1="2" x2="11" y2="13"></line>
-                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-                  </svg>
+                  <div class="demo-ai-enter-btn" style="font-size: 10px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background: var(--bg-card); border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 2px 5px; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; transform-origin: center;">
+                    Enter ↵
+                  </div>
                 </div>
 
                 <!-- AI QA Reply -->
@@ -1567,7 +1566,7 @@
               .demo-ai-qa { overflow: hidden; max-height: 0; opacity: 0; animation: expandAiQa 15s infinite; }
               .demo-ai-qa-typewriter::after { content: ""; animation: typeAiQa 15s infinite; }
               
-              .demo-ai-send-btn { animation: clickSendBtn 15s infinite; transform-origin: center; }
+              .demo-ai-enter-btn { animation: pressEnterBtn 15s infinite; transform-origin: center; }
 
               .demo-ai-qa-reply { overflow: hidden; max-height: 0; opacity: 0; margin-top: 0; animation: expandAiReply 15s infinite; }
               .demo-ai-reply-typewriter::after { content: ""; animation: typeAiReply 15s infinite; }
@@ -1591,13 +1590,9 @@
                 37% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 1 up */
                 38% { top: 60px; left: calc(50% + 70px); transform: scale(0.85); } /* Click 2 down */
                 39% { top: 60px; left: calc(50% + 70px); transform: scale(1); } /* Click 2 up */
-                41% { top: 80px; left: calc(50% + 70px); transform: scale(1); } /* Wait to type */
-                47% { top: 80px; left: calc(50% + 70px); transform: scale(1); }
-                48% { top: 102px; left: calc(50% + 90px); transform: scale(1); } /* Move to send btn */
-                49% { top: 102px; left: calc(50% + 90px); transform: scale(0.85); } /* Click send down */
-                50% { top: 102px; left: calc(50% + 90px); transform: scale(1); } /* Click send up */
-                55% { top: 140px; left: 110%; opacity: 1; } /* Move away */
-                90%, 100% { top: 140px; left: 120%; opacity: 0; }
+                43% { top: 80px; left: calc(50% + 100px); opacity: 1; transform: scale(1); } /* Move out of the way */
+                46% { top: 80px; left: calc(50% + 100px); opacity: 0; } /* Fade out */
+                90%, 100% { top: 80px; left: 120%; opacity: 0; }
               }
 
               @keyframes selectAiText {
@@ -1646,10 +1641,10 @@
                 46%, 100% { content: "香港的美食？"; }
               }
 
-              @keyframes clickSendBtn {
-                0%, 48% { transform: scale(1); }
-                49% { transform: scale(0.85); color: #b91c1c; }
-                50%, 100% { transform: scale(1); }
+              @keyframes pressEnterBtn {
+                0%, 48% { transform: translateY(0) scale(1); border-bottom-width: 2px; color: var(--text-secondary); background: var(--bg-card); border-color: var(--border); }
+                49% { transform: translateY(1px) scale(0.95); border-bottom-width: 1px; color: rgba(138, 28, 28, 0.85); border-color: rgba(138, 28, 28, 0.3); background: rgba(138, 28, 28, 0.05); } /* Press down */
+                50%, 100% { transform: translateY(0) scale(1); border-bottom-width: 2px; color: var(--text-secondary); background: var(--bg-card); border-color: var(--border); }
               }
 
               @keyframes expandAiReply {
