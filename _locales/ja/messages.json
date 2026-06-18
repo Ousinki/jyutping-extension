@@ -3,6 +3,10 @@
     "message": "このアップデートには以下の改善が含まれています：",
     "description": "Changelog description"
   },
+  "clItem0": {
+    "message": "🖊️ <b>ホバーインラインルビ</b>：漢字の上にマウスを置くだけで、テキストの上に広東語の発音が直接表示されます。ポップアップ不要で、自然な読書体験を実現します。",
+    "description": "Changelog item 0"
+  },
   "clItem1": {
     "message": "📖 <b>フルテキストルビ機能</b>：ウェブページ全体にピンインルビを追加し、美しい「辞書スタイル」の組版をサポートします。実際の印刷された辞書のような没入感のある読書体験を提供します。",
     "description": "Changelog item 1"
@@ -464,6 +468,10 @@
     "message": "完全モード",
     "description": "optStyleFull"
   },
+  "optStyleRuby": {
+    "message": "インラインルビ",
+    "description": "optStyleRuby"
+  },
   "optSubtitle": {
     "message": "拡張機能の設定",
     "description": "optSubtitle"
@@ -651,5 +659,13 @@
   },
   "optAIDefaultPrompt": {
     "message": "あなたは広東語の言語専門家です。ユーザーが広東語の記事を読んでいるときに単語を選択しました。文脈に基づいて、この文におけるその単語の具体的な意味を{targetLang}で簡潔に説明してください（1〜2文）。説明内容のみを返信し、フォーマットマークアップは不要です。\n\n【単語】{word}\n【文】{sentence}"
+  },
+  "optRubyHoverStyle": {
+    "message": "ホバーフォントスタイル",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "Rubyモードでのホバー時のフォントカラー効果を選択",
+    "description": "optRubyHoverStyleDesc"
   }
 }

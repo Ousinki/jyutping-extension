@@ -33,6 +33,7 @@
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
   let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
+  let rubyHoverStyle = 'ruby-red'; // Ruby 懸停樣式: ruby-red, ruby-blue, ruby-green, ruby-orange, ruby-purple, ruby-underline, ruby-border
   let currentWord = null; // 追蹤當前顯示的詞
   let currentContextSentence = ''; // 當前高亮詞語所在的上下文句子
   let hoverModifier = 'none'; // 懸停觸發按鍵
@@ -1172,14 +1173,14 @@
 
   // 載入用戶設定
   let toneDisplayStyle = 'normal';
-  let rubyTextOpacity = '0.6';
+  let rubyTextOpacity = '0.85';
   let rubyTextFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   let rubyTextStyle = 'default';
   let rubyDictionaryColor = '#999999';
 
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
+      'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
@@ -1193,6 +1194,7 @@
       customZhFont = result.customZhFont || '';
       customEnFont = result.customEnFont || '';
       highlightStyle = result.highlightStyle || 'yellow';
+      rubyHoverStyle = result.rubyHoverStyle || 'ruby-red';
       compactExpandBtn = result.compactExpandBtn !== false;
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
@@ -1205,7 +1207,7 @@
       azureTtsVoice = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
       ttsRate = result.ttsRate || 0.9;
       toneDisplayStyle = result.toneDisplayStyle || 'normal';
-      rubyTextOpacity = result.rubyTextOpacity || '0.6';
+      rubyTextOpacity = result.rubyTextOpacity || '0.85';
       rubyTextFont = result.rubyTextFont || "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       rubyTextStyle = result.rubyTextStyle || 'default';
       rubyDictionaryColor = result.rubyDictionaryColor || '#999999';
@@ -3153,7 +3155,7 @@
         }
         
         wrapper = document.createElement('ruby');
-        wrapper.className = 'jyutping-hover-ruby hl-' + (highlightStyle || 'yellow');
+        wrapper.className = 'jyutping-hover-ruby hl-' + (rubyHoverStyle || 'ruby-red');
         wrapper.dataset.originalText = originalText;
         wrapper.dataset.word = result.word;
         
@@ -3257,7 +3259,11 @@
     } else if (request.action === 'changeCompactExpandBtn') {
       compactExpandBtn = request.enabled;
     } else if (request.action === 'changeHighlightStyle') {
-      highlightStyle = request.style;
+      if (request.style && request.style.startsWith('ruby-')) {
+        rubyHoverStyle = request.style;
+      } else {
+        highlightStyle = request.style;
+      }
     } else if (request.action === 'changePopupTheme') {
       popupTheme = request.theme;
       applyPopupTheme(popupTheme);

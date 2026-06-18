@@ -602,7 +602,7 @@
             </div>
           </div>
 
-          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
+          <div class="setting-item" id="highlightStyleSection" style="flex-direction: column; align-items: stretch;">
             <div class="setting-info" style="margin-bottom: 10px;">
               <span class="setting-label" data-i18n="optHighlightStyle">高亮樣式</span>
               <span class="setting-desc" data-i18n="optHighlightStyleDesc">選擇懸停詞語時的高亮效果</span>
@@ -610,7 +610,7 @@
             <div id="highlightStylePicker" style="display: flex; flex-wrap: wrap; gap: 8px;">
               <!-- 背景色選項 -->
               <label class="hl-option" data-value="yellow" title="黃色背景">
-                <input type="radio" name="highlightStyle" value="yellow" checked>
+                <input type="radio" name="highlightStyle" value="yellow">
                 <span class="hl-swatch" style="background: rgba(255, 220, 80, 0.6);"></span>
               </label>
               <label class="hl-option" data-value="blue" title="藍色背景">
@@ -637,6 +637,46 @@
               <label class="hl-option" data-value="border-dashed" title="虛線邊框">
                 <input type="radio" name="highlightStyle" value="border-dashed">
                 <span class="hl-swatch hl-swatch-text" style="border: 1.5px dashed #888; background: transparent;">A</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Ruby 模式懸停樣式選擇器（僅 Ruby 模式顯示） -->
+          <div class="setting-item" id="rubyHoverStyleSection" style="flex-direction: column; align-items: stretch; display: none;">
+            <div class="setting-info" style="margin-bottom: 10px;">
+              <span class="setting-label" data-i18n="optRubyHoverStyle">懸停字體樣式</span>
+              <span class="setting-desc" data-i18n="optRubyHoverStyleDesc">選擇 Ruby 模式下懸停時的字體顏色效果</span>
+            </div>
+            <div id="rubyHoverStylePicker" style="display: flex; flex-wrap: wrap; gap: 8px;">
+              <!-- 字體色選項 -->
+              <label class="hl-option" data-value="ruby-red" title="深紅">
+                <input type="radio" name="rubyHoverStyle" value="ruby-red">
+                <span class="hl-swatch hl-swatch-text" style="color: #8A1C1C; background: var(--bg-input, #f8f8f8); font-weight: 700;">字</span>
+              </label>
+              <label class="hl-option" data-value="ruby-blue" title="藍色">
+                <input type="radio" name="rubyHoverStyle" value="ruby-blue">
+                <span class="hl-swatch hl-swatch-text" style="color: #1565C0; background: var(--bg-input, #f8f8f8); font-weight: 700;">字</span>
+              </label>
+              <label class="hl-option" data-value="ruby-green" title="綠色">
+                <input type="radio" name="rubyHoverStyle" value="ruby-green">
+                <span class="hl-swatch hl-swatch-text" style="color: #2E7D32; background: var(--bg-input, #f8f8f8); font-weight: 700;">字</span>
+              </label>
+              <label class="hl-option" data-value="ruby-orange" title="橙色">
+                <input type="radio" name="rubyHoverStyle" value="ruby-orange">
+                <span class="hl-swatch hl-swatch-text" style="color: #E65100; background: var(--bg-input, #f8f8f8); font-weight: 700;">字</span>
+              </label>
+              <label class="hl-option" data-value="ruby-purple" title="紫色">
+                <input type="radio" name="rubyHoverStyle" value="ruby-purple">
+                <span class="hl-swatch hl-swatch-text" style="color: #6A1B9A; background: var(--bg-input, #f8f8f8); font-weight: 700;">字</span>
+              </label>
+              <!-- 虛線選項 -->
+              <label class="hl-option" data-value="ruby-underline" title="虛線下劃線">
+                <input type="radio" name="rubyHoverStyle" value="ruby-underline">
+                <span class="hl-swatch hl-swatch-text" style="border-bottom: 2px dashed #8A1C1C; color: #8A1C1C; font-weight: 700;">字</span>
+              </label>
+              <label class="hl-option" data-value="ruby-border" title="虛線邊框">
+                <input type="radio" name="rubyHoverStyle" value="ruby-border">
+                <span class="hl-swatch hl-swatch-text" style="border: 1.5px dashed #8A1C1C; background: transparent; color: #8A1C1C; font-weight: 700;">字</span>
               </label>
             </div>
             <style>
@@ -673,6 +713,7 @@
               }
             </style>
           </div>
+
 
           <div class="setting-item" id="hoverModifierContainer">
             <div class="setting-info">
@@ -777,6 +818,109 @@
                 0%, 33%  { opacity: 0; transform: translateX(-50%) translateY(4px); }
                 38%, 70% { opacity: 1; transform: translateX(-50%) translateY(0); }
                 76%, 100% { opacity: 0; transform: translateX(-50%) translateY(4px); }
+              }
+            </style>
+          </div>
+
+          <!-- Ruby Mode Animation Demo -->
+          <div id="rubyDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">
+            <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em; margin: 0 auto;">
+              <!-- Characters with ruby annotations -->
+              <span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
+              <span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
+                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">gam1</span>
+                今
+              </span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
+                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">jat6</span>
+                日
+              </span><span class="demo-ruby-word-target" style="display: inline-block; position: relative; text-align: center;">
+                <span class="demo-ruby-rt demo-ruby-rt-target" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">tin1 hei3</span>天氣</span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
+                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">hou2</span>
+                好
+              </span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
+                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">hou2</span>
+                好
+              </span>
+
+              <!-- Simulated Cursor -->
+              <div class="demo-ruby-cursor" style="position: absolute; width: 22px; height: 22px; z-index: 10;">
+                <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%;">
+                  <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+                </svg>
+              </div>
+            </div>
+
+            <style>
+              /* Target chars turn dark red on hover */
+              .demo-ruby-word-target {
+                animation: rubyCharColor 4.5s ease-in-out infinite;
+              }
+
+              /* Ruby annotations on target chars fade in with dark red */
+              .demo-ruby-rt-target {
+                animation: rubyRtShow 4.5s ease-in-out infinite !important;
+              }
+
+              .demo-ruby-cursor {
+                top: 20px; left: -30px;
+                opacity: 0;
+                animation: rubyCursorMove 4.5s ease-in-out infinite;
+              }
+
+              @keyframes rubyCursorMove {
+                0%, 8%   { top: 18px; left: -30px; opacity: 0; }
+                18%      { top: 4px; left: 10%; opacity: 1; }
+                35%, 70% { top: 4px; left: 46%; opacity: 1; }
+                88%      { top: 4px; left: 85%; opacity: 1; }
+                95%      { top: 18px; left: 105%; opacity: 0; }
+                100%     { top: 18px; left: 105%; opacity: 0; }
+              }
+
+              @keyframes rubyCharColor {
+                0%, 32%  { color: inherit; }
+                38%, 70% { color: var(--demo-ruby-color, #8A1C1C); }
+                76%, 100% { color: inherit; }
+              }
+
+              /* 根據選中的樣式，設定對應的 CSS 變數 */
+              #rubyDemo {
+                --demo-text-decoration: none;
+                --demo-outline: 0 dashed transparent;
+              }
+              #rubyDemo[data-style="ruby-underline"] {
+                --demo-text-decoration: underline dashed;
+              }
+              #rubyDemo[data-style="ruby-border"] {
+                --demo-outline: 1.5px dashed;
+                --rt-y-offset: -3px;
+              }
+
+              /* 虛線下劃線與邊框效果 (共用同一個動畫，利用 CSS 變數切換以避免動畫重置) */
+              .demo-ruby-word-target {
+                text-decoration: var(--demo-text-decoration);
+                text-underline-offset: 3px;
+                text-decoration-thickness: 1.5px;
+                
+                outline: var(--demo-outline);
+                outline-offset: 1px;
+                border-radius: 3px;
+                
+                animation: rubyCharColor 4.5s ease-in-out infinite, rubyHoverEffects 4.5s infinite;
+              }
+
+              @keyframes rubyHoverEffects {
+                0%, 31.9% { text-decoration-color: transparent; outline-color: transparent; }
+                32%, 76%  { text-decoration-color: var(--demo-ruby-color, #8A1C1C); outline-color: var(--demo-ruby-color, #8A1C1C); }
+                76.1%, 100% { text-decoration-color: transparent; outline-color: transparent; }
+              }
+
+              @keyframes rubyRtShow {
+                0%, 31.9% { opacity: 0; transform: translate(-50%, -0.2em); color: var(--demo-ruby-color, #8A1C1C); }
+                32%, 76%  { opacity: 0.85; transform: translate(-50%, calc(-0.2em + var(--rt-y-offset, 0px))); color: var(--demo-ruby-color, #8A1C1C); }
+                76.1%, 100% { opacity: 0; transform: translate(-50%, -0.2em); color: var(--demo-ruby-color, #8A1C1C); }
+              }
+              #rubyDemo[data-style="ruby-border"] {
+                --rt-y-offset: -3px;
               }
             </style>
           </div>
@@ -1547,7 +1691,7 @@
               <span class="setting-desc" data-i18n="optClickToSpeakDesc">點擊高亮文字朗讀粵語發音</span>
             </div>
             <label class="toggle">
-              <input type="checkbox" id="ttsEnabledToggle" checked />
+              <input type="checkbox" id="ttsEnabledToggle" />
               <span class="toggle-slider"></span>
             </label>
           </div>
@@ -1976,6 +2120,7 @@
       <div class="changelog-content">
         <p data-i18n="clDesc">本次更新帶來了以下優化：</p>
         <ul class="changelog-list">
+          <li data-i18n="clItem0">🖊️ <b>懸停內嵌注音</b>：鼠標懸停在漢字上即可直接在文字上方顯示粵語注音，無需彈出窗口，閱讀體驗更加自然流暢。</li>
           <li data-i18n="clItem1">📖 <b>全文注音功能</b>：新增網頁全文拼音標註，支援精美的「字典風格」排版，提供如同實體字典般的沉浸式閱讀體驗。</li>
           <li data-i18n="clItem2">⚙️ <b>自訂翻譯觸發方式</b>：在設定中新增了「API 翻譯觸發方式」的選項，你可以根據習慣自由選擇「雙擊」或「單擊」來調起翻譯懸浮窗。</li>
           <li data-i18n="clItem3">🐛 <b>修復翻譯觸發與狀態同步問題</b>：修復了切換單擊/雙擊翻譯無反應、切換字典風格未顯示灰度選項，以及關閉擴充後事件仍錯誤執行的問題。</li>

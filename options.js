@@ -174,7 +174,8 @@ async function applyI18n(lang) {
 
     // 總開關
     const isEnabled = result.enabled !== false;
-    document.getElementById('enableToggle').checked = isEnabled;
+    const enableToggle = document.getElementById('enableToggle');
+    if (enableToggle) enableToggle.checked = isEnabled;
     document.body.classList.toggle('disabled', !isEnabled);
 
     // 其他設置
@@ -216,7 +217,7 @@ async function applyI18n(lang) {
     }
 
     if (rubyTextOpacitySelect) rubyTextOpacitySelect.value = result.rubyTextOpacity || '0.85';
-    if (rubyDictionaryColorSelect) rubyDictionaryColorSelect.value = result.rubyDictionaryColor || '#888888';
+    if (rubyDictionaryColorSelect) rubyDictionaryColorSelect.value = result.rubyDictionaryColor || '#999999';
 
     const savedTransLangs = result.transLangs || ['zh-Hans', 'en'];
     if (transLangsCheckboxes) {
@@ -542,14 +543,20 @@ async function applyI18n(lang) {
 
   // 監聽懸浮窗樣式切換
   const compactDemo = document.getElementById('compactDemo');
+  const rubyDemo = document.getElementById('rubyDemo');
   const themeSection = document.getElementById('themeSection');
+  const highlightStyleSection = document.getElementById('highlightStyleSection');
+  const rubyHoverStyleSection = document.getElementById('rubyHoverStyleSection');
   function updateCompactDemoVisibility() {
     const isCompact = popupDisplayStyleSelect.value === 'compact';
     const isRuby = popupDisplayStyleSelect.value === 'ruby';
     const isFull = popupDisplayStyleSelect.value === 'full';
     
     if (compactDemo) compactDemo.style.display = isCompact ? 'flex' : 'none';
+    if (rubyDemo) rubyDemo.style.display = isRuby ? 'flex' : 'none';
     if (themeSection) themeSection.style.display = isFull ? 'block' : 'none';
+    if (highlightStyleSection) highlightStyleSection.style.display = isRuby ? 'none' : 'flex';
+    if (rubyHoverStyleSection) rubyHoverStyleSection.style.display = isRuby ? 'flex' : 'none';
     
     const hoverModifierContainer = document.getElementById('hoverModifierContainer');
     if (hoverModifierContainer) {
@@ -569,6 +576,49 @@ async function applyI18n(lang) {
     GoogleAnalytics.fireEvent('change_setting', { setting: 'popupDisplayStyle', value: style });
     updateCompactDemoVisibility();
     notifyContentScripts({ action: 'changePopupDisplayStyle', style });
+  });
+
+  // Ruby 懸停樣式選擇器
+  const rubyHoverStylePicker = document.getElementById('rubyHoverStylePicker');
+  const rubyHoverRadios = rubyHoverStylePicker ? rubyHoverStylePicker.querySelectorAll('input[name="rubyHoverStyle"]') : [];
+
+  // Ruby Demo 動畫顏色映射
+  const rubyHoverColors = {
+    'ruby-red': '#8A1C1C',
+    'ruby-blue': '#1565C0',
+    'ruby-green': '#2E7D32',
+    'ruby-orange': '#E65100',
+    'ruby-purple': '#6A1B9A',
+    'ruby-underline': '#8A1C1C',
+    'ruby-border': '#8A1C1C',
+  };
+
+  function updateRubyDemoStyle(style) {
+    const color = rubyHoverColors[style] || '#8A1C1C';
+    const rubyDemoEl = document.getElementById('rubyDemo');
+    if (!rubyDemoEl) return;
+    
+    rubyDemoEl.style.setProperty('--demo-ruby-color', color);
+    rubyDemoEl.dataset.style = style;
+  }
+
+  // 初始化 rubyHoverStyle
+  chrome.storage.sync.get(['rubyHoverStyle'], (result) => {
+    const savedRubyStyle = result.rubyHoverStyle || 'ruby-red';
+    rubyHoverRadios.forEach(radio => {
+      if (radio.value === savedRubyStyle) radio.checked = true;
+    });
+    updateRubyDemoStyle(savedRubyStyle);
+  });
+
+  rubyHoverRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      const style = radio.value;
+      chrome.storage.sync.set({ rubyHoverStyle: style });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'rubyHoverStyle', value: style });
+      updateRubyDemoStyle(style);
+      notifyContentScripts({ action: 'changeHighlightStyle', style });
+    });
   });
 
   // 展開按鈕開關

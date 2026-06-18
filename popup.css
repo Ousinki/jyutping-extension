@@ -828,28 +828,56 @@
 /* ========== 全文注音 (Ruby) 樣式 ========== */
 ruby.jyutping-hover-ruby {
   cursor: pointer;
-  line-height: inherit;
+  line-height: 1;
   position: relative;
+  display: inline-block;
 }
 
 ruby.jyutping-hover-ruby:hover,
 ruby.jyutping-hover-ruby:hover rt,
 ruby.jyutping-hover-ruby.speaking,
 ruby.jyutping-hover-ruby.speaking rt {
-  color: var(--popup-accent, #8A1C1C) !important;
+  color: var(--ruby-hover-color, #8A1C1C) !important;
+}
+
+/* Ruby 懸停色：深紅 (預設) */
+ruby.jyutping-hover-ruby.hl-ruby-red { --ruby-hover-color: #8A1C1C; }
+/* Ruby 懸停色：藍色 */
+ruby.jyutping-hover-ruby.hl-ruby-blue { --ruby-hover-color: #1565C0; }
+/* Ruby 懸停色：綠色 */
+ruby.jyutping-hover-ruby.hl-ruby-green { --ruby-hover-color: #2E7D32; }
+/* Ruby 懸停色：橙色 */
+ruby.jyutping-hover-ruby.hl-ruby-orange { --ruby-hover-color: #E65100; }
+/* Ruby 懸停色：紫色 */
+ruby.jyutping-hover-ruby.hl-ruby-purple { --ruby-hover-color: #6A1B9A; }
+
+/* Ruby 虛線下劃線 */
+ruby.jyutping-hover-ruby.hl-ruby-underline:hover,
+ruby.jyutping-hover-ruby.hl-ruby-underline.speaking {
+  text-decoration: underline dashed var(--ruby-hover-color, #8A1C1C) !important;
+  text-underline-offset: 3px !important;
+  text-decoration-thickness: 1.5px !important;
+}
+
+/* Ruby 虛線邊框 */
+ruby.jyutping-hover-ruby.hl-ruby-border:hover,
+ruby.jyutping-hover-ruby.hl-ruby-border.speaking {
+  outline: 1.5px dashed var(--ruby-hover-color, #8A1C1C) !important;
+  outline-offset: 1px !important;
+  border-radius: 3px !important;
 }
 
 ruby.jyutping-hover-ruby rt {
   position: absolute;
-  bottom: calc(100% + 2px);
+  bottom: 100%;
   left: 50%;
-  transform: translateX(-50%);
+  transform: translate(-50%, -0.2em);
   font-family: var(--jyutping-rt-font, system-ui, -apple-system, sans-serif) !important;
   font-size: 0.55em !important;
   opacity: var(--jyutping-rt-opacity, 0.85);
   font-weight: normal;
   text-transform: none;
-  line-height: 0;
+  line-height: 1;
   text-align: center;
   white-space: nowrap;
   padding: 0 !important;

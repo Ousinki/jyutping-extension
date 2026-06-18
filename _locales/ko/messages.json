@@ -2,6 +2,10 @@
   "clDesc": {
     "message": "이번 업데이트에는 다음과 같은 개선 사항이 포함되어 있습니다:"
   },
+  "clItem0": {
+    "message": "🖊️ <b>호버 인라인 루비</b>: 한자 위에 마우스를 올리면 텍스트 위에 광둥어 발음이 바로 표시됩니다. 팝업 없이 자연스러운 독서 경험을 제공합니다.",
+    "description": "Changelog item 0"
+  },
   "clItem1": {
     "message": "📖 <b>전체 텍스트 루비 주석</b>: 아름다운 \"사전 스타일\"로 웹페이지 전체에 병음 루비를 추가하여 인쇄된 사전과 같은 몰입감 있는 읽기 경험을 제공합니다."
   },
@@ -415,6 +419,10 @@
     "message": "완전 모드",
     "description": "optStyleFull"
   },
+  "optStyleRuby": {
+    "message": "인라인 루비",
+    "description": "optStyleRuby"
+  },
   "optSubtitle": {
     "message": "확장 프로그램 설정"
   },
@@ -590,5 +598,13 @@
   },
   "optAIDefaultPrompt": {
     "message": "귀하는 광둥어 언어 전문가입니다. 사용자가 광둥어 기사를 읽는 중 단어를 선택했습니다. 문맥에 따라 이 문장에서 해당 단어의 구체적인 의미를 {targetLang}(으)로 간략하게 설명해 주세요(1~2문장). 설명 내용 자체만 회신하고 서식 마크업은 제외해 주세요.\n\n【단어】{word}\n【문장】{sentence}"
+  },
+  "optRubyHoverStyle": {
+    "message": "호버 글꼴 스타일",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "Ruby 모드에서 호버 시 글꼴 색상 효과 선택",
+    "description": "optRubyHoverStyleDesc"
   }
 }

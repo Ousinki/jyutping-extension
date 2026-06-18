@@ -3,6 +3,10 @@
     "message": "This update brings the following improvements:",
     "description": "Changelog description"
   },
+  "clItem0": {
+    "message": "🖊️ <b>Hover Inline Ruby</b>: Hover over Chinese characters to display Cantonese pronunciation directly above the text — no popup needed, for a seamless reading experience.",
+    "description": "Changelog item 0"
+  },
   "clItem1": {
     "message": "📖 <b>Full-Text Ruby Annotation</b>: Added full-page phonetic ruby annotations with a beautiful 'Dictionary Style', providing an immersive reading experience identical to an authentic printed dictionary.",
     "description": "Changelog item 1"
@@ -451,6 +455,10 @@
     "message": "Full Mode",
     "description": "optStyleFull"
   },
+  "optStyleRuby": {
+    "message": "Inline Ruby",
+    "description": "optStyleRuby"
+  },
   "optSubtitle": {
     "message": "Extension Settings",
     "description": "optSubtitle"
@@ -638,5 +646,13 @@
   },
   "optAIDefaultPrompt": {
     "message": "You are a Cantonese language expert. The user selected a word while reading a Cantonese article. Please briefly explain the specific meaning of this word in the sentence (1-2 sentences) in {targetLang} based on the context. Only reply with the explanation itself, without any formatting markup.\n\n[Word] {word}\n[Sentence] {sentence}"
+  },
+  "optRubyHoverStyle": {
+    "message": "Hover Font Style",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "Choose the text color effect when hovering in Ruby mode",
+    "description": "optRubyHoverStyleDesc"
   }
 }

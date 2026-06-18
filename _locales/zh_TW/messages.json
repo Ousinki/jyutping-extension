@@ -3,6 +3,10 @@
     "message": "本次更新帶來了以下優化：",
     "description": "Changelog description"
   },
+  "clItem0": {
+    "message": "🖊️ <b>懸停內嵌注音</b>：鼠標懸停在漢字上即可直接在文字上方顯示粵語注音，無需彈出窗口，閱讀體驗更加自然流暢。",
+    "description": "Changelog item 0"
+  },
   "clItem1": {
     "message": "📖 <b>全文注音功能</b>：新增網頁全文拼音標註，支援精美的「字典風格」排版，提供如同實體字典般的沉浸式閱讀體驗。",
     "description": "Changelog item 1"
@@ -451,6 +455,10 @@
     "message": "完整模式",
     "description": "optStyleFull"
   },
+  "optStyleRuby": {
+    "message": "網頁內嵌 Ruby",
+    "description": "optStyleRuby"
+  },
   "optSubtitle": {
     "message": "Jyutping Hover Dictionary",
     "description": "optSubtitle"
@@ -638,5 +646,13 @@
   },
   "optAIDefaultPrompt": {
     "message": "你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用{targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。\n\n【詞語】{word}\n【句子】{sentence}"
+  },
+  "optRubyHoverStyle": {
+    "message": "懸停字體樣式",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "選擇 Ruby 模式下懸停時的字體顏色效果",
+    "description": "optRubyHoverStyleDesc"
   }
 }
