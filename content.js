@@ -3484,11 +3484,11 @@
     if (isFullPageRubyActive) {
       console.log('[Content] Jyutping Full Page Ruby: ON');
       injectRubyAnnotations(document.body);
-      showToast(chrome.i18n.getMessage("toastRubyEnabled") || "全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。", 2000);
+      showToast(chrome.i18n.getMessage("toastRubyEnabled") || "全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。", 2000, 'success');
     } else {
       console.log('Jyutping Full Page Ruby: OFF');
       removeRubyAnnotations(document.body);
-      showToast(chrome.i18n.getMessage("toastRubyDisabled") || "全文粵語注音已關閉。<br>如遇排版異常，請刷新網頁 (F5)。", 2000);
+      showToast(chrome.i18n.getMessage("toastRubyDisabled") || "全文粵語注音已關閉。<br>如遇排版異常，請刷新網頁 (F5)。", 2000, 'error');
     }
   }
 
@@ -3552,7 +3552,7 @@
   let currentToastTimeout = null;
   let currentToastRemoveTimeout = null;
 
-  function showToast(message, duration = 2000) {
+  function showToast(message, duration = 2000, type = '') {
     // 避免在 iframe 內部重複顯示 Toast
     if (window !== window.top) return;
     
@@ -3569,7 +3569,7 @@
     if (currentToastRemoveTimeout) clearTimeout(currentToastRemoveTimeout);
     
     const toast = document.createElement('div');
-    toast.className = 'jyutping-toast';
+    toast.className = 'jyutping-toast' + (type ? ' jyutping-toast-' + type : '');
     toast.innerHTML = message;
     
     container.appendChild(toast);

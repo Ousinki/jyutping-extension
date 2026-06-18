@@ -920,6 +920,14 @@ ruby.jyutping-hover-ruby rt {
   transform: translateX(0);
 }
 
+.jyutping-toast-success {
+  border-left-color: #4CAF50 !important; /* 綠色 = 開啟 */
+}
+
+.jyutping-toast-error {
+  border-left-color: #f44336 !important; /* 紅色 = 關閉 */
+}
+
 /* ========== Translation Highlight ========== */
 ::highlight(jyutping-translate-hl) {
   background-color: rgba(255, 213, 79, 0.5) !important;
