@@ -484,7 +484,7 @@
     "description": "optTestTTS"
   },
   "optTheme": {
-    "message": "悬浮窗主题",
+    "message": "外观主题",
     "description": "optTheme"
   },
   "optThemeClassic": {
@@ -492,7 +492,7 @@
     "description": "optThemeClassic"
   },
   "optThemeDark": {
-    "message": "深邃夜色",
+    "message": "深色",
     "description": "optThemeDark"
   },
   "optThemeDesc": {
@@ -654,5 +654,13 @@
   "optRubyHoverStyleDesc": {
     "message": "选择 Ruby 模式下悬停时的字体颜色效果",
     "description": "optRubyHoverStyleDesc"
+  },
+  "optThemeAuto": {
+    "message": "跟随系统",
+    "description": "optThemeAuto"
+  },
+  "optThemeLight": {
+    "message": "浅色",
+    "description": "optThemeLight"
   }
 }

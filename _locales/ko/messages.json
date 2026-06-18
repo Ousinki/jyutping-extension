@@ -447,14 +447,15 @@
     "description": "optTestTTS"
   },
   "optTheme": {
-    "message": "팝업 테마"
+    "message": "테마",
+    "description": "optTheme"
   },
   "optThemeClassic": {
     "message": "클래식",
     "description": "optThemeClassic"
   },
   "optThemeDark": {
-    "message": "딥 나이트",
+    "message": "다크",
     "description": "optThemeDark"
   },
   "optThemeDesc": {
@@ -606,5 +607,13 @@
   "optRubyHoverStyleDesc": {
     "message": "Ruby 모드에서 호버 시 글꼴 색상 효과 선택",
     "description": "optRubyHoverStyleDesc"
+  },
+  "optThemeAuto": {
+    "message": "자동",
+    "description": "optThemeAuto"
+  },
+  "optThemeLight": {
+    "message": "라이트",
+    "description": "optThemeLight"
   }
 }

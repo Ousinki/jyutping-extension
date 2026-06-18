@@ -497,7 +497,7 @@
     "description": "optTestTTS"
   },
   "optTheme": {
-    "message": "ポップアップテーマ",
+    "message": "テーマ",
     "description": "optTheme"
   },
   "optThemeClassic": {
@@ -505,7 +505,7 @@
     "description": "optThemeClassic"
   },
   "optThemeDark": {
-    "message": "ディープナイト",
+    "message": "ダーク",
     "description": "optThemeDark"
   },
   "optThemeDesc": {
@@ -667,5 +667,13 @@
   "optRubyHoverStyleDesc": {
     "message": "Rubyモードでのホバー時のフォントカラー効果を選択",
     "description": "optRubyHoverStyleDesc"
+  },
+  "optThemeAuto": {
+    "message": "システム",
+    "description": "optThemeAuto"
+  },
+  "optThemeLight": {
+    "message": "ライト",
+    "description": "optThemeLight"
   }
 }

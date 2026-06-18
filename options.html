@@ -30,6 +30,21 @@
         --transition: 200ms ease;
       }
 
+      :root[data-theme="dark"] {
+        --primary: #ef4444;
+        --primary-light: #f87171;
+        --primary-dark: #b91c1c;
+        --accent: #22c55e;
+        --bg-page: #0f172a;
+        --bg-card: #1e293b;
+        --bg-input: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+      }
+
       * {
         margin: 0;
         padding: 0;
@@ -585,6 +600,19 @@
                 style="display: none;"
                 placeholder="例如: 'Courier New', monospace"
               />
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optTheme">外觀主題</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="uiThemeSelect">
+                <option value="auto" data-i18n="optThemeAuto">跟隨系統</option>
+                <option value="light" data-i18n="optThemeLight">淺色</option>
+                <option value="dark" data-i18n="optThemeDark">深色</option>
+              </select>
             </div>
           </div>
 

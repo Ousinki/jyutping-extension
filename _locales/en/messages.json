@@ -484,7 +484,7 @@
     "description": "optTestTTS"
   },
   "optTheme": {
-    "message": "Popup Theme",
+    "message": "Theme",
     "description": "optTheme"
   },
   "optThemeClassic": {
@@ -492,7 +492,7 @@
     "description": "optThemeClassic"
   },
   "optThemeDark": {
-    "message": "Dark Theme",
+    "message": "Dark",
     "description": "optThemeDark"
   },
   "optThemeDesc": {
@@ -654,5 +654,13 @@
   "optRubyHoverStyleDesc": {
     "message": "Choose the text color effect when hovering in Ruby mode",
     "description": "optRubyHoverStyleDesc"
+  },
+  "optThemeAuto": {
+    "message": "Auto",
+    "description": "optThemeAuto"
+  },
+  "optThemeLight": {
+    "message": "Light",
+    "description": "optThemeLight"
   }
 }

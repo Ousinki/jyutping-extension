@@ -127,7 +127,7 @@
     "message": "淺灰 (#999)"
   },
   "optCompactExpandBtn": {
-    "message": "在音標旁顯示  展開完整詞典按鈕",
+    "message": "在音標旁顯示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展開完整詞典按鈕",
     "description": "optCompactExpandBtn"
   },
   "optCustomInput": {
@@ -484,7 +484,7 @@
     "description": "optTestTTS"
   },
   "optTheme": {
-    "message": "懸浮窗主題",
+    "message": "外觀主題",
     "description": "optTheme"
   },
   "optThemeClassic": {
@@ -492,7 +492,7 @@
     "description": "optThemeClassic"
   },
   "optThemeDark": {
-    "message": "深邃夜色",
+    "message": "深色",
     "description": "optThemeDark"
   },
   "optThemeDesc": {
@@ -654,5 +654,13 @@
   "optRubyHoverStyleDesc": {
     "message": "選擇 Ruby 模式下懸停時的字體顏色效果",
     "description": "optRubyHoverStyleDesc"
+  },
+  "optThemeAuto": {
+    "message": "跟隨系統",
+    "description": "optThemeAuto"
+  },
+  "optThemeLight": {
+    "message": "淺色",
+    "description": "optThemeLight"
   }
 }

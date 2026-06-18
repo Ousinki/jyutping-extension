@@ -14,7 +14,8 @@
   let popup = null;
   let popupArrow = null; // 彈窗箭頭元素
   let isEnabled = true;
-  let displayMode = 'jyutping'; // 'jyutping' 或 'yale'
+  let displayMode = 'jyutping';
+  let uiTheme = 'auto'; // 'jyutping' 或 'yale'
   let toneStyle = 'superscript'; // 'superscript' 數字為上標 或 'inline' 數字跟在後方
   let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
   let popupTheme = 'classic'; // 懸浮窗主題
@@ -214,6 +215,31 @@
         '--popup-active-bg': '#383838',
       }
     },
+    
+    dark: {
+      name: '深色',
+      vars: {
+        '--popup-bg': '#1e1e1e',
+        '--popup-border': '#333333',
+        '--popup-text': '#e0e0e0',
+        '--popup-text-muted': '#aaaaaa',
+        '--popup-text-label': '#888888',
+        '--popup-accent': '#ef4444',
+        '--popup-accent-hover': '#f87171',
+        '--popup-word-color': '#f5f5f5',
+        '--popup-def-color': '#cccccc',
+        '--popup-def-yue': '#d4af37',
+        '--popup-divider': 'rgba(255, 255, 255, 0.1)',
+        '--popup-divider-strong': '#444444',
+        '--popup-example-bg': '#2a2a2a',
+        '--popup-btn-bg': '#333333',
+        '--popup-btn-hover': '#444444',
+        '--popup-btn-speaking': '#ef4444',
+        '--popup-btn-speaking-text': '#ffffff',
+        '--popup-shadow': '0px 4px 16px rgba(0, 0, 0, 0.5)',
+        '--popup-active-bg': '#3f1a1a',
+      }
+    },
     ocean: {
       name: '海洋藍',
       vars: {
@@ -312,10 +338,23 @@
     }
   };
 
+
+  // 判斷當前是否為深色模式
+  function isDarkMode() {
+    return uiTheme === 'dark' || (uiTheme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  }
+
   // 應用主題到彈窗
   function applyPopupTheme(themeName) {
     if (!popup) return;
+    
+    // 如果是深色模式，強制覆蓋為 dark 主題
+    if (isDarkMode()) {
+      themeName = 'dark';
+    }
+    
     const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
+
     
     // 設定 CSS 變量
     for (const [prop, value] of Object.entries(theme.vars)) {
@@ -1190,6 +1229,7 @@
       toneStyle = result.toneStyle || 'superscript';
       hoverModifier = result.hoverModifier || 'none';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
+      uiTheme = result.uiTheme || 'auto';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
       customEnFont = result.customEnFont || '';
@@ -1251,6 +1291,12 @@
   // 監聽設定變更
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'sync') {
+      
+      if (changes.uiTheme) {
+        uiTheme = changes.uiTheme.newValue;
+        applyPopupTheme(popupTheme);
+      }
+
       if (changes.toneDisplayStyle) {
         toneDisplayStyle = changes.toneDisplayStyle.newValue;
       }

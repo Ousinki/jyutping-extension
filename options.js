@@ -5,6 +5,29 @@
 
 import GoogleAnalytics from './scripts/google-analytics.js';
 
+
+// 立即應用主題，防止閃爍
+function applyUITheme(theme) {
+  const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+  if (isDark) {
+    document.documentElement.setAttribute('data-theme', 'dark');
+  } else {
+    document.documentElement.removeAttribute('data-theme');
+  }
+}
+
+chrome.storage.sync.get(['uiTheme'], (res) => {
+  applyUITheme(res.uiTheme || 'auto');
+});
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+  chrome.storage.sync.get(['uiTheme'], (res) => {
+    if ((res.uiTheme || 'auto') === 'auto') {
+      applyUITheme('auto');
+    }
+  });
+});
+
 document.addEventListener('DOMContentLoaded', () => {
   GoogleAnalytics.trackPageView('Options Page', '/options.html');
 
@@ -170,7 +193,7 @@ async function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -182,6 +205,18 @@ async function applyI18n(lang) {
     document.getElementById('displayMode').value = result.displayMode || 'jyutping';
     document.getElementById('hoverModifier').value = result.hoverModifier || 'none';
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
+
+    const uiThemeSelect = document.getElementById('uiThemeSelect');
+    if (uiThemeSelect) {
+      uiThemeSelect.value = result.uiTheme || 'auto';
+      uiThemeSelect.addEventListener('change', () => {
+        const theme = uiThemeSelect.value;
+        chrome.storage.sync.set({ uiTheme: theme });
+        applyUITheme(theme);
+        notifyContentScripts({ action: 'changeUITheme', theme });
+      });
+    }
+
 
     const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
     const rubyTextFontSelect = document.getElementById('rubyTextFontSelect');
