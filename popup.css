@@ -933,3 +933,39 @@ ruby.jyutping-hover-ruby rt {
   color: var(--popup-text, #eeeeee);
   border-color: var(--popup-border, #444444);
 }
+
+/* ========== 全文注音 (Ruby) 樣式 ========== */
+ruby.jyutping-ruby-injected {
+  ruby-align: center;
+  ruby-position: over;
+  /* 增加行高，避免注音擠壓到上一行文字 */
+  line-height: 2.0 !important;
+  /* 給每個詞組/單字之間加一點微小的間距，避免不同字的拼音粘連 */
+  margin: 0 0.15em !important;
+  cursor: pointer;
+}
+
+ruby.jyutping-ruby-injected:hover,
+ruby.jyutping-ruby-injected:hover rt,
+ruby.jyutping-ruby-injected.speaking,
+ruby.jyutping-ruby-injected.speaking rt {
+  color: #991b1b !important; /* 暗紅色 */
+}
+
+ruby.jyutping-ruby-injected rt {
+  font-family: var(--jyutping-rt-font, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif) !important;
+  font-size: 0.5em !important; /* 縮小拼音字體，降低對寬度的撐開效應 */
+  font-weight: var(--jyutping-rt-font-weight, normal) !important;
+  font-style: var(--jyutping-rt-font-style, normal) !important;
+  letter-spacing: -0.05em !important; /* 讓拼音字母稍微緊湊一點 */
+  /* ★ 關鍵：給拼音左右加上 padding。當拼音比漢字寬時，瀏覽器會自動撐開底下的漢字間距，完美防止拼音重疊！ */
+  padding: 0 0.15em !important;
+  color: var(--jyutping-rt-color, inherit) !important;
+  opacity: var(--jyutping-rt-opacity, 0.6) !important;
+  user-select: none;
+  /* 避免 rt 換行 */
+  white-space: nowrap !important;
+  /* 使用 transform 進一步縮放（若瀏覽器有最小字號限制） */
+  transform: scale(0.9);
+  transform-origin: center bottom;
+}
