@@ -191,7 +191,7 @@ async function applyI18n(lang) {
 
   // 載入已保存的設定
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
+    'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme' ], (result) => {
 
@@ -205,6 +205,15 @@ async function applyI18n(lang) {
     document.getElementById('displayMode').value = result.displayMode || 'jyutping';
     document.getElementById('hoverModifier').value = result.hoverModifier || 'none';
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
+    
+    const rubyRtBackgroundSelect = document.getElementById('rubyRtBackgroundSelect');
+    if (rubyRtBackgroundSelect) {
+      // 兼容舊版布爾值
+      let bgVal = result.rubyRtBackground;
+      if (bgVal === true) bgVal = 'solid';
+      else if (bgVal === false || !bgVal) bgVal = 'none';
+      rubyRtBackgroundSelect.value = bgVal;
+    }
 
 
     const updateThemeToggleUI = (theme) => {
@@ -567,6 +576,17 @@ async function applyI18n(lang) {
     });
   }
 
+  const rubyRtBackgroundSelect = document.getElementById('rubyRtBackgroundSelect');
+  if (rubyRtBackgroundSelect) {
+    rubyRtBackgroundSelect.addEventListener('change', () => {
+      const val = rubyRtBackgroundSelect.value;
+      chrome.storage.sync.set({ rubyRtBackground: val });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'rubyRtBackground', value: val });
+      updateDemoText();
+      notifyContentScripts({ action: 'changeRubyRtBackground', value: val });
+    });
+  }
+
   function updateDemoText() {
     const demoCompactText = document.getElementById('demoCompactText');
     if (demoCompactText) {
@@ -575,6 +595,28 @@ async function applyI18n(lang) {
         text = text.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
       }
       demoCompactText.innerHTML = text;
+    }
+    
+    // 同步更新 Ruby 演示動畫中的注音
+    const rubyRts = document.querySelectorAll('.demo-ruby-rt');
+    rubyRts.forEach(rt => {
+      let text = rt.getAttribute('data-text');
+      if (text) {
+        if (toneStyleToggle && toneStyleToggle.checked) {
+          text = text.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
+        }
+        rt.innerHTML = text;
+      }
+    });
+    
+    const rubyDemo = document.getElementById('rubyDemo');
+    if (rubyDemo) {
+      rubyDemo.classList.remove('with-bg', 'fade-bg');
+      if (rubyRtBackgroundSelect) {
+        const bgVal = rubyRtBackgroundSelect.value;
+        if (bgVal === 'solid') rubyDemo.classList.add('with-bg');
+        else if (bgVal === 'fade') rubyDemo.classList.add('fade-bg');
+      }
     }
   }
   updateDemoText(); // Initialize on load
@@ -612,7 +654,15 @@ async function applyI18n(lang) {
     
     const compactSettingsContainer = document.getElementById('compactSettingsContainer');
     if (compactSettingsContainer) {
-      compactSettingsContainer.style.display = isCompact ? 'flex' : 'none';
+      compactSettingsContainer.style.display = (isCompact || isRuby) ? 'flex' : 'none';
+      const expandBtnLabel = document.getElementById('compactExpandBtnToggle')?.parentElement;
+      if (expandBtnLabel) {
+        expandBtnLabel.style.display = isCompact ? 'inline-flex' : 'none';
+      }
+      const rubyRtBgLabel = document.getElementById('rubyRtBgLabel');
+      if (rubyRtBgLabel) {
+        rubyRtBgLabel.style.display = isRuby ? 'inline-flex' : 'none';
+      }
     }
   }
   updateCompactDemoVisibility(); // 初始化

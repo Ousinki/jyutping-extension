@@ -50,24 +50,11 @@
 #cantonese-popup-dict *,
 #cantonese-translate-popup,
 #cantonese-translate-popup * {
-  font-family: var(--popup-font-zh, system-ui, -apple-system, sans-serif) !important;
-  box-sizing: border-box !important;
+  font-family: var(--popup-font-zh, system-ui, -apple-system, sans-serif);
+  box-sizing: border-box;
 }
 
-/* 防止宿主網站的全局通配符或高權重規則污染彈窗內部的繼承 */
-#cantonese-popup-dict *,
-#cantonese-translate-popup * {
-  font-size: inherit;
-  line-height: inherit;
-  color: inherit;
-  font-weight: inherit;
-  float: none !important;
-  text-transform: none !important;
-  letter-spacing: normal !important;
-  word-spacing: normal !important;
-  text-indent: 0 !important;
-  list-style: none !important;
-}
+
 
 #cantonese-popup-dict {
   font-size: 14px;
@@ -78,10 +65,10 @@
 #cantonese-popup-dict {
   position: absolute;
   width: 320px;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
   transition:
     width 0.2s ease-in-out,
     left 0.2s ease-in-out,
@@ -91,10 +78,10 @@
 #cantonese-translate-popup {
   position: absolute;
   width: 320px;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  background: transparent !important;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: transparent;
 }
 
 /* 內容內部容器（提供實際的白底、邊框與圓角） */
@@ -653,36 +640,17 @@
 
 /* ========== 彈窗箭頭樣式 ========== */
 .popup-arrow {
-  position: absolute !important;
-  overflow: hidden !important;
-  box-sizing: border-box !important;
-  margin: 0 !important;
-  padding: 0 !important;
-  border: none !important;
-  display: block !important;
-  z-index: 1 !important;
-
-  /* 防止宿主頁面污染定位（百度百科有同名 .popup-arrow 類） */
-  right: auto !important;
-  bottom: auto !important;
-  float: none !important;
-  clear: none !important;
-  background: transparent !important;
-  background-image: none !important;
-  line-height: normal !important;
-  font-size: 0 !important;
-  text-indent: 0 !important;
-  letter-spacing: normal !important;
-  max-width: none !important;
-  max-height: none !important;
-  min-width: 0 !important;
-  min-height: 0 !important;
-  color: transparent !important;
-  filter: none !important;
-  stroke: none !important;
-  stroke-width: 0 !important;
-  stroke-dasharray: none !important;
-  stroke-dashoffset: 0 !important;
+  position: absolute;
+  overflow: hidden;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  border: none;
+  display: block;
+  z-index: 1;
+  background: transparent;
+  font-size: 0;
+  pointer-events: none;
 
   /* Desired width of the arrow */
   --arrow-width: 20px;
@@ -692,57 +660,56 @@
   --shadow-margin: calc(var(--shadow-radius) / 2);
 
   /* Crop the arrow region to show half the arrow plus allow room for margins */
-  width: calc(var(--arrow-width) + 2 * var(--shadow-margin)) !important;
-  height: calc(var(--arrow-width) / 2 + var(--shadow-margin)) !important;
+  width: calc(var(--arrow-width) + 2 * var(--shadow-margin));
+  height: calc(var(--arrow-width) / 2 + var(--shadow-margin));
 
-  pointer-events: none !important;
-  box-shadow: none !important; /* 防止宿主網站對 div 污染陰影 */
-  transform: translateX(-50%) !important;
+  box-shadow: none;
+  transform: translateX(-50%);
 }
 
 .popup-arrow::before {
-  position: absolute !important;
-  content: '' !important;
-  box-sizing: border-box !important;
-  border-radius: 0 !important;
-  padding: 0 !important;
-  display: block !important;
-  left: 0 !important;
-  top: 0 !important;
-  transform-origin: center !important;
+  position: absolute;
+  content: '';
+  box-sizing: border-box;
+  border-radius: 0;
+  padding: 0;
+  display: block;
+  left: 0;
+  top: 0;
+  transform-origin: center;
 
   --sin-45: 0.707106781;
   --square-side: calc(var(--arrow-width) / 2 / var(--sin-45));
-  width: var(--square-side) !important;
-  height: var(--square-side) !important;
+  width: var(--square-side);
+  height: var(--square-side);
 
   --overhang: calc((var(--arrow-width) - var(--square-side)) / 2);
-  margin-left: calc(var(--overhang) + var(--shadow-margin)) !important;
-  margin-top: calc(var(--overhang) + var(--shadow-margin)) !important;
+  margin-left: calc(var(--overhang) + var(--shadow-margin));
+  margin-top: calc(var(--overhang) + var(--shadow-margin));
 
-  background-color: var(--popup-bg) !important;
-  border: 1px solid var(--popup-border) !important;
+  background-color: var(--popup-bg);
+  border: 1px solid var(--popup-border);
 }
 
 /* 箭頭朝上（彈窗在詞彙下方） */
 .popup-arrow-up {
-  top: calc(-1 * (var(--arrow-width) / 2 + var(--shadow-margin))) !important;
-  margin-top: 2px !important;
+  top: calc(-1 * (var(--arrow-width) / 2 + var(--shadow-margin)));
+  margin-top: 2px;
 }
 
 .popup-arrow-up::before {
-  transform: rotate(225deg) !important;
+  transform: rotate(225deg);
 }
 
 /* 箭頭朝下（彈窗在詞彙上方） */
 .popup-arrow-down {
-  top: 100% !important;
-  margin-top: -2px !important;
+  top: 100%;
+  margin-top: -2px;
 }
 
 .popup-arrow-down::before {
-  transform: rotate(45deg) !important;
-  margin-top: calc(var(--square-side) / -2) !important;
+  transform: rotate(45deg);
+  margin-top: calc(var(--square-side) / -2);
 }
 
 /* 隱藏箭頭（導航模式） */
@@ -872,15 +839,13 @@
 /* ========== 全文注音 (Ruby) 樣式 ========== */
 ruby.jyutping-hover-ruby {
   cursor: pointer;
-  line-height: 1;
+  line-height: inherit;
   position: relative;
-  display: inline-block;
+  display: inline !important;
 }
 
 ruby.jyutping-hover-ruby:hover,
-ruby.jyutping-hover-ruby:hover rt,
-ruby.jyutping-hover-ruby.speaking,
-ruby.jyutping-hover-ruby.speaking rt {
+ruby.jyutping-hover-ruby.speaking {
   color: var(--ruby-hover-color, #8A1C1C) !important;
 }
 
@@ -911,13 +876,51 @@ ruby.jyutping-hover-ruby.hl-ruby-border.speaking {
   border-radius: 3px !important;
 }
 
-ruby.jyutping-hover-ruby rt {
-  position: absolute;
-  bottom: 100%;
-  left: 50%;
-  transform: translate(-50%, -0.2em);
+ruby.jyutping-hover-ruby:hover,
+ruby.jyutping-hover-ruby.speaking {
+  z-index: 1000;
+}
+
+/* ========== Hover Ruby (ruby) floating popup style ========== */
+#cantonese-popup-dict.popup-ruby-mode {
+  width: max-content !important;
+  min-width: unset !important;
+  max-width: 320px !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  border: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  pointer-events: none !important;
+  transition: none !important;
+  transform: none !important;
+}
+
+#cantonese-popup-dict.popup-ruby-mode .popup-inner {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+#cantonese-popup-dict.popup-ruby-mode .popup-container {
+  width: auto !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+#cantonese-popup-dict.popup-ruby-mode .popup-main {
+  padding: 0 !important;
+  margin: 0 !important;
+  background: transparent !important;
+}
+
+.ruby-floating-text {
+  display: inline-block !important;
   font-family: var(--jyutping-rt-font, system-ui, -apple-system, sans-serif) !important;
-  font-size: 0.55em !important;
+  font-size: 11px !important;
   opacity: var(--jyutping-rt-opacity, 0.85);
   font-weight: normal;
   text-transform: none;
@@ -925,7 +928,39 @@ ruby.jyutping-hover-ruby rt {
   text-align: center;
   white-space: nowrap;
   padding: 0 !important;
-  pointer-events: none;
+  color: var(--ruby-hover-color, #8A1C1C) !important;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+/* 實色背景模式 */
+#cantonese-popup-dict.popup-ruby-mode.with-bg .ruby-floating-text {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border: 1px solid rgba(0, 0, 0, 0.15) !important;
+  padding: 1px 4px !important;
+  border-radius: 3px !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15) !important;
+  opacity: 1 !important;
+}
+
+/* 暗色背景自適應 */
+#cantonese-popup-dict.popup-ruby-mode.with-bg.dark-bg .ruby-floating-text {
+  background-color: rgba(40, 40, 40, 0.95) !important;
+  border: 1px solid rgba(255, 255, 255, 0.2) !important;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.5) !important;
+  color: var(--ruby-hover-color, #FFD54F) !important;
+}
+
+/* 消散背景模式：注音本身無背景，擦除效果由主 DOM 遮罩層實現 */
+#cantonese-popup-dict.popup-ruby-mode.fade-bg .ruby-floating-text {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  opacity: 1 !important;
+}
+
+/* 消散背景 + 暗色自適應 */
+#cantonese-popup-dict.popup-ruby-mode.fade-bg.dark-bg .ruby-floating-text {
+  color: var(--ruby-hover-color, #FFD54F) !important;
 }
 
 /* ========== Toast 提示框樣式 ========== */

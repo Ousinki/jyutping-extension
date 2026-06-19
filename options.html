@@ -886,17 +886,17 @@
               <!-- Characters with ruby annotations -->
               <span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
               <span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
-                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">gam1</span>
+                <span class="demo-ruby-rt" data-text="gam1" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">gam1</span>
                 今
               </span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
-                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">jat6</span>
+                <span class="demo-ruby-rt" data-text="jat6" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">jat6</span>
                 日
               </span><span class="demo-ruby-word-target" style="display: inline-block; position: relative; text-align: center;">
-                <span class="demo-ruby-rt demo-ruby-rt-target" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">tin1 hei3</span>天氣</span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
-                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">hou2</span>
+                <span class="demo-ruby-rt demo-ruby-rt-target" data-text="tin1 hei3" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">tin1 hei3</span>天氣</span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
+                <span class="demo-ruby-rt" data-text="hou2" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">hou2</span>
                 好
               </span><span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
-                <span class="demo-ruby-rt" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">hou2</span>
+                <span class="demo-ruby-rt" data-text="hou2" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">hou2</span>
                 好
               </span>
 
@@ -914,9 +914,24 @@
                 animation: rubyCharColor 4.5s ease-in-out infinite;
               }
 
-              /* Ruby annotations on target chars fade in with dark red */
               .demo-ruby-rt-target {
                 animation: rubyRtShow 4.5s ease-in-out infinite !important;
+              }
+
+              #rubyDemo.with-bg .demo-ruby-rt {
+                background-color: #f8f9fa;
+                border: 1px solid rgba(0, 0, 0, 0.15);
+                padding: 2px 4px;
+                border-radius: 4px;
+                box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+                z-index: 2;
+              }
+
+              :root[data-theme="dark"] #rubyDemo.with-bg .demo-ruby-rt {
+                background-color: #2d2d2d;
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.6);
+                color: #fff;
               }
 
               .demo-ruby-cursor {
@@ -988,6 +1003,14 @@
             <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--text-secondary, #666);">
               <input type="checkbox" id="toneStyleToggle" style="margin: 0; accent-color: var(--primary, #1890ff);" />
               <span data-i18n="optToneStyleToggle">聲調數字以右上角角標顯示</span>
+            </label>
+            <label id="rubyRtBgLabel" style="display: none; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--text-secondary, #666);">
+              <span data-i18n="optRubyRtBgToggle">Ruby 注音背景模式</span>
+              <select id="rubyRtBackgroundSelect" style="font-size: 13px; padding: 2px 6px; border-radius: 4px; border: 1px solid var(--border, #d0d0d0); background: var(--bg, #fff); color: var(--text, #333); cursor: pointer;">
+                <option value="none" data-i18n="optRubyBgNone">無背景</option>
+                <option value="fade" data-i18n="optRubyBgFade">消散背景</option>
+                <option value="solid" data-i18n="optRubyBgSolid">實色背景</option>
+              </select>
             </label>
             <label style="display: inline-flex; align-items: center; gap: 6px; cursor: pointer; font-size: 13px; color: var(--text-secondary, #666);">
               <input type="checkbox" id="compactExpandBtnToggle" style="margin: 0; accent-color: var(--primary, #1890ff);" />
