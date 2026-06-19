@@ -783,6 +783,8 @@
   letter-spacing: 0 !important;
   line-height: 1.2 !important;
   transition: opacity 0.15s ease, color 0.15s ease;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 .compact-text:hover {

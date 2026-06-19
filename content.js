@@ -3005,11 +3005,9 @@
     const compactText = popupMain.querySelector('.compact-text');
     if (compactText) {
       compactText.style.cursor = 'pointer';
-      // 改用 mousedown 防止點擊時手抖觸發文本選中而導致 click 丟失
-      compactText.addEventListener('mousedown', (e) => {
-        if (e.button !== 0) return;
+      // 依賴 CSS user-select: none 來防止手抖選中，這裡必須使用 click 才能解鎖瀏覽器 AudioContext (Autoplay Policy)
+      compactText.addEventListener('click', (e) => {
         e.stopPropagation();
-        e.preventDefault();
         speakCantonese(entry.traditional);
         
         // 觸發點擊動畫
