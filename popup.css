@@ -812,6 +812,7 @@
   vertical-align: middle;
   line-height: 1;
   user-select: none;
+  padding: 4px; /* 增加點擊區域 */
 }
 
 .compact-expand-btn:hover {

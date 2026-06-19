@@ -2977,9 +2977,14 @@
         // Fallback or empty URL
       }
       
-      expandBtn.innerHTML = `<img src="${iconUrl}" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block;" />`;
+      expandBtn.innerHTML = `<img src="${iconUrl}" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block; pointer-events: none;" />`;
       expandBtn.title = 'Show full dictionary';
-      expandBtn.addEventListener('click', (e) => {
+      
+      // 使用 mousedown 替代 click，防止鼠標微抖導致 click 事件無法觸發（小圖標常見問題）
+      expandBtn.addEventListener('mousedown', (e) => {
+        // 只處理左鍵點擊
+        if (e.button !== 0) return;
+        
         e.stopPropagation();
         e.preventDefault();
         
