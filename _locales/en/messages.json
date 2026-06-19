@@ -670,5 +670,13 @@
   "optAIDblClickHint": {
     "message": "Double-click the AI explanation or API translation popup to start an AI follow-up conversation",
     "description": "optAIDblClickHint"
+  },
+  "clItem5": {
+    "message": "🎨 <b>New Ruby Background Styles</b>: Ruby annotation mode now supports 'Solid' and 'Fade' background options, ensuring clear readability on any webpage background.",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🐛 <b>Fixed Floating Popup Styles</b>: Fixed layout distortion and inaccurate mask height issues for the floating popup on certain webpages.",
+    "description": "Changelog item 6"
   }
 }

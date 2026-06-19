@@ -670,5 +670,13 @@
   "optAIDblClickHint": {
     "message": "双击 AI 解释框或 API 翻译框，即可开启 AI 追问对话",
     "description": "optAIDblClickHint"
+  },
+  "clItem5": {
+    "message": "🎨 <b>新增注音背景样式</b>：Ruby 内嵌注音模式现已支持“实色背景”与“消散背景”，在任何网页背景下都能保证音标清晰可见。",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🐛 <b>修复悬浮窗样式问题</b>：修复了在部分网页上悬浮窗排版错乱及遮罩高度不准确的问题。",
+    "description": "Changelog item 6"
   }
 }
