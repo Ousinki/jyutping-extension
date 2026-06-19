@@ -3,20 +3,6 @@
     "message": "This update brings the following improvements:",
     "description": "Changelog description"
   },
-  "clItem0": {
-    "message": "🖊️ <b>Hover Inline Ruby</b>: Hover over Chinese characters to display Cantonese pronunciation directly above the text — no popup needed, for a seamless reading experience.",
-    "description": "Changelog item 0"
-  },
-  "clItem1": {
-    "message": "📖 <b>Full-Text Ruby Annotation</b>: Added full-page phonetic ruby annotations with a beautiful 'Dictionary Style', providing an immersive reading experience identical to an authentic printed dictionary.",
-    "description": "Changelog item 1"
-  },
-  "clItem2": {
-    "message": "⚙️ <b>Custom Translation Trigger</b>: Added an 'API Translation Trigger' option in settings, allowing you to choose between 'Double Click' and 'Single Click' to open the translation popup."
-  },
-  "clItem3": {
-    "message": "🐛 <b>Translation Trigger & State Synchronization Fixes</b>: Fixed issues where translation trigger toggling had no effect, style choices didn't show colors in Dictionary Style, and events erroneously executed when disabled."
-  },
   "clTitle": {
     "message": "🚀 What's New",
     "description": "Changelog title"
@@ -662,10 +648,6 @@
   "optThemeLight": {
     "message": "Light",
     "description": "optThemeLight"
-  },
-  "clItem4": {
-    "message": "🌙 <b>Dark Mode</b>: Brand new dark mode is here! Supports auto-sync with system appearance for a comfortable night reading experience.",
-    "description": "Changelog item 4"
   },
   "optAIDblClickHint": {
     "message": "Double-click the AI explanation or API translation popup to start an AI follow-up conversation",

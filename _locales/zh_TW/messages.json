@@ -3,20 +3,6 @@
     "message": "本次更新帶來了以下優化：",
     "description": "Changelog description"
   },
-  "clItem0": {
-    "message": "🖊️ <b>懸停內嵌注音</b>：鼠標懸停在漢字上即可直接在文字上方顯示粵語注音，無需彈出窗口，閱讀體驗更加自然流暢。",
-    "description": "Changelog item 0"
-  },
-  "clItem1": {
-    "message": "📖 <b>全文注音功能</b>：新增網頁全文拼音標註，支援精美的「字典風格」排版，提供如同實體字典般的沉浸式閱讀體驗。",
-    "description": "Changelog item 1"
-  },
-  "clItem2": {
-    "message": "⚙️ <b>自訂翻譯觸發方式</b>：在設定中新增了「API 翻譯觸發方式」的選項，你可以根據習慣自由選擇「雙擊」或「單擊」來調起翻譯懸浮窗。"
-  },
-  "clItem3": {
-    "message": "🐛 <b>修復翻譯觸發與狀態同步問題</b>：修復了切換單擊/雙擊翻譯無反應、切換字典風格未顯示灰度選項，以及關閉擴充後事件仍錯誤執行的問題。"
-  },
   "clTitle": {
     "message": "🚀 最新更新",
     "description": "Changelog title"
@@ -662,10 +648,6 @@
   "optThemeLight": {
     "message": "淺色",
     "description": "optThemeLight"
-  },
-  "clItem4": {
-    "message": "🌙 <b>深色模式</b>：全新深色模式登場！支援跟隨系統自動切換，提供更舒適的夜間閱讀體驗。",
-    "description": "Changelog item 4"
   },
   "optAIDblClickHint": {
     "message": "雙擊 AI 解釋框或 API 翻譯框，即可開啟 AI 追問對話",

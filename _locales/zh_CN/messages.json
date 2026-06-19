@@ -3,20 +3,6 @@
     "message": "本次更新带来了以下优化：",
     "description": "Changelog description"
   },
-  "clItem0": {
-    "message": "🖊️ <b>悬停内嵌注音</b>：鼠标悬停在汉字上即可直接在文字上方显示粤语注音，无需弹出窗口，阅读体验更加自然流畅。",
-    "description": "Changelog item 0"
-  },
-  "clItem1": {
-    "message": "📖 <b>全文注音功能</b>：新增网页全文拼音标注，支持精美的“字典风格”排版，提供如同实体字典般的沉浸式阅读体验。",
-    "description": "Changelog item 1"
-  },
-  "clItem2": {
-    "message": "⚙️ <b>自定义翻译触发方式</b>：在设置中新增了“API 翻译触发方式”的选项，你可以根据习惯自由选择“双击”或“单击”来调起翻译悬浮窗。"
-  },
-  "clItem3": {
-    "message": "🐛 <b>修复翻译触发与状态同步问题</b>：修复了切换单击/双击翻译无反应、切换字典风格未显示灰度选项，以及关闭扩展后事件仍错误执行的问题。"
-  },
   "clTitle": {
     "message": "🚀 最新更新",
     "description": "Changelog title"
@@ -662,10 +648,6 @@
   "optThemeLight": {
     "message": "浅色",
     "description": "optThemeLight"
-  },
-  "clItem4": {
-    "message": "🌙 <b>深色模式</b>：全新深色模式登场！支持跟随系统自动切换，提供更舒适的夜间阅读体验。",
-    "description": "Changelog item 4"
   },
   "optAIDblClickHint": {
     "message": "双击 AI 解释框或 API 翻译框，即可开启 AI 追问对话",
