@@ -3274,7 +3274,7 @@
       background-color: ${solidBgColor};
       border: none;
       left: ${x - padX}px;
-      top: ${y - padTop}px;
+      top: ${y - padTop + 4}px;
       width: ${maskW}px;
       height: ${maskH}px;
       -webkit-mask-image:
