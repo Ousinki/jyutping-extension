@@ -3005,8 +3005,10 @@
     const compactText = popupMain.querySelector('.compact-text');
     if (compactText) {
       compactText.style.cursor = 'pointer';
-      // 依賴 CSS user-select: none 來防止手抖選中，這裡必須使用 click 才能解鎖瀏覽器 AudioContext (Autoplay Policy)
-      compactText.addEventListener('click', (e) => {
+      // 必須使用 mousedown 才能保證手抖時 100% 觸發（因為小目標極易發生 1px 拖拽導致 click 丟失）
+      // 注意：絕不能加 e.preventDefault()，否則會被瀏覽器 Autoplay Policy 攔截導致 NotAllowedError
+      compactText.addEventListener('mousedown', (e) => {
+        if (e.button !== 0) return;
         e.stopPropagation();
         speakCantonese(entry.traditional);
         
