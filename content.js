@@ -3137,16 +3137,21 @@
       popup.classList.add('fade-bg');
     }
 
-    // 判斷是否在暗色背景
+    // 判斷是否在暗色背景，並獲取實際背景顏色
     let isDark = false;
+    let bgColor = 'rgba(255, 255, 255, 0.9)'; // 預設淺色背景
     if (currentRange && currentRange.startContainer) {
       const parent = currentRange.startContainer.nodeType === Node.TEXT_NODE 
         ? currentRange.startContainer.parentElement 
         : currentRange.startContainer;
-      if (parent && isElementOnDarkBackground(parent)) {
-        isDark = true;
+      
+      const detectedColor = getElementBackgroundColor(parent);
+      if (detectedColor) {
+        bgColor = detectedColor;
+        isDark = checkIsDarkColor(detectedColor);
       }
     }
+    
     if (isDark) {
       popup.classList.add('dark-bg');
     } else {
@@ -3231,7 +3236,7 @@
 
       // 消散模式：在主 DOM 中創建/更新隱形遮罩，用 backdrop-filter 擦除頁面文字
       if (rubyRtBackground === 'fade') {
-        showRubyFadeMask(left + window.scrollX, top + window.scrollY, popupWidth, textHeight);
+        showRubyFadeMask(left + window.scrollX, top + window.scrollY, popupWidth, textHeight, bgColor);
       } else {
         hideRubyFadeMask();
       }
@@ -3241,33 +3246,45 @@
     }
   }
 
-  // 消散模式遮罩：在主 DOM 中創建透明 div，用 backdrop-filter 擦除頁面文字
-  // 使用 mask-image 做漸變羽化，讓擦除效果從中心向外自然消散
-  function showRubyFadeMask(x, y, w, h) {
+  // 消散模式遮罩：在主 DOM 中創建 div，背景色與原網頁背景一致，邊緣羽化
+  function showRubyFadeMask(x, y, w, h, bgColor) {
     if (!rubyFadeMask) {
       rubyFadeMask = document.createElement('div');
       rubyFadeMask.id = 'jyutping-ruby-fade-mask';
       document.body.appendChild(rubyFadeMask);
     }
-    // 遮罩區域比注音大一圈，給羽化效果留出空間
-    const padX = 10;
-    const padY = 6;
+    
+    const padX = 8;
+    const padTop = 0;
+    const padBottom = 2;
     const maskW = w + padX * 2;
-    const maskH = h + padY * 2;
+    const maskH = h + padTop + padBottom;
+    
+    // 提取純淨顏色，不加透明度，以確保中間區域能完全遮擋文字
+    let solidBgColor = bgColor;
+    if (bgColor.startsWith('rgba')) {
+      // 嘗試把 rgba 轉成 rgb，簡單粗暴去透明度
+      solidBgColor = bgColor.replace(/rgba\((.*?),\s*[\d.]+\)/, 'rgb($1)');
+    }
+    
     rubyFadeMask.style.cssText = `
       position: absolute;
       pointer-events: none;
       z-index: 2147483644;
-      background: transparent;
+      background-color: ${solidBgColor};
       border: none;
       left: ${x - padX}px;
-      top: ${y - padY}px;
+      top: ${y - padTop}px;
       width: ${maskW}px;
       height: ${maskH}px;
-      -webkit-backdrop-filter: blur(4px) brightness(20);
-      backdrop-filter: blur(4px) brightness(20);
-      -webkit-mask-image: radial-gradient(ellipse closest-side at center, black 20%, transparent 100%);
-      mask-image: radial-gradient(ellipse closest-side at center, black 20%, transparent 100%);
+      -webkit-mask-image:
+        linear-gradient(to right, transparent, black ${padX}px, black calc(100% - ${padX}px), transparent),
+        linear-gradient(to bottom, transparent, black ${padTop}px, black calc(100% - ${padBottom}px), transparent);
+      -webkit-mask-composite: destination-in;
+      mask-image:
+        linear-gradient(to right, transparent, black ${padX}px, black calc(100% - ${padX}px), transparent),
+        linear-gradient(to bottom, transparent, black ${padTop}px, black calc(100% - ${padBottom}px), transparent);
+      mask-composite: intersect;
       display: block;
     `;
   }
@@ -3714,28 +3731,43 @@
   }
 
   // 檢測元素是否在暗色背景上（用於自動調整 Ruby 注音顏色）
-  function isElementOnDarkBackground(element) {
+  function getElementBackgroundColor(element) {
     try {
       let el = element;
       while (el && el !== document.documentElement) {
         const style = window.getComputedStyle(el);
         const bg = style.backgroundColor;
         if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
-          // 解析 rgb/rgba
-          const match = bg.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-          if (match) {
-            const r = parseInt(match[1]);
-            const g = parseInt(match[2]);
-            const b = parseInt(match[3]);
-            // W3C 相對亮度公式
-            const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-            return luminance < 0.5;
-          }
+            return bg;
         }
         el = el.parentElement;
       }
+      
+      // 如果一直找到根節點都沒顏色，嘗試從 body 取，如果還沒有預設為白色
+      const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+      if (bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' && bodyBg !== 'transparent') {
+        return bodyBg;
+      }
     } catch (e) { /* ignore */ }
+    return 'rgb(255, 255, 255)'; // 預設白色
+  }
+
+  function checkIsDarkColor(bgColorStr) {
+    if (!bgColorStr) return false;
+    const match = bgColorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      const r = parseInt(match[1]);
+      const g = parseInt(match[2]);
+      const b = parseInt(match[3]);
+      // W3C 相對亮度公式
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance < 0.5;
+    }
     return false;
+  }
+
+  function isElementOnDarkBackground(element) {
+    return checkIsDarkColor(getElementBackgroundColor(element));
   }
 
   // 選中文字（使用 CSS 高亮 span 或內嵌 Ruby 代替原生 Selection）
