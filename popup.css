@@ -54,13 +54,19 @@
   box-sizing: border-box !important;
 }
 
-/* 防止宿主網站的 * { font-size: 16pt; } 這類全局通配符污染彈窗內部的繼承 */
+/* 防止宿主網站的全局通配符或高權重規則污染彈窗內部的繼承 */
 #cantonese-popup-dict *,
 #cantonese-translate-popup * {
   font-size: inherit;
   line-height: inherit;
   color: inherit;
   font-weight: inherit;
+  float: none !important;
+  text-transform: none !important;
+  letter-spacing: normal !important;
+  word-spacing: normal !important;
+  text-indent: 0 !important;
+  list-style: none !important;
 }
 
 #cantonese-popup-dict {
@@ -113,6 +119,7 @@
   backdrop-filter: blur(48px) saturate(200%);
   -webkit-backdrop-filter: blur(48px) saturate(200%);
 }
+
 
 .popup-container {
   display: flex;
@@ -472,7 +479,7 @@
 }
 
 #cantonese-translate-popup .popup-inner {
-  padding: 8px 12px;
+  padding: 8px 16px !important;
   width: 100%;
   height: auto !important;
   box-sizing: border-box;
@@ -653,6 +660,29 @@
   padding: 0 !important;
   border: none !important;
   display: block !important;
+  z-index: 1 !important;
+
+  /* 防止宿主頁面污染定位（百度百科有同名 .popup-arrow 類） */
+  right: auto !important;
+  bottom: auto !important;
+  float: none !important;
+  clear: none !important;
+  background: transparent !important;
+  background-image: none !important;
+  line-height: normal !important;
+  font-size: 0 !important;
+  text-indent: 0 !important;
+  letter-spacing: normal !important;
+  max-width: none !important;
+  max-height: none !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  color: transparent !important;
+  filter: none !important;
+  stroke: none !important;
+  stroke-width: 0 !important;
+  stroke-dasharray: none !important;
+  stroke-dashoffset: 0 !important;
 
   /* Desired width of the arrow */
   --arrow-width: 20px;

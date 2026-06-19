@@ -374,11 +374,6 @@
   function applyPopupTheme(themeName) {
     if (!popup) return;
     
-    // 如果是深色模式，強制覆蓋為 dark 主題
-    if (isDarkMode()) {
-      themeName = 'dark';
-    }
-    
     const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
 
     
@@ -916,12 +911,12 @@
     }
 
     translatePopup.innerHTML = `
-      <div class="popup-arrow"></div>
       <div class="popup-inner">
         <div class="ai-result">
           <div class="ai-text" style="white-space: pre-wrap;">${renderedText}</div>
         </div>
       </div>
+      <div class="popup-arrow"></div>
     `;
 
     translatePopup.style.display = 'block';
@@ -1246,7 +1241,7 @@
   function loadSettings() {
     chrome.storage.sync.get([
       'enabled', 'displayMode', 'toneStyle', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'uiTheme'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;

@@ -125,4 +125,22 @@ if [ $ERRORS -gt 0 ]; then
     exit 1
 else
     echo "✅ 校驗通過，所有引用的資源均已包含在 zip 中。"
+    
+    # ── 自動部署到桌面 ──────────────────────────────────────────
+    echo ""
+    echo "🚀 正在將最新版本部署到桌面測試環境..."
+    DESKTOP_DIR="$HOME/Desktop"
+    
+    # 清理桌面上舊版本的文件夾
+    echo "  🧹 清理舊版本測試文件夾..."
+    rm -rf "$DESKTOP_DIR"/jyutping-extension-v*
+    rm -rf "$DESKTOP_DIR"/jyutping-extension
+    
+    TARGET_DIR="$DESKTOP_DIR/jyutping-extension-v${VERSION}"
+    mkdir -p "$TARGET_DIR"
+    
+    echo "  📦 解壓 $OUTPUT 到桌面..."
+    unzip -q -o "$OUTPUT" -d "$TARGET_DIR"
+    
+    echo "✅ 桌面測試環境已更新！可以在其他瀏覽器中加載 $TARGET_DIR 進行測試。"
 fi
