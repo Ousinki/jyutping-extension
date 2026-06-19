@@ -2989,11 +2989,8 @@
         // 設定冷卻鎖：在 400ms 內阻止 scheduleHidePopup 和 handleMouseOver 隱藏彈窗
         if (expandLockTimer) clearTimeout(expandLockTimer);
         expandLockTimer = setTimeout(() => { expandLockTimer = null; }, 400);
-        // 以完整模式重新渲染
-        const savedStyle = popupDisplayStyle;
-        popupDisplayStyle = 'full';
-        showPopup(result, rect);
-        popupDisplayStyle = savedStyle;
+        // 以完整模式重新渲染 (使用 forceFull = true 參數)
+        showPopup(result, rect, true);
       });
       const compactPron = popupMain.querySelector('.compact-pronunciation');
       if (compactPron) compactPron.appendChild(expandBtn);
