@@ -630,12 +630,15 @@ import { createBlobUrlFromDataUri } from './tts.js';
     await createShadowHost();
     createPopup();
     createTranslatePopup();
-    await loadDictionary();
     loadSettings();
     setupEventListeners();
-    
-    // 如果 sessionStorage 記錄了開啟全文注音，則自動恢復
+
+    // 字典改為懶加載：首次滑鼠移動時才開始載入（見 mousemove 處理器），
+    // 讓用戶從不交互的廣告/追蹤類 iframe 不再白白載入 ~80MB 字典。
+
+    // 如果 sessionStorage 記錄了開啟全文注音，則自動恢復（此路徑需要字典，先確保載入）
     if (isFullPageRubyActive && isEnabled) {
+      await loadDictionary();
       console.log('[Content] Auto-restoring Jyutping Full Page Ruby from sessionStorage');
       injectRubyAnnotations(document.body);
     }
@@ -1807,6 +1810,11 @@ import { createBlobUrlFromDataUri } from './tts.js';
       currentMouseY = e.clientY;
 
       if (!isEnabled || isSelecting) return;
+
+      // 懶加載字典：用戶一旦在本 frame 移動滑鼠（表現出交互意圖）即開始載入。
+      // loadDictionary() 內部有 promise 去重，重複調用為廉價空操作。
+      // 載入約 ~400ms，遠快於用戶從移動滑鼠到停在某個詞上的時間，故首次悬停基本無感。
+      loadDictionary();
 
       // 如果打開了 Q&A，保持 Q&A 窗口開啟，且不進行任何隱藏或查詞掃描
       if (popup && popup.querySelector('.popup-qa-container')) return;

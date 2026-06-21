@@ -902,10 +902,10 @@
       await createShadowHost();
       createPopup();
       createTranslatePopup();
-      await loadDictionary();
       loadSettings();
       setupEventListeners();
       if (isFullPageRubyActive && isEnabled) {
+        await loadDictionary();
         console.log("[Content] Auto-restoring Jyutping Full Page Ruby from sessionStorage");
         injectRubyAnnotations(document.body);
       }
@@ -1885,6 +1885,7 @@ ${userDesc || "未提供具體描述"}`;
         currentMouseX = e.clientX;
         currentMouseY = e.clientY;
         if (!isEnabled || isSelecting) return;
+        loadDictionary();
         if (popup && popup.querySelector(".popup-qa-container")) return;
         if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
         if (hasUserSelection) {
