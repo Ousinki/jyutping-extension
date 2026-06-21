@@ -21,7 +21,6 @@ import { createBlobUrlFromDataUri } from './tts.js';
   let popupArrow = null; // 彈窗箭頭元素
   let isEnabled = true;
   let displayMode = 'jyutping';
-  let uiTheme = 'auto'; // 'jyutping' 或 'yale'
   let toneStyle = 'superscript'; // 'superscript' 數字為上標 或 'inline' 數字跟在後方
   let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
   let popupTheme = 'classic'; // 懸浮窗主題
@@ -374,14 +373,6 @@ import { createBlobUrlFromDataUri } from './tts.js';
   };
 
 
-
-  // 殘留代碼：content.js 內 uiTheme / isDarkMode 已無使用點。
-  // 深色模式由別處負責——設定頁主題見 options.js(applyUITheme)，
-  // 懸浮窗深色主題見 popupTheme / applyPopupTheme。此處保留不影響功能。
-  // eslint-disable-next-line no-unused-vars -- 殘留：uiTheme 在 content.js 已無消費者
-  function isDarkMode() {
-    return uiTheme === 'dark' || (uiTheme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  }
 
   // 應用主題到彈窗
   function applyPopupTheme(themeName) {
@@ -1465,7 +1456,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
   function loadSettings() {
     chrome.storage.sync.get([
       'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'uiTheme'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
@@ -1478,7 +1469,6 @@ import { createBlobUrlFromDataUri } from './tts.js';
       else rubyRtBackground = result.rubyRtBackground;
       hoverModifier = result.hoverModifier || 'none';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
-      uiTheme = result.uiTheme || 'auto';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
       customEnFont = result.customEnFont || '';
@@ -1542,7 +1532,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
     if (area === 'sync') {
       
       if (changes.uiTheme) {
-        uiTheme = changes.uiTheme.newValue;
+        // uiTheme 在 content.js 已無消費者；保留此處是為了在 UI 主題變更時同步刷新懸浮窗主題（行為不變）
         applyPopupTheme(popupTheme);
       }
 

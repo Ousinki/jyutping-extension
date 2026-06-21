@@ -340,7 +340,6 @@
     let popupArrow = null;
     let isEnabled = true;
     let displayMode = "jyutping";
-    let uiTheme = "auto";
     let toneStyle = "superscript";
     let popupDisplayStyle = "full";
     let popupTheme = "classic";
@@ -675,9 +674,6 @@
         }
       }
     };
-    function isDarkMode() {
-      return uiTheme === "dark" || uiTheme === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
-    }
     function applyPopupTheme(themeName) {
       if (!popup) return;
       const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
@@ -1588,8 +1584,7 @@ ${userDesc || "未提供具體描述"}`;
         "rubyDictionaryColor",
         "transLang",
         "transLangs",
-        "transTrigger",
-        "uiTheme"
+        "transTrigger"
       ], (result) => {
         if (result.enabled !== void 0) isEnabled = result.enabled !== false;
         displayMode = result.displayMode || "jyutping";
@@ -1599,7 +1594,6 @@ ${userDesc || "未提供具體描述"}`;
         else rubyRtBackground = result.rubyRtBackground;
         hoverModifier = result.hoverModifier || "none";
         popupDisplayStyle = result.popupDisplayStyle || "full";
-        uiTheme = result.uiTheme || "auto";
         popupTheme = result.popupTheme || "classic";
         customZhFont = result.customZhFont || "";
         customEnFont = result.customEnFont || "";
@@ -1657,7 +1651,6 @@ ${userDesc || "未提供具體描述"}`;
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "sync") {
         if (changes.uiTheme) {
-          uiTheme = changes.uiTheme.newValue;
           applyPopupTheme(popupTheme);
         }
         if (changes.toneDisplayStyle) {
