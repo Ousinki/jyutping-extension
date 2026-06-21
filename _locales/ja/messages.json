@@ -660,5 +660,17 @@
   "optAIDblClickHint": {
     "message": "AI 解説ボックスまたは API 翻訳ボックスをダブルクリックすると、AI フォローアップ会話を開始できます",
     "description": "optAIDblClickHint"
+  },
+  "optRubyRtBgToggle": {
+    "message": "ルビ注音背景モード"
+  },
+  "optRubyBgNone": {
+    "message": "背景なし"
+  },
+  "optRubyBgFade": {
+    "message": "フェード背景"
+  },
+  "optRubyBgSolid": {
+    "message": "単色背景"
   }
 }

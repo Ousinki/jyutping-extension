@@ -614,5 +614,17 @@
   "clItem6": {
     "message": "🐛 <b>플로팅 팝업 스타일 수정</b>: 특정 웹페이지에서 플로팅 팝업 레이아웃이 깨지거나 마스크 높이가 부정확한 문제를 수정했습니다.",
     "description": "Changelog item 6"
+  },
+  "optRubyRtBgToggle": {
+    "message": "루비 주음 배경 모드"
+  },
+  "optRubyBgNone": {
+    "message": "배경 없음"
+  },
+  "optRubyBgFade": {
+    "message": "페이드 배경"
+  },
+  "optRubyBgSolid": {
+    "message": "단색 배경"
   }
 }

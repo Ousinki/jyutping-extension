@@ -660,5 +660,17 @@
   "clItem6": {
     "message": "🐛 <b>修復懸浮窗樣式問題</b>：修復了在部分網頁上懸浮窗排版錯亂及遮罩高度不準確的問題。",
     "description": "Changelog item 6"
+  },
+  "optRubyRtBgToggle": {
+    "message": "Ruby 注音背景模式"
+  },
+  "optRubyBgNone": {
+    "message": "無背景"
+  },
+  "optRubyBgFade": {
+    "message": "消散背景"
+  },
+  "optRubyBgSolid": {
+    "message": "實色背景"
   }
 }

@@ -54,6 +54,11 @@
   box-sizing: border-box;
 }
 
+#cantonese-popup-dict,
+#cantonese-translate-popup {
+  pointer-events: auto;
+}
+
 
 
 #cantonese-popup-dict {
@@ -847,8 +852,7 @@ ruby.jyutping-hover-ruby {
   display: inline !important;
 }
 
-ruby.jyutping-hover-ruby:hover,
-ruby.jyutping-hover-ruby.speaking {
+ruby.jyutping-hover-ruby:hover {
   color: var(--ruby-hover-color, #8A1C1C) !important;
 }
 
@@ -864,23 +868,20 @@ ruby.jyutping-hover-ruby.hl-ruby-orange { --ruby-hover-color: #E65100; }
 ruby.jyutping-hover-ruby.hl-ruby-purple { --ruby-hover-color: #6A1B9A; }
 
 /* Ruby 虛線下劃線 */
-ruby.jyutping-hover-ruby.hl-ruby-underline:hover,
-ruby.jyutping-hover-ruby.hl-ruby-underline.speaking {
+ruby.jyutping-hover-ruby.hl-ruby-underline:hover {
   text-decoration: underline dashed var(--ruby-hover-color, #8A1C1C) !important;
   text-underline-offset: 3px !important;
   text-decoration-thickness: 1.5px !important;
 }
 
 /* Ruby 虛線邊框 */
-ruby.jyutping-hover-ruby.hl-ruby-border:hover,
-ruby.jyutping-hover-ruby.hl-ruby-border.speaking {
+ruby.jyutping-hover-ruby.hl-ruby-border:hover {
   outline: 1.5px dashed var(--ruby-hover-color, #8A1C1C) !important;
   outline-offset: 1px !important;
   border-radius: 3px !important;
 }
 
-ruby.jyutping-hover-ruby:hover,
-ruby.jyutping-hover-ruby.speaking {
+ruby.jyutping-hover-ruby:hover {
   z-index: 1000;
 }
 
@@ -894,7 +895,7 @@ ruby.jyutping-hover-ruby.speaking {
   border: none !important;
   padding: 0 !important;
   margin: 0 !important;
-  pointer-events: none !important;
+  /* pointer-events removed */
   transition: none !important;
   transform: none !important;
 }
@@ -958,7 +959,6 @@ ruby.jyutping-hover-ruby.speaking {
   background: transparent !important;
   border: none !important;
   box-shadow: none !important;
-  opacity: 1 !important;
 }
 
 /* 消散背景 + 暗色自適應 */
@@ -1036,9 +1036,7 @@ ruby.jyutping-ruby-injected {
 }
 
 ruby.jyutping-ruby-injected:hover,
-ruby.jyutping-ruby-injected:hover rt,
-ruby.jyutping-ruby-injected.speaking,
-ruby.jyutping-ruby-injected.speaking rt {
+ruby.jyutping-ruby-injected:hover rt {
   color: #991b1b !important; /* 暗紅色 */
 }
 

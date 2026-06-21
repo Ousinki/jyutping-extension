@@ -660,5 +660,17 @@
   "clItem6": {
     "message": "🐛 <b>Fixed Floating Popup Styles</b>: Fixed layout distortion and inaccurate mask height issues for the floating popup on certain webpages.",
     "description": "Changelog item 6"
+  },
+  "optRubyRtBgToggle": {
+    "message": "Ruby Annotation Background"
+  },
+  "optRubyBgNone": {
+    "message": "None"
+  },
+  "optRubyBgFade": {
+    "message": "Fade"
+  },
+  "optRubyBgSolid": {
+    "message": "Solid"
   }
 }

@@ -34,6 +34,7 @@
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
   let highlightedRubyElement = null; // 全文注音模式下高亮的 ruby 元素
+  let activePopupRubyElement = null; // 當前懸浮窗所對應的 ruby 元素
   let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
   let rubyHoverStyle = 'ruby-red'; // Ruby 懸停樣式: ruby-red, ruby-blue, ruby-green, ruby-orange, ruby-purple, ruby-underline, ruby-border
   let rubyRtBackground = 'none'; // Hover Ruby 音標背景模式：'none' | 'fade' | 'solid'
@@ -547,11 +548,11 @@
       }
       /* 提升層級以保證高亮樣式正常顯示 */
       ruby.jyutping-hover-ruby:hover,
-      ruby.jyutping-hover-ruby.speaking {
+      ruby.jyutping-hover-ruby.jyutping-popup-active {
         z-index: 2147483640 !important;
       }
       ruby.jyutping-hover-ruby:hover,
-      ruby.jyutping-hover-ruby.speaking {
+      ruby.jyutping-hover-ruby.jyutping-popup-active {
         color: var(--ruby-hover-color, #8A1C1C) !important;
       }
       ruby.jyutping-hover-ruby.hl-ruby-red { --ruby-hover-color: #8A1C1C; }
@@ -561,11 +562,13 @@
       ruby.jyutping-hover-ruby.hl-ruby-purple { --ruby-hover-color: #6A1B9A; }
       /* 暗色背景自適應：覆寫為亮色 */
       ruby.jyutping-hover-ruby.dark-bg { --ruby-hover-color: #FFD54F; }
-      ruby.jyutping-hover-ruby.hl-ruby-underline:hover, ruby.jyutping-hover-ruby.hl-ruby-underline.speaking {
+      ruby.jyutping-hover-ruby.hl-ruby-underline:hover,
+      ruby.jyutping-hover-ruby.hl-ruby-underline.jyutping-popup-active {
         text-decoration: underline dashed var(--ruby-hover-color, #8A1C1C) !important;
         text-underline-offset: 3px !important; text-decoration-thickness: 1.5px !important;
       }
-      ruby.jyutping-hover-ruby.hl-ruby-border:hover, ruby.jyutping-hover-ruby.hl-ruby-border.speaking {
+      ruby.jyutping-hover-ruby.hl-ruby-border:hover,
+      ruby.jyutping-hover-ruby.hl-ruby-border.jyutping-popup-active {
         outline: 1.5px dashed var(--ruby-hover-color, #8A1C1C) !important;
         outline-offset: 1px !important; border-radius: 3px !important;
       }
@@ -576,22 +579,27 @@
         line-height: 2.0 !important; margin: 0 0.15em !important; cursor: pointer;
       }
       ruby.jyutping-ruby-injected:hover,
+      ruby.jyutping-ruby-injected.jyutping-popup-active,
       ruby.jyutping-ruby-injected:hover rt,
-      ruby.jyutping-ruby-injected.speaking {
+      ruby.jyutping-ruby-injected.jyutping-popup-active rt {
         color: #991b1b !important;
       }
-      ruby.jyutping-ruby-injected.speaking rt {
-        color: #991b1b !important;
+      ruby.jyutping-ruby-injected:hover.jyutping-clicked-hover rt {
         opacity: 1 !important;
       }
       /* 暗色背景自適應 */
       ruby.jyutping-ruby-injected.dark-bg:hover,
+      ruby.jyutping-ruby-injected.dark-bg.jyutping-popup-active,
       ruby.jyutping-ruby-injected.dark-bg:hover rt,
-      ruby.jyutping-ruby-injected.dark-bg.speaking {
+      ruby.jyutping-ruby-injected.dark-bg.jyutping-popup-active rt {
         color: #FFD54F !important;
       }
+      ruby.jyutping-ruby-injected.dark-bg:hover.jyutping-clicked-hover rt,
       ruby.jyutping-ruby-injected.dark-bg.speaking rt {
-        color: #FFD54F !important;
+        opacity: 1 !important;
+      }
+      ruby.jyutping-ruby-injected:hover.jyutping-clicked-hover rt,
+      ruby.jyutping-ruby-injected.speaking rt {
         opacity: 1 !important;
       }
       ruby.jyutping-ruby-injected rt {
@@ -604,7 +612,6 @@
         opacity: var(--jyutping-rt-opacity, 0.6) !important;
         user-select: none; white-space: nowrap !important;
         transform: scale(0.9); transform-origin: center bottom;
-        transition: opacity 0.2s ease, color 0.2s ease;
       }
     `;
     document.head.appendChild(hostStyle);
@@ -637,6 +644,11 @@
     translatePopup.style.display = 'none';
     shadowRoot.appendChild(translatePopup);
     translatePopup.addEventListener('mousedown', (e) => {
+      // 允許 QA 容器內的元素正常響應點擊（輸入框焦點、按鈕點擊等）
+      if (e.target.closest('.popup-qa-container')) {
+        e.stopPropagation();
+        return;
+      }
       // 允許表單元素獲取焦點
       const tag = e.target.tagName.toLowerCase();
       if (tag === 'textarea' || tag === 'input') {
@@ -838,6 +850,11 @@
 
   // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
   function showTranslatePopup(originalText, translations, loading) {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      hideTimeout = null;
+    }
+    
     if (originalText !== null) {
       activeQAContext.word = '';
       activeQAContext.sentence = originalText;
@@ -847,8 +864,8 @@
       activeQAContext.originalTranslation = Object.values(translations).join('; ');
     }
 
-    // 如果詞典彈窗正在顯示（且非精簡模式），將翻譯結果插入其中
-    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode')) {
+    // 如果詞典彈窗正在顯示（且非精簡/Ruby模式），將翻譯結果插入其中
+    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode') && !popup.classList.contains('popup-ruby-mode')) {
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
         if (loading) {
@@ -1071,8 +1088,8 @@
     }
     const renderedText = renderMarkdown(textToRender);
 
-    // 如果詞典彈窗正在顯示（且非精簡模式），插入其中
-    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode')) {
+    // 如果詞典彈窗正在顯示（且非精簡/Ruby模式），插入其中
+    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode') && !popup.classList.contains('popup-ruby-mode')) {
       const translateDiv = popup.querySelector('.popup-translate');
       if (translateDiv) {
         // 如果已經有了 .ai-text，只更新內容，避免破壞可能存在的 Q&A
@@ -1159,6 +1176,11 @@
 
   // 創建彈窗 DOM 元素
   function createPopup() {
+    let existingPopup = document.getElementById('cantonese-popup-dict');
+    if (existingPopup) {
+      existingPopup.remove();
+    }
+    
     popup = document.createElement('div');
     popup.id = 'cantonese-popup-dict';
     popup.style.display = 'none';
@@ -1385,6 +1407,11 @@
 
     // 點擊彈窗內部不關閉，且不影響背景選區
     popup.addEventListener('mousedown', (e) => {
+      // 允許 QA 容器內的元素正常響應點擊
+      if (e.target.closest('.popup-qa-container')) {
+        e.stopPropagation();
+        return;
+      }
       // 允許表單元素獲取焦點
       const tag = e.target.tagName.toLowerCase();
       if (tag === 'textarea' || tag === 'input') {
@@ -1616,7 +1643,10 @@
       activeSpeakerBtn.classList.remove('speaking');
       activeSpeakerBtn = null;
     }
-    // 注意：不清除 activeSpeakingRuby 的 .speaking，讓已點擊發音的 Ruby 音標永久保持不透明
+    if (activeSpeakingRuby) {
+      activeSpeakingRuby.classList.remove('speaking');
+      activeSpeakingRuby = null;
+    }
     if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
   }
   
@@ -1642,6 +1672,15 @@
 
   async function speakCantonese(text, targetBtn = null) {
     if (!ttsEnabled) return;
+    
+    // ★ 關鍵修復：在用戶手勢（點擊）的同步調用棧中，立即播放一個無聲的音頻，以解鎖瀏覽器的 Autoplay Policy
+    try {
+        const dummyAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+        dummyAudio.volume = 0;
+        dummyAudio.play().catch(e => console.log('Dummy audio unlock failed:', e));
+    } catch (e) {
+        console.error('Audio unlock error:', e);
+    }
     
     // 將文本轉換為繁體（如果詞典有記錄），避免 macOS WebSpeech 等引擎將簡體字（如「区」）錯誤讀成國語
     let textToSpeak = text;
@@ -1875,11 +1914,10 @@
       // 只處理左鍵點擊，右鍵不觸發 TTS / AI 長按
       if (e.button !== 0) return;
 
-      // 如果點擊在彈窗內部，不隱藏
-      if (popup && popup.contains(e.target)) {
-        return;
-      }
-      if (translatePopup && translatePopup.contains(e.target)) {
+      // 如果點擊在 Shadow DOM 宿主內（也就是點擊了懸浮窗），不隱藏
+      // 使用 composedPath() 確保在 Shadow DOM 內部的點擊也能被正確攔截
+      const path = e.composedPath ? e.composedPath() : [];
+      if (path.some(el => el.id === 'jyutping-shadow-host' || el.id === 'cantonese-popup-dict' || el.id === 'cantonese-translate-popup')) {
         return;
       }
 
@@ -2014,7 +2052,7 @@
 
       // 如果點擊不在高亮區且不是 ruby，嘗試即時掃描滑鼠下方的文字以獲取單詞並高亮
       if (!clickInHighlight) {
-        console.log('[AI-LongPress] Mousedown outside highlight, performing instant word scan...');
+        console.log('[AI-LongPress] Mousedown outside highlight. e.target:', e.target.tagName, e.target.className, 'popup is:', popup, 'popup.contains:', popup ? popup.contains(e.target) : 'null');
         const previousWord = currentWord;
         handleMouseOver(e);
         
@@ -2182,6 +2220,7 @@
         if (word) {
           speakCantonese(word);
           startRubySpeakingState(ruby);
+          ruby.classList.add('jyutping-clicked-hover');
         }
       }
     });
@@ -2191,7 +2230,9 @@
       if (!isEnabled) return;
 
       // 忽略來自於詞典浮窗或翻譯浮窗內部的雙擊
-      if (e.target.closest('#cantonese-popup-dict') || e.target.closest('#cantonese-translate-popup')) {
+      // 使用 composedPath() 確保在 Shadow DOM 內部的雙擊也能被正確攔截
+      const path = e.composedPath ? e.composedPath() : [];
+      if (path.some(el => el.id === 'jyutping-shadow-host' || el.id === 'cantonese-popup-dict' || el.id === 'cantonese-translate-popup')) {
         return;
       }
 
@@ -2473,12 +2514,10 @@
     if (expandLockTimer) return; // 展開按鈕冷卻期內不重新渲染
     if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不重新渲染
     
-    // 檢查修飾鍵是否按下（精簡模式和 Ruby 模式不需要修飾鍵）
-    const modifierPressed = popupDisplayStyle === 'compact' || popupDisplayStyle === 'ruby' || hoverModifier === 'none' ||
+    // 檢查修飾鍵是否按下（精簡模式不需要修飾鍵）
+    const modifierPressed = popupDisplayStyle === 'compact' || hoverModifier === 'none' ||
       (hoverModifier === 'alt' && e.altKey) ||
       (hoverModifier === 'ctrl' && e.ctrlKey) ||
-      (hoverModifier === 'shift' && e.shiftKey) ||
-      (hoverModifier === 'meta' && e.metaKey);
       (hoverModifier === 'shift' && e.shiftKey) ||
       (hoverModifier === 'meta' && e.metaKey);
 
@@ -2507,11 +2546,12 @@
       if (word && dictionary[word]) {
         justNavigated = false;
         
-        if (previousWord !== word || highlightedRubyElement !== rubyElement) {
+        if (currentWord !== word || highlightedRubyElement !== rubyElement) {
           removeHighlight(); // 移除舊的高亮
           
-          rubyElement.classList.add('jyutping-highlight');
-          rubyElement.classList.add('hl-' + (highlightStyle || 'yellow'));
+          // 對於已經全文注音的 ruby，我們不需要加黃色高亮背景，保留其原生樣式即可。
+          // rubyElement.classList.add('jyutping-highlight');
+          // rubyElement.classList.add('hl-' + (highlightStyle || 'yellow'));
           highlightedRubyElement = rubyElement;
           
           currentWord = word;
@@ -2522,10 +2562,18 @@
         }
         
         const result = { word: word, entry: dictionary[word] };
-        if (modifierPressed) {
+        
+        // 對於已經有注音的 ruby 元素，只有在「真正按下了修飾鍵」時才在懸停時顯示彈窗。
+        // 避免在 hoverModifier 為 'none' 時，滑鼠一移動就彈出視窗（影響閱讀體驗），這部分應留給雙擊觸發。
+        const actualModifierPressed = (hoverModifier === 'alt' && e.altKey) ||
+                                      (hoverModifier === 'ctrl' && e.ctrlKey) ||
+                                      (hoverModifier === 'shift' && e.shiftKey) ||
+                                      (hoverModifier === 'meta' && e.metaKey);
+        
+        if (actualModifierPressed) {
           showPopup(result, rubyElement.getBoundingClientRect());
         } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          hidePopup(true);
+          scheduleHidePopup();
         }
       } else {
         if (!justNavigated) scheduleHidePopup();
@@ -2623,7 +2671,7 @@
         if (modifierPressed) {
           showPopup(result, bestRect || currentRange.getBoundingClientRect());
         } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          hidePopup(true);
+          scheduleHidePopup();
         }
       } else {
         // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
@@ -2634,7 +2682,7 @@
             width: 0, height: 0
           });
         } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          hidePopup(true);
+          scheduleHidePopup();
         }
       }
     } else {
@@ -3007,7 +3055,7 @@
       compactText.style.cursor = 'pointer';
       // 必須使用 mousedown 才能保證手抖時 100% 觸發（因為小目標極易發生 1px 拖拽導致 click 丟失）
       // 注意：絕不能加 e.preventDefault()，否則會被瀏覽器 Autoplay Policy 攔截導致 NotAllowedError
-      compactText.addEventListener('mousedown', (e) => {
+      compactText.addEventListener('pointerup', (e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
         speakCantonese(entry.traditional);
@@ -3193,11 +3241,24 @@
 
     // 構建拼音內容
     popupMain.innerHTML = `
-      <span class="ruby-floating-text">${pronunciation}</span>
+      <span class="ruby-floating-text" style="cursor: pointer;">${pronunciation}</span>
     `;
 
-    // 設置 pointer-events = none
-    popup.style.pointerEvents = 'none';
+    // 綁定發音事件
+    const rubyText = popupMain.querySelector('.ruby-floating-text');
+    if (rubyText) {
+      rubyText.addEventListener('pointerup', (e) => {
+        if (e.button !== 0) return;
+        e.stopPropagation();
+        speakCantonese(entry.traditional);
+        
+        rubyText.style.opacity = '0.5';
+        setTimeout(() => rubyText.style.opacity = '1', 200);
+      });
+    }
+
+    // 設置 pointer-events = auto 以允許點擊
+    popup.style.pointerEvents = 'auto';
 
     // 定位
     if (rect) {
@@ -3303,6 +3364,24 @@
   // 顯示彈窗
   // rect: { left, right, top, bottom, width, height }
   function showPopup(result, rect, forceFull = false) {
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      hideTimeout = null;
+    }
+    
+    if (activePopupRubyElement) {
+      activePopupRubyElement.classList.remove('jyutping-popup-active');
+      activePopupRubyElement = null;
+    }
+    if (currentRange && currentRange.commonAncestorContainer) {
+      const container = currentRange.commonAncestorContainer;
+      const ruby = container.nodeType === Node.TEXT_NODE ? container.parentElement.closest('ruby') : (container.closest ? container.closest('ruby') : null);
+      if (ruby) {
+        activePopupRubyElement = ruby;
+        activePopupRubyElement.classList.add('jyutping-popup-active');
+      }
+    }
+
     const entry = result.entry;
 
     // 隱藏翻譯浮窗，避免雙彈窗
@@ -3669,7 +3748,10 @@
 
   // 延遲隱藏（給用戶時間移動到彈窗上）
   function scheduleHidePopup(delay = 400) {
-    if (hideTimeout) return;
+    if (hideTimeout) {
+      clearTimeout(hideTimeout);
+      hideTimeout = null;
+    }
     if (expandLockTimer) return; // 展開按鈕冷卻期內不隱藏
     if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不自動隱藏
     
@@ -3694,6 +3776,11 @@
 
   // 隱藏彈窗
   function hidePopup(keepHighlight = false) {
+    if (activePopupRubyElement) {
+      activePopupRubyElement.classList.remove('jyutping-popup-active');
+      activePopupRubyElement = null;
+    }
+
     if (popup) {
       popup.style.display = 'none';
       hideRubyFadeMask();
@@ -3872,7 +3959,7 @@
     
     // 移除全文注音模式下的 ruby 高亮
     if (highlightedRubyElement) {
-      highlightedRubyElement.classList.remove('jyutping-highlight');
+      highlightedRubyElement.classList.remove('jyutping-highlight', 'jyutping-clicked-hover');
       highlightedRubyElement.classList.remove('hl-yellow', 'hl-blue', 'hl-red', 'hl-green', 'hl-gray', 'hl-underline-dashed', 'hl-border-dashed');
       highlightedRubyElement = null;
     }
@@ -4325,9 +4412,9 @@
 
   // 顯示 AI 隨身問答界面
   function showPopupQA(activePopup) {
-    // 注入 Q&A 專屬動畫樣式 (精緻跳動圓點 - 緊湊版)
+    // 注入 Q&A 專屬動畫樣式 (精緻跳動圓點 - 緊湊版) 到 Shadow DOM 中
     const styleId = 'cantonese-qa-style';
-    if (!document.getElementById(styleId)) {
+    if (!shadowRoot.getElementById(styleId)) {
       const style = document.createElement('style');
       style.id = styleId;
       style.textContent = `
@@ -4365,7 +4452,7 @@
           }
         }
       `;
-      document.head.appendChild(style);
+      shadowRoot.appendChild(style);
     }
 
     // 清除選區，避免雙擊產生的選取干擾
