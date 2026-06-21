@@ -666,10 +666,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
     });
     translatePopup.addEventListener('mouseenter', () => {
       isMouseOverPopup = true;
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
+      cancelScheduledHide();
     });
     translatePopup.addEventListener('mouseleave', () => {
       isMouseOverPopup = false;
@@ -856,10 +853,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
 
   // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
   function showTranslatePopup(originalText, translations, loading) {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      hideTimeout = null;
-    }
+    cancelScheduledHide();
     
     if (originalText !== null) {
       activeQAContext.word = '';
@@ -1393,10 +1387,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
       isMouseOverPopup = true;
       justNavigated = false; // 進入後重置導航狀態，恢復正常延遲
       waitingForMouseToEnterAfterExpand = false; // 鼠標移入後，解除等待鎖
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
+      cancelScheduledHide();
     });
 
     // 滑鼠離開彈窗時隱藏
@@ -2399,10 +2390,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
     // 如果是已經被全文注音的區域，則顯示懸浮窗並高亮該 ruby 元素
     const rubyElement = targetElement && targetElement.closest('.jyutping-ruby-injected');
     if (rubyElement) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
+      cancelScheduledHide();
       
       const word = rubyElement.dataset.word;
       if (word && dictionary[word]) {
@@ -2434,20 +2422,17 @@ import { createBlobUrlFromDataUri } from './tts.js';
         
         if (actualModifierPressed) {
           showPopup(result, rubyElement.getBoundingClientRect());
-        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          scheduleHidePopup();
+        } else {
+          scheduleHideIfMouseOutside();
         }
       } else {
-        if (!justNavigated) scheduleHidePopup();
+        maybeScheduleHide();
       }
       return;
     }
     
     if (targetElement && (targetElement.classList.contains('jyutping-highlight') || targetElement.closest('.jyutping-hover-ruby'))) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
+      cancelScheduledHide();
       
       // 如果按下了修飾鍵，且彈窗目前隱藏，則直接顯示彈窗（不需要重新解析文字）
       if (modifierPressed && popup && popup.style.display === 'none' && currentWord && dictionary[currentWord]) {
@@ -2463,9 +2448,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
     let range = getCaretRangeFromPointInShadow(clientX, clientY);
     if (!range) {
       // 滑鼠在空白處
-      if (!justNavigated) {
-        scheduleHidePopup();
-      }
+      maybeScheduleHide();
       return; // ★ 核心修復：在空白處移動時，保留舊的高亮，讓它跟隨彈窗生命週期
     }
 
@@ -2477,21 +2460,21 @@ import { createBlobUrlFromDataUri } from './tts.js';
       // 原來的 range.startContainer 可能已經失效，所以必須重新獲取一次
       range = getCaretRangeFromPointInShadow(clientX, clientY);
       if (!range) {
-        if (!justNavigated) scheduleHidePopup();
+        maybeScheduleHide();
         return;
       }
     }
 
     const textNode = range.startContainer;
     if (textNode.nodeType !== Node.TEXT_NODE) {
-      if (!justNavigated) scheduleHidePopup();
+      maybeScheduleHide();
       return;
     }
 
     // 使用精確定位找出最近的字符
     const offset = getAccurateOffset(textNode, clientX, clientY);
     if (offset === -1) {
-      if (!justNavigated) scheduleHidePopup();
+      maybeScheduleHide();
       return;
     }
 
@@ -2516,10 +2499,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
       if (previousWord === result.word && popup.style.display !== 'none') {
         currentWord = result.word;
         // 如果有待執行的隱藏任務，取消它（因為用戶又回來了）
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-          hideTimeout = null;
-        }
+        cancelScheduledHide();
         return;
       }
       
@@ -2532,8 +2512,8 @@ import { createBlobUrlFromDataUri } from './tts.js';
         
         if (modifierPressed) {
           showPopup(result, bestRect || currentRange.getBoundingClientRect());
-        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          scheduleHidePopup();
+        } else {
+          scheduleHideIfMouseOutside();
         }
       } else {
         // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
@@ -2543,16 +2523,14 @@ import { createBlobUrlFromDataUri } from './tts.js';
             top: clientY, bottom: clientY,
             width: 0, height: 0
           });
-        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          scheduleHidePopup();
+        } else {
+          scheduleHideIfMouseOutside();
         }
       }
     } else {
       // 未匹配到詞
       currentWord = null;
-      if (!justNavigated) {
-        scheduleHidePopup();
-      }
+      maybeScheduleHide();
     }
   }
 
@@ -3191,10 +3169,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
   // 顯示彈窗
   // rect: { left, right, top, bottom, width, height }
   function showPopup(result, rect, forceFull = false) {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      hideTimeout = null;
-    }
+    cancelScheduledHide();
     
     if (activePopupRubyElement) {
       activePopupRubyElement.classList.remove('jyutping-popup-active');
@@ -3573,12 +3548,31 @@ import { createBlobUrlFromDataUri } from './tts.js';
   }
 
 
-  // 延遲隱藏（給用戶時間移動到彈窗上）
-  function scheduleHidePopup(delay = 400) {
+  // ── 彈窗隱藏生命週期助手（單一數據源，避免散落的標誌操作造成連帶 bug）──
+
+  // 取消任何待執行的隱藏計時器
+  function cancelScheduledHide() {
     if (hideTimeout) {
       clearTimeout(hideTimeout);
       hideTimeout = null;
     }
+  }
+
+  // 僅在非「剛導航」狀態下安排隱藏（導航後保持彈窗）
+  function maybeScheduleHide() {
+    if (!justNavigated) scheduleHidePopup();
+  }
+
+  // 彈窗可見且滑鼠不在其上時才安排隱藏
+  function scheduleHideIfMouseOutside() {
+    if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
+      scheduleHidePopup();
+    }
+  }
+
+  // 延遲隱藏（給用戶時間移動到彈窗上）
+  function scheduleHidePopup(delay = 400) {
+    cancelScheduledHide();
     if (expandLockTimer) return; // 展開按鈕冷卻期內不隱藏
     if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不自動隱藏
     

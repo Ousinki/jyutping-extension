@@ -931,10 +931,7 @@
       });
       translatePopup.addEventListener("mouseenter", () => {
         isMouseOverPopup = true;
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-          hideTimeout = null;
-        }
+        cancelScheduledHide();
       });
       translatePopup.addEventListener("mouseleave", () => {
         isMouseOverPopup = false;
@@ -1077,10 +1074,7 @@
       });
     }
     function showTranslatePopup(originalText, translations, loading) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
+      cancelScheduledHide();
       if (originalText !== null) {
         activeQAContext.word = "";
         activeQAContext.sentence = originalText;
@@ -1512,10 +1506,7 @@ ${userDesc || "未提供具體描述"}`;
         isMouseOverPopup = true;
         justNavigated = false;
         waitingForMouseToEnterAfterExpand = false;
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-          hideTimeout = null;
-        }
+        cancelScheduledHide();
       });
       popup.addEventListener("mouseleave", () => {
         isMouseOverPopup = false;
@@ -2330,10 +2321,7 @@ ${userDesc || "未提供具體描述"}`;
       }
       const rubyElement = targetElement && targetElement.closest(".jyutping-ruby-injected");
       if (rubyElement) {
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-          hideTimeout = null;
-        }
+        cancelScheduledHide();
         const word = rubyElement.dataset.word;
         if (word && dictionary[word]) {
           justNavigated = false;
@@ -2349,19 +2337,16 @@ ${userDesc || "未提供具體描述"}`;
           const actualModifierPressed = hoverModifier === "alt" && e.altKey || hoverModifier === "ctrl" && e.ctrlKey || hoverModifier === "shift" && e.shiftKey || hoverModifier === "meta" && e.metaKey;
           if (actualModifierPressed) {
             showPopup(result2, rubyElement.getBoundingClientRect());
-          } else if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
-            scheduleHidePopup();
+          } else {
+            scheduleHideIfMouseOutside();
           }
         } else {
-          if (!justNavigated) scheduleHidePopup();
+          maybeScheduleHide();
         }
         return;
       }
       if (targetElement && (targetElement.classList.contains("jyutping-highlight") || targetElement.closest(".jyutping-hover-ruby"))) {
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-          hideTimeout = null;
-        }
+        cancelScheduledHide();
         if (modifierPressed && popup && popup.style.display === "none" && currentWord && dictionary[currentWord]) {
           const result2 = { word: currentWord, entry: dictionary[currentWord] };
           showPopup(result2, currentRange ? currentRange.getBoundingClientRect() : {
@@ -2377,9 +2362,7 @@ ${userDesc || "未提供具體描述"}`;
       }
       let range = getCaretRangeFromPointInShadow(clientX, clientY);
       if (!range) {
-        if (!justNavigated) {
-          scheduleHidePopup();
-        }
+        maybeScheduleHide();
         return;
       }
       const previousWord = currentWord;
@@ -2387,18 +2370,18 @@ ${userDesc || "未提供具體描述"}`;
         removeHighlight();
         range = getCaretRangeFromPointInShadow(clientX, clientY);
         if (!range) {
-          if (!justNavigated) scheduleHidePopup();
+          maybeScheduleHide();
           return;
         }
       }
       const textNode = range.startContainer;
       if (textNode.nodeType !== Node.TEXT_NODE) {
-        if (!justNavigated) scheduleHidePopup();
+        maybeScheduleHide();
         return;
       }
       const offset = getAccurateOffset(textNode, clientX, clientY);
       if (offset === -1) {
-        if (!justNavigated) scheduleHidePopup();
+        maybeScheduleHide();
         return;
       }
       const text = textNode.textContent;
@@ -2410,10 +2393,7 @@ ${userDesc || "未提供具體描述"}`;
         highlightText(textNode, offset, result);
         if (previousWord === result.word && popup.style.display !== "none") {
           currentWord = result.word;
-          if (hideTimeout) {
-            clearTimeout(hideTimeout);
-            hideTimeout = null;
-          }
+          cancelScheduledHide();
           return;
         }
         currentWord = result.word;
@@ -2421,8 +2401,8 @@ ${userDesc || "未提供具體描述"}`;
           const bestRect = getBestRectForRange(currentRange);
           if (modifierPressed) {
             showPopup(result, bestRect || currentRange.getBoundingClientRect());
-          } else if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
-            scheduleHidePopup();
+          } else {
+            scheduleHideIfMouseOutside();
           }
         } else {
           if (modifierPressed) {
@@ -2434,15 +2414,13 @@ ${userDesc || "未提供具體描述"}`;
               width: 0,
               height: 0
             });
-          } else if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
-            scheduleHidePopup();
+          } else {
+            scheduleHideIfMouseOutside();
           }
         }
       } else {
         currentWord = null;
-        if (!justNavigated) {
-          scheduleHidePopup();
-        }
+        maybeScheduleHide();
       }
     }
     function lookupWord(text) {
@@ -2949,10 +2927,7 @@ ${userDesc || "未提供具體描述"}`;
       }
     }
     function showPopup(result, rect, forceFull = false) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
+      cancelScheduledHide();
       if (activePopupRubyElement) {
         activePopupRubyElement.classList.remove("jyutping-popup-active");
         activePopupRubyElement = null;
@@ -3222,11 +3197,22 @@ ${userDesc || "未提供具體描述"}`;
         popup.style.left = newLeft + "px";
       }
     }
-    function scheduleHidePopup(delay = 400) {
+    function cancelScheduledHide() {
       if (hideTimeout) {
         clearTimeout(hideTimeout);
         hideTimeout = null;
       }
+    }
+    function maybeScheduleHide() {
+      if (!justNavigated) scheduleHidePopup();
+    }
+    function scheduleHideIfMouseOutside() {
+      if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
+        scheduleHidePopup();
+      }
+    }
+    function scheduleHidePopup(delay = 400) {
+      cancelScheduledHide();
       if (expandLockTimer) return;
       if (waitingForMouseToEnterAfterExpand) return;
       if (popup && popup.querySelector(".popup-qa-container")) return;
