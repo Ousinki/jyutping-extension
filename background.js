@@ -51,6 +51,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'aiTranslate') {
     GoogleAnalytics.fireEvent('translate', { type: 'ai' });
     handleAiTranslate(request, sender.tab.id);
+  } else if (request.action === 'aiTranslateParagraph') {
+    GoogleAnalytics.fireEvent('translate', { type: 'ai_paragraph' });
+    handleAiTranslateParagraph(request, sender.tab.id);
   } else if (request.action === 'aiChatQuery') {
     handleAiChatQuery(request, sendResponse);
     return true; // Keep channel open
@@ -496,6 +499,79 @@ async function handleAiTranslate(request, tabId) {
       error: error.message,
       word: word
     }).catch(() => {});
+  }
+}
+
+// 段落整段翻譯成粵語（保留 HTML 結構）。與 handleAiTranslate 共用 AI 設定，
+// 但要求更大的 max_tokens 並保留標籤/emoji，結果以 HTML 回傳給 content script。
+async function handleAiTranslateParagraph(request, tabId) {
+  const { html, id } = request;
+
+  const reply = (payload) => {
+    chrome.tabs.sendMessage(tabId, {
+      action: 'aiTranslateParagraphResult',
+      id,
+      ...payload
+    }).catch(() => {});
+  };
+
+  try {
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
+    const { aiBaseUrl, aiApiKey, aiModel } = settings;
+
+    if (!aiBaseUrl || !aiApiKey || !aiModel) {
+      throw new Error('請先在設定頁面配置 AI 翻譯');
+    }
+
+    if (!html || !html.trim()) {
+      throw new Error('沒有可翻譯的內容');
+    }
+
+    const prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段 HTML 片段中的文字內容翻譯成自然、地道的粵語書面語。
+
+嚴格要求：
+1. 只翻譯可見文字，原樣保留所有 HTML 標籤、屬性（尤其是 <a> 的 href）、以及 emoji 與標點。
+2. 標籤的結構與順序保持不變，只替換其中的文字。
+3. 不要新增/刪除標籤，不要加入解釋、Markdown 或程式碼圍欄。
+4. 只輸出翻譯後的 HTML 片段本身，不要任何前後綴。
+
+待翻譯 HTML：
+${html}`;
+
+    const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiApiKey}`
+      },
+      body: JSON.stringify({
+        model: aiModel,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 2000,
+        temperature: 0.3
+      })
+    });
+
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`API 錯誤 (${response.status}): ${errText.substring(0, 100)}`);
+    }
+
+    const data = await response.json();
+    let result = data.choices?.[0]?.message?.content?.trim() || '';
+
+    // 去除模型可能加上的 ```html ... ``` 圍欄
+    result = result.replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/i, '').trim();
+
+    if (!result) {
+      throw new Error('AI 返回空結果');
+    }
+
+    reply({ success: true, html: result });
+  } catch (error) {
+    console.warn('AI 段落翻譯失敗:', error.message || error);
+    reply({ success: false, error: error.message || String(error) });
   }
 }
 

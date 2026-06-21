@@ -8,6 +8,7 @@ import { getElementBackgroundColor, checkIsDarkColor, isElementOnDarkBackground 
 import { convertToSuperscriptTone } from './text-utils.js';
 import { isEditableElement, hasEditableFocus, getCaretRangeFromPointInShadow, getAccurateOffset } from './dom.js';
 import { createBlobUrlFromDataUri } from './tts.js';
+import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
 (function() {
   'use strict';
@@ -59,7 +60,12 @@ import { createBlobUrlFromDataUri } from './tts.js';
   let lastTranslateRect = null;
   let currentMouseX = 0; // 用於記錄絕對鼠標 X 位置
   let currentMouseY = 0; // 用於記錄絕對鼠標 Y 位置
-  
+
+  // 段落整段粵語翻譯（按鍵觸發，譯文內聯顯示在原文下方）
+  let paragraphTransKey = 'alt'; // 觸發鍵：'off' | 'shift' | 'alt' | 'ctrl' | 'meta'（可在選項頁設定）
+  let paraTransSeq = 0; // 翻譯請求自增 id
+  const pendingParaTrans = new Map(); // id -> { block, translationEl }
+
   // Q&A 隨身問答狀態
   let activeQAContext = {
     word: '',
@@ -613,6 +619,22 @@ import { createBlobUrlFromDataUri } from './tts.js';
         opacity: var(--jyutping-rt-opacity, 0.6) !important;
         user-select: none; white-space: nowrap !important;
         transform: scale(0.9); transform-origin: center bottom;
+      }
+
+      /* ========== 段落粵語翻譯（內聯於原文下方，灰色半透明以示區別）========== */
+      .jyutping-cantonese-trans {
+        opacity: 0.62 !important;
+        color: #6b7280 !important;
+        margin-top: 0.15em !important;
+        /* 繼承自原塊的字體/排版（淺克隆保留了 class），此處僅淡化以示區別 */
+      }
+      .jyutping-cantonese-trans a {
+        color: inherit !important;
+        text-decoration: underline !important;
+      }
+      .jyutping-cantonese-trans .jyutping-cantonese-trans-loading {
+        font-style: italic;
+        opacity: 0.85;
       }
     `;
     document.head.appendChild(hostStyle);
@@ -2317,7 +2339,15 @@ import { createBlobUrlFromDataUri } from './tts.js';
         hideTranslatePopup();
         hasUserSelection = false;
       }
-      
+
+      // 段落整段粵語翻譯：按下設定的觸發鍵即翻譯鼠標下的段落（再按一次移除）
+      if (isEnabled && paragraphTransKey !== 'off' && !e.repeat) {
+        const paraKeyMap = { 'shift': 'Shift', 'alt': 'Alt', 'ctrl': 'Control', 'meta': 'Meta' };
+        if (e.key === paraKeyMap[paragraphTransKey]) {
+          translateBlockUnderCursor();
+        }
+      }
+
       // 如果按下了設定的修飾鍵，立刻觸發懸停查詞
       const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
       if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
@@ -3697,6 +3727,114 @@ import { createBlobUrlFromDataUri } from './tts.js';
     currentRange = null;
   }
 
+  // ==================== 段落整段粵語翻譯 ====================
+
+  // 從座標找出最近的「可翻譯塊級元素」（最貼近的段落容器）
+  function findTranslatableBlock(x, y) {
+    let el = document.elementFromPoint(x, y);
+    if (!el) return null;
+    // 排除插件自身 UI 與已生成的譯文
+    if (el.closest('#cantonese-popup-dict, #cantonese-translate-popup, .jyutping-cantonese-trans')) return null;
+    if (isEditableElement(el)) return null;
+
+    const BLOCK_TAGS = new Set([
+      'P', 'LI', 'BLOCKQUOTE', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6',
+      'DD', 'DT', 'FIGCAPTION', 'TD', 'TH', 'ARTICLE', 'SECTION', 'DIV', 'PRE'
+    ]);
+
+    let node = el;
+    while (node && node !== document.body && node.nodeType === 1) {
+      const disp = window.getComputedStyle(node).display;
+      const isBlock = BLOCK_TAGS.has(node.tagName) || /block|list-item|table-cell|flow-root/.test(disp);
+      if (isBlock && node.textContent.trim().length > 0) return node;
+      node = node.parentElement;
+    }
+    return null;
+  }
+
+  // 觸發：翻譯鼠標下的段落（已翻譯則移除，toggle）
+  function translateBlockUnderCursor() {
+    if (currentMouseX === 0 && currentMouseY === 0) return;
+    const block = findTranslatableBlock(currentMouseX, currentMouseY);
+    if (!block) return;
+
+    // 已有譯文 → 移除（toggle）
+    const existingId = block.getAttribute('data-jyutping-trans-id');
+    if (existingId) {
+      removeBlockTranslation(block);
+      return;
+    }
+
+    const id = ++paraTransSeq;
+    const html = block.innerHTML;
+    if (!html || !block.textContent.trim()) return;
+
+    const translationEl = createTranslationPlaceholder(block);
+    block.setAttribute('data-jyutping-trans-id', String(id));
+    pendingParaTrans.set(id, { block, translationEl });
+
+    chrome.runtime.sendMessage({ action: 'aiTranslateParagraph', id, html });
+  }
+
+  // 淺克隆原塊作為譯文容器：繼承原標籤+class（網站 CSS 自動套用），疊加灰色透明度
+  function createTranslationPlaceholder(block) {
+    let clone;
+    const tag = block.tagName;
+    // 像 TD/TH/LI 這類需要特定父容器的元素，克隆為 DIV 以免破壞表格/列表結構
+    if (tag === 'TD' || tag === 'TH' || tag === 'LI' || tag === 'DT' || tag === 'DD') {
+      clone = document.createElement('div');
+    } else {
+      clone = block.cloneNode(false); // 淺克隆：保留標籤與 class，不含子節點
+    }
+    clone.classList.add('jyutping-cantonese-trans');
+    clone.removeAttribute('id'); // 避免 id 重複
+    clone.removeAttribute('data-jyutping-trans-id');
+    clone.innerHTML = '<span class="jyutping-cantonese-trans-loading">⏳ 粵語翻譯中…</span>';
+
+    if (block.nextSibling) {
+      block.parentNode.insertBefore(clone, block.nextSibling);
+    } else {
+      block.parentNode.appendChild(clone);
+    }
+    return clone;
+  }
+
+  // 移除某塊的譯文
+  function removeBlockTranslation(block) {
+    const id = block.getAttribute('data-jyutping-trans-id');
+    block.removeAttribute('data-jyutping-trans-id');
+    if (id && pendingParaTrans.has(Number(id))) {
+      const entry = pendingParaTrans.get(Number(id));
+      if (entry.translationEl && entry.translationEl.parentNode) entry.translationEl.remove();
+      pendingParaTrans.delete(Number(id));
+      return;
+    }
+    // 後備：直接找緊鄰的譯文兄弟元素
+    const sib = block.nextElementSibling;
+    if (sib && sib.classList.contains('jyutping-cantonese-trans')) sib.remove();
+  }
+
+  // 收到 background 的翻譯結果
+  function applyParagraphTranslation(id, success, payloadHtml, error) {
+    const entry = pendingParaTrans.get(id);
+    if (!entry) return;
+    pendingParaTrans.delete(id);
+    const { block, translationEl } = entry;
+    if (!translationEl || !translationEl.parentNode) {
+      if (block) block.removeAttribute('data-jyutping-trans-id');
+      return;
+    }
+
+    if (success && payloadHtml) {
+      translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+    } else {
+      // 失敗：撤掉占位塊與標記，提示
+      translationEl.remove();
+      if (block) block.removeAttribute('data-jyutping-trans-id');
+      showToast('粵語翻譯失敗：' + (error || '未知錯誤'));
+    }
+  }
+
   // 監聽來自 popup 的消息（切換開關、設定等）
   chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     if (request.action === 'toggleEnabled') {
@@ -3826,6 +3964,10 @@ import { createBlobUrlFromDataUri } from './tts.js';
       toggleRubyAnnotations();
     } else if (request.action === 'ttsEnded') {
       stopSpeakerAnimation();
+    } else if (request.action === 'aiTranslateParagraphResult') {
+      applyParagraphTranslation(request.id, request.success, request.html, request.error);
+    } else if (request.action === 'changeParagraphTransKey') {
+      paragraphTransKey = request.paragraphTransKey || 'off';
     }
   });
 

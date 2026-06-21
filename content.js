@@ -330,6 +330,102 @@
     }
   }
 
+  // src/content/paragraph-translate.js
+  var ALLOWED_TAGS = /* @__PURE__ */ new Set([
+    "A",
+    "B",
+    "I",
+    "EM",
+    "STRONG",
+    "SPAN",
+    "BR",
+    "CODE",
+    "SUB",
+    "SUP",
+    "MARK",
+    "U",
+    "S",
+    "SMALL",
+    "DEL",
+    "INS",
+    "ABBR",
+    "WBR",
+    "BDI",
+    "BDO",
+    "Q",
+    "CITE",
+    "TIME",
+    "RUBY",
+    "RT",
+    "RP"
+  ]);
+  var DROP_TAGS = /* @__PURE__ */ new Set([
+    "SCRIPT",
+    "STYLE",
+    "IFRAME",
+    "OBJECT",
+    "EMBED",
+    "LINK",
+    "META",
+    "BASE",
+    "FORM",
+    "INPUT",
+    "TEXTAREA",
+    "BUTTON",
+    "SELECT",
+    "OPTION",
+    "SVG",
+    "MATH",
+    "NOSCRIPT",
+    "TEMPLATE",
+    "CANVAS",
+    "AUDIO",
+    "VIDEO",
+    "SOURCE",
+    "TRACK"
+  ]);
+  var ALLOWED_ATTRS = { A: /* @__PURE__ */ new Set(["href", "title"]) };
+  var EMPTY = /* @__PURE__ */ new Set();
+  function isSafeHref(value) {
+    const v = (value || "").trim().toLowerCase();
+    return !(v.startsWith("javascript:") || v.startsWith("data:") || v.startsWith("vbscript:"));
+  }
+  function sanitizeTranslatedHtml(html) {
+    if (!html) return "";
+    const template = document.createElement("template");
+    template.innerHTML = html;
+    const root = template.content;
+    const elements = Array.from(root.querySelectorAll("*"));
+    for (const el of elements) {
+      if (!root.contains(el)) continue;
+      const tag = el.tagName;
+      if (DROP_TAGS.has(tag)) {
+        el.remove();
+        continue;
+      }
+      if (!ALLOWED_TAGS.has(tag)) {
+        const parent = el.parentNode;
+        if (parent) {
+          while (el.firstChild) parent.insertBefore(el.firstChild, el);
+          parent.removeChild(el);
+        }
+        continue;
+      }
+      const allowed = ALLOWED_ATTRS[tag] || EMPTY;
+      for (const attr of Array.from(el.attributes)) {
+        const name = attr.name.toLowerCase();
+        if (!allowed.has(name) || name === "href" && !isSafeHref(attr.value)) {
+          el.removeAttribute(attr.name);
+        }
+      }
+      if (tag === "A" && el.hasAttribute("href")) {
+        el.setAttribute("target", "_blank");
+        el.setAttribute("rel", "noopener noreferrer");
+      }
+    }
+    return template.innerHTML;
+  }
+
   // src/content/index.js
   (function() {
     "use strict";
@@ -377,6 +473,9 @@
     let lastTranslateRect = null;
     let currentMouseX = 0;
     let currentMouseY = 0;
+    let paragraphTransKey = "alt";
+    let paraTransSeq = 0;
+    const pendingParaTrans = /* @__PURE__ */ new Map();
     let activeQAContext = {
       word: "",
       sentence: "",
@@ -889,6 +988,22 @@
         opacity: var(--jyutping-rt-opacity, 0.6) !important;
         user-select: none; white-space: nowrap !important;
         transform: scale(0.9); transform-origin: center bottom;
+      }
+
+      /* ========== 段落粵語翻譯（內聯於原文下方，灰色半透明以示區別）========== */
+      .jyutping-cantonese-trans {
+        opacity: 0.62 !important;
+        color: #6b7280 !important;
+        margin-top: 0.15em !important;
+        /* 繼承自原塊的字體/排版（淺克隆保留了 class），此處僅淡化以示區別 */
+      }
+      .jyutping-cantonese-trans a {
+        color: inherit !important;
+        text-decoration: underline !important;
+      }
+      .jyutping-cantonese-trans .jyutping-cantonese-trans-loading {
+        font-style: italic;
+        opacity: 0.85;
       }
     `;
       document.head.appendChild(hostStyle);
@@ -2271,6 +2386,12 @@ ${userDesc || "未提供具體描述"}`;
           hideTranslatePopup();
           hasUserSelection = false;
         }
+        if (isEnabled && paragraphTransKey !== "off" && !e.repeat) {
+          const paraKeyMap = { "shift": "Shift", "alt": "Alt", "ctrl": "Control", "meta": "Meta" };
+          if (e.key === paraKeyMap[paragraphTransKey]) {
+            translateBlockUnderCursor();
+          }
+        }
         const keyMap = { "alt": "Alt", "ctrl": "Control", "shift": "Shift", "meta": "Meta" };
         if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
           lastX = currentMouseX;
@@ -3285,6 +3406,105 @@ ${userDesc || "未提供具體描述"}`;
       }
       currentRange = null;
     }
+    function findTranslatableBlock(x, y) {
+      let el = document.elementFromPoint(x, y);
+      if (!el) return null;
+      if (el.closest("#cantonese-popup-dict, #cantonese-translate-popup, .jyutping-cantonese-trans")) return null;
+      if (isEditableElement(el)) return null;
+      const BLOCK_TAGS = /* @__PURE__ */ new Set([
+        "P",
+        "LI",
+        "BLOCKQUOTE",
+        "H1",
+        "H2",
+        "H3",
+        "H4",
+        "H5",
+        "H6",
+        "DD",
+        "DT",
+        "FIGCAPTION",
+        "TD",
+        "TH",
+        "ARTICLE",
+        "SECTION",
+        "DIV",
+        "PRE"
+      ]);
+      let node = el;
+      while (node && node !== document.body && node.nodeType === 1) {
+        const disp = window.getComputedStyle(node).display;
+        const isBlock = BLOCK_TAGS.has(node.tagName) || /block|list-item|table-cell|flow-root/.test(disp);
+        if (isBlock && node.textContent.trim().length > 0) return node;
+        node = node.parentElement;
+      }
+      return null;
+    }
+    function translateBlockUnderCursor() {
+      if (currentMouseX === 0 && currentMouseY === 0) return;
+      const block = findTranslatableBlock(currentMouseX, currentMouseY);
+      if (!block) return;
+      const existingId = block.getAttribute("data-jyutping-trans-id");
+      if (existingId) {
+        removeBlockTranslation(block);
+        return;
+      }
+      const id = ++paraTransSeq;
+      const html = block.innerHTML;
+      if (!html || !block.textContent.trim()) return;
+      const translationEl = createTranslationPlaceholder(block);
+      block.setAttribute("data-jyutping-trans-id", String(id));
+      pendingParaTrans.set(id, { block, translationEl });
+      chrome.runtime.sendMessage({ action: "aiTranslateParagraph", id, html });
+    }
+    function createTranslationPlaceholder(block) {
+      let clone;
+      const tag = block.tagName;
+      if (tag === "TD" || tag === "TH" || tag === "LI" || tag === "DT" || tag === "DD") {
+        clone = document.createElement("div");
+      } else {
+        clone = block.cloneNode(false);
+      }
+      clone.classList.add("jyutping-cantonese-trans");
+      clone.removeAttribute("id");
+      clone.removeAttribute("data-jyutping-trans-id");
+      clone.innerHTML = '<span class="jyutping-cantonese-trans-loading">⏳ 粵語翻譯中…</span>';
+      if (block.nextSibling) {
+        block.parentNode.insertBefore(clone, block.nextSibling);
+      } else {
+        block.parentNode.appendChild(clone);
+      }
+      return clone;
+    }
+    function removeBlockTranslation(block) {
+      const id = block.getAttribute("data-jyutping-trans-id");
+      block.removeAttribute("data-jyutping-trans-id");
+      if (id && pendingParaTrans.has(Number(id))) {
+        const entry = pendingParaTrans.get(Number(id));
+        if (entry.translationEl && entry.translationEl.parentNode) entry.translationEl.remove();
+        pendingParaTrans.delete(Number(id));
+        return;
+      }
+      const sib = block.nextElementSibling;
+      if (sib && sib.classList.contains("jyutping-cantonese-trans")) sib.remove();
+    }
+    function applyParagraphTranslation(id, success, payloadHtml, error) {
+      const entry = pendingParaTrans.get(id);
+      if (!entry) return;
+      pendingParaTrans.delete(id);
+      const { block, translationEl } = entry;
+      if (!translationEl || !translationEl.parentNode) {
+        if (block) block.removeAttribute("data-jyutping-trans-id");
+        return;
+      }
+      if (success && payloadHtml) {
+        translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+      } else {
+        translationEl.remove();
+        if (block) block.removeAttribute("data-jyutping-trans-id");
+        showToast("粵語翻譯失敗：" + (error || "未知錯誤"));
+      }
+    }
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
       if (request.action === "toggleEnabled") {
         isEnabled = request.enabled;
@@ -3407,6 +3627,10 @@ ${userDesc || "未提供具體描述"}`;
         toggleRubyAnnotations();
       } else if (request.action === "ttsEnded") {
         stopSpeakerAnimation();
+      } else if (request.action === "aiTranslateParagraphResult") {
+        applyParagraphTranslation(request.id, request.success, request.html, request.error);
+      } else if (request.action === "changeParagraphTransKey") {
+        paragraphTransKey = request.paragraphTransKey || "off";
       }
     });
     let isFullPageRubyActive = sessionStorage.getItem("jyutping_full_page_ruby") === "true";
