@@ -370,8 +370,8 @@
     let hideTimeout = null;
     let justNavigated = false;
     let compactExpandBtn = true;
-    let expandLockTimer = null;
-    let waitingForMouseToEnterAfterExpand = false;
+    const EXPAND_GRACE_MS = 400;
+    let expandGraceUntil = 0;
     let rubyFadeMask = null;
     let lastPopupResult = null;
     let lastPopupRect = null;
@@ -1505,7 +1505,7 @@ ${userDesc || "未提供具體描述"}`;
       popup.addEventListener("mouseenter", () => {
         isMouseOverPopup = true;
         justNavigated = false;
-        waitingForMouseToEnterAfterExpand = false;
+        endExpandGrace();
         cancelScheduledHide();
       });
       popup.addEventListener("mouseleave", () => {
@@ -2172,7 +2172,7 @@ ${userDesc || "未提供具體描述"}`;
         pendingTranslateWord = null;
         isSelecting = true;
         currentWord = null;
-        waitingForMouseToEnterAfterExpand = false;
+        endExpandGrace();
         if (hasEditableFocus()) {
           if (popup) popup.style.display = "none";
           return;
@@ -2310,8 +2310,7 @@ ${userDesc || "未提供具體描述"}`;
         return;
       }
       if (isMouseOverPopup) return;
-      if (expandLockTimer) return;
-      if (waitingForMouseToEnterAfterExpand) return;
+      if (isInExpandGrace()) return;
       const modifierPressed = popupDisplayStyle === "compact" || hoverModifier === "none" || hoverModifier === "alt" && e.altKey || hoverModifier === "ctrl" && e.ctrlKey || hoverModifier === "shift" && e.shiftKey || hoverModifier === "meta" && e.metaKey;
       const clientX = e.clientX;
       const clientY = e.clientY;
@@ -2668,11 +2667,7 @@ ${userDesc || "未提供具體描述"}`;
           if (e.button !== 0) return;
           e.stopPropagation();
           e.preventDefault();
-          waitingForMouseToEnterAfterExpand = true;
-          if (expandLockTimer) clearTimeout(expandLockTimer);
-          expandLockTimer = setTimeout(() => {
-            expandLockTimer = null;
-          }, 400);
+          beginExpandGrace();
           showPopup(result, rect, true);
         });
         const compactPron = popupMain.querySelector(".compact-pronunciation");
@@ -3203,6 +3198,21 @@ ${userDesc || "未提供具體描述"}`;
         hideTimeout = null;
       }
     }
+    function beginExpandGrace() {
+      expandGraceUntil = performance.now() + EXPAND_GRACE_MS;
+    }
+    function endExpandGrace() {
+      expandGraceUntil = 0;
+    }
+    function isInExpandGrace() {
+      return performance.now() < expandGraceUntil;
+    }
+    function canAutoHide() {
+      if (isInExpandGrace()) return false;
+      if (popup && popup.querySelector(".popup-qa-container")) return false;
+      if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return false;
+      return true;
+    }
     function maybeScheduleHide() {
       if (!justNavigated) scheduleHidePopup();
     }
@@ -3213,10 +3223,7 @@ ${userDesc || "未提供具體描述"}`;
     }
     function scheduleHidePopup(delay = 150) {
       cancelScheduledHide();
-      if (expandLockTimer) return;
-      if (waitingForMouseToEnterAfterExpand) return;
-      if (popup && popup.querySelector(".popup-qa-container")) return;
-      if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+      if (!canAutoHide()) return;
       let actualDelay = delay;
       if (translatePopup && translatePopup.style.display !== "none") {
         actualDelay = Math.max(actualDelay, 300);
@@ -3764,11 +3771,7 @@ ${userDesc || "未提供具體描述"}`;
         return;
       }
       if (activePopup.id === "cantonese-popup-dict" && activePopup.classList.contains("compact-mode")) {
-        waitingForMouseToEnterAfterExpand = true;
-        if (expandLockTimer) clearTimeout(expandLockTimer);
-        expandLockTimer = setTimeout(() => {
-          expandLockTimer = null;
-        }, 400);
+        beginExpandGrace();
         const savedStyle = popupDisplayStyle;
         popupDisplayStyle = "full";
         showPopup(lastPopupResult, lastPopupRect);

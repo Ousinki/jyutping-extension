@@ -51,8 +51,8 @@ import { createBlobUrlFromDataUri } from './tts.js';
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
   let justNavigated = false; // 是否剛進行鏈接導航
   let compactExpandBtn = true; // 精簡模式展開按鈕
-  let expandLockTimer = null; // 展開按鈕冷卻鎖計時器
-  let waitingForMouseToEnterAfterExpand = false; // 展開後等待滑鼠移入彈窗的標誌
+  const EXPAND_GRACE_MS = 400; // 展開後的隱藏/重繪寬限時長
+  let expandGraceUntil = 0; // 展開寬限截止時間戳（performance.now()），期間不自動隱藏或重繪
   let rubyFadeMask = null; // 消散模式：主 DOM 中的隱形遮罩層
 
   let lastPopupResult = null;
@@ -1386,7 +1386,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
     popup.addEventListener('mouseenter', () => {
       isMouseOverPopup = true;
       justNavigated = false; // 進入後重置導航狀態，恢復正常延遲
-      waitingForMouseToEnterAfterExpand = false; // 鼠標移入後，解除等待鎖
+      endExpandGrace(); // 鼠標移入後，解除展開寬限
       cancelScheduledHide();
     });
 
@@ -2178,7 +2178,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
 
       isSelecting = true;
       currentWord = null;
-      waitingForMouseToEnterAfterExpand = false; // 點擊頁面其他地方時，也重置該鎖
+      endExpandGrace(); // 點擊頁面其他地方時，解除展開寬限
       if (hasEditableFocus()) {
         if (popup) popup.style.display = 'none';
         return;
@@ -2364,8 +2364,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
       return;
     }
     if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
-    if (expandLockTimer) return; // 展開按鈕冷卻期內不重新渲染
-    if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不重新渲染
+    if (isInExpandGrace()) return; // 展開寬限期內不重新渲染
     
     // 檢查修飾鍵是否按下（精簡模式不需要修飾鍵）
     const modifierPressed = popupDisplayStyle === 'compact' || hoverModifier === 'none' ||
@@ -2841,12 +2840,8 @@ import { createBlobUrlFromDataUri } from './tts.js';
         e.stopPropagation();
         e.preventDefault();
         
-        // 設置展開後等待滑鼠移入彈窗的標誌，防止鼠標還沒移入彈窗就被判定為移出而隱藏
-        waitingForMouseToEnterAfterExpand = true;
-        
-        // 設定冷卻鎖：在 400ms 內阻止 scheduleHidePopup 和 handleMouseOver 隱藏彈窗
-        if (expandLockTimer) clearTimeout(expandLockTimer);
-        expandLockTimer = setTimeout(() => { expandLockTimer = null; }, 400);
+        // 展開後進入寬限期，防止滑鼠尚未落定到新彈窗上就被誤判隱藏
+        beginExpandGrace();
         // 以完整模式重新渲染 (使用 forceFull = true 參數)
         showPopup(result, rect, true);
       });
@@ -3558,6 +3553,26 @@ import { createBlobUrlFromDataUri } from './tts.js';
     }
   }
 
+  // 展開彈窗後的寬限期：防止剛展開、滑鼠尚未落定到新彈窗上時被誤判隱藏或重繪。
+  // 用單一時間戳取代過去的 expandLockTimer + waitingForMouseToEnterAfterExpand 兩個互相牽制的標誌。
+  function beginExpandGrace() {
+    expandGraceUntil = performance.now() + EXPAND_GRACE_MS;
+  }
+  function endExpandGrace() {
+    expandGraceUntil = 0;
+  }
+  function isInExpandGrace() {
+    return performance.now() < expandGraceUntil;
+  }
+
+  // 是否允許自動隱藏彈窗（展開寬限期內、或正在問答時不隱藏）
+  function canAutoHide() {
+    if (isInExpandGrace()) return false; // 展開寬限期內不隱藏
+    if (popup && popup.querySelector('.popup-qa-container')) return false; // 主彈窗問答開啟
+    if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return false; // 翻譯浮窗問答開啟
+    return true;
+  }
+
   // 僅在非「剛導航」狀態下安排隱藏（導航後保持彈窗）
   function maybeScheduleHide() {
     if (!justNavigated) scheduleHidePopup();
@@ -3573,12 +3588,7 @@ import { createBlobUrlFromDataUri } from './tts.js';
   // 延遲隱藏（給用戶時間移動到彈窗上，數值越小消失越快）
   function scheduleHidePopup(delay = 150) {
     cancelScheduledHide();
-    if (expandLockTimer) return; // 展開按鈕冷卻期內不隱藏
-    if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不自動隱藏
-
-    // 如果打開了 Q&A，則不自動隱藏（用戶需要通過點擊外部來關閉）
-    if (popup && popup.querySelector('.popup-qa-container')) return;
-    if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
+    if (!canAutoHide()) return; // 展開寬限期內、或問答開啟時不自動隱藏
 
     let actualDelay = delay;
     if (translatePopup && translatePopup.style.display !== 'none') {
@@ -4242,10 +4252,8 @@ import { createBlobUrlFromDataUri } from './tts.js';
 
     // 2. 如果是精簡模式，先切換為完整模式以顯示詞義與問答
     if (activePopup.id === 'cantonese-popup-dict' && activePopup.classList.contains('compact-mode')) {
-      waitingForMouseToEnterAfterExpand = true;
-      if (expandLockTimer) clearTimeout(expandLockTimer);
-      expandLockTimer = setTimeout(() => { expandLockTimer = null; }, 400);
-      
+      beginExpandGrace();
+
       const savedStyle = popupDisplayStyle;
       popupDisplayStyle = 'full';
       showPopup(lastPopupResult, lastPopupRect);
