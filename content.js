@@ -1,459 +1,740 @@
-/**
- * 粵語懸浮詞典 - Content Script
- * 實現滑鼠懸停中文字顯示粵語發音和解釋
- */
+(() => {
+  // src/content/markdown.js
+  function renderMarkdown(md) {
+    if (!md) return "";
+    let escaped = md.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    const lines = escaped.split(/\r?\n/);
+    let htmlResult = "";
+    const listStack = [];
+    let inTable = false;
+    let isTableHeader = false;
+    function parseInlineMarkdown(text) {
+      if (!text) return "";
+      let html = text;
+      html = html.replace(/(\*\*|__)(.*?)\1/g, "<strong>$2</strong>");
+      html = html.replace(/(\*|_)(.*?)\1/g, "<em>$2</em>");
+      html = html.replace(/`(.*?)`/g, '<code style="font-family: monospace; background: var(--popup-divider, rgba(0,0,0,0.06)); padding: 2px 4px; border-radius: 4px; font-size: 0.9em; word-break: break-all;">$1</code>');
+      html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--popup-accent, var(--popup-text-label)); text-decoration: underline; cursor: pointer;">$1</a>');
+      return html;
+    }
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i];
+      const trimmed = line.trim();
+      const isTableLine = trimmed.startsWith("|") && trimmed.endsWith("|") && trimmed.length > 1;
+      if (!isTableLine && inTable) {
+        inTable = false;
+        htmlResult += "</tbody></table></div>";
+      }
+      if (isTableLine) {
+        if (!inTable) {
+          while (listStack.length > 0) {
+            const top = listStack.pop();
+            htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+          }
+          inTable = true;
+          isTableHeader = true;
+          htmlResult += '<div style="overflow-x: auto; margin: 8px 0;"><table style="width: 100%; border-collapse: collapse; font-size: 0.95em; color: var(--popup-text);"><tbody>';
+        }
+        if (trimmed.replace(/\|/g, "").replace(/-/g, "").replace(/:/g, "").trim() === "") {
+          isTableHeader = false;
+          continue;
+        }
+        const cells = trimmed.split("|").slice(1, -1).map((cell) => parseInlineMarkdown(cell.trim()));
+        htmlResult += "<tr>";
+        cells.forEach((cell) => {
+          if (isTableHeader) {
+            htmlResult += `<th style="border: 1px solid var(--popup-divider, rgba(0,0,0,0.15)); padding: 6px 10px; background: var(--popup-active-bg, rgba(0,0,0,0.03)); font-weight: bold; text-align: left; line-height: 1.4;">${cell}</th>`;
+          } else {
+            htmlResult += `<td style="border: 1px solid var(--popup-divider, rgba(0,0,0,0.15)); padding: 6px 10px; line-height: 1.4;">${cell}</td>`;
+          }
+        });
+        htmlResult += "</tr>";
+        isTableHeader = false;
+        continue;
+      }
+      if (trimmed === "---" || trimmed === "***" || trimmed === "___") {
+        while (listStack.length > 0) {
+          const top = listStack.pop();
+          htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+        }
+        htmlResult += '<hr style="border: none; border-top: 1px solid var(--popup-divider, rgba(0,0,0,0.1)); margin: 8px 0;" />';
+        continue;
+      }
+      const headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
+      if (headerMatch) {
+        while (listStack.length > 0) {
+          const top = listStack.pop();
+          htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+        }
+        const level = headerMatch[1].length;
+        const content = parseInlineMarkdown(headerMatch[2]);
+        const fontSize = 1.3 - (level - 1) * 0.08;
+        htmlResult += `<h${level} style="margin: 8px 0 4px 0; font-weight: bold; color: var(--popup-text); line-height: 1.3; font-size: ${fontSize}em;">${content}</h${level}>`;
+        continue;
+      }
+      const quoteMatch = line.match(/^>\s*(.*)$/);
+      if (quoteMatch) {
+        while (listStack.length > 0) {
+          const top = listStack.pop();
+          htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+        }
+        const content = parseInlineMarkdown(quoteMatch[1]);
+        htmlResult += `<blockquote style="border-left: 3px solid var(--popup-divider, rgba(0,0,0,0.1)); padding-left: 8px; margin: 6px 0; color: var(--popup-text-muted, #666); font-style: italic;">${content}</blockquote>`;
+        continue;
+      }
+      const ulMatch = line.match(/^(\s*)[-*+]\s+(.*)$/);
+      const olMatch = line.match(/^(\s*)\d+\.\s+(.*)$/);
+      if (ulMatch || olMatch) {
+        const isUl = !!ulMatch;
+        const match = isUl ? ulMatch : olMatch;
+        const indent = match[1].length;
+        const content = parseInlineMarkdown(match[2]);
+        const listType = isUl ? "ul" : "ol";
+        while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
+          const top = listStack.pop();
+          htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+        }
+        if (listStack.length === 0 || listStack[listStack.length - 1].indent < indent) {
+          listStack.push({ type: listType, indent });
+          const level = listStack.length;
+          let listStyle = "";
+          if (listType === "ul") {
+            const bulletType = level === 1 ? "disc" : level === 2 ? "circle" : "square";
+            listStyle = `list-style-type: ${bulletType};`;
+          } else {
+            const numType = level === 1 ? "decimal" : level === 2 ? "lower-alpha" : "lower-roman";
+            listStyle = `list-style-type: ${numType};`;
+          }
+          htmlResult += `<${listType} style="margin: 4px 0; padding-left: 20px; ${listStyle}">`;
+        } else if (listStack[listStack.length - 1].type !== listType) {
+          const top = listStack.pop();
+          htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+          listStack.push({ type: listType, indent });
+          const level = listStack.length;
+          let listStyle = "";
+          if (listType === "ul") {
+            const bulletType = level === 1 ? "disc" : level === 2 ? "circle" : "square";
+            listStyle = `list-style-type: ${bulletType};`;
+          } else {
+            const numType = level === 1 ? "decimal" : level === 2 ? "lower-alpha" : "lower-roman";
+            listStyle = `list-style-type: ${numType};`;
+          }
+          htmlResult += `<${listType} style="margin: 4px 0; padding-left: 20px; ${listStyle}">`;
+        }
+        htmlResult += `<li style="margin-bottom: 3px; line-height: 1.5;">${content}</li>`;
+        continue;
+      }
+      if (trimmed === "") {
+        while (listStack.length > 0) {
+          const top = listStack.pop();
+          htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+        }
+        htmlResult += '<div style="height: 6px;"></div>';
+        continue;
+      }
+      while (listStack.length > 0) {
+        const top = listStack.pop();
+        htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+      }
+      const parsedContent = parseInlineMarkdown(line);
+      htmlResult += `<div style="margin-bottom: 4px; line-height: 1.5;">${parsedContent}</div>`;
+    }
+    while (listStack.length > 0) {
+      const top = listStack.pop();
+      htmlResult += top.type === "ul" ? "</ul>" : "</ol>";
+    }
+    if (inTable) {
+      htmlResult += "</tbody></table></div>";
+    }
+    return htmlResult;
+  }
 
-(function() {
-  'use strict';
+  // src/content/colors.js
+  function getElementBackgroundColor(element) {
+    try {
+      let el = element;
+      while (el && el !== document.documentElement) {
+        const style = window.getComputedStyle(el);
+        const bg = style.backgroundColor;
+        if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
+          return bg;
+        }
+        el = el.parentElement;
+      }
+      const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+      if (bodyBg && bodyBg !== "rgba(0, 0, 0, 0)" && bodyBg !== "transparent") {
+        return bodyBg;
+      }
+    } catch (e) {
+    }
+    return "rgb(255, 255, 255)";
+  }
+  function checkIsDarkColor(bgColorStr) {
+    if (!bgColorStr) return false;
+    const match = bgColorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+    if (match) {
+      const r = parseInt(match[1]);
+      const g = parseInt(match[2]);
+      const b = parseInt(match[3]);
+      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+      return luminance < 0.5;
+    }
+    return false;
+  }
+  function isElementOnDarkBackground(element) {
+    return checkIsDarkColor(getElementBackgroundColor(element));
+  }
 
-  // 唯一標識此 content script 實例（防止擴展重載後舊腳本重複播放音頻）
-  const contentScriptId = Math.random().toString(36).slice(2);
-  document.documentElement.setAttribute('data-jyutping-tts-owner', contentScriptId);
-
-  let dictionary = {};
-  let popup = null;
-  let popupArrow = null; // 彈窗箭頭元素
-  let isEnabled = true;
-  let displayMode = 'jyutping';
-  let uiTheme = 'auto'; // 'jyutping' 或 'yale'
-  let toneStyle = 'superscript'; // 'superscript' 數字為上標 或 'inline' 數字跟在後方
-  let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
-  let popupTheme = 'classic'; // 懸浮窗主題
-  let ttsEnabled = true; // TTS 開關
-  let ttsEngine = 'edgeTts'; // TTS 引擎: webSpeech, chromeTts, edgeTts, azureTts
-  let edgeTtsMode = 'default'; // Edge TTS 模式: default (預設伺服器) / custom (自定義)
-  let edgeTtsUrl = ''; // Edge TTS 伺服器地址
-  const EDGE_TTS_DEFAULT_URL = 'http://114.55.243.162:8090';
-  let azureTtsMode = 'default'; // Azure TTS 模式: default (代理) / custom (直連)
-  let azureTtsKey = ''; // Azure Speech API Key
-  let azureTtsRegion = ''; // Azure Speech 區域
-  let azureTtsVoice = 'zh-HK-HiuMaanNeural'; // Azure Speech 音色
-  let ttsRate = 0.9; // TTS 語速
-  let customZhFont = ''; // 自定義中文字體
-  let customEnFont = ''; // 自定義英文字體
-  let currentRange = null; // 儲存當前選中的範圍
-  let highlightSpans = []; // CSS 高亮的 span 元素
-  let highlightedRubyElement = null; // 全文注音模式下高亮的 ruby 元素
-  let activePopupRubyElement = null; // 當前懸浮窗所對應的 ruby 元素
-  let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
-  let rubyHoverStyle = 'ruby-red'; // Ruby 懸停樣式: ruby-red, ruby-blue, ruby-green, ruby-orange, ruby-purple, ruby-underline, ruby-border
-  let rubyRtBackground = 'none'; // Hover Ruby 音標背景模式：'none' | 'fade' | 'solid'
-  let currentWord = null; // 追蹤當前顯示的詞
-  let currentContextSentence = ''; // 當前高亮詞語所在的上下文句子
-  let hoverModifier = 'none'; // 懸停觸發按鍵
-  let isMouseOverPopup = false; // 滑鼠是否在彈窗上
-  let hideTimeout = null; // 延遲隱藏主彈窗計時器
-  let justNavigated = false; // 是否剛進行鏈接導航
-  let compactExpandBtn = true; // 精簡模式展開按鈕
-  let expandLockTimer = null; // 展開按鈕冷卻鎖計時器
-  let waitingForMouseToEnterAfterExpand = false; // 展開後等待滑鼠移入彈窗的標誌
-  let rubyFadeMask = null; // 消散模式：主 DOM 中的隱形遮罩層
-
-  let lastPopupResult = null;
-  let lastPopupRect = null;
-  let lastTranslateRect = null;
-  let currentMouseX = 0; // 用於記錄絕對鼠標 X 位置
-  let currentMouseY = 0; // 用於記錄絕對鼠標 Y 位置
-  
-  // Q&A 隨身問答狀態
-  let activeQAContext = {
-    word: '',
-    sentence: '',
-    originalTranslation: '',
-    history: []
+  // src/content/text-utils.js
+  var SUPERSCRIPT_MAP = {
+    "1": "¹",
+    "2": "²",
+    "3": "³",
+    "4": "⁴",
+    "5": "⁵",
+    "6": "⁶",
+    "7": "⁷",
+    "8": "⁸",
+    "9": "⁹"
   };
+  function convertToSuperscriptTone(str) {
+    if (!str) return str;
+    return str.replace(/\d/g, (match) => SUPERSCRIPT_MAP[match] || match);
+  }
 
-  function clearQAContext() {
-    activeQAContext = {
-      word: '',
-      sentence: '',
-      originalTranslation: '',
+  // src/content/dom.js
+  function isEditableElement(element) {
+    if (!element) return false;
+    const tagName = element.tagName.toLowerCase();
+    if (tagName === "input" || tagName === "textarea") {
+      return true;
+    }
+    if (element.isContentEditable) {
+      return true;
+    }
+    let parent = element.parentElement;
+    while (parent) {
+      if (parent.isContentEditable) {
+        return true;
+      }
+      parent = parent.parentElement;
+    }
+    return false;
+  }
+  function hasEditableFocus() {
+    const activeEl = document.activeElement;
+    if (!activeEl) return false;
+    if (activeEl.closest && (activeEl.closest("#cantonese-popup-dict") || activeEl.closest("#cantonese-translate-popup"))) {
+      return false;
+    }
+    return activeEl.tagName === "INPUT" || activeEl.tagName === "TEXTAREA" || activeEl.isContentEditable || activeEl.getAttribute("contenteditable") === "true" || activeEl.closest && activeEl.closest('[contenteditable="true"]');
+  }
+  function getDeepestElementAtPoint(x, y) {
+    let element = document.elementFromPoint(x, y);
+    if (!element) return null;
+    while (element && element.shadowRoot) {
+      const shadowElement = element.shadowRoot.elementFromPoint(x, y);
+      if (!shadowElement || shadowElement === element) break;
+      element = shadowElement;
+    }
+    return element;
+  }
+  function getCaretRangeFromPointInShadow(x, y) {
+    let range = document.caretRangeFromPoint(x, y);
+    if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+      return range;
+    }
+    const element = getDeepestElementAtPoint(x, y);
+    if (!element) return null;
+    const root = element.getRootNode();
+    if (root && root !== document && typeof root.caretRangeFromPoint === "function") {
+      range = root.caretRangeFromPoint(x, y);
+      if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
+        return range;
+      }
+    }
+    const textNodes = getTextNodesIn(element);
+    for (const textNode of textNodes) {
+      const nodeRange = document.createRange();
+      for (let i = 0; i < textNode.textContent.length; i++) {
+        try {
+          nodeRange.setStart(textNode, i);
+          nodeRange.setEnd(textNode, i + 1);
+          const rect = nodeRange.getBoundingClientRect();
+          if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
+            nodeRange.setStart(textNode, i);
+            nodeRange.setEnd(textNode, i);
+            return nodeRange;
+          }
+        } catch (e) {
+          continue;
+        }
+      }
+    }
+    return null;
+  }
+  function getTextNodesIn(element) {
+    const textNodes = [];
+    const walker = document.createTreeWalker(
+      element,
+      NodeFilter.SHOW_TEXT,
+      null,
+      false
+    );
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.textContent.trim()) {
+        textNodes.push(node);
+      }
+    }
+    return textNodes;
+  }
+  function getAccurateOffset(textNode, clientX, clientY) {
+    const text = textNode.textContent;
+    if (!text) return -1;
+    const range = document.createRange();
+    for (let i = 0; i < text.length; i++) {
+      const char = text[i];
+      if (!/[一-鿿]/.test(char)) continue;
+      try {
+        range.setStart(textNode, i);
+        range.setEnd(textNode, i + 1);
+        const rect = range.getBoundingClientRect();
+        if (rect.width === 0 || rect.height === 0) continue;
+        if (clientX >= rect.left && clientX <= rect.right && clientY >= rect.top && clientY <= rect.bottom) {
+          return i;
+        }
+      } catch (e) {
+      }
+    }
+    return -1;
+  }
+
+  // src/content/tts.js
+  function createBlobUrlFromDataUri(dataURI) {
+    try {
+      if (!dataURI.startsWith("data:")) return dataURI;
+      const parts = dataURI.split(",");
+      const byteString = atob(parts[1]);
+      const mimeString = parts[0].split(":")[1].split(";")[0];
+      const ab = new ArrayBuffer(byteString.length);
+      const ia = new Uint8Array(ab);
+      for (let i = 0; i < byteString.length; i++) {
+        ia[i] = byteString.charCodeAt(i);
+      }
+      const blob = new Blob([ab], { type: mimeString });
+      return URL.createObjectURL(blob);
+    } catch (e) {
+      console.error("Data URI to Blob URL failed:", e);
+      return dataURI;
+    }
+  }
+
+  // src/content/index.js
+  (function() {
+    "use strict";
+    const contentScriptId = Math.random().toString(36).slice(2);
+    document.documentElement.setAttribute("data-jyutping-tts-owner", contentScriptId);
+    let dictionary = {};
+    let popup = null;
+    let popupArrow = null;
+    let isEnabled = true;
+    let displayMode = "jyutping";
+    let uiTheme = "auto";
+    let toneStyle = "superscript";
+    let popupDisplayStyle = "full";
+    let popupTheme = "classic";
+    let ttsEnabled = true;
+    let ttsEngine = "edgeTts";
+    let edgeTtsMode = "default";
+    let edgeTtsUrl = "";
+    const EDGE_TTS_DEFAULT_URL = "http://114.55.243.162:8090";
+    let azureTtsMode = "default";
+    let azureTtsKey = "";
+    let azureTtsRegion = "";
+    let azureTtsVoice = "zh-HK-HiuMaanNeural";
+    let ttsRate = 0.9;
+    let customZhFont = "";
+    let customEnFont = "";
+    let currentRange = null;
+    let highlightSpans = [];
+    let highlightedRubyElement = null;
+    let activePopupRubyElement = null;
+    let highlightStyle = "yellow";
+    let rubyHoverStyle = "ruby-red";
+    let rubyRtBackground = "none";
+    let currentWord = null;
+    let currentContextSentence = "";
+    let hoverModifier = "none";
+    let isMouseOverPopup = false;
+    let hideTimeout = null;
+    let justNavigated = false;
+    let compactExpandBtn = true;
+    let expandLockTimer = null;
+    let waitingForMouseToEnterAfterExpand = false;
+    let rubyFadeMask = null;
+    let lastPopupResult = null;
+    let lastPopupRect = null;
+    let lastTranslateRect = null;
+    let currentMouseX = 0;
+    let currentMouseY = 0;
+    let activeQAContext = {
+      word: "",
+      sentence: "",
+      originalTranslation: "",
       history: []
     };
-  }
-
-  // 翻譯
-  let transLangs = ['zh-Hans', 'en'];
-  let transTrigger = 'dblclick';
-  let translatePopup = null; // 用於句子選區的獨立浮窗
-  let pendingTranslateWord = null; // 保存待翻譯的詞（給 dblclick 或 單擊 翻譯用）
-
-  // AI 翻譯
-  let aiEnabled = false;
-  let aiLongPressTimer = null; // 長按計時器
-  let aiAnimationTimer = null; // 長按動畫延遲計時器
-  let ignoreNextRubyClick = false; // 忽略下一次點擊事件
-
-  // ========== i18n 系統 ==========
-  const popupI18n = {
-    "zh-HK": {
-      translating: "翻譯中...",
-      mandarin: "普",
-      english: "英",
-      japanese: "日",
-      korean: "韓",
-      aiExplaining: "AI 釋義中...",
-      noPronunciation: "找不到該詞的讀音",
-      speak: "發音",
-      copy: "複製",
-      cantConnect: "無法連接字典伺服器"
-    },
-    "en": {
-      translating: "Translating...",
-      mandarin: "CN",
-      english: "EN",
-      japanese: "JA",
-      korean: "KO",
-      aiExplaining: "AI explaining...",
-      noPronunciation: "Pronunciation not found",
-      speak: "Speak",
-      copy: "Copy",
-      cantConnect: "Cannot connect to server"
+    function clearQAContext() {
+      activeQAContext = {
+        word: "",
+        sentence: "",
+        originalTranslation: "",
+        history: []
+      };
     }
-  };
-  let currentLang = 'zh-HK';
-  chrome.storage.local.get(['extensionLang'], (res) => {
-    if (res.extensionLang) currentLang = res.extensionLang;
-  });
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.extensionLang) currentLang = changes.extensionLang.newValue;
-  });
-  const pt = (key) => (popupI18n[currentLang] || popupI18n['zh-HK'])[key] || key;
-
-  // ========== Toast 多語言翻譯 ==========
-  const toastI18n = {
-    'zh-HK': {
-      toastRubyEnabled: '全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。',
-      toastRubyDisabled: '全文粵語注音已關閉。<br>如遇排版異常，請刷新網頁 (F5)。'
-    },
-    'zh-CN': {
-      toastRubyEnabled: '全文粤语注音已开启。<br>如遇排版重叠，请刷新网页 (F5) 以适应高度。',
-      toastRubyDisabled: '全文粤语注音已关闭。<br>如遇排版异常，请刷新网页 (F5)。'
-    },
-    'en': {
-      toastRubyEnabled: 'Full-page Cantonese Ruby enabled.<br>If layouts overlap, refresh page (F5) to adjust height.',
-      toastRubyDisabled: 'Full-page Cantonese Ruby disabled.<br>If layouts are abnormal, refresh page (F5).'
-    },
-    'ja': {
-      toastRubyEnabled: '全ページ広東語ルビが有効になりました。<br>レイアウトが崩れる場合は、ページを更新 (F5) してください。',
-      toastRubyDisabled: '全ページ広東語ルビが無効になりました。<br>表示がおかしい場合は、ページを更新 (F5) してください。'
-    },
-    'ko': {
-      toastRubyEnabled: '전체 페이지 광둥어 발음기호가 활성화되었습니다.<br>레이아웃이 겹치면 페이지를 새로고침(F5) 해주세요.',
-      toastRubyDisabled: '전체 페이지 광둥어 발음기호가 비활성화되었습니다.<br>표시가 비정상적이면 페이지를 새로고침(F5) 해주세요.'
+    let transLangs = ["zh-Hans", "en"];
+    let transTrigger = "dblclick";
+    let translatePopup = null;
+    let pendingTranslateWord = null;
+    let aiEnabled = false;
+    let aiLongPressTimer = null;
+    let aiAnimationTimer = null;
+    let ignoreNextRubyClick = false;
+    const popupI18n = {
+      "zh-HK": {
+        translating: "翻譯中...",
+        mandarin: "普",
+        english: "英",
+        japanese: "日",
+        korean: "韓",
+        aiExplaining: "AI 釋義中...",
+        noPronunciation: "找不到該詞的讀音",
+        speak: "發音",
+        copy: "複製",
+        cantConnect: "無法連接字典伺服器"
+      },
+      "en": {
+        translating: "Translating...",
+        mandarin: "CN",
+        english: "EN",
+        japanese: "JA",
+        korean: "KO",
+        aiExplaining: "AI explaining...",
+        noPronunciation: "Pronunciation not found",
+        speak: "Speak",
+        copy: "Copy",
+        cantConnect: "Cannot connect to server"
+      }
+    };
+    let currentLang = "zh-HK";
+    chrome.storage.local.get(["extensionLang"], (res) => {
+      if (res.extensionLang) currentLang = res.extensionLang;
+    });
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.extensionLang) currentLang = changes.extensionLang.newValue;
+    });
+    const pt = (key) => (popupI18n[currentLang] || popupI18n["zh-HK"])[key] || key;
+    const toastI18n = {
+      "zh-HK": {
+        toastRubyEnabled: "全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。",
+        toastRubyDisabled: "全文粵語注音已關閉。<br>如遇排版異常，請刷新網頁 (F5)。"
+      },
+      "zh-CN": {
+        toastRubyEnabled: "全文粤语注音已开启。<br>如遇排版重叠，请刷新网页 (F5) 以适应高度。",
+        toastRubyDisabled: "全文粤语注音已关闭。<br>如遇排版异常，请刷新网页 (F5)。"
+      },
+      "en": {
+        toastRubyEnabled: "Full-page Cantonese Ruby enabled.<br>If layouts overlap, refresh page (F5) to adjust height.",
+        toastRubyDisabled: "Full-page Cantonese Ruby disabled.<br>If layouts are abnormal, refresh page (F5)."
+      },
+      "ja": {
+        toastRubyEnabled: "全ページ広東語ルビが有効になりました。<br>レイアウトが崩れる場合は、ページを更新 (F5) してください。",
+        toastRubyDisabled: "全ページ広東語ルビが無効になりました。<br>表示がおかしい場合は、ページを更新 (F5) してください。"
+      },
+      "ko": {
+        toastRubyEnabled: "전체 페이지 광둥어 발음기호가 활성화되었습니다.<br>레이아웃이 겹치면 페이지를 새로고침(F5) 해주세요.",
+        toastRubyDisabled: "전체 페이지 광둥어 발음기호가 비활성화되었습니다.<br>표시가 비정상적이면 페이지를 새로고침(F5) 해주세요."
+      }
+    };
+    const tt = (key) => (toastI18n[currentLang] || toastI18n["zh-HK"])[key] || key;
+    const POPUP_THEMES = {
+      classic: {
+        name: "經典",
+        vars: {
+          "--popup-bg": "#ffffff",
+          "--popup-border": "#d0d0d0",
+          "--popup-text": "#333333",
+          "--popup-text-muted": "#666666",
+          "--popup-text-label": "#888888",
+          "--popup-accent": "#2196f3",
+          "--popup-accent-hover": "#1976d2",
+          "--popup-word-color": "#1a1a1a",
+          "--popup-def-color": "#555555",
+          "--popup-def-yue": "#b8860b",
+          "--popup-divider": "rgba(0, 0, 0, 0.08)",
+          "--popup-divider-strong": "#eeeeee",
+          "--popup-example-bg": "#f9f9f9",
+          "--popup-btn-bg": "#f0f0f0",
+          "--popup-btn-hover": "#e0e0e0",
+          "--popup-btn-speaking": "#2196f3",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0 4px 12px rgba(0, 0, 0, 0.15)",
+          "--popup-active-bg": "#f0f7ff"
+        }
+      },
+      academic: {
+        name: "香港紅",
+        vars: {
+          "--popup-bg": "#ffeaeb",
+          "--popup-border": "#fba5a8",
+          "--popup-text": "#8A1C1C",
+          "--popup-text-muted": "#d46a6a",
+          "--popup-text-label": "#e38a8a",
+          "--popup-accent": "#D83131",
+          "--popup-accent-hover": "#8A1C1C",
+          "--popup-word-color": "#610c0c",
+          "--popup-def-color": "#8A1C1C",
+          "--popup-def-yue": "#D83131",
+          "--popup-divider": "rgba(138, 28, 28, 0.12)",
+          "--popup-divider-strong": "#fccacc",
+          "--popup-example-bg": "#fce1e3",
+          "--popup-btn-bg": "#fce1e3",
+          "--popup-btn-hover": "#fba5a8",
+          "--popup-btn-speaking": "#D83131",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0 4px 12px rgba(138, 28, 28, 0.2)",
+          "--popup-active-bg": "#fce1e3"
+        }
+      },
+      night: {
+        name: "深邃夜色",
+        vars: {
+          "--popup-bg": "#1a1a2e",
+          "--popup-border": "#16213e",
+          "--popup-text": "#e0e0e0",
+          "--popup-text-muted": "#a0a0b0",
+          "--popup-text-label": "#8888a0",
+          "--popup-accent": "#7c8cf8",
+          "--popup-accent-hover": "#9aa6ff",
+          "--popup-word-color": "#f0f0ff",
+          "--popup-def-color": "#c0c0d0",
+          "--popup-def-yue": "#e8b84e",
+          "--popup-divider": "rgba(255, 255, 255, 0.08)",
+          "--popup-divider-strong": "#2a2a40",
+          "--popup-example-bg": "#141425",
+          "--popup-btn-bg": "#2a2a40",
+          "--popup-btn-hover": "#3a3a55",
+          "--popup-btn-speaking": "#7c8cf8",
+          "--popup-btn-speaking-text": "#1a1a2e",
+          "--popup-shadow": "0 4px 16px rgba(0, 0, 0, 0.4)",
+          "--popup-active-bg": "#222240"
+        }
+      },
+      ink: {
+        name: "墨韻",
+        vars: {
+          "--popup-bg": "#2d2d2d",
+          "--popup-border": "#444444",
+          "--popup-text": "#e0e0e0",
+          "--popup-text-muted": "#aaaaaa",
+          "--popup-text-label": "#999999",
+          "--popup-accent": "#64b5f6",
+          "--popup-accent-hover": "#90caf9",
+          "--popup-word-color": "#f0f0f0",
+          "--popup-def-color": "#cccccc",
+          "--popup-def-yue": "#daa520",
+          "--popup-divider": "rgba(255, 255, 255, 0.08)",
+          "--popup-divider-strong": "#3d3d3d",
+          "--popup-example-bg": "#252525",
+          "--popup-btn-bg": "#444444",
+          "--popup-btn-hover": "#555555",
+          "--popup-btn-speaking": "#64b5f6",
+          "--popup-btn-speaking-text": "#1a1a1a",
+          "--popup-shadow": "0 4px 16px rgba(0, 0, 0, 0.4)",
+          "--popup-active-bg": "#383838"
+        }
+      },
+      dark: {
+        name: "深色",
+        vars: {
+          "--popup-bg": "#1e1e1e",
+          "--popup-border": "#333333",
+          "--popup-text": "#e0e0e0",
+          "--popup-text-muted": "#aaaaaa",
+          "--popup-text-label": "#888888",
+          "--popup-accent": "#ef4444",
+          "--popup-accent-hover": "#f87171",
+          "--popup-word-color": "#f5f5f5",
+          "--popup-def-color": "#cccccc",
+          "--popup-def-yue": "#d4af37",
+          "--popup-divider": "rgba(255, 255, 255, 0.1)",
+          "--popup-divider-strong": "#444444",
+          "--popup-example-bg": "#2a2a2a",
+          "--popup-btn-bg": "#333333",
+          "--popup-btn-hover": "#444444",
+          "--popup-btn-speaking": "#ef4444",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0px 4px 16px rgba(0, 0, 0, 0.5)",
+          "--popup-active-bg": "#3f1a1a"
+        }
+      },
+      ocean: {
+        name: "海洋藍",
+        vars: {
+          "--popup-bg": "#e3f2fd",
+          "--popup-border": "#90caf9",
+          "--popup-text": "#1565c0",
+          "--popup-text-muted": "#42a5f5",
+          "--popup-text-label": "#64b5f6",
+          "--popup-accent": "#0d47a1",
+          "--popup-accent-hover": "#1565c0",
+          "--popup-word-color": "#0d47a1",
+          "--popup-def-color": "#1976d2",
+          "--popup-def-yue": "#e65100",
+          "--popup-divider": "rgba(13, 71, 161, 0.1)",
+          "--popup-divider-strong": "#bbdefb",
+          "--popup-example-bg": "#bbdefb",
+          "--popup-btn-bg": "#bbdefb",
+          "--popup-btn-hover": "#90caf9",
+          "--popup-btn-speaking": "#1565c0",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0 4px 12px rgba(21, 101, 192, 0.2)",
+          "--popup-active-bg": "#bbdefb"
+        }
+      },
+      warm: {
+        name: "暖陽",
+        vars: {
+          "--popup-bg": "#fff8e1",
+          "--popup-border": "#ffe082",
+          "--popup-text": "#5d4037",
+          "--popup-text-muted": "#8d6e63",
+          "--popup-text-label": "#a1887f",
+          "--popup-accent": "#e65100",
+          "--popup-accent-hover": "#f57c00",
+          "--popup-word-color": "#3e2723",
+          "--popup-def-color": "#6d4c41",
+          "--popup-def-yue": "#c62828",
+          "--popup-divider": "rgba(93, 64, 55, 0.1)",
+          "--popup-divider-strong": "#ffe0b2",
+          "--popup-example-bg": "#fff3e0",
+          "--popup-btn-bg": "#ffe0b2",
+          "--popup-btn-hover": "#ffcc80",
+          "--popup-btn-speaking": "#e65100",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0 4px 12px rgba(230, 81, 0, 0.15)",
+          "--popup-active-bg": "#fff3e0"
+        }
+      },
+      mint: {
+        name: "薄荷綠",
+        vars: {
+          "--popup-bg": "#e8f5e9",
+          "--popup-border": "#a5d6a7",
+          "--popup-text": "#2e7d32",
+          "--popup-text-muted": "#4caf50",
+          "--popup-text-label": "#66bb6a",
+          "--popup-accent": "#1b5e20",
+          "--popup-accent-hover": "#2e7d32",
+          "--popup-word-color": "#1b5e20",
+          "--popup-def-color": "#388e3c",
+          "--popup-def-yue": "#bf360c",
+          "--popup-divider": "rgba(46, 125, 50, 0.1)",
+          "--popup-divider-strong": "#c8e6c9",
+          "--popup-example-bg": "#c8e6c9",
+          "--popup-btn-bg": "#c8e6c9",
+          "--popup-btn-hover": "#a5d6a7",
+          "--popup-btn-speaking": "#2e7d32",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0 4px 12px rgba(46, 125, 50, 0.2)",
+          "--popup-active-bg": "#c8e6c9"
+        }
+      },
+      glass: {
+        name: "毛玻璃",
+        vars: {
+          "--popup-bg": "rgba(255, 255, 255, 0.95)",
+          "--popup-border": "rgba(255, 255, 255, 0.3)",
+          "--popup-text": "#333333",
+          "--popup-text-muted": "#555555",
+          "--popup-text-label": "#777777",
+          "--popup-accent": "#2196f3",
+          "--popup-accent-hover": "#1976d2",
+          "--popup-word-color": "#1a1a1a",
+          "--popup-def-color": "#444444",
+          "--popup-def-yue": "#b8860b",
+          "--popup-divider": "rgba(0, 0, 0, 0.06)",
+          "--popup-divider-strong": "rgba(0, 0, 0, 0.08)",
+          "--popup-example-bg": "rgba(255, 255, 255, 0.5)",
+          "--popup-btn-bg": "rgba(0, 0, 0, 0.06)",
+          "--popup-btn-hover": "rgba(0, 0, 0, 0.1)",
+          "--popup-btn-speaking": "#2196f3",
+          "--popup-btn-speaking-text": "#ffffff",
+          "--popup-shadow": "0 8px 32px rgba(0, 0, 0, 0.12)",
+          "--popup-active-bg": "rgba(33, 150, 243, 0.08)"
+        }
+      }
+    };
+    function isDarkMode() {
+      return uiTheme === "dark" || uiTheme === "auto" && window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
     }
-  };
-  const tt = (key) => (toastI18n[currentLang] || toastI18n['zh-HK'])[key] || key;
-
-  // ========== 主题系统 ==========
-
-  const POPUP_THEMES = {
-    classic: {
-      name: '經典',
-      vars: {
-        '--popup-bg': '#ffffff',
-        '--popup-border': '#d0d0d0',
-        '--popup-text': '#333333',
-        '--popup-text-muted': '#666666',
-        '--popup-text-label': '#888888',
-        '--popup-accent': '#2196f3',
-        '--popup-accent-hover': '#1976d2',
-        '--popup-word-color': '#1a1a1a',
-        '--popup-def-color': '#555555',
-        '--popup-def-yue': '#b8860b',
-        '--popup-divider': 'rgba(0, 0, 0, 0.08)',
-        '--popup-divider-strong': '#eeeeee',
-        '--popup-example-bg': '#f9f9f9',
-        '--popup-btn-bg': '#f0f0f0',
-        '--popup-btn-hover': '#e0e0e0',
-        '--popup-btn-speaking': '#2196f3',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0 4px 12px rgba(0, 0, 0, 0.15)',
-        '--popup-active-bg': '#f0f7ff',
+    function applyPopupTheme(themeName) {
+      if (!popup) return;
+      const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
+      for (const [prop, value] of Object.entries(theme.vars)) {
+        popup.style.setProperty(prop, value);
+        if (translatePopup) translatePopup.style.setProperty(prop, value);
       }
-    },
-    academic: {
-      name: '香港紅',
-      vars: {
-        '--popup-bg': '#ffeaeb',
-        '--popup-border': '#fba5a8',
-        '--popup-text': '#8A1C1C',
-        '--popup-text-muted': '#d46a6a',
-        '--popup-text-label': '#e38a8a',
-        '--popup-accent': '#D83131',
-        '--popup-accent-hover': '#8A1C1C',
-        '--popup-word-color': '#610c0c',
-        '--popup-def-color': '#8A1C1C',
-        '--popup-def-yue': '#D83131',
-        '--popup-divider': 'rgba(138, 28, 28, 0.12)',
-        '--popup-divider-strong': '#fccacc',
-        '--popup-example-bg': '#fce1e3',
-        '--popup-btn-bg': '#fce1e3',
-        '--popup-btn-hover': '#fba5a8',
-        '--popup-btn-speaking': '#D83131',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0 4px 12px rgba(138, 28, 28, 0.2)',
-        '--popup-active-bg': '#fce1e3',
+      popup.classList.remove("popup-theme-glass");
+      if (translatePopup) translatePopup.classList.remove("popup-theme-glass");
+      if (themeName === "glass") {
+        popup.classList.add("popup-theme-glass");
+        if (translatePopup) translatePopup.classList.add("popup-theme-glass");
       }
-    },
-    night: {
-      name: '深邃夜色',
-      vars: {
-        '--popup-bg': '#1a1a2e',
-        '--popup-border': '#16213e',
-        '--popup-text': '#e0e0e0',
-        '--popup-text-muted': '#a0a0b0',
-        '--popup-text-label': '#8888a0',
-        '--popup-accent': '#7c8cf8',
-        '--popup-accent-hover': '#9aa6ff',
-        '--popup-word-color': '#f0f0ff',
-        '--popup-def-color': '#c0c0d0',
-        '--popup-def-yue': '#e8b84e',
-        '--popup-divider': 'rgba(255, 255, 255, 0.08)',
-        '--popup-divider-strong': '#2a2a40',
-        '--popup-example-bg': '#141425',
-        '--popup-btn-bg': '#2a2a40',
-        '--popup-btn-hover': '#3a3a55',
-        '--popup-btn-speaking': '#7c8cf8',
-        '--popup-btn-speaking-text': '#1a1a2e',
-        '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.4)',
-        '--popup-active-bg': '#222240',
+      if (customZhFont) {
+        popup.style.setProperty("--popup-font-zh", customZhFont);
+        if (translatePopup) translatePopup.style.setProperty("--popup-font-zh", customZhFont);
+      } else {
+        popup.style.removeProperty("--popup-font-zh");
+        if (translatePopup) translatePopup.style.removeProperty("--popup-font-zh");
       }
-    },
-    ink: {
-      name: '墨韻',
-      vars: {
-        '--popup-bg': '#2d2d2d',
-        '--popup-border': '#444444',
-        '--popup-text': '#e0e0e0',
-        '--popup-text-muted': '#aaaaaa',
-        '--popup-text-label': '#999999',
-        '--popup-accent': '#64b5f6',
-        '--popup-accent-hover': '#90caf9',
-        '--popup-word-color': '#f0f0f0',
-        '--popup-def-color': '#cccccc',
-        '--popup-def-yue': '#daa520',
-        '--popup-divider': 'rgba(255, 255, 255, 0.08)',
-        '--popup-divider-strong': '#3d3d3d',
-        '--popup-example-bg': '#252525',
-        '--popup-btn-bg': '#444444',
-        '--popup-btn-hover': '#555555',
-        '--popup-btn-speaking': '#64b5f6',
-        '--popup-btn-speaking-text': '#1a1a1a',
-        '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.4)',
-        '--popup-active-bg': '#383838',
-      }
-    },
-    
-    dark: {
-      name: '深色',
-      vars: {
-        '--popup-bg': '#1e1e1e',
-        '--popup-border': '#333333',
-        '--popup-text': '#e0e0e0',
-        '--popup-text-muted': '#aaaaaa',
-        '--popup-text-label': '#888888',
-        '--popup-accent': '#ef4444',
-        '--popup-accent-hover': '#f87171',
-        '--popup-word-color': '#f5f5f5',
-        '--popup-def-color': '#cccccc',
-        '--popup-def-yue': '#d4af37',
-        '--popup-divider': 'rgba(255, 255, 255, 0.1)',
-        '--popup-divider-strong': '#444444',
-        '--popup-example-bg': '#2a2a2a',
-        '--popup-btn-bg': '#333333',
-        '--popup-btn-hover': '#444444',
-        '--popup-btn-speaking': '#ef4444',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0px 4px 16px rgba(0, 0, 0, 0.5)',
-        '--popup-active-bg': '#3f1a1a',
-      }
-    },
-    ocean: {
-      name: '海洋藍',
-      vars: {
-        '--popup-bg': '#e3f2fd',
-        '--popup-border': '#90caf9',
-        '--popup-text': '#1565c0',
-        '--popup-text-muted': '#42a5f5',
-        '--popup-text-label': '#64b5f6',
-        '--popup-accent': '#0d47a1',
-        '--popup-accent-hover': '#1565c0',
-        '--popup-word-color': '#0d47a1',
-        '--popup-def-color': '#1976d2',
-        '--popup-def-yue': '#e65100',
-        '--popup-divider': 'rgba(13, 71, 161, 0.1)',
-        '--popup-divider-strong': '#bbdefb',
-        '--popup-example-bg': '#bbdefb',
-        '--popup-btn-bg': '#bbdefb',
-        '--popup-btn-hover': '#90caf9',
-        '--popup-btn-speaking': '#1565c0',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0 4px 12px rgba(21, 101, 192, 0.2)',
-        '--popup-active-bg': '#bbdefb',
-      }
-    },
-    warm: {
-      name: '暖陽',
-      vars: {
-        '--popup-bg': '#fff8e1',
-        '--popup-border': '#ffe082',
-        '--popup-text': '#5d4037',
-        '--popup-text-muted': '#8d6e63',
-        '--popup-text-label': '#a1887f',
-        '--popup-accent': '#e65100',
-        '--popup-accent-hover': '#f57c00',
-        '--popup-word-color': '#3e2723',
-        '--popup-def-color': '#6d4c41',
-        '--popup-def-yue': '#c62828',
-        '--popup-divider': 'rgba(93, 64, 55, 0.1)',
-        '--popup-divider-strong': '#ffe0b2',
-        '--popup-example-bg': '#fff3e0',
-        '--popup-btn-bg': '#ffe0b2',
-        '--popup-btn-hover': '#ffcc80',
-        '--popup-btn-speaking': '#e65100',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0 4px 12px rgba(230, 81, 0, 0.15)',
-        '--popup-active-bg': '#fff3e0',
-      }
-    },
-    mint: {
-      name: '薄荷綠',
-      vars: {
-        '--popup-bg': '#e8f5e9',
-        '--popup-border': '#a5d6a7',
-        '--popup-text': '#2e7d32',
-        '--popup-text-muted': '#4caf50',
-        '--popup-text-label': '#66bb6a',
-        '--popup-accent': '#1b5e20',
-        '--popup-accent-hover': '#2e7d32',
-        '--popup-word-color': '#1b5e20',
-        '--popup-def-color': '#388e3c',
-        '--popup-def-yue': '#bf360c',
-        '--popup-divider': 'rgba(46, 125, 50, 0.1)',
-        '--popup-divider-strong': '#c8e6c9',
-        '--popup-example-bg': '#c8e6c9',
-        '--popup-btn-bg': '#c8e6c9',
-        '--popup-btn-hover': '#a5d6a7',
-        '--popup-btn-speaking': '#2e7d32',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0 4px 12px rgba(46, 125, 50, 0.2)',
-        '--popup-active-bg': '#c8e6c9',
-      }
-    },
-    glass: {
-      name: '毛玻璃',
-      vars: {
-        '--popup-bg': 'rgba(255, 255, 255, 0.95)',
-        '--popup-border': 'rgba(255, 255, 255, 0.3)',
-        '--popup-text': '#333333',
-        '--popup-text-muted': '#555555',
-        '--popup-text-label': '#777777',
-        '--popup-accent': '#2196f3',
-        '--popup-accent-hover': '#1976d2',
-        '--popup-word-color': '#1a1a1a',
-        '--popup-def-color': '#444444',
-        '--popup-def-yue': '#b8860b',
-        '--popup-divider': 'rgba(0, 0, 0, 0.06)',
-        '--popup-divider-strong': 'rgba(0, 0, 0, 0.08)',
-        '--popup-example-bg': 'rgba(255, 255, 255, 0.5)',
-        '--popup-btn-bg': 'rgba(0, 0, 0, 0.06)',
-        '--popup-btn-hover': 'rgba(0, 0, 0, 0.1)',
-        '--popup-btn-speaking': '#2196f3',
-        '--popup-btn-speaking-text': '#ffffff',
-        '--popup-shadow': '0 8px 32px rgba(0, 0, 0, 0.12)',
-        '--popup-active-bg': 'rgba(33, 150, 243, 0.08)',
+      if (customEnFont) {
+        popup.style.setProperty("--popup-font-en", customEnFont);
+        if (translatePopup) translatePopup.style.setProperty("--popup-font-en", customEnFont);
+      } else {
+        popup.style.removeProperty("--popup-font-en");
+        if (translatePopup) translatePopup.style.removeProperty("--popup-font-en");
       }
     }
-  };
-
-
-  // 判斷當前是否為深色模式
-  function isDarkMode() {
-    return uiTheme === 'dark' || (uiTheme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
-  }
-
-  // 應用主題到彈窗
-  function applyPopupTheme(themeName) {
-    if (!popup) return;
-    
-    const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
-
-    
-    // 設定 CSS 變量
-    for (const [prop, value] of Object.entries(theme.vars)) {
-      popup.style.setProperty(prop, value);
-      if (translatePopup) translatePopup.style.setProperty(prop, value);
-    }
-    
-    // 處理毛玻璃特殊 class
-    popup.classList.remove('popup-theme-glass');
-    if (translatePopup) translatePopup.classList.remove('popup-theme-glass');
-    if (themeName === 'glass') {
-      popup.classList.add('popup-theme-glass');
-      if (translatePopup) translatePopup.classList.add('popup-theme-glass');
-    }
-
-    // 應用自定義字體
-    if (customZhFont) {
-      popup.style.setProperty('--popup-font-zh', customZhFont);
-      if (translatePopup) translatePopup.style.setProperty('--popup-font-zh', customZhFont);
-    } else {
-      popup.style.removeProperty('--popup-font-zh');
-      if (translatePopup) translatePopup.style.removeProperty('--popup-font-zh');
-    }
-    
-    if (customEnFont) {
-      popup.style.setProperty('--popup-font-en', customEnFont);
-      if (translatePopup) translatePopup.style.setProperty('--popup-font-en', customEnFont);
-    } else {
-      popup.style.removeProperty('--popup-font-en');
-      if (translatePopup) translatePopup.style.removeProperty('--popup-font-en');
-    }
-  }
-  
-  // TTS 音頻緩存（避免重複 API 調用）
-  const ttsCache = new Map(); // key: "engine:text" -> audioData
-  const TTS_CACHE_MAX = 20;
-  let pendingTtsText = ''; // 追蹤正在請求的文本
-
-  // ==================== Shadow DOM 樣式隔離 ====================
-  let shadowRoot = null; // 彈窗的影子根，實現 CSS 完全隔離
-
-  async function createShadowHost() {
-    // 清除舊的 Shadow Host（擴展重載後殘留的）
-    const oldHost = document.getElementById('jyutping-shadow-host');
-    if (oldHost) oldHost.remove();
-    // 同時清除舊的宿主頁面樣式標籤
-    const oldHostStyles = document.getElementById('jyutping-host-styles');
-    if (oldHostStyles) oldHostStyles.remove();
-
-    const host = document.createElement('div');
-    host.id = 'jyutping-shadow-host';
-    host.style.cssText = 'position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: visible; z-index: 2147483647; pointer-events: none;';
-
-    shadowRoot = host.attachShadow({ mode: 'closed' });
-
-    // 動態加載 popup.css 到 Shadow Root 內部
-    try {
-      const cssUrl = chrome.runtime.getURL('popup.css');
-      const resp = await fetch(cssUrl);
-      const cssText = await resp.text();
-      const style = document.createElement('style');
-      style.textContent = cssText;
-      shadowRoot.appendChild(style);
-    } catch (e) {
-      console.error('[Jyutping] Failed to load popup.css into Shadow DOM:', e);
-    }
-
-    // 在主頁面注入宿主層樣式（高亮、長按進度環、Toast、Ruby 注音、翻譯高亮）
-    // 這些樣式作用在宿主頁面 DOM 元素上，無法放入 Shadow DOM
-    const hostStyle = document.createElement('style');
-    hostStyle.id = 'jyutping-host-styles';
-    hostStyle.textContent = `
+    const ttsCache = /* @__PURE__ */ new Map();
+    const TTS_CACHE_MAX = 20;
+    let pendingTtsText = "";
+    let shadowRoot = null;
+    async function createShadowHost() {
+      const oldHost = document.getElementById("jyutping-shadow-host");
+      if (oldHost) oldHost.remove();
+      const oldHostStyles = document.getElementById("jyutping-host-styles");
+      if (oldHostStyles) oldHostStyles.remove();
+      const host = document.createElement("div");
+      host.id = "jyutping-shadow-host";
+      host.style.cssText = "position: absolute; top: 0; left: 0; width: 0; height: 0; overflow: visible; z-index: 2147483647; pointer-events: none;";
+      shadowRoot = host.attachShadow({ mode: "closed" });
+      try {
+        const cssUrl = chrome.runtime.getURL("popup.css");
+        const resp = await fetch(cssUrl);
+        const cssText = await resp.text();
+        const style = document.createElement("style");
+        style.textContent = cssText;
+        shadowRoot.appendChild(style);
+      } catch (e) {
+        console.error("[Jyutping] Failed to load popup.css into Shadow DOM:", e);
+      }
+      const hostStyle = document.createElement("style");
+      hostStyle.id = "jyutping-host-styles";
+      hostStyle.textContent = `
       @font-face {
         font-family: "HanaMinB";
-        src: url("${chrome.runtime.getURL('fonts/HanaMinB.ttf')}");
+        src: url("${chrome.runtime.getURL("fonts/HanaMinB.ttf")}");
         font-display: swap;
       }
 
@@ -614,78 +895,65 @@
         transform: scale(0.9); transform-origin: center bottom;
       }
     `;
-    document.head.appendChild(hostStyle);
-
-    document.body.appendChild(host);
-  }
-
-  // 初始化：創建彈窗元素
-  async function init() {
-    await createShadowHost();
-    createPopup();
-    createTranslatePopup();
-    await loadDictionary();
-    loadSettings();
-    setupEventListeners();
-    
-    // 如果 sessionStorage 記錄了開啟全文注音，則自動恢復
-    if (isFullPageRubyActive && isEnabled) {
-      console.log('[Content] Auto-restoring Jyutping Full Page Ruby from sessionStorage');
-      injectRubyAnnotations(document.body);
+      document.head.appendChild(hostStyle);
+      document.body.appendChild(host);
     }
-  }
-
-  let hasUserSelection = false;
-
-  // 創建句子翻譯用的獨立浮窗（當沒有詞典彈窗時使用）
-  function createTranslatePopup() {
-    translatePopup = document.createElement('div');
-    translatePopup.id = 'cantonese-translate-popup';
-    translatePopup.style.display = 'none';
-    shadowRoot.appendChild(translatePopup);
-    translatePopup.addEventListener('mousedown', (e) => {
-      // 允許 QA 容器內的元素正常響應點擊（輸入框焦點、按鈕點擊等）
-      if (e.target.closest('.popup-qa-container')) {
+    async function init() {
+      await createShadowHost();
+      createPopup();
+      createTranslatePopup();
+      await loadDictionary();
+      loadSettings();
+      setupEventListeners();
+      if (isFullPageRubyActive && isEnabled) {
+        console.log("[Content] Auto-restoring Jyutping Full Page Ruby from sessionStorage");
+        injectRubyAnnotations(document.body);
+      }
+    }
+    let hasUserSelection = false;
+    function createTranslatePopup() {
+      translatePopup = document.createElement("div");
+      translatePopup.id = "cantonese-translate-popup";
+      translatePopup.style.display = "none";
+      shadowRoot.appendChild(translatePopup);
+      translatePopup.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".popup-qa-container")) {
+          e.stopPropagation();
+          return;
+        }
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === "textarea" || tag === "input") {
+          e.stopPropagation();
+          return;
+        }
+        e.preventDefault();
         e.stopPropagation();
-        return;
-      }
-      // 允許表單元素獲取焦點
-      const tag = e.target.tagName.toLowerCase();
-      if (tag === 'textarea' || tag === 'input') {
+      });
+      translatePopup.addEventListener("mouseenter", () => {
+        isMouseOverPopup = true;
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+      });
+      translatePopup.addEventListener("mouseleave", () => {
+        isMouseOverPopup = false;
+        scheduleHidePopup();
+      });
+      translatePopup.addEventListener("dblclick", (e) => {
+        if (e.target.closest("textarea") || e.target.closest("input") || e.target.closest("button")) {
+          return;
+        }
         e.stopPropagation();
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-    });
-    translatePopup.addEventListener('mouseenter', () => {
-      isMouseOverPopup = true;
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
-    });
-    translatePopup.addEventListener('mouseleave', () => {
-      isMouseOverPopup = false;
-      scheduleHidePopup();
-    });
-
-    // 雙擊翻譯浮窗打開 AI Q&A
-    translatePopup.addEventListener('dblclick', (e) => {
-      if (e.target.closest('textarea') || e.target.closest('input') || e.target.closest('button')) {
-        return;
-      }
-      e.stopPropagation();
-      showPopupQA(translatePopup);
-    });
-  }
-
-  let longPressRing = null;
-  function createLongPressRing() {
-    if (longPressRing) return;
-    longPressRing = document.createElement('div');
-    longPressRing.id = 'jyutping-longpress-ring';
-    longPressRing.innerHTML = `
+        showPopupQA(translatePopup);
+      });
+    }
+    let longPressRing = null;
+    function createLongPressRing() {
+      if (longPressRing) return;
+      longPressRing = document.createElement("div");
+      longPressRing.id = "jyutping-longpress-ring";
+      longPressRing.innerHTML = `
       <svg width="28" height="28" viewBox="0 0 28 28">
         <circle cx="14" cy="14" r="12" fill="none" stroke="rgba(139, 92, 246, 0.2)" stroke-width="3"></circle>
         <circle class="ring-progress" cx="14" cy="14" r="12" fill="none" stroke="#8b5cf6" stroke-width="3" 
@@ -693,440 +961,350 @@
           transform="rotate(-90 14 14)"></circle>
       </svg>
     `;
-    document.body.appendChild(longPressRing);
-  }
-
-  function startLongPressAnimation(x, y) {
-    if (!longPressRing) createLongPressRing();
-    longPressRing.style.left = x + 'px';
-    longPressRing.style.top = y + 'px';
-    
-    // 移除之前的 done 類
-    longPressRing.classList.remove('done');
-    
-    // 強制重繪
-    longPressRing.offsetHeight;
-    
-    // 添加 active 類觸發 CSS 動畫（因為 popup.css 用了 !important，inline style 無效）
-    longPressRing.classList.add('active');
-  }
-
-  function cancelLongPressAnimation() {
-    if (aiAnimationTimer) {
-      clearTimeout(aiAnimationTimer);
-      aiAnimationTimer = null;
+      document.body.appendChild(longPressRing);
     }
-    if (!longPressRing) return;
-    longPressRing.classList.remove('active');
-    longPressRing.classList.remove('done');
-    
-    // 重置內聯樣式（防禦性代碼）
-    longPressRing.style.opacity = '0';
-    const progressCircle = longPressRing.querySelector('.ring-progress');
-    if (progressCircle) {
-      progressCircle.style.transition = 'none';
-      progressCircle.style.strokeDashoffset = '69.1';
+    function startLongPressAnimation(x, y) {
+      if (!longPressRing) createLongPressRing();
+      longPressRing.style.left = x + "px";
+      longPressRing.style.top = y + "px";
+      longPressRing.classList.remove("done");
+      longPressRing.offsetHeight;
+      longPressRing.classList.add("active");
     }
-  }
-
-  // 對於跨行/多行選區，選取距離當前滑鼠最近的行/區塊 Rect，並合併同行的 rects
-  function getBestRectForRange(range) {
-    if (!range) return null;
-    const rects = Array.from(range.getClientRects());
-    if (rects.length === 0) return null;
-    if (rects.length === 1) return rects[0];
-
-    // 如果滑鼠位置為 0，預設使用整體 bounding rect
-    if (currentMouseX === 0 && currentMouseY === 0) {
-      return range.getBoundingClientRect();
-    }
-
-    // 尋找距離最後滑鼠位置最近的 rect
-    let bestRect = rects[0];
-    let minDistance = Infinity;
-    for (let i = 0; i < rects.length; i++) {
-      const rect = rects[i];
-      // 計算滑鼠到這個矩形的距離
-      const dx = Math.max(rect.left - currentMouseX, 0, currentMouseX - rect.right);
-      const dy = Math.max(rect.top - currentMouseY, 0, currentMouseY - rect.bottom);
-      const dist = dx * dx + dy * dy;
-      if (dist < minDistance) {
-        minDistance = dist;
-        bestRect = rect;
+    function cancelLongPressAnimation() {
+      if (aiAnimationTimer) {
+        clearTimeout(aiAnimationTimer);
+        aiAnimationTimer = null;
+      }
+      if (!longPressRing) return;
+      longPressRing.classList.remove("active");
+      longPressRing.classList.remove("done");
+      longPressRing.style.opacity = "0";
+      const progressCircle = longPressRing.querySelector(".ring-progress");
+      if (progressCircle) {
+        progressCircle.style.transition = "none";
+        progressCircle.style.strokeDashoffset = "69.1";
       }
     }
-
-    // 將與 bestRect 處於同一行的所有 rect 合併（解決同行多個 span 的問題）
-    let minX = bestRect.left;
-    let maxX = bestRect.right;
-    let minY = bestRect.top;
-    let maxY = bestRect.bottom;
-    
-    for (let i = 0; i < rects.length; i++) {
-      const rect = rects[i];
-      // 判斷是否在同一行 (垂直有重疊)
-      if (rect.bottom > bestRect.top && rect.top < bestRect.bottom) {
-        minX = Math.min(minX, rect.left);
-        maxX = Math.max(maxX, rect.right);
-        minY = Math.min(minY, rect.top);
-        maxY = Math.max(maxY, rect.bottom);
+    function getBestRectForRange(range) {
+      if (!range) return null;
+      const rects = Array.from(range.getClientRects());
+      if (rects.length === 0) return null;
+      if (rects.length === 1) return rects[0];
+      if (currentMouseX === 0 && currentMouseY === 0) {
+        return range.getBoundingClientRect();
       }
-    }
-
-    // 計算整體的 top 和 bottom，以確保彈窗不會遮擋任何跨行的文字
-    const fullRect = range.getBoundingClientRect();
-
-    return {
-      left: minX,
-      right: maxX,
-      top: fullRect.top,
-      bottom: fullRect.bottom,
-      width: maxX - minX,
-      height: fullRect.bottom - fullRect.top
-    };
-  }
-
-  // 定位翻譯和AI浮窗（包含箭頭）
-  function positionTranslatePopup(rect) {
-    if (!rect) return;
-    
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const popupWidth = translatePopup.offsetWidth || 200;
-    const popupHeight = translatePopup.offsetHeight || 60;
-    const ARROW_HEIGHT = 8;
-    const GAP = 2;
-
-    let left;
-    let top;
-    let arrowDirection = 'up';
-
-    // 水平位置：居中對齊高亮詞
-    const highlightCenterX = rect.left + rect.width / 2;
-    left = highlightCenterX - popupWidth / 2;
-    if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
-    if (left < 5) left = 5;
-
-    // 垂直位置限制 (相對於 viewport 計算，最後加 scrollX/Y)
-    if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
-      top = rect.bottom + GAP + ARROW_HEIGHT;
-      arrowDirection = 'up';
-    } else {
-      top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
-      arrowDirection = 'down';
-      if (top < 5) {
-        top = 5;
-        arrowDirection = 'up';
-      }
-    }
-
-    translatePopup.style.position = 'absolute';
-    translatePopup.style.left = Math.max(5, left + window.scrollX) + 'px';
-    translatePopup.style.top = (top + window.scrollY) + 'px';
-
-    const translatePopupArrow = translatePopup.querySelector('.popup-arrow');
-    if (translatePopupArrow) {
-      translatePopupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
-      // 使用上面已計算（並可能已被修改置中）的 highlightCenterX
-      let arrowCenter = highlightCenterX - left;
-      arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
-      translatePopupArrow.style.left = arrowCenter + 'px';
-    }
-  }
-
-  // 發送翻譯請求
-  function requestTranslation(text) {
-    // 只翻譯包含中文的文本
-    const chineseRatio = (text.match(/[\u4e00-\u9fff]/g) || []).length / text.length;
-    if (chineseRatio < 0.3) return;
-
-    showTranslatePopup(text, null, true);
-    chrome.runtime.sendMessage({
-      action: 'translate',
-      text: text,
-      transLangs: transLangs
-    });
-  }
-
-  // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
-  function showTranslatePopup(originalText, translations, loading) {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      hideTimeout = null;
-    }
-    
-    if (originalText !== null) {
-      activeQAContext.word = '';
-      activeQAContext.sentence = originalText;
-      activeQAContext.history = [];
-    }
-    if (!loading && translations) {
-      activeQAContext.originalTranslation = Object.values(translations).join('; ');
-    }
-
-    // 如果詞典彈窗正在顯示（且非精簡/Ruby模式），將翻譯結果插入其中
-    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode') && !popup.classList.contains('popup-ruby-mode')) {
-      const translateDiv = popup.querySelector('.popup-translate');
-      if (translateDiv) {
-        if (loading) {
-          translateDiv.innerHTML = `<div class="translate-loading">${pt('translating')}</div>`;
-        } else {
-          let rows = '';
-          if (translations) {
-            const keys = Object.keys(translations);
-            for (const key of keys) {
-              let label = '';
-              if (key === 'zh-Hans') label = pt('mandarin');
-              else if (key === 'en') label = pt('english');
-              else if (key === 'ja') label = pt('japanese');
-              else if (key === 'ko') label = pt('korean');
-              rows += `<div class="translate-row"><span class="translate-label translate-label-${key}">${label}</span><span class="translate-text">${translations[key] || ''}</span></div>`;
-            }
-          }
-          translateDiv.innerHTML = rows;
+      let bestRect = rects[0];
+      let minDistance = Infinity;
+      for (let i = 0; i < rects.length; i++) {
+        const rect = rects[i];
+        const dx = Math.max(rect.left - currentMouseX, 0, currentMouseX - rect.right);
+        const dy = Math.max(rect.top - currentMouseY, 0, currentMouseY - rect.bottom);
+        const dist = dx * dx + dy * dy;
+        if (dist < minDistance) {
+          minDistance = dist;
+          bestRect = rect;
         }
-        translateDiv.style.display = 'block';
-        return;
+      }
+      let minX = bestRect.left;
+      let maxX = bestRect.right;
+      let minY = bestRect.top;
+      let maxY = bestRect.bottom;
+      for (let i = 0; i < rects.length; i++) {
+        const rect = rects[i];
+        if (rect.bottom > bestRect.top && rect.top < bestRect.bottom) {
+          minX = Math.min(minX, rect.left);
+          maxX = Math.max(maxX, rect.right);
+          minY = Math.min(minY, rect.top);
+          maxY = Math.max(maxY, rect.bottom);
+        }
+      }
+      const fullRect = range.getBoundingClientRect();
+      return {
+        left: minX,
+        right: maxX,
+        top: fullRect.top,
+        bottom: fullRect.bottom,
+        width: maxX - minX,
+        height: fullRect.bottom - fullRect.top
+      };
+    }
+    function positionTranslatePopup(rect) {
+      if (!rect) return;
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      const popupWidth = translatePopup.offsetWidth || 200;
+      const popupHeight = translatePopup.offsetHeight || 60;
+      const ARROW_HEIGHT = 8;
+      const GAP = 2;
+      let left;
+      let top;
+      let arrowDirection = "up";
+      const highlightCenterX = rect.left + rect.width / 2;
+      left = highlightCenterX - popupWidth / 2;
+      if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
+      if (left < 5) left = 5;
+      if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
+        top = rect.bottom + GAP + ARROW_HEIGHT;
+        arrowDirection = "up";
+      } else {
+        top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+        arrowDirection = "down";
+        if (top < 5) {
+          top = 5;
+          arrowDirection = "up";
+        }
+      }
+      translatePopup.style.position = "absolute";
+      translatePopup.style.left = Math.max(5, left + window.scrollX) + "px";
+      translatePopup.style.top = top + window.scrollY + "px";
+      const translatePopupArrow = translatePopup.querySelector(".popup-arrow");
+      if (translatePopupArrow) {
+        translatePopupArrow.className = "popup-arrow popup-arrow-" + arrowDirection;
+        let arrowCenter = highlightCenterX - left;
+        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+        translatePopupArrow.style.left = arrowCenter + "px";
       }
     }
-    
-    // 否則用獨立浮窗（句子選區翻譯）
-    if (!translatePopup) return;
-    
-    // 構建帶有 popup-inner 和 popup-arrow 的結構
-    let innerContent = '';
-    if (loading) {
-      innerContent = `
-        <div class="translate-header">${pt('translating')}</div>
+    function requestTranslation(text) {
+      const chineseRatio = (text.match(/[\u4e00-\u9fff]/g) || []).length / text.length;
+      if (chineseRatio < 0.3) return;
+      showTranslatePopup(text, null, true);
+      chrome.runtime.sendMessage({
+        action: "translate",
+        text,
+        transLangs
+      });
+    }
+    function showTranslatePopup(originalText, translations, loading) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      if (originalText !== null) {
+        activeQAContext.word = "";
+        activeQAContext.sentence = originalText;
+        activeQAContext.history = [];
+      }
+      if (!loading && translations) {
+        activeQAContext.originalTranslation = Object.values(translations).join("; ");
+      }
+      if (popup && popup.style.display !== "none" && !popup.classList.contains("compact-mode") && !popup.classList.contains("popup-ruby-mode")) {
+        const translateDiv = popup.querySelector(".popup-translate");
+        if (translateDiv) {
+          if (loading) {
+            translateDiv.innerHTML = `<div class="translate-loading">${pt("translating")}</div>`;
+          } else {
+            let rows = "";
+            if (translations) {
+              const keys = Object.keys(translations);
+              for (const key of keys) {
+                let label = "";
+                if (key === "zh-Hans") label = pt("mandarin");
+                else if (key === "en") label = pt("english");
+                else if (key === "ja") label = pt("japanese");
+                else if (key === "ko") label = pt("korean");
+                rows += `<div class="translate-row"><span class="translate-label translate-label-${key}">${label}</span><span class="translate-text">${translations[key] || ""}</span></div>`;
+              }
+            }
+            translateDiv.innerHTML = rows;
+          }
+          translateDiv.style.display = "block";
+          return;
+        }
+      }
+      if (!translatePopup) return;
+      let innerContent = "";
+      if (loading) {
+        innerContent = `
+        <div class="translate-header">${pt("translating")}</div>
         <div class="translate-body" style="opacity:0.5;">${originalText}</div>
       `;
-    } else {
-      let rows = '';
-      if (translations) {
-        const keys = Object.keys(translations);
-        for (const key of keys) {
-          let label = '';
-          if (key === 'zh-Hans') label = pt('mandarin');
-          else if (key === 'en') label = pt('english');
-          else if (key === 'ja') label = pt('japanese');
-          else if (key === 'ko') label = pt('korean');
-          rows += `<div class="translate-row"><span class="translate-label translate-label-${key}">${label}</span><span class="translate-text">${translations[key] || ''}</span></div>`;
+      } else {
+        let rows = "";
+        if (translations) {
+          const keys = Object.keys(translations);
+          for (const key of keys) {
+            let label = "";
+            if (key === "zh-Hans") label = pt("mandarin");
+            else if (key === "en") label = pt("english");
+            else if (key === "ja") label = pt("japanese");
+            else if (key === "ko") label = pt("korean");
+            rows += `<div class="translate-row"><span class="translate-label translate-label-${key}">${label}</span><span class="translate-text">${translations[key] || ""}</span></div>`;
+          }
         }
+        innerContent = rows;
       }
-      innerContent = rows;
-    }
-
-    translatePopup.innerHTML = `
+      translatePopup.innerHTML = `
       <div class="popup-inner">
         ${innerContent}
       </div>
       <div class="popup-arrow"></div>
     `;
-
-    translatePopup.style.display = 'block';
-    // 句子翻譯浮窗預設採用自適應寬度（最適合其長度的寬度，最大 320px）
-    translatePopup.style.setProperty('width', 'max-content', 'important');
-    translatePopup.style.setProperty('min-width', '0', 'important');
-    translatePopup.style.setProperty('max-width', '320px', 'important');
-    const inner = translatePopup.querySelector('.popup-inner');
-    if (inner) {
-      inner.style.setProperty('width', 'auto', 'important');
-      inner.style.setProperty('max-width', '100%', 'important');
-      inner.style.setProperty('min-width', '0', 'important');
-      inner.style.setProperty('box-sizing', 'border-box', 'important');
-    }
-    // 調用 applyPopupTheme 確保樣式同步
-    if (typeof popupTheme !== 'undefined') applyPopupTheme(popupTheme);
-
-    // 定位在選區下方
-    let posRect = null;
-    const selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      const range = selection.getRangeAt(0);
-      posRect = getBestRectForRange(range);
-      
-      // 添加自定義高亮，避免輸入框獲取焦點時原生選區消失
-      if (typeof CSS !== 'undefined' && CSS.highlights) {
-        try {
-          const highlight = new Highlight(range);
-          CSS.highlights.set('jyutping-translate-hl', highlight);
-        } catch (e) {
-          console.warn('CSS Custom Highlights API failed:', e);
+      translatePopup.style.display = "block";
+      translatePopup.style.setProperty("width", "max-content", "important");
+      translatePopup.style.setProperty("min-width", "0", "important");
+      translatePopup.style.setProperty("max-width", "320px", "important");
+      const inner = translatePopup.querySelector(".popup-inner");
+      if (inner) {
+        inner.style.setProperty("width", "auto", "important");
+        inner.style.setProperty("max-width", "100%", "important");
+        inner.style.setProperty("min-width", "0", "important");
+        inner.style.setProperty("box-sizing", "border-box", "important");
+      }
+      if (typeof popupTheme !== "undefined") applyPopupTheme(popupTheme);
+      let posRect = null;
+      const selection = window.getSelection();
+      if (selection.rangeCount > 0) {
+        const range = selection.getRangeAt(0);
+        posRect = getBestRectForRange(range);
+        if (typeof CSS !== "undefined" && CSS.highlights) {
+          try {
+            const highlight = new Highlight(range);
+            CSS.highlights.set("jyutping-translate-hl", highlight);
+          } catch (e) {
+            console.warn("CSS Custom Highlights API failed:", e);
+          }
         }
       }
-    }
-    if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
-      posRect = getBestRectForRange(currentRange);
-    }
-    if (posRect) {
-      lastTranslateRect = posRect;
-      positionTranslatePopup(posRect);
-    }
-  }
-
-  // 隱藏翻譯結果浮窗
-  function hideTranslatePopup() {
-    if (translatePopup) {
-      translatePopup.style.display = 'none';
-      translatePopup.style.removeProperty('width');
-      translatePopup.style.removeProperty('min-width');
-      translatePopup.style.removeProperty('max-width');
-      const inner = translatePopup.querySelector('.popup-inner');
-      if (inner) {
-        inner.style.removeProperty('width');
-        inner.style.removeProperty('max-width');
-        inner.style.removeProperty('min-width');
-        inner.style.removeProperty('box-sizing');
+      if (!posRect && typeof currentRange !== "undefined" && currentRange) {
+        posRect = getBestRectForRange(currentRange);
       }
-      const qaContainer = translatePopup.querySelector('.popup-qa-container');
-      if (qaContainer) {
-        qaContainer.remove();
-      }
-      const qaUpperDisplay = translatePopup.querySelector('.qa-upper-display');
-      if (qaUpperDisplay) {
-        qaUpperDisplay.remove();
-      }
-      if (inner) {
-        Array.from(inner.children).forEach(child => {
-          if (child.className !== 'popup-qa-container' && child.className !== 'qa-upper-display') {
-            child.style.display = '';
-          }
-        });
+      if (posRect) {
+        lastTranslateRect = posRect;
+        positionTranslatePopup(posRect);
       }
     }
-    
-    // 移除翻譯浮窗的高亮
-    if (typeof CSS !== 'undefined' && CSS.highlights) {
-      CSS.highlights.delete('jyutping-translate-hl');
+    function hideTranslatePopup() {
+      if (translatePopup) {
+        translatePopup.style.display = "none";
+        translatePopup.style.removeProperty("width");
+        translatePopup.style.removeProperty("min-width");
+        translatePopup.style.removeProperty("max-width");
+        const inner = translatePopup.querySelector(".popup-inner");
+        if (inner) {
+          inner.style.removeProperty("width");
+          inner.style.removeProperty("max-width");
+          inner.style.removeProperty("min-width");
+          inner.style.removeProperty("box-sizing");
+        }
+        const qaContainer = translatePopup.querySelector(".popup-qa-container");
+        if (qaContainer) {
+          qaContainer.remove();
+        }
+        const qaUpperDisplay = translatePopup.querySelector(".qa-upper-display");
+        if (qaUpperDisplay) {
+          qaUpperDisplay.remove();
+        }
+        if (inner) {
+          Array.from(inner.children).forEach((child) => {
+            if (child.className !== "popup-qa-container" && child.className !== "qa-upper-display") {
+              child.style.display = "";
+            }
+          });
+        }
+      }
+      if (typeof CSS !== "undefined" && CSS.highlights) {
+        CSS.highlights.delete("jyutping-translate-hl");
+      }
+      clearQAContext();
     }
-    
-    clearQAContext();
-  }
-
-  // 獲取選中文本/高亮範圍所在的段落/句子作為上下文
-  function getSurroundingSentence(rangeToUse) {
-    let targetNode = null;
-    if (rangeToUse) {
-      try {
-        targetNode = rangeToUse.startContainer;
-      } catch (e) {}
-    }
-    if (!targetNode) {
-      const selection = window.getSelection();
-      if (selection && selection.rangeCount > 0) {
+    function getSurroundingSentence(rangeToUse) {
+      let targetNode = null;
+      if (rangeToUse) {
         try {
-          targetNode = selection.getRangeAt(0).startContainer;
-        } catch (e) {}
+          targetNode = rangeToUse.startContainer;
+        } catch (e) {
+        }
       }
-    }
-    if (!targetNode) return '';
-    
-    // 向上找到塊級元素
-    const blockTags = ['P', 'DIV', 'LI', 'TD', 'TH', 'H1', 'H2', 'H3', 'H4', 'H5', 'H6', 'BLOCKQUOTE', 'ARTICLE', 'SECTION'];
-    let el = targetNode.nodeType === Node.TEXT_NODE ? targetNode.parentElement : targetNode;
-    while (el && !blockTags.includes(el.tagName)) {
-      el = el.parentElement;
-    }
-    
-    if (!el) {
-      // fallback: 用 targetNode 的父元素
-      el = targetNode.nodeType === Node.TEXT_NODE ? targetNode.parentElement : targetNode;
-    }
-    
-    const text = (el.textContent || '').trim();
-    // 限制長度，避免發送過長的上下文
-    return text.length > 500 ? text.substring(0, 500) + '...' : text;
-  }
-
-  // 請求 AI 翻譯
-  function requestAiTranslation(word, rectOverride = null) {
-    if (!word) return;
-    
-    const sentence = getSurroundingSentence(currentRange);
-    console.log('[AI] requestAiTranslation, word:', word, 'sentence:', sentence.substring(0, 80));
-    
-    // 預先填充 Q&A 內容緩存，防止結果返回時遺失上下文
-    activeQAContext.word = word;
-    activeQAContext.sentence = sentence;
-    activeQAContext.originalTranslation = 'AI 翻譯中...';
-    activeQAContext.history = [];
-
-    // 擷取並儲存當前目標位置，避免 fallback 到上一次的 popup 導致位置跳躍
-    let targetRect = rectOverride;
-    if (!targetRect) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        targetRect = getBestRectForRange(selection.getRangeAt(0));
-      } else if (typeof currentRange !== 'undefined' && currentRange) {
-        targetRect = getBestRectForRange(currentRange);
+      if (!targetNode) {
+        const selection = window.getSelection();
+        if (selection && selection.rangeCount > 0) {
+          try {
+            targetNode = selection.getRangeAt(0).startContainer;
+          } catch (e) {
+          }
+        }
       }
+      if (!targetNode) return "";
+      const blockTags = ["P", "DIV", "LI", "TD", "TH", "H1", "H2", "H3", "H4", "H5", "H6", "BLOCKQUOTE", "ARTICLE", "SECTION"];
+      let el = targetNode.nodeType === Node.TEXT_NODE ? targetNode.parentElement : targetNode;
+      while (el && !blockTags.includes(el.tagName)) {
+        el = el.parentElement;
+      }
+      if (!el) {
+        el = targetNode.nodeType === Node.TEXT_NODE ? targetNode.parentElement : targetNode;
+      }
+      const text = (el.textContent || "").trim();
+      return text.length > 500 ? text.substring(0, 500) + "..." : text;
     }
-    activeQAContext.targetRect = targetRect;
-
-    // 發起全新的翻譯請求前，清除可能殘留的舊獨立彈窗內容，避免錯誤追加到舊 QA 容器中或殘留舊狀態
-    if (translatePopup && translatePopup.style.display !== 'none') {
-      translatePopup.innerHTML = '';
-      translatePopup.style.display = 'none';
+    function requestAiTranslation(word, rectOverride = null) {
+      if (!word) return;
+      const sentence = getSurroundingSentence(currentRange);
+      console.log("[AI] requestAiTranslation, word:", word, "sentence:", sentence.substring(0, 80));
+      activeQAContext.word = word;
+      activeQAContext.sentence = sentence;
+      activeQAContext.originalTranslation = "AI 翻譯中...";
+      activeQAContext.history = [];
+      let targetRect = rectOverride;
+      if (!targetRect) {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && !selection.isCollapsed) {
+          targetRect = getBestRectForRange(selection.getRangeAt(0));
+        } else if (typeof currentRange !== "undefined" && currentRange) {
+          targetRect = getBestRectForRange(currentRange);
+        }
+      }
+      activeQAContext.targetRect = targetRect;
+      if (translatePopup && translatePopup.style.display !== "none") {
+        translatePopup.innerHTML = "";
+        translatePopup.style.display = "none";
+      }
+      showAiResult(word, "✨ AI 分析中...", targetRect);
+      chrome.runtime.sendMessage({
+        action: "aiTranslate",
+        word,
+        sentence
+      });
     }
-
-    // 顯示加載狀態
-    showAiResult(word, '✨ AI 分析中...', targetRect);
-    
-    chrome.runtime.sendMessage({
-      action: 'aiTranslate',
-      word: word,
-      sentence: sentence
-    });
-  }
-
-  // 顯示 AI 翻譯結果
-  function showAiResult(word, explanation, targetRect = null) {
-    // 確保如果沒有前綴，預設補上 "✨ "
-    let textToRender = explanation;
-    if (!explanation.startsWith('✨') && !explanation.startsWith('❌')) {
-      textToRender = '✨ ' + explanation;
-    }
-    const renderedText = renderMarkdown(textToRender);
-
-    // 如果詞典彈窗正在顯示（且非精簡/Ruby模式），插入其中
-    if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode') && !popup.classList.contains('popup-ruby-mode')) {
-      const translateDiv = popup.querySelector('.popup-translate');
-      if (translateDiv) {
-        // 如果已經有了 .ai-text，只更新內容，避免破壞可能存在的 Q&A
-        const existingAiText = translateDiv.querySelector('.ai-text');
-        if (existingAiText) {
-          existingAiText.innerHTML = renderedText;
-        } else {
-          translateDiv.innerHTML = `
+    function showAiResult(word, explanation, targetRect = null) {
+      let textToRender = explanation;
+      if (!explanation.startsWith("✨") && !explanation.startsWith("❌")) {
+        textToRender = "✨ " + explanation;
+      }
+      const renderedText = renderMarkdown(textToRender);
+      if (popup && popup.style.display !== "none" && !popup.classList.contains("compact-mode") && !popup.classList.contains("popup-ruby-mode")) {
+        const translateDiv = popup.querySelector(".popup-translate");
+        if (translateDiv) {
+          const existingAiText = translateDiv.querySelector(".ai-text");
+          if (existingAiText) {
+            existingAiText.innerHTML = renderedText;
+          } else {
+            translateDiv.innerHTML = `
             <div class="ai-result">
               <div class="ai-text" style="white-space: pre-wrap;">${renderedText}</div>
             </div>
           `;
+          }
+          translateDiv.style.display = "block";
+          return;
         }
-        translateDiv.style.display = 'block';
-        return;
       }
-    }
-    
-    // 否則用獨立浮窗
-    if (!translatePopup) return;
-    
-    // 如果獨立浮窗已經在顯示，且包含 .ai-text，只需更新文字，以保護可能打開的 Q&A 界面
-    if (translatePopup.style.display !== 'none') {
-      const aiText = translatePopup.querySelector('.ai-text');
-      const isQA = translatePopup.querySelector('.popup-qa-container');
-      if (aiText && !isQA) {
-        aiText.innerHTML = renderedText;
-        const finalRect = targetRect || lastTranslateRect;
-        if (finalRect) {
-          lastTranslateRect = finalRect;
-          positionTranslatePopup(finalRect);
+      if (!translatePopup) return;
+      if (translatePopup.style.display !== "none") {
+        const aiText = translatePopup.querySelector(".ai-text");
+        const isQA = translatePopup.querySelector(".popup-qa-container");
+        if (aiText && !isQA) {
+          aiText.innerHTML = renderedText;
+          const finalRect = targetRect || lastTranslateRect;
+          if (finalRect) {
+            lastTranslateRect = finalRect;
+            positionTranslatePopup(finalRect);
+          }
+          return;
         }
-        return;
       }
-    }
-
-    translatePopup.innerHTML = `
+      translatePopup.innerHTML = `
       <div class="popup-inner">
         <div class="ai-result">
           <div class="ai-text" style="white-space: pre-wrap;">${renderedText}</div>
@@ -1134,63 +1312,48 @@
       </div>
       <div class="popup-arrow"></div>
     `;
-
-    translatePopup.style.display = 'block';
-    // AI 翻譯浮窗預設也採用自適應寬度（最適合其長度的寬度，最大 320px）
-    translatePopup.style.setProperty('width', 'max-content', 'important');
-    translatePopup.style.setProperty('min-width', '0', 'important');
-    translatePopup.style.setProperty('max-width', '320px', 'important');
-    const inner = translatePopup.querySelector('.popup-inner');
-    if (inner) {
-      inner.style.setProperty('width', 'auto', 'important');
-      inner.style.setProperty('max-width', '100%', 'important');
-      inner.style.setProperty('min-width', '0', 'important');
-      inner.style.setProperty('box-sizing', 'border-box', 'important');
-    }
-    // 調用 applyPopupTheme 確保樣式同步
-    if (typeof popupTheme !== 'undefined') applyPopupTheme(popupTheme);
-
-    // 定位在選區下方
-    let posRect = targetRect;
-    if (!posRect) {
-      const selection = window.getSelection();
-      if (selection.rangeCount > 0 && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0);
-        posRect = getBestRectForRange(range);
+      translatePopup.style.display = "block";
+      translatePopup.style.setProperty("width", "max-content", "important");
+      translatePopup.style.setProperty("min-width", "0", "important");
+      translatePopup.style.setProperty("max-width", "320px", "important");
+      const inner = translatePopup.querySelector(".popup-inner");
+      if (inner) {
+        inner.style.setProperty("width", "auto", "important");
+        inner.style.setProperty("max-width", "100%", "important");
+        inner.style.setProperty("min-width", "0", "important");
+        inner.style.setProperty("box-sizing", "border-box", "important");
       }
-      if (!posRect && typeof currentRange !== 'undefined' && currentRange) {
-        posRect = getBestRectForRange(currentRange);
+      if (typeof popupTheme !== "undefined") applyPopupTheme(popupTheme);
+      let posRect = targetRect;
+      if (!posRect) {
+        const selection = window.getSelection();
+        if (selection.rangeCount > 0 && !selection.isCollapsed) {
+          const range = selection.getRangeAt(0);
+          posRect = getBestRectForRange(range);
+        }
+        if (!posRect && typeof currentRange !== "undefined" && currentRange) {
+          posRect = getBestRectForRange(currentRange);
+        }
+        if (!posRect && lastTranslateRect) {
+          posRect = lastTranslateRect;
+        }
       }
-      if (!posRect && lastTranslateRect) {
-        posRect = lastTranslateRect;
+      if (posRect) {
+        lastTranslateRect = posRect;
+        positionTranslatePopup(posRect);
       }
     }
-    
-    if (posRect) {
-      lastTranslateRect = posRect;
-      positionTranslatePopup(posRect);
-    }
-  }
-
-
-
-  // 創建彈窗 DOM 元素
-  function createPopup() {
-    let existingPopup = document.getElementById('cantonese-popup-dict');
-    if (existingPopup) {
-      existingPopup.remove();
-    }
-    
-    popup = document.createElement('div');
-    popup.id = 'cantonese-popup-dict';
-    popup.style.display = 'none';
-    
-    // 箭頭元素
-    popupArrow = document.createElement('div');
-    popupArrow.className = 'popup-arrow';
-    
-    // 內部結構：左側主要內容 + 右側例句 + 翻譯（全部包裹在 overflow hidden 容器中，以免內容溢出圓角）
-    popup.innerHTML = `
+    function createPopup() {
+      let existingPopup = document.getElementById("cantonese-popup-dict");
+      if (existingPopup) {
+        existingPopup.remove();
+      }
+      popup = document.createElement("div");
+      popup.id = "cantonese-popup-dict";
+      popup.style.display = "none";
+      popupArrow = document.createElement("div");
+      popupArrow.className = "popup-arrow";
+      popup.innerHTML = `
       <div class="popup-inner" style="border-radius: inherit; overflow: hidden; width: 100%; height: 100%; display: flex; flex-direction: column; position: relative;">
         <!-- 右上角操作按鈕區（包含報告和設定） -->
         <div class="popup-actions-wrapper" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; z-index: 10;">
@@ -1234,514 +1397,1098 @@
         </div>
       </div>
     `;
-    popup.appendChild(popupArrow);
-    
-    shadowRoot.appendChild(popup);
-
-    // 操作按鈕區事件
-    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
-    const settingsBtn = popup.querySelector('.popup-settings-btn');
-    const reportBtn = popup.querySelector('.popup-report-btn');
-    const popupContainer = popup.querySelector('.popup-container');
-    const popupTranslate = popup.querySelector('.popup-translate');
-    const reportForm = popup.querySelector('.popup-report-form');
-
-    // Hover 整個 wrapper 時：設定按鈕變亮，報告按鈕向左滑出
-    actionsWrapper.addEventListener('mouseenter', () => {
-      // 如果報告表單正在顯示，則不顯示按鈕
-      if (reportForm.style.display === 'flex') return;
-      
-      settingsBtn.style.opacity = '1';
-      settingsBtn.style.backgroundColor = 'var(--popup-divider)';
-      
-      reportBtn.style.opacity = '1';
-      reportBtn.style.width = '60px'; // 展開寬度
-      reportBtn.style.padding = '0 8px';
-      reportBtn.style.marginRight = '4px';
-    });
-    
-    actionsWrapper.addEventListener('mouseleave', () => {
-      settingsBtn.style.opacity = '0.4';
-      settingsBtn.style.backgroundColor = 'transparent';
-      
-      reportBtn.style.opacity = '0';
-      reportBtn.style.width = '0';
-      reportBtn.style.padding = '0';
-      reportBtn.style.marginRight = '0';
-      reportBtn.style.backgroundColor = 'var(--popup-divider)'; // reset hover
-    });
-
-    // Report 按鈕獨立 hover 效果
-    reportBtn.addEventListener('mouseenter', () => {
-      reportBtn.style.backgroundColor = 'var(--popup-divider-strong)';
-    });
-    reportBtn.addEventListener('mouseleave', () => {
-      reportBtn.style.backgroundColor = 'var(--popup-divider)';
-    });
-
-    // 點擊報告錯誤：展開內聯表單
-    reportBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      // 隱藏主內容，顯示表單
-      popupContainer.style.display = 'none';
-      if (popupTranslate) popupTranslate.style.display = 'none';
-      reportForm.style.display = 'flex';
-      actionsWrapper.style.display = 'none'; // 隱藏右上角按鈕
-      
-      // 填充預覽數據
-      popup.querySelector('.report-word-preview').textContent = currentWord || '未知';
-      popup.querySelector('.report-sentence-preview').textContent = currentContextSentence || '未知';
-      
-      // 清空輸入框
-      popup.querySelector('.report-textarea').value = '';
-    });
-    
-    // 取消按鈕
-    const closeReportForm = (e) => {
-      if (e) {
+      popup.appendChild(popupArrow);
+      shadowRoot.appendChild(popup);
+      const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
+      const settingsBtn = popup.querySelector(".popup-settings-btn");
+      const reportBtn = popup.querySelector(".popup-report-btn");
+      const popupContainer = popup.querySelector(".popup-container");
+      const popupTranslate = popup.querySelector(".popup-translate");
+      const reportForm = popup.querySelector(".popup-report-form");
+      actionsWrapper.addEventListener("mouseenter", () => {
+        if (reportForm.style.display === "flex") return;
+        settingsBtn.style.opacity = "1";
+        settingsBtn.style.backgroundColor = "var(--popup-divider)";
+        reportBtn.style.opacity = "1";
+        reportBtn.style.width = "60px";
+        reportBtn.style.padding = "0 8px";
+        reportBtn.style.marginRight = "4px";
+      });
+      actionsWrapper.addEventListener("mouseleave", () => {
+        settingsBtn.style.opacity = "0.4";
+        settingsBtn.style.backgroundColor = "transparent";
+        reportBtn.style.opacity = "0";
+        reportBtn.style.width = "0";
+        reportBtn.style.padding = "0";
+        reportBtn.style.marginRight = "0";
+        reportBtn.style.backgroundColor = "var(--popup-divider)";
+      });
+      reportBtn.addEventListener("mouseenter", () => {
+        reportBtn.style.backgroundColor = "var(--popup-divider-strong)";
+      });
+      reportBtn.addEventListener("mouseleave", () => {
+        reportBtn.style.backgroundColor = "var(--popup-divider)";
+      });
+      reportBtn.addEventListener("click", (e) => {
         e.preventDefault();
         e.stopPropagation();
-      }
-      reportForm.style.display = 'none';
-      popupContainer.style.display = 'block';
-      actionsWrapper.style.display = 'flex';
-    };
-    popup.querySelector('.report-cancel-btn').addEventListener('click', closeReportForm);
-    popup.querySelector('.report-cancel-icon').addEventListener('click', closeReportForm);
-    
-    // 發送按鈕
-    popup.querySelector('.report-send-btn').addEventListener('click', async (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      
-      const btn = e.currentTarget;
-      const originalText = btn.textContent;
-      const originalBg = btn.style.backgroundColor;
-      
-      // 按鈕變為發送中狀態
-      btn.textContent = '發送中...';
-      btn.style.opacity = '0.8';
-      btn.style.pointerEvents = 'none';
-      
-      const userDesc = popup.querySelector('.report-textarea').value;
-      const subject = `[Jyutping Extension] 錯誤報告: ${currentWord || '未知'}`;
-      const message = `【單詞】：${currentWord || '未知'}\n【上下文】：${currentContextSentence || '未知'}\n\n【錯誤描述】：\n${userDesc || '未提供具體描述'}`;
-      
-      try {
-        // 使用 Web3Forms API 靜默發送郵件 (需替換為你的 Access Key)
-        // 获取 Key: https://web3forms.com/ (输入邮箱 ousinki@outlook.com 即可免费获取)
-        const response = await fetch('https://api.web3forms.com/submit', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify({
-            access_key: "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c",
-            subject: subject,
-            from_name: "Jyutping Extension",
-            message: message
-          })
-        });
-
-        const result = await response.json();
-        
-        if (response.status === 200) {
-          // 發送成功
-          btn.textContent = '✓ 報告已送出';
-          btn.style.backgroundColor = '#4caf50'; // 綠色
-        } else {
-          // 服務器返回錯誤
-          btn.textContent = '❌ 發送失敗';
-          btn.style.backgroundColor = '#f44336'; // 紅色
-          console.error('Email API Error:', result);
+        popupContainer.style.display = "none";
+        if (popupTranslate) popupTranslate.style.display = "none";
+        reportForm.style.display = "flex";
+        actionsWrapper.style.display = "none";
+        popup.querySelector(".report-word-preview").textContent = currentWord || "未知";
+        popup.querySelector(".report-sentence-preview").textContent = currentContextSentence || "未知";
+        popup.querySelector(".report-textarea").value = "";
+      });
+      const closeReportForm = (e) => {
+        if (e) {
+          e.preventDefault();
+          e.stopPropagation();
         }
-      } catch (error) {
-        // 網絡錯誤
-        btn.textContent = '❌ 網絡錯誤';
-        btn.style.backgroundColor = '#f44336'; // 紅色
-        console.error('Network Error:', error);
-      }
-      
-      // 1.5秒後關閉表單並恢復按鈕狀態
-      setTimeout(() => {
-        btn.textContent = originalText;
-        btn.style.backgroundColor = originalBg;
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'auto';
-        closeReportForm();
-      }, 1500);
-    });
-
-    // 點擊設定
-    settingsBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      chrome.runtime.sendMessage({ action: 'openOptionsPage' });
-    });
-
-    // 滑鼠進入彈窗時固定顯示
-    popup.addEventListener('mouseenter', () => {
-      isMouseOverPopup = true;
-      justNavigated = false; // 進入後重置導航狀態，恢復正常延遲
-      waitingForMouseToEnterAfterExpand = false; // 鼠標移入後，解除等待鎖
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
-    });
-
-    // 滑鼠離開彈窗時隱藏
-    popup.addEventListener('mouseleave', () => {
-      isMouseOverPopup = false;
-      
-      // 如果剛導航過（點擊鏈接），則不隱藏彈窗
-      if (justNavigated) {
-        return;
-      }
-      
-      scheduleHidePopup();
-    });
-
-    // 點擊彈窗內部不關閉，且不影響背景選區
-    popup.addEventListener('mousedown', (e) => {
-      // 允許 QA 容器內的元素正常響應點擊
-      if (e.target.closest('.popup-qa-container')) {
+        reportForm.style.display = "none";
+        popupContainer.style.display = "block";
+        actionsWrapper.style.display = "flex";
+      };
+      popup.querySelector(".report-cancel-btn").addEventListener("click", closeReportForm);
+      popup.querySelector(".report-cancel-icon").addEventListener("click", closeReportForm);
+      popup.querySelector(".report-send-btn").addEventListener("click", async (e) => {
+        e.preventDefault();
         e.stopPropagation();
-        return;
-      }
-      // 允許表單元素獲取焦點
-      const tag = e.target.tagName.toLowerCase();
-      if (tag === 'textarea' || tag === 'input') {
-        e.stopPropagation();
-        return;
-      }
-      e.preventDefault();
-      e.stopPropagation();
-    });
+        const btn = e.currentTarget;
+        const originalText = btn.textContent;
+        const originalBg = btn.style.backgroundColor;
+        btn.textContent = "發送中...";
+        btn.style.opacity = "0.8";
+        btn.style.pointerEvents = "none";
+        const userDesc = popup.querySelector(".report-textarea").value;
+        const subject = `[Jyutping Extension] 錯誤報告: ${currentWord || "未知"}`;
+        const message = `【單詞】：${currentWord || "未知"}
+【上下文】：${currentContextSentence || "未知"}
 
-    // 雙擊彈窗打開 AI Q&A
-    popup.addEventListener('dblclick', (e) => {
-      if (e.target.closest('textarea') || e.target.closest('input') || e.target.closest('button') || e.target.closest('.see-also-link')) {
-        return;
-      }
-      e.stopPropagation();
-      showPopupQA(popup);
-    });
-  }
-
-  // 載入詞典數據
-  let dictionaryLoadPromise = null;
-  function loadDictionary() {
-    if (!dictionaryLoadPromise) {
-      dictionaryLoadPromise = (async () => {
+【錯誤描述】：
+${userDesc || "未提供具體描述"}`;
         try {
-          const manifest = chrome.runtime.getManifest();
-          const url = chrome.runtime.getURL('dictionary.json') + '?v=' + manifest.version;
-          const response = await fetch(url, { cache: 'no-cache' });
-          dictionary = await response.json();
-          console.log('粵語詞典已載入，詞條數：', Object.keys(dictionary).length);
+          const response = await fetch("https://api.web3forms.com/submit", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "Accept": "application/json"
+            },
+            body: JSON.stringify({
+              access_key: "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c",
+              subject,
+              from_name: "Jyutping Extension",
+              message
+            })
+          });
+          const result = await response.json();
+          if (response.status === 200) {
+            btn.textContent = "✓ 報告已送出";
+            btn.style.backgroundColor = "#4caf50";
+          } else {
+            btn.textContent = "❌ 發送失敗";
+            btn.style.backgroundColor = "#f44336";
+            console.error("Email API Error:", result);
+          }
         } catch (error) {
-          console.warn('載入詞典失敗：', error.message || error);
+          btn.textContent = "❌ 網絡錯誤";
+          btn.style.backgroundColor = "#f44336";
+          console.error("Network Error:", error);
         }
-      })();
+        setTimeout(() => {
+          btn.textContent = originalText;
+          btn.style.backgroundColor = originalBg;
+          btn.style.opacity = "1";
+          btn.style.pointerEvents = "auto";
+          closeReportForm();
+        }, 1500);
+      });
+      settingsBtn.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        chrome.runtime.sendMessage({ action: "openOptionsPage" });
+      });
+      popup.addEventListener("mouseenter", () => {
+        isMouseOverPopup = true;
+        justNavigated = false;
+        waitingForMouseToEnterAfterExpand = false;
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+      });
+      popup.addEventListener("mouseleave", () => {
+        isMouseOverPopup = false;
+        if (justNavigated) {
+          return;
+        }
+        scheduleHidePopup();
+      });
+      popup.addEventListener("mousedown", (e) => {
+        if (e.target.closest(".popup-qa-container")) {
+          e.stopPropagation();
+          return;
+        }
+        const tag = e.target.tagName.toLowerCase();
+        if (tag === "textarea" || tag === "input") {
+          e.stopPropagation();
+          return;
+        }
+        e.preventDefault();
+        e.stopPropagation();
+      });
+      popup.addEventListener("dblclick", (e) => {
+        if (e.target.closest("textarea") || e.target.closest("input") || e.target.closest("button") || e.target.closest(".see-also-link")) {
+          return;
+        }
+        e.stopPropagation();
+        showPopupQA(popup);
+      });
     }
-    return dictionaryLoadPromise;
-  }
-
-  // 載入用戶設定
-  let toneDisplayStyle = 'normal';
-  let rubyTextOpacity = '0.85';
-  let rubyTextFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-  let rubyTextStyle = 'default';
-  let rubyDictionaryColor = '#999999';
-
-  function loadSettings() {
-    chrome.storage.sync.get([
-      'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'uiTheme'
-    ], (result) => {
-      // enabled 可能在 sync 中設定（Options 頁面），先讀取
-      if (result.enabled !== undefined) isEnabled = result.enabled !== false;
-
-      displayMode = result.displayMode || 'jyutping';
-      toneStyle = result.toneStyle || 'superscript';
-      // 兼容舊版布爾值：true → 'solid', false → 'none'
-      if (result.rubyRtBackground === true) rubyRtBackground = 'solid';
-      else if (result.rubyRtBackground === false || !result.rubyRtBackground) rubyRtBackground = 'none';
-      else rubyRtBackground = result.rubyRtBackground;
-      hoverModifier = result.hoverModifier || 'none';
-      popupDisplayStyle = result.popupDisplayStyle || 'full';
-      uiTheme = result.uiTheme || 'auto';
-      popupTheme = result.popupTheme || 'classic';
-      customZhFont = result.customZhFont || '';
-      customEnFont = result.customEnFont || '';
-      highlightStyle = result.highlightStyle || 'yellow';
-      rubyHoverStyle = result.rubyHoverStyle || 'ruby-red';
-      compactExpandBtn = result.compactExpandBtn !== false;
-      applyPopupTheme(popupTheme);
-      ttsEnabled = result.ttsEnabled !== false;
-      ttsEngine = result.ttsEngine || 'edgeTts';
-      edgeTtsMode = result.edgeTtsMode || 'default';
-      edgeTtsUrl = result.edgeTtsUrl || '';
-      azureTtsMode = result.azureTtsMode || 'default';
-      azureTtsKey = result.azureTtsKey || '';
-      azureTtsRegion = result.azureTtsRegion || '';
-      azureTtsVoice = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
-      ttsRate = result.ttsRate || 0.9;
-      toneDisplayStyle = result.toneDisplayStyle || 'normal';
-      rubyTextOpacity = result.rubyTextOpacity || '0.85';
-      rubyTextFont = result.rubyTextFont || "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
-      rubyTextStyle = result.rubyTextStyle || 'default';
-      rubyDictionaryColor = result.rubyDictionaryColor || '#999999';
-      let tls = result.transLangs;
-      if (!tls && result.transLang) {
-        if (result.transLang === 'both') tls = ['zh-Hans', 'en'];
-        else if (result.transLang === 'mandarin') tls = ['zh-Hans'];
-        else if (result.transLang === 'english') tls = ['en'];
+    let dictionaryLoadPromise = null;
+    function loadDictionary() {
+      if (!dictionaryLoadPromise) {
+        dictionaryLoadPromise = (async () => {
+          try {
+            const manifest = chrome.runtime.getManifest();
+            const url = chrome.runtime.getURL("dictionary.json") + "?v=" + manifest.version;
+            const response = await fetch(url, { cache: "no-cache" });
+            dictionary = await response.json();
+            console.log("粵語詞典已載入，詞條數：", Object.keys(dictionary).length);
+          } catch (error) {
+            console.warn("載入詞典失敗：", error.message || error);
+          }
+        })();
       }
-      if (!tls) tls = ['zh-Hans', 'en'];
-      transLangs = tls;
-      transTrigger = result.transTrigger || 'dblclick';
-      
-      // 初始化 CSS 變數
-      document.documentElement.style.setProperty('--jyutping-rt-opacity', rubyTextStyle === 'dictionary' ? '1' : rubyTextOpacity, 'important');
-      if (rubyTextStyle === 'dictionary') {
-        document.documentElement.style.setProperty('--jyutping-rt-font', '"Chiron Hei HK WS", "Microsoft YaHei", sans-serif', 'important');
-        document.documentElement.style.setProperty('--jyutping-rt-font-style', 'italic', 'important');
-        document.documentElement.style.setProperty('--jyutping-rt-color', rubyDictionaryColor, 'important');
-        document.documentElement.style.setProperty('--jyutping-rt-font-weight', 'normal', 'important');
-        document.documentElement.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
-      } else {
-        if (rubyTextFont) {
-          document.documentElement.style.setProperty('--jyutping-rt-font', rubyTextFont, 'important');
-        } else {
-          document.documentElement.style.removeProperty('--jyutping-rt-font');
-        }
-        document.documentElement.style.setProperty('--jyutping-rt-font-style', 'normal', 'important');
-        document.documentElement.style.setProperty('--jyutping-rt-color', 'inherit', 'important');
-        document.documentElement.style.setProperty('--jyutping-rt-font-weight', 'normal', 'important');
-        document.documentElement.style.setProperty('-webkit-font-smoothing', 'auto', 'important');
-      }
-    });
-    // aiEnabled 狀態從 local storage 讀取
-    chrome.storage.local.get(['aiEnabled'], (result) => {
-      aiEnabled = result.aiEnabled === true;
-      console.log('[AI] loadSettings, aiEnabled:', aiEnabled);
-    });
-  }
-
-  // 監聽設定變更
-  chrome.storage.onChanged.addListener((changes, area) => {
-    if (area === 'sync') {
-      
-      if (changes.uiTheme) {
-        uiTheme = changes.uiTheme.newValue;
+      return dictionaryLoadPromise;
+    }
+    let toneDisplayStyle = "normal";
+    let rubyTextOpacity = "0.85";
+    let rubyTextFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+    let rubyTextStyle = "default";
+    let rubyDictionaryColor = "#999999";
+    function loadSettings() {
+      chrome.storage.sync.get([
+        "enabled",
+        "displayMode",
+        "toneStyle",
+        "rubyRtBackground",
+        "hoverModifier",
+        "popupDisplayStyle",
+        "popupTheme",
+        "customZhFont",
+        "customEnFont",
+        "highlightStyle",
+        "rubyHoverStyle",
+        "compactExpandBtn",
+        "ttsEnabled",
+        "ttsEngine",
+        "edgeTtsMode",
+        "edgeTtsUrl",
+        "azureTtsMode",
+        "azureTtsKey",
+        "azureTtsRegion",
+        "azureTtsVoice",
+        "ttsRate",
+        "toneDisplayStyle",
+        "rubyTextOpacity",
+        "rubyTextFont",
+        "rubyTextStyle",
+        "rubyDictionaryColor",
+        "transLang",
+        "transLangs",
+        "transTrigger",
+        "uiTheme"
+      ], (result) => {
+        if (result.enabled !== void 0) isEnabled = result.enabled !== false;
+        displayMode = result.displayMode || "jyutping";
+        toneStyle = result.toneStyle || "superscript";
+        if (result.rubyRtBackground === true) rubyRtBackground = "solid";
+        else if (result.rubyRtBackground === false || !result.rubyRtBackground) rubyRtBackground = "none";
+        else rubyRtBackground = result.rubyRtBackground;
+        hoverModifier = result.hoverModifier || "none";
+        popupDisplayStyle = result.popupDisplayStyle || "full";
+        uiTheme = result.uiTheme || "auto";
+        popupTheme = result.popupTheme || "classic";
+        customZhFont = result.customZhFont || "";
+        customEnFont = result.customEnFont || "";
+        highlightStyle = result.highlightStyle || "yellow";
+        rubyHoverStyle = result.rubyHoverStyle || "ruby-red";
+        compactExpandBtn = result.compactExpandBtn !== false;
         applyPopupTheme(popupTheme);
-      }
-
-      if (changes.toneDisplayStyle) {
-        toneDisplayStyle = changes.toneDisplayStyle.newValue;
-      }
-      if (changes.rubyTextOpacity) {
-        rubyTextOpacity = changes.rubyTextOpacity.newValue;
-        document.documentElement.style.setProperty('--jyutping-rt-opacity', rubyTextStyle === 'dictionary' ? '1' : rubyTextOpacity, 'important');
-      }
-      if (changes.rubyDictionaryColor) {
-        rubyDictionaryColor = changes.rubyDictionaryColor.newValue;
-        if (rubyTextStyle === 'dictionary') {
-          document.documentElement.style.setProperty('--jyutping-rt-color', rubyDictionaryColor, 'important');
+        ttsEnabled = result.ttsEnabled !== false;
+        ttsEngine = result.ttsEngine || "edgeTts";
+        edgeTtsMode = result.edgeTtsMode || "default";
+        edgeTtsUrl = result.edgeTtsUrl || "";
+        azureTtsMode = result.azureTtsMode || "default";
+        azureTtsKey = result.azureTtsKey || "";
+        azureTtsRegion = result.azureTtsRegion || "";
+        azureTtsVoice = result.azureTtsVoice || "zh-HK-HiuMaanNeural";
+        ttsRate = result.ttsRate || 0.9;
+        toneDisplayStyle = result.toneDisplayStyle || "normal";
+        rubyTextOpacity = result.rubyTextOpacity || "0.85";
+        rubyTextFont = result.rubyTextFont || "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
+        rubyTextStyle = result.rubyTextStyle || "default";
+        rubyDictionaryColor = result.rubyDictionaryColor || "#999999";
+        let tls = result.transLangs;
+        if (!tls && result.transLang) {
+          if (result.transLang === "both") tls = ["zh-Hans", "en"];
+          else if (result.transLang === "mandarin") tls = ["zh-Hans"];
+          else if (result.transLang === "english") tls = ["en"];
         }
-      }
-      if (changes.rubyTextFont) {
-        rubyTextFont = changes.rubyTextFont.newValue;
-        if (rubyTextFont) {
-          document.documentElement.style.setProperty('--jyutping-rt-font', rubyTextFont, 'important');
-        } else {
-          document.documentElement.style.removeProperty('--jyutping-rt-font');
-        }
-      }
-      if (changes.rubyTextStyle) {
-        rubyTextStyle = changes.rubyTextStyle.newValue;
-        document.documentElement.style.setProperty('--jyutping-rt-opacity', rubyTextStyle === 'dictionary' ? '1' : rubyTextOpacity, 'important');
-        if (rubyTextStyle === 'dictionary') {
-          document.documentElement.style.setProperty('--jyutping-rt-font', '"Chiron Hei HK WS", "Microsoft YaHei", sans-serif', 'important');
-          document.documentElement.style.setProperty('--jyutping-rt-font-style', 'italic', 'important');
-          document.documentElement.style.setProperty('--jyutping-rt-color', rubyDictionaryColor, 'important');
-          document.documentElement.style.setProperty('--jyutping-rt-font-weight', 'normal', 'important');
-          document.documentElement.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
+        if (!tls) tls = ["zh-Hans", "en"];
+        transLangs = tls;
+        transTrigger = result.transTrigger || "dblclick";
+        document.documentElement.style.setProperty("--jyutping-rt-opacity", rubyTextStyle === "dictionary" ? "1" : rubyTextOpacity, "important");
+        if (rubyTextStyle === "dictionary") {
+          document.documentElement.style.setProperty("--jyutping-rt-font", '"Chiron Hei HK WS", "Microsoft YaHei", sans-serif', "important");
+          document.documentElement.style.setProperty("--jyutping-rt-font-style", "italic", "important");
+          document.documentElement.style.setProperty("--jyutping-rt-color", rubyDictionaryColor, "important");
+          document.documentElement.style.setProperty("--jyutping-rt-font-weight", "normal", "important");
+          document.documentElement.style.setProperty("-webkit-font-smoothing", "antialiased", "important");
         } else {
           if (rubyTextFont) {
-            document.documentElement.style.setProperty('--jyutping-rt-font', rubyTextFont, 'important');
+            document.documentElement.style.setProperty("--jyutping-rt-font", rubyTextFont, "important");
           } else {
-            document.documentElement.style.removeProperty('--jyutping-rt-font');
+            document.documentElement.style.removeProperty("--jyutping-rt-font");
           }
-          document.documentElement.style.setProperty('--jyutping-rt-font-style', 'normal', 'important');
-          document.documentElement.style.setProperty('--jyutping-rt-color', 'inherit', 'important');
-          document.documentElement.style.setProperty('--jyutping-rt-font-weight', 'normal', 'important');
-          document.documentElement.style.setProperty('-webkit-font-smoothing', 'auto', 'important');
+          document.documentElement.style.setProperty("--jyutping-rt-font-style", "normal", "important");
+          document.documentElement.style.setProperty("--jyutping-rt-color", "inherit", "important");
+          document.documentElement.style.setProperty("--jyutping-rt-font-weight", "normal", "important");
+          document.documentElement.style.setProperty("-webkit-font-smoothing", "auto", "important");
+        }
+      });
+      chrome.storage.local.get(["aiEnabled"], (result) => {
+        aiEnabled = result.aiEnabled === true;
+        console.log("[AI] loadSettings, aiEnabled:", aiEnabled);
+      });
+    }
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === "sync") {
+        if (changes.uiTheme) {
+          uiTheme = changes.uiTheme.newValue;
+          applyPopupTheme(popupTheme);
+        }
+        if (changes.toneDisplayStyle) {
+          toneDisplayStyle = changes.toneDisplayStyle.newValue;
+        }
+        if (changes.rubyTextOpacity) {
+          rubyTextOpacity = changes.rubyTextOpacity.newValue;
+          document.documentElement.style.setProperty("--jyutping-rt-opacity", rubyTextStyle === "dictionary" ? "1" : rubyTextOpacity, "important");
+        }
+        if (changes.rubyDictionaryColor) {
+          rubyDictionaryColor = changes.rubyDictionaryColor.newValue;
+          if (rubyTextStyle === "dictionary") {
+            document.documentElement.style.setProperty("--jyutping-rt-color", rubyDictionaryColor, "important");
+          }
+        }
+        if (changes.rubyTextFont) {
+          rubyTextFont = changes.rubyTextFont.newValue;
+          if (rubyTextFont) {
+            document.documentElement.style.setProperty("--jyutping-rt-font", rubyTextFont, "important");
+          } else {
+            document.documentElement.style.removeProperty("--jyutping-rt-font");
+          }
+        }
+        if (changes.rubyTextStyle) {
+          rubyTextStyle = changes.rubyTextStyle.newValue;
+          document.documentElement.style.setProperty("--jyutping-rt-opacity", rubyTextStyle === "dictionary" ? "1" : rubyTextOpacity, "important");
+          if (rubyTextStyle === "dictionary") {
+            document.documentElement.style.setProperty("--jyutping-rt-font", '"Chiron Hei HK WS", "Microsoft YaHei", sans-serif', "important");
+            document.documentElement.style.setProperty("--jyutping-rt-font-style", "italic", "important");
+            document.documentElement.style.setProperty("--jyutping-rt-color", rubyDictionaryColor, "important");
+            document.documentElement.style.setProperty("--jyutping-rt-font-weight", "normal", "important");
+            document.documentElement.style.setProperty("-webkit-font-smoothing", "antialiased", "important");
+          } else {
+            if (rubyTextFont) {
+              document.documentElement.style.setProperty("--jyutping-rt-font", rubyTextFont, "important");
+            } else {
+              document.documentElement.style.removeProperty("--jyutping-rt-font");
+            }
+            document.documentElement.style.setProperty("--jyutping-rt-font-style", "normal", "important");
+            document.documentElement.style.setProperty("--jyutping-rt-color", "inherit", "important");
+            document.documentElement.style.setProperty("--jyutping-rt-font-weight", "normal", "important");
+            document.documentElement.style.setProperty("-webkit-font-smoothing", "auto", "important");
+          }
+        }
+        if (changes.transLangs) {
+          transLangs = changes.transLangs.newValue;
+        } else if (changes.transLang && !changes.transLangs) {
+          let tls = changes.transLang.newValue;
+          if (tls === "both") transLangs = ["zh-Hans", "en"];
+          else if (tls === "mandarin") transLangs = ["zh-Hans"];
+          else if (tls === "english") transLangs = ["en"];
+        }
+      } else if (area === "local") {
+        if (changes.aiEnabled) {
+          aiEnabled = changes.aiEnabled.newValue === true;
+          console.log("[AI] Dynamic update from storage.onChanged (local), aiEnabled:", aiEnabled);
         }
       }
-      if (changes.transLangs) {
-        transLangs = changes.transLangs.newValue;
-      } else if (changes.transLang && !changes.transLangs) {
-        let tls = changes.transLang.newValue;
-        if (tls === 'both') transLangs = ['zh-Hans', 'en'];
-        else if (tls === 'mandarin') transLangs = ['zh-Hans'];
-        else if (tls === 'english') transLangs = ['en'];
+    });
+    let lastSpeakTime = 0;
+    let ttsPlaybackTimer = null;
+    let activeSpeakerBtn = null;
+    let activeSpeakingRuby = null;
+    function startSpeakerAnimation(btn = null) {
+      if (activeSpeakerBtn) {
+        activeSpeakerBtn.classList.remove("speaking");
       }
-    } else if (area === 'local') {
-      if (changes.aiEnabled) {
-        aiEnabled = changes.aiEnabled.newValue === true;
-        console.log('[AI] Dynamic update from storage.onChanged (local), aiEnabled:', aiEnabled);
+      if (activeSpeakingRuby) {
+        activeSpeakingRuby.classList.remove("speaking");
+        activeSpeakingRuby = null;
       }
+      activeSpeakerBtn = btn || (popup ? popup.querySelector(".pronunciation-section .tts-speaker-btn") : null);
+      if (activeSpeakerBtn) activeSpeakerBtn.classList.add("speaking");
+      if (ttsPlaybackTimer) clearTimeout(ttsPlaybackTimer);
     }
-  });
-
-  // 粵語朗讀功能
-  let lastSpeakTime = 0;
-  let ttsPlaybackTimer = null; // 用於追蹤 TTS 播放狀態
-  let activeSpeakerBtn = null; // 當前正在播放動畫的按鈕
-  let activeSpeakingRuby = null; // 當前正在發音的 Ruby 元素
-  
-  function startSpeakerAnimation(btn = null) {
-    if (activeSpeakerBtn) {
-      activeSpeakerBtn.classList.remove('speaking');
-    }
-    if (activeSpeakingRuby) {
-      activeSpeakingRuby.classList.remove('speaking');
-      activeSpeakingRuby = null;
-    }
-    activeSpeakerBtn = btn || (popup ? popup.querySelector('.pronunciation-section .tts-speaker-btn') : null);
-    if (activeSpeakerBtn) activeSpeakerBtn.classList.add('speaking');
-    
-    // 清除上一次的保底計時器
-    if (ttsPlaybackTimer) clearTimeout(ttsPlaybackTimer);
-  }
-  
-  // 啟動 Ruby 元素的發音狀態標記
-  function startRubySpeakingState(rubyEl) {
-    if (activeSpeakingRuby) {
-      activeSpeakingRuby.classList.remove('speaking');
-    }
-    activeSpeakingRuby = rubyEl;
-    if (activeSpeakingRuby) activeSpeakingRuby.classList.add('speaking');
-    
-    // 同步更新浮動層的拼音為不透明（模擬原版 rt 在 speaking 時 opacity: 1）
-    if (popup && popup.classList.contains('popup-ruby-mode')) {
-      const floatingText = popup.querySelector('.ruby-floating-text');
-      if (floatingText) {
-        floatingText.style.opacity = '1';
+    function startRubySpeakingState(rubyEl) {
+      if (activeSpeakingRuby) {
+        activeSpeakingRuby.classList.remove("speaking");
+      }
+      activeSpeakingRuby = rubyEl;
+      if (activeSpeakingRuby) activeSpeakingRuby.classList.add("speaking");
+      if (popup && popup.classList.contains("popup-ruby-mode")) {
+        const floatingText = popup.querySelector(".ruby-floating-text");
+        if (floatingText) {
+          floatingText.style.opacity = "1";
+        }
       }
     }
-  }
-  
-  function stopSpeakerAnimation() {
-    if (activeSpeakerBtn) {
-      activeSpeakerBtn.classList.remove('speaking');
-      activeSpeakerBtn = null;
-    }
-    if (activeSpeakingRuby) {
-      activeSpeakingRuby.classList.remove('speaking');
-      activeSpeakingRuby = null;
-    }
-    if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
-  }
-  
-  // 輔助函數：將 Data URI 轉換為 Blob URL 以繞過 CSP 限制
-  function createBlobUrlFromDataUri(dataURI) {
-    try {
-      if (!dataURI.startsWith('data:')) return dataURI;
-      const parts = dataURI.split(',');
-      const byteString = atob(parts[1]);
-      const mimeString = parts[0].split(':')[1].split(';')[0];
-      const ab = new ArrayBuffer(byteString.length);
-      const ia = new Uint8Array(ab);
-      for (let i = 0; i < byteString.length; i++) {
-        ia[i] = byteString.charCodeAt(i);
+    function stopSpeakerAnimation() {
+      if (activeSpeakerBtn) {
+        activeSpeakerBtn.classList.remove("speaking");
+        activeSpeakerBtn = null;
       }
-      const blob = new Blob([ab], { type: mimeString });
-      return URL.createObjectURL(blob);
-    } catch (e) {
-      console.error('Data URI to Blob URL failed:', e);
-      return dataURI;
+      if (activeSpeakingRuby) {
+        activeSpeakingRuby.classList.remove("speaking");
+        activeSpeakingRuby = null;
+      }
+      if (ttsPlaybackTimer) {
+        clearTimeout(ttsPlaybackTimer);
+        ttsPlaybackTimer = null;
+      }
     }
-  }
-
-  async function speakCantonese(text, targetBtn = null) {
-    if (!ttsEnabled) return;
-    
-    // ★ 關鍵修復：在用戶手勢（點擊）的同步調用棧中，立即播放一個無聲的音頻，以解鎖瀏覽器的 Autoplay Policy
-    try {
-        const dummyAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
+    async function speakCantonese(text, targetBtn = null) {
+      if (!ttsEnabled) return;
+      try {
+        const dummyAudio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
         dummyAudio.volume = 0;
-        dummyAudio.play().catch(e => console.log('Dummy audio unlock failed:', e));
-    } catch (e) {
-        console.error('Audio unlock error:', e);
-    }
-    
-    // 將文本轉換為繁體（如果詞典有記錄），避免 macOS WebSpeech 等引擎將簡體字（如「区」）錯誤讀成國語
-    let textToSpeak = text;
-    if (dictionary && dictionary[text] && dictionary[text].traditional) {
-      textToSpeak = dictionary[text].traditional;
-    }
-    
-    // 全局防抖：300ms 內不重複發音
-    const now = Date.now();
-    console.trace(`speakCantonese called for "${textToSpeak}". Time diff: ${now - lastSpeakTime}ms`);
-    if (now - lastSpeakTime < 300) {
-      console.log('speakCantonese blocked by debounce');
-      return;
-    }
-    lastSpeakTime = now;
-    
-    console.log('speakCantonese proceeding, engine:', ttsEngine);
-    
-    // ★ 統一啟動喇叭動畫
-    startSpeakerAnimation(targetBtn);
-    // 估算發音時長：每個漢字大約 500ms，加上 1000ms 的網絡延遲緩衝，受語速影響
-    const estimatedDurationMs = (textToSpeak.length * 500 + 1000) / ttsRate;
-    // 保底超時：最少 2000ms，最多 10000ms（此為兜底，正常由 audio.onended 觸發停止）
-    const timeoutMs = Math.max(2000, Math.min(estimatedDurationMs, 10000));
-    ttsPlaybackTimer = setTimeout(stopSpeakerAnimation, timeoutMs);
-    
-    // 檢查緩存（僅對需要 API 調用的引擎）
-    const cacheKey = `${ttsEngine}:${ttsRate}:${textToSpeak}`;
-    if (['edgeTts', 'azureTts', 'bertVits2'].includes(ttsEngine)) {
-      const cachedAudio = ttsCache.get(cacheKey);
-      if (cachedAudio) {
-        console.log('TTS cache hit:', textToSpeak);
-        const audio = new Audio(cachedAudio);
-        audio.ontimeupdate = () => {
-          if (audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
-        };
-        audio.onended = stopSpeakerAnimation;
-        audio.onerror = stopSpeakerAnimation;
-        audio.play();
+        dummyAudio.play().catch((e) => console.log("Dummy audio unlock failed:", e));
+      } catch (e) {
+        console.error("Audio unlock error:", e);
+      }
+      let textToSpeak = text;
+      if (dictionary && dictionary[text] && dictionary[text].traditional) {
+        textToSpeak = dictionary[text].traditional;
+      }
+      const now = Date.now();
+      console.trace(`speakCantonese called for "${textToSpeak}". Time diff: ${now - lastSpeakTime}ms`);
+      if (now - lastSpeakTime < 300) {
+        console.log("speakCantonese blocked by debounce");
         return;
       }
-    }
-    
-    // 記錄待處理的文本（用於緩存回傳的音頻）
-    pendingTtsText = cacheKey;
-    
-    try {
-      if (ttsEngine === 'webSpeech') {
+      lastSpeakTime = now;
+      console.log("speakCantonese proceeding, engine:", ttsEngine);
+      startSpeakerAnimation(targetBtn);
+      const estimatedDurationMs = (textToSpeak.length * 500 + 1e3) / ttsRate;
+      const timeoutMs = Math.max(2e3, Math.min(estimatedDurationMs, 1e4));
+      ttsPlaybackTimer = setTimeout(stopSpeakerAnimation, timeoutMs);
+      const cacheKey = `${ttsEngine}:${ttsRate}:${textToSpeak}`;
+      if (["edgeTts", "azureTts", "bertVits2"].includes(ttsEngine)) {
+        const cachedAudio = ttsCache.get(cacheKey);
+        if (cachedAudio) {
+          console.log("TTS cache hit:", textToSpeak);
+          const audio = new Audio(cachedAudio);
+          audio.ontimeupdate = () => {
+            if (audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
+          };
+          audio.onended = stopSpeakerAnimation;
+          audio.onerror = stopSpeakerAnimation;
+          audio.play();
+          return;
+        }
+      }
+      pendingTtsText = cacheKey;
+      try {
+        if (ttsEngine === "webSpeech") {
+          speakWithWebSpeech(textToSpeak);
+        } else if (ttsEngine === "chromeTts") {
+          speakWithChromeTts(textToSpeak);
+        } else if (ttsEngine === "edgeTts") {
+          const baseUrl = edgeTtsMode === "custom" ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
+          await speakWithEdgeTts(textToSpeak, baseUrl);
+        } else if (ttsEngine === "bertVits2") {
+          await speakWithBertVits2(textToSpeak);
+        } else if (ttsEngine === "azureTts") {
+          if (azureTtsMode === "custom") {
+            chrome.runtime.sendMessage({
+              action: "azureTtsSpeak",
+              text: textToSpeak,
+              azureKey: azureTtsKey,
+              azureRegion: azureTtsRegion,
+              azureVoice: azureTtsVoice,
+              rate: ttsRate
+            });
+          } else {
+            chrome.runtime.sendMessage({
+              action: "azureTtsProxySpeak",
+              text: textToSpeak,
+              azureVoice: azureTtsVoice,
+              rate: ttsRate
+            });
+          }
+        }
+      } catch (error) {
+        console.error("TTS error:", error);
+        stopSpeakerAnimation();
+        if (!window.hasShownTtsFallbackToast) {
+          showToast("🔊 語音服務連線異常，已自動降級為系統本機發音。<br>請檢查網絡或刷新網頁。", 4e3);
+          window.hasShownTtsFallbackToast = true;
+        }
         speakWithWebSpeech(textToSpeak);
-      } else if (ttsEngine === 'chromeTts') {
-        speakWithChromeTts(textToSpeak);
-      } else if (ttsEngine === 'edgeTts') {
-        const baseUrl = edgeTtsMode === 'custom' ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
-        await speakWithEdgeTts(textToSpeak, baseUrl);
-      } else if (ttsEngine === 'bertVits2') {
-        await speakWithBertVits2(textToSpeak);
-      } else if (ttsEngine === 'azureTts') {
-        if (azureTtsMode === 'custom') {
+      }
+    }
+    function speakWithWebSpeech(text) {
+      speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = "zh-HK";
+      utterance.rate = ttsRate;
+      utterance.onend = stopSpeakerAnimation;
+      utterance.onerror = stopSpeakerAnimation;
+      const voices = speechSynthesis.getVoices();
+      const cantoneseVoice = voices.find(
+        (v) => v.lang === "zh-HK" || v.lang.startsWith("zh-HK")
+      );
+      if (cantoneseVoice) utterance.voice = cantoneseVoice;
+      speechSynthesis.speak(utterance);
+    }
+    function speakWithChromeTts(text) {
+      chrome.runtime.sendMessage({
+        action: "chromeTtsSpeak",
+        text,
+        options: { lang: "zh-HK", rate: ttsRate }
+      });
+    }
+    async function speakWithEdgeTts(text, baseUrl) {
+      baseUrl = baseUrl || EDGE_TTS_DEFAULT_URL;
+      chrome.runtime.sendMessage({
+        action: "edgeTtsSpeak",
+        text,
+        baseUrl,
+        rate: ttsRate
+      });
+    }
+    async function speakWithBertVits2(text) {
+      chrome.runtime.sendMessage({
+        action: "bertVits2Speak",
+        text,
+        rate: ttsRate
+      });
+    }
+    function setupEventListeners() {
+      let lastX = 0, lastY = 0;
+      let isThrottled = false;
+      let isSelecting = false;
+      document.addEventListener("mousemove", (e) => {
+        currentMouseX = e.clientX;
+        currentMouseY = e.clientY;
+        if (!isEnabled || isSelecting) return;
+        if (popup && popup.querySelector(".popup-qa-container")) return;
+        if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+        if (hasUserSelection) {
+          if (isMouseOverPopup) return;
+          const selection = window.getSelection();
+          if (selection.rangeCount > 0) {
+            const range = selection.getRangeAt(0);
+            const rects = range.getClientRects();
+            let isOverSelection = false;
+            for (let i = 0; i < rects.length; i++) {
+              const rect = rects[i];
+              if (e.clientX >= rect.left - 20 && e.clientX <= rect.right + 20 && e.clientY >= rect.top - 20 && e.clientY <= rect.bottom + 20) {
+                isOverSelection = true;
+                break;
+              }
+            }
+            if (!isOverSelection) {
+              hidePopup(true);
+            }
+          }
+          return;
+        }
+        if (isMouseOverPopup) return;
+        if (justNavigated) return;
+        if (hasEditableFocus()) {
+          return;
+        }
+        const targetElement = document.elementFromPoint(e.clientX, e.clientY);
+        if (isEditableElement(targetElement)) {
+          return;
+        }
+        if (isThrottled) return;
+        if (Math.abs(e.clientX - lastX) < 5 && Math.abs(e.clientY - lastY) < 5) {
+          return;
+        }
+        lastX = e.clientX;
+        lastY = e.clientY;
+        isThrottled = true;
+        setTimeout(() => {
+          isThrottled = false;
+        }, 50);
+        handleMouseOver(e);
+      });
+      document.addEventListener("mouseleave", () => {
+        if (hasEditableFocus()) {
+          if (popup) popup.style.display = "none";
+          return;
+        }
+        if (popup && popup.querySelector(".popup-qa-container")) return;
+        if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+        hidePopup();
+      });
+      document.addEventListener("mousedown", (e) => {
+        if (!isEnabled) return;
+        if (e.button !== 0) return;
+        const path = e.composedPath ? e.composedPath() : [];
+        if (path.some((el) => el.id === "jyutping-shadow-host" || el.id === "cantonese-popup-dict" || el.id === "cantonese-translate-popup")) {
+          return;
+        }
+        if (hasUserSelection) {
+          const selection = window.getSelection();
+          if (selection.rangeCount > 0 && selection.toString().trim()) {
+            const range = selection.getRangeAt(0);
+            const rects = range.getClientRects();
+            let clickInSelection = false;
+            const pad = 10;
+            for (const rect of rects) {
+              if (e.clientX >= rect.left - pad && e.clientX <= rect.right + pad && e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad) {
+                clickInSelection = true;
+                break;
+              }
+            }
+            if (clickInSelection) {
+              e.preventDefault();
+              const textToSpeak = selection.toString().trim();
+              const rangeRect = getBestRectForRange(range);
+              const btn = showSelectionSpeakerPopup(rangeRect, textToSpeak);
+              speakCantonese(textToSpeak, btn);
+              let wasSelectionLongPressTriggered = false;
+              let isDragging = false;
+              const startX = e.clientX;
+              const startY = e.clientY;
+              console.log("[AI-SelectionLongPress] isAiOn:", aiEnabled);
+              if (aiEnabled) {
+                if (aiLongPressTimer) {
+                  clearTimeout(aiLongPressTimer);
+                  cancelLongPressAnimation();
+                }
+                const selectedWord = selection.toString().trim();
+                console.log("[AI-SelectionLongPress] Setting timers synchronously for word:", selectedWord);
+                aiAnimationTimer = setTimeout(() => {
+                  startLongPressAnimation(e.clientX, e.clientY);
+                }, 150);
+                aiLongPressTimer = setTimeout(() => {
+                  aiLongPressTimer = null;
+                  if (!isDragging) {
+                    wasSelectionLongPressTriggered = true;
+                    console.log("[AI-SelectionLongPress] Triggered AI translation for:", selectedWord);
+                    if (longPressRing) {
+                      longPressRing.classList.add("done");
+                      setTimeout(() => {
+                        longPressRing.classList.remove("done");
+                        longPressRing.classList.remove("active");
+                      }, 300);
+                    }
+                    requestAiTranslation(selectedWord, rangeRect);
+                  } else {
+                    cancelLongPressAnimation();
+                  }
+                }, 650);
+              }
+              const onDragMove = (moveEvt) => {
+                const dx = moveEvt.clientX - startX;
+                const dy = moveEvt.clientY - startY;
+                if (dx * dx + dy * dy > 400) {
+                  isDragging = true;
+                  if (aiLongPressTimer) {
+                    clearTimeout(aiLongPressTimer);
+                    aiLongPressTimer = null;
+                    cancelLongPressAnimation();
+                  }
+                  document.removeEventListener("mousemove", onDragMove);
+                }
+              };
+              document.addEventListener("mousemove", onDragMove);
+              const onSelectionClickEnd = () => {
+                document.removeEventListener("mousemove", onDragMove);
+                if (wasSelectionLongPressTriggered) {
+                  ignoreNextRubyClick = true;
+                  setTimeout(() => {
+                    ignoreNextRubyClick = false;
+                  }, 100);
+                }
+                if (transTrigger === "click" && !wasSelectionLongPressTriggered && !isDragging) {
+                  requestTranslation(textToSpeak);
+                }
+              };
+              document.addEventListener("mouseup", onSelectionClickEnd, { once: true });
+              return;
+            }
+          }
+          hasUserSelection = false;
+          window.getSelection().removeAllRanges();
+          hideTranslatePopup();
+          cancelLongPressAnimation();
+        }
+        let clickedHighlightSpan = e.target.closest && e.target.closest(".jyutping-highlight");
+        let clickedRuby = e.target.closest && (e.target.closest(".jyutping-ruby-injected") || e.target.closest(".jyutping-hover-ruby"));
+        let clickInHighlight = false;
+        let wordToSpeak = null;
+        if (clickedHighlightSpan) {
+          clickInHighlight = true;
+          wordToSpeak = currentWord;
+        } else if (clickedRuby) {
+          clickInHighlight = true;
+          wordToSpeak = clickedRuby.dataset.word;
+          if (wordToSpeak) {
+            currentWord = wordToSpeak;
+            try {
+              currentRange = document.createRange();
+              currentRange.selectNodeContents(clickedRuby);
+            } catch (err) {
+            }
+          }
+        } else if (currentWord && currentRange) {
+          const rect = currentRange.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0 && e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+            clickInHighlight = true;
+            wordToSpeak = currentWord;
+          }
+        }
+        if (!clickInHighlight) {
+          console.log("[AI-LongPress] Mousedown outside highlight. e.target:", e.target.tagName, e.target.className, "popup is:", popup, "popup.contains:", popup ? popup.contains(e.target) : "null");
+          const previousWord = currentWord;
+          handleMouseOver(e);
+          const newTarget = document.elementFromPoint(e.clientX, e.clientY);
+          clickedHighlightSpan = newTarget && newTarget.closest && newTarget.closest(".jyutping-highlight");
+          if (clickedHighlightSpan) {
+            clickInHighlight = true;
+            wordToSpeak = currentWord;
+          } else if (currentWord && currentRange && currentWord !== previousWord) {
+            clickInHighlight = true;
+            wordToSpeak = currentWord;
+          } else if (currentWord && currentRange) {
+            const rect = currentRange.getBoundingClientRect();
+            const pad = 10;
+            if (rect.width > 0 && rect.height > 0 && e.clientX >= rect.left - pad && e.clientX <= rect.right + pad && e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad) {
+              clickInHighlight = true;
+              wordToSpeak = currentWord;
+            }
+          }
+        }
+        if (clickInHighlight && wordToSpeak) {
+          console.log("[AI-LongPress] Mousedown inside target word:", wordToSpeak);
+          const startX = e.clientX;
+          const startY = e.clientY;
+          let isDragging = false;
+          const sel = window.getSelection();
+          let savedRange = null;
+          if (sel.rangeCount > 0 && sel.toString().trim()) {
+            savedRange = sel.getRangeAt(0).cloneRange();
+          }
+          pendingTranslateWord = wordToSpeak;
+          speakCantonese(wordToSpeak);
+          if (clickedRuby) {
+            startRubySpeakingState(clickedRuby);
+          }
+          let wasWordLongPressTriggered = false;
+          console.log("[AI-LongPress] isAiOn:", aiEnabled);
+          let initialTargetRect = null;
+          if (typeof currentRange !== "undefined" && currentRange) {
+            initialTargetRect = getBestRectForRange(currentRange);
+          }
+          if (aiEnabled) {
+            if (aiLongPressTimer) {
+              clearTimeout(aiLongPressTimer);
+              cancelLongPressAnimation();
+            }
+            console.log("[AI-LongPress] Setting timers synchronously.");
+            aiAnimationTimer = setTimeout(() => {
+              console.log("[AI-LongPress] Starting animation");
+              startLongPressAnimation(startX, startY);
+            }, 150);
+            aiLongPressTimer = setTimeout(() => {
+              console.log("[AI-LongPress] Trigger timer fired! isDragging:", isDragging);
+              aiLongPressTimer = null;
+              if (!isDragging) {
+                wasWordLongPressTriggered = true;
+                console.log("[AI-LongPress] Triggering AI translation for:", wordToSpeak);
+                if (longPressRing) {
+                  longPressRing.classList.add("done");
+                  setTimeout(() => {
+                    longPressRing.classList.remove("done");
+                    longPressRing.classList.remove("active");
+                  }, 300);
+                }
+                requestAiTranslation(wordToSpeak, initialTargetRect);
+              } else {
+                cancelLongPressAnimation();
+              }
+            }, 650);
+          }
+          const onDragMove = (moveEvt) => {
+            const dx = moveEvt.clientX - startX;
+            const dy = moveEvt.clientY - startY;
+            const distSq = dx * dx + dy * dy;
+            if (distSq > 400) {
+              console.log("[AI-LongPress] Drag detected (distance > 20px):", Math.sqrt(distSq), "cancelling long press");
+              isDragging = true;
+              isSelecting = true;
+              currentWord = null;
+              hidePopup();
+              if (aiLongPressTimer) {
+                clearTimeout(aiLongPressTimer);
+                aiLongPressTimer = null;
+                cancelLongPressAnimation();
+              }
+              pendingTranslateWord = null;
+              document.removeEventListener("mousemove", onDragMove);
+            }
+          };
+          document.addEventListener("mousemove", onDragMove);
+          const onDragEnd = () => {
+            console.log("[AI-LongPress] Mouseup on target word. isDragging:", isDragging, "wasWordLongPressTriggered:", wasWordLongPressTriggered);
+            document.removeEventListener("mousemove", onDragMove);
+            if (wasWordLongPressTriggered) {
+              ignoreNextRubyClick = true;
+              setTimeout(() => {
+                ignoreNextRubyClick = false;
+              }, 100);
+            }
+            if (!isDragging && savedRange) {
+              const s = window.getSelection();
+              s.removeAllRanges();
+              s.addRange(savedRange);
+            }
+            if (!isDragging && !wasWordLongPressTriggered && transTrigger === "click" && pendingTranslateWord) {
+              requestTranslation(pendingTranslateWord);
+              pendingTranslateWord = null;
+            }
+          };
+          document.addEventListener("mouseup", onDragEnd, { once: true });
+          return;
+        }
+        pendingTranslateWord = null;
+        isSelecting = true;
+        currentWord = null;
+        waitingForMouseToEnterAfterExpand = false;
+        if (hasEditableFocus()) {
+          if (popup) popup.style.display = "none";
+          return;
+        }
+        hidePopup();
+        cancelLongPressAnimation();
+      }, true);
+      document.addEventListener("click", (e) => {
+        if (!isEnabled) return;
+        if (ignoreNextRubyClick) return;
+        const ruby = e.target.closest(".jyutping-ruby-injected");
+        if (ruby) {
+          let word = ruby.dataset.word;
+          if (word) {
+            speakCantonese(word);
+            startRubySpeakingState(ruby);
+            ruby.classList.add("jyutping-clicked-hover");
+          }
+        }
+      });
+      document.addEventListener("dblclick", (e) => {
+        if (!isEnabled) return;
+        const path = e.composedPath ? e.composedPath() : [];
+        if (path.some((el) => el.id === "jyutping-shadow-host" || el.id === "cantonese-popup-dict" || el.id === "cantonese-translate-popup")) {
+          return;
+        }
+        const ruby = e.target.closest(".jyutping-ruby-injected");
+        if (ruby) {
+          e.preventDefault();
+          window.getSelection().removeAllRanges();
+          let word = ruby.dataset.word;
+          if (word && dictionary && dictionary[word]) {
+            const rect = ruby.getBoundingClientRect();
+            currentWord = word;
+            try {
+              currentRange = document.createRange();
+              currentRange.selectNodeContents(ruby);
+            } catch (err) {
+            }
+            showPopup({ word, entry: dictionary[word] }, rect, true);
+          }
+          return;
+        }
+        if (pendingTranslateWord) {
+          e.preventDefault();
+          window.getSelection().removeAllRanges();
+          if (transTrigger === "dblclick") {
+            requestTranslation(pendingTranslateWord);
+          }
+          pendingTranslateWord = null;
+          return;
+        }
+        if (hasUserSelection) {
+          const selection = window.getSelection();
+          const text = selection.toString().trim();
+          if (text) {
+            e.preventDefault();
+            if (transTrigger === "dblclick") {
+              requestTranslation(text);
+            }
+          }
+        }
+      });
+      document.addEventListener("mouseup", (e) => {
+        if (aiLongPressTimer) {
+          console.log("[AI] mouseup 清除長按計時器");
+          clearTimeout(aiLongPressTimer);
+          aiLongPressTimer = null;
+          cancelLongPressAnimation();
+        }
+        if (!isSelecting) return;
+        setTimeout(() => {
+          isSelecting = false;
+          const selection = window.getSelection();
+          const selectedText = selection.toString().trim();
+          if (selectedText.length > 1 && /[\u4e00-\u9fff]/.test(selectedText)) {
+            hasUserSelection = true;
+            hidePopup();
+          } else {
+            hasUserSelection = false;
+          }
+        }, 50);
+      }, true);
+      document.addEventListener("scroll", () => {
+        if (popup && popup.querySelector(".popup-qa-container")) return;
+        if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+        hidePopup();
+        const sel = window.getSelection();
+        if (!sel || sel.toString().trim().length === 0) {
+          hasUserSelection = false;
+        }
+        hideTranslatePopup();
+        if (aiLongPressTimer) {
+          clearTimeout(aiLongPressTimer);
+          aiLongPressTimer = null;
+        }
+        cancelLongPressAnimation();
+      }, true);
+      document.addEventListener("keydown", (e) => {
+        if (e.key === "Escape") {
+          hidePopup();
+          hideTranslatePopup();
+          hasUserSelection = false;
+        }
+        const keyMap = { "alt": "Alt", "ctrl": "Control", "shift": "Shift", "meta": "Meta" };
+        if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+          lastX = currentMouseX;
+          lastY = currentMouseY;
+          handleMouseOver({
+            clientX: currentMouseX,
+            clientY: currentMouseY,
+            altKey: e.altKey || e.key === "Alt",
+            ctrlKey: e.ctrlKey || e.key === "Control",
+            shiftKey: e.shiftKey || e.key === "Shift",
+            metaKey: e.metaKey || e.key === "Meta"
+          });
+          if (popupDisplayStyle === "full" && ttsEnabled && currentWord && dictionary[currentWord]) {
+            speakCantonese(dictionary[currentWord].traditional || currentWord);
+          }
+        }
+      });
+    }
+    function handleMouseOver(e) {
+      if (!isEnabled) return;
+      const targetNode = e.target;
+      if (targetNode && targetNode.closest && (targetNode.closest("#cantonese-popup-dict") || targetNode.closest("#cantonese-translate-popup"))) {
+        return;
+      }
+      if (popup && popup.querySelector(".popup-qa-container")) return;
+      if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+      if (translatePopup && translatePopup.style.display !== "none") {
+        if (!isMouseOverPopup) {
+          scheduleHidePopup();
+        }
+        return;
+      }
+      if (isMouseOverPopup) return;
+      if (expandLockTimer) return;
+      if (waitingForMouseToEnterAfterExpand) return;
+      const modifierPressed = popupDisplayStyle === "compact" || hoverModifier === "none" || hoverModifier === "alt" && e.altKey || hoverModifier === "ctrl" && e.ctrlKey || hoverModifier === "shift" && e.shiftKey || hoverModifier === "meta" && e.metaKey;
+      const clientX = e.clientX;
+      const clientY = e.clientY;
+      const targetElement = document.elementFromPoint(clientX, clientY);
+      if (targetElement && (targetElement.closest("#cantonese-popup-dict") || targetElement.closest("#cantonese-translate-popup"))) {
+        return;
+      }
+      const rubyElement = targetElement && targetElement.closest(".jyutping-ruby-injected");
+      if (rubyElement) {
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+        const word = rubyElement.dataset.word;
+        if (word && dictionary[word]) {
+          justNavigated = false;
+          if (currentWord !== word || highlightedRubyElement !== rubyElement) {
+            removeHighlight();
+            highlightedRubyElement = rubyElement;
+            currentWord = word;
+            currentContextSentence = word;
+            currentRange = document.createRange();
+            currentRange.selectNodeContents(rubyElement);
+          }
+          const result2 = { word, entry: dictionary[word] };
+          const actualModifierPressed = hoverModifier === "alt" && e.altKey || hoverModifier === "ctrl" && e.ctrlKey || hoverModifier === "shift" && e.shiftKey || hoverModifier === "meta" && e.metaKey;
+          if (actualModifierPressed) {
+            showPopup(result2, rubyElement.getBoundingClientRect());
+          } else if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
+            scheduleHidePopup();
+          }
+        } else {
+          if (!justNavigated) scheduleHidePopup();
+        }
+        return;
+      }
+      if (targetElement && (targetElement.classList.contains("jyutping-highlight") || targetElement.closest(".jyutping-hover-ruby"))) {
+        if (hideTimeout) {
+          clearTimeout(hideTimeout);
+          hideTimeout = null;
+        }
+        if (modifierPressed && popup && popup.style.display === "none" && currentWord && dictionary[currentWord]) {
+          const result2 = { word: currentWord, entry: dictionary[currentWord] };
+          showPopup(result2, currentRange ? currentRange.getBoundingClientRect() : {
+            left: clientX,
+            right: clientX,
+            top: clientY,
+            bottom: clientY,
+            width: 0,
+            height: 0
+          });
+        }
+        return;
+      }
+      let range = getCaretRangeFromPointInShadow(clientX, clientY);
+      if (!range) {
+        if (!justNavigated) {
+          scheduleHidePopup();
+        }
+        return;
+      }
+      const previousWord = currentWord;
+      if (highlightSpans.length > 0) {
+        removeHighlight();
+        range = getCaretRangeFromPointInShadow(clientX, clientY);
+        if (!range) {
+          if (!justNavigated) scheduleHidePopup();
+          return;
+        }
+      }
+      const textNode = range.startContainer;
+      if (textNode.nodeType !== Node.TEXT_NODE) {
+        if (!justNavigated) scheduleHidePopup();
+        return;
+      }
+      const offset = getAccurateOffset(textNode, clientX, clientY);
+      if (offset === -1) {
+        if (!justNavigated) scheduleHidePopup();
+        return;
+      }
+      const text = textNode.textContent;
+      currentContextSentence = text.trim();
+      const searchText = text.substring(offset, offset + 15);
+      const result = lookupWord(searchText);
+      if (result) {
+        justNavigated = false;
+        highlightText(textNode, offset, result);
+        if (previousWord === result.word && popup.style.display !== "none") {
+          currentWord = result.word;
+          if (hideTimeout) {
+            clearTimeout(hideTimeout);
+            hideTimeout = null;
+          }
+          return;
+        }
+        currentWord = result.word;
+        if (currentRange) {
+          const bestRect = getBestRectForRange(currentRange);
+          if (modifierPressed) {
+            showPopup(result, bestRect || currentRange.getBoundingClientRect());
+          } else if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
+            scheduleHidePopup();
+          }
+        } else {
+          if (modifierPressed) {
+            showPopup(result, {
+              left: clientX,
+              right: clientX,
+              top: clientY,
+              bottom: clientY,
+              width: 0,
+              height: 0
+            });
+          } else if (popup && popup.style.display !== "none" && !isMouseOverPopup) {
+            scheduleHidePopup();
+          }
+        }
+      } else {
+        currentWord = null;
+        if (!justNavigated) {
+          scheduleHidePopup();
+        }
+      }
+    }
+    function lookupWord(text) {
+      if (!text) return null;
+      if (!/[\u4e00-\u9fff]/.test(text)) {
+        return null;
+      }
+      for (let len = Math.min(text.length, 8); len > 0; len--) {
+        const word = text.substring(0, len);
+        if (dictionary[word]) {
+          return {
+            word,
+            entry: dictionary[word],
+            length: len
+          };
+        }
+      }
+      return null;
+    }
+    function speakText(text) {
+      if (!ttsEnabled) return;
+      if (ttsEngine === "chromeTts") {
+        chrome.runtime.sendMessage({
+          action: "chromeTtsSpeak",
+          text,
+          options: { lang: "zh-HK", rate: ttsRate }
+        });
+      } else if (ttsEngine === "edgeTts") {
+        const baseUrl = edgeTtsMode === "custom" ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
+        chrome.runtime.sendMessage({
+          action: "edgeTtsSpeak",
+          text,
+          baseUrl,
+          rate: ttsRate
+        });
+      } else if (ttsEngine === "bertVits2") {
+        chrome.runtime.sendMessage({
+          action: "bertVits2Speak",
+          text,
+          rate: ttsRate
+        });
+      } else if (ttsEngine === "azureTts") {
+        if (azureTtsMode === "custom") {
           chrome.runtime.sendMessage({
-            action: 'azureTtsSpeak',
-            text: textToSpeak,
+            action: "azureTtsSpeak",
+            text,
             azureKey: azureTtsKey,
             azureRegion: azureTtsRegion,
             azureVoice: azureTtsVoice,
@@ -1749,1088 +2496,35 @@
           });
         } else {
           chrome.runtime.sendMessage({
-            action: 'azureTtsProxySpeak',
-            text: textToSpeak,
+            action: "azureTtsProxySpeak",
+            text,
             azureVoice: azureTtsVoice,
             rate: ttsRate
           });
         }
+      } else {
+        const utterance = new SpeechSynthesisUtterance(text);
+        utterance.lang = "zh-HK";
+        utterance.rate = ttsRate;
+        speechSynthesis.speak(utterance);
       }
-    } catch (error) {
-      console.error('TTS error:', error);
-      stopSpeakerAnimation();
-      if (!window.hasShownTtsFallbackToast) {
-        showToast('🔊 語音服務連線異常，已自動降級為系統本機發音。<br>請檢查網絡或刷新網頁。', 4000);
-        window.hasShownTtsFallbackToast = true;
-      }
-      // 降級到 Web Speech
-      speakWithWebSpeech(textToSpeak);
     }
-  }
-
-  // Web Speech API
-  function speakWithWebSpeech(text) {
-    speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'zh-HK';
-    utterance.rate = ttsRate;
-    utterance.onend = stopSpeakerAnimation;
-    utterance.onerror = stopSpeakerAnimation;
-    
-    const voices = speechSynthesis.getVoices();
-    const cantoneseVoice = voices.find(v => 
-      v.lang === 'zh-HK' || v.lang.startsWith('zh-HK')
-    );
-    if (cantoneseVoice) utterance.voice = cantoneseVoice;
-    
-    speechSynthesis.speak(utterance);
-  }
-
-  // Chrome TTS API
-  function speakWithChromeTts(text) {
-    chrome.runtime.sendMessage({
-      action: 'chromeTtsSpeak',
-      text: text,
-      options: { lang: 'zh-HK', rate: ttsRate }
-    });
-  }
-
-  // Edge TTS (via background script to avoid CORS)
-  async function speakWithEdgeTts(text, baseUrl) {
-    baseUrl = baseUrl || EDGE_TTS_DEFAULT_URL;
-    
-    // Send request through background script (no CORS restrictions)
-    chrome.runtime.sendMessage({
-      action: 'edgeTtsSpeak',
-      text: text,
-      baseUrl: baseUrl,
-      rate: ttsRate
-    });
-  }
-
-  // Bert-VITS2 (via background script)
-  async function speakWithBertVits2(text) {
-    chrome.runtime.sendMessage({
-      action: 'bertVits2Speak',
-      text: text,
-      rate: ttsRate
-    });
-  }
-
-  // 設置事件監聽器
-  function setupEventListeners() {
-    let lastX = 0, lastY = 0;
-    let isThrottled = false;
-    let isSelecting = false; // 用戶正在拖拽選擇文字
-
-    // 使用 mousemove 實現實時跟隨
-    document.addEventListener('mousemove', (e) => {
-      currentMouseX = e.clientX;
-      currentMouseY = e.clientY;
-
-      if (!isEnabled || isSelecting) return;
-
-      // 如果打開了 Q&A，保持 Q&A 窗口開啟，且不進行任何隱藏或查詞掃描
-      if (popup && popup.querySelector('.popup-qa-container')) return;
-      if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
-
-      // 如果用戶有手動選中的文本，不要觸發懸停查詞（防止覆蓋選區）
-      if (hasUserSelection) {
-        if (isMouseOverPopup) return;
-        
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0) {
-          const range = selection.getRangeAt(0);
-          const rects = range.getClientRects();
-          let isOverSelection = false;
-          // 給予 20px 緩衝區
-          for (let i = 0; i < rects.length; i++) {
-            const rect = rects[i];
-            if (e.clientX >= rect.left - 20 && e.clientX <= rect.right + 20 &&
-                e.clientY >= rect.top - 20 && e.clientY <= rect.bottom + 20) {
-              isOverSelection = true;
-              break;
-            }
-          }
-          if (!isOverSelection) {
-            // 滑鼠離開了選區且不在彈窗上，隱藏彈窗，但不清除選區
-            hidePopup(true);
-          }
-        }
-        return;
-      }
-
-      // 如果滑鼠在彈窗上，不處理
-      if (isMouseOverPopup) return;
-
-      // 如果剛導航過（粘滯模式），不處理頁面文字掃描，直到用戶進入彈窗
-      if (justNavigated) return;
-
-      // ★ 最優先檢查：如果有可編輯元素正在獲得焦點，完全跳過
-      if (hasEditableFocus()) {
-        return;
-      }
-
-      // 如果滑鼠在可編輯元素上，也不觸發
-      const targetElement = document.elementFromPoint(e.clientX, e.clientY);
-      if (isEditableElement(targetElement)) {
-        return;
-      }
-
-      // 節流：每 50ms 最多觸發一次
-      if (isThrottled) return;
-      
-      // 如果滑鼠位置沒改變太多，跳過
-      if (Math.abs(e.clientX - lastX) < 5 && Math.abs(e.clientY - lastY) < 5) {
-        return;
-      }
-      
-      lastX = e.clientX;
-      lastY = e.clientY;
-      
-      isThrottled = true;
-      setTimeout(() => { isThrottled = false; }, 50);
-      
-      handleMouseOver(e);
-    });
-
-    // 滑鼠離開文檔時隱藏
-    document.addEventListener('mouseleave', () => {
-      if (hasEditableFocus()) {
-        if (popup) popup.style.display = 'none';
-        return;
-      }
-      // 如果打開了 Q&A，不自動隱藏
-      if (popup && popup.querySelector('.popup-qa-container')) return;
-      if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
-      hidePopup();
-    });
-
-    // 點擊時的邏輯
-
-    document.addEventListener('mousedown', (e) => {
-      if (!isEnabled) return;
-
-      // 只處理左鍵點擊，右鍵不觸發 TTS / AI 長按
-      if (e.button !== 0) return;
-
-      // 如果點擊在 Shadow DOM 宿主內（也就是點擊了懸浮窗），不隱藏
-      // 使用 composedPath() 確保在 Shadow DOM 內部的點擊也能被正確攔截
-      const path = e.composedPath ? e.composedPath() : [];
-      if (path.some(el => el.id === 'jyutping-shadow-host' || el.id === 'cantonese-popup-dict' || el.id === 'cantonese-translate-popup')) {
-        return;
-      }
-
-      // 如果用戶有手動選中的文本，檢查點擊是否在選區內
-      if (hasUserSelection) {
-        const selection = window.getSelection();
-        if (selection.rangeCount > 0 && selection.toString().trim()) {
-          const range = selection.getRangeAt(0);
-          const rects = range.getClientRects();
-          let clickInSelection = false;
-          const pad = 10; // 放寬 10px 容差處理 line-height
-          for (const rect of rects) {
-            if (e.clientX >= rect.left - pad && e.clientX <= rect.right + pad &&
-                e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad) {
-              clickInSelection = true;
-              break;
-            }
-          }
-          if (clickInSelection) {
-            e.preventDefault();
-            // 立即觸發 TTS
-            const textToSpeak = selection.toString().trim();
-            const rangeRect = getBestRectForRange(range);
-            const btn = showSelectionSpeakerPopup(rangeRect, textToSpeak);
-            speakCantonese(textToSpeak, btn);
-            
-            let wasSelectionLongPressTriggered = false;
-            let isDragging = false;
-            const startX = e.clientX;
-            const startY = e.clientY;
-
-            console.log('[AI-SelectionLongPress] isAiOn:', aiEnabled);
-            if (aiEnabled) {
-              if (aiLongPressTimer) {
-                clearTimeout(aiLongPressTimer);
-                cancelLongPressAnimation();
-              }
-              const selectedWord = selection.toString().trim();
-              console.log('[AI-SelectionLongPress] Setting timers synchronously for word:', selectedWord);
-              
-              aiAnimationTimer = setTimeout(() => {
-                startLongPressAnimation(e.clientX, e.clientY);
-              }, 150);
-              
-              aiLongPressTimer = setTimeout(() => {
-                aiLongPressTimer = null;
-                if (!isDragging) {
-                  wasSelectionLongPressTriggered = true;
-                  console.log('[AI-SelectionLongPress] Triggered AI translation for:', selectedWord);
-                  if (longPressRing) {
-                    longPressRing.classList.add('done');
-                    setTimeout(() => {
-                      longPressRing.classList.remove('done');
-                      longPressRing.classList.remove('active');
-                    }, 300);
-                  }
-                  requestAiTranslation(selectedWord, rangeRect);
-                } else {
-                  cancelLongPressAnimation();
-                }
-              }, 650);
-            }
-            
-            // 監聽拖拽：如果移動超過 20px，取消長按
-            const onDragMove = (moveEvt) => {
-              const dx = moveEvt.clientX - startX;
-              const dy = moveEvt.clientY - startY;
-              if (dx * dx + dy * dy > 400) { // 20px 閾值
-                isDragging = true;
-                if (aiLongPressTimer) {
-                  clearTimeout(aiLongPressTimer);
-                  aiLongPressTimer = null;
-                  cancelLongPressAnimation();
-                }
-                document.removeEventListener('mousemove', onDragMove);
-              }
-            };
-            document.addEventListener('mousemove', onDragMove);
-            
-            const onSelectionClickEnd = () => {
-              document.removeEventListener('mousemove', onDragMove);
-              if (wasSelectionLongPressTriggered) {
-                ignoreNextRubyClick = true;
-                setTimeout(() => { ignoreNextRubyClick = false; }, 100);
-              }
-              if (transTrigger === 'click' && !wasSelectionLongPressTriggered && !isDragging) {
-                requestTranslation(textToSpeak);
-              }
-            };
-            document.addEventListener('mouseup', onSelectionClickEnd, { once: true });
-            
-            return;
-          }
-        }
-        // 點擊在選區外 → 清除選區
-        hasUserSelection = false;
-        window.getSelection().removeAllRanges();
-        hideTranslatePopup();
-        cancelLongPressAnimation();
-      }
-
-      // 檢查是否點擊在高亮區域內，或者全文注音的 ruby 區塊內
-      let clickedHighlightSpan = e.target.closest && e.target.closest('.jyutping-highlight');
-      let clickedRuby = e.target.closest && (e.target.closest('.jyutping-ruby-injected') || e.target.closest('.jyutping-hover-ruby'));
-      
-      let clickInHighlight = false;
-      let wordToSpeak = null;
-
-      if (clickedHighlightSpan) {
-        clickInHighlight = true;
-        wordToSpeak = currentWord;
-      } else if (clickedRuby) {
-        clickInHighlight = true;
-        wordToSpeak = clickedRuby.dataset.word;
-        // 如果是 ruby 區塊，我們同時更新 currentWord / currentRange 以便 Q&A 獲取 context
-        if (wordToSpeak) {
-          currentWord = wordToSpeak;
-          try {
-            currentRange = document.createRange();
-            currentRange.selectNodeContents(clickedRuby);
-          } catch (err) {}
-        }
-      } else if (currentWord && currentRange) {
-        const rect = currentRange.getBoundingClientRect();
-        if (rect.width > 0 && rect.height > 0 &&
-            e.clientX >= rect.left && e.clientX <= rect.right &&
-            e.clientY >= rect.top && e.clientY <= rect.bottom) {
-          clickInHighlight = true;
-          wordToSpeak = currentWord;
-        }
-      }
-
-      // 如果點擊不在高亮區且不是 ruby，嘗試即時掃描滑鼠下方的文字以獲取單詞並高亮
-      if (!clickInHighlight) {
-        console.log('[AI-LongPress] Mousedown outside highlight. e.target:', e.target.tagName, e.target.className, 'popup is:', popup, 'popup.contains:', popup ? popup.contains(e.target) : 'null');
-        const previousWord = currentWord;
-        handleMouseOver(e);
-        
-        // 重新檢測（使用 elementFromPoint 獲取最新的 DOM 元素，因為 handleMouseOver 可能剛剛修改了 DOM）
-        // 不能用 e.target 因為 e.target 還是點擊發生時的舊元素
-        const newTarget = document.elementFromPoint(e.clientX, e.clientY);
-        clickedHighlightSpan = newTarget && newTarget.closest && newTarget.closest('.jyutping-highlight');
-        
-        if (clickedHighlightSpan) {
-          clickInHighlight = true;
-          wordToSpeak = currentWord;
-        } else if (currentWord && currentRange && currentWord !== previousWord) {
-          // 如果 elementFromPoint 失敗（例如被遮擋），但 handleMouseOver 確實剛解析出了新詞
-          // 只要剛好查出了新詞，就認為用戶點擊了這個詞。
-          clickInHighlight = true;
-          wordToSpeak = currentWord;
-        } else if (currentWord && currentRange) {
-          // 最後退路：使用 getBoundingClientRect，加上容差 (padding) 處理 line-height 點擊
-          const rect = currentRange.getBoundingClientRect();
-          const pad = 10;
-          if (rect.width > 0 && rect.height > 0 &&
-              e.clientX >= rect.left - pad && e.clientX <= rect.right + pad &&
-              e.clientY >= rect.top - pad && e.clientY <= rect.bottom + pad) {
-            clickInHighlight = true;
-            wordToSpeak = currentWord;
-          }
-        }
-      }
-
-      if (clickInHighlight && wordToSpeak) {
-        console.log('[AI-LongPress] Mousedown inside target word:', wordToSpeak);
-        // 不立即 preventDefault — 先觀察用戶是否在拖拽選擇文本
-        const startX = e.clientX;
-        const startY = e.clientY;
-        let isDragging = false;
-
-        // 保存現有選區（點擊會清除它，之後如果是單擊就恢復）
-        const sel = window.getSelection();
-        let savedRange = null;
-        if (sel.rangeCount > 0 && sel.toString().trim()) {
-          savedRange = sel.getRangeAt(0).cloneRange();
-        }
-
-        // 保存當前詞，供 dblclick 使用
-        pendingTranslateWord = wordToSpeak;
-
-        // 立即觸發 TTS
-        speakCantonese(wordToSpeak);
-        // 如果點擊的是 Ruby 元素，啟動 Ruby 發音狀態標記（音標變不透明）
-        if (clickedRuby) {
-          startRubySpeakingState(clickedRuby);
-        }
-
-        let wasWordLongPressTriggered = false;
-
-        console.log('[AI-LongPress] isAiOn:', aiEnabled);
-        
-        let initialTargetRect = null;
-        if (typeof currentRange !== 'undefined' && currentRange) {
-          initialTargetRect = getBestRectForRange(currentRange);
-        }
-
-        if (aiEnabled) {
-          if (aiLongPressTimer) {
-            clearTimeout(aiLongPressTimer);
-            cancelLongPressAnimation();
-          }
-          console.log('[AI-LongPress] Setting timers synchronously.');
-          aiAnimationTimer = setTimeout(() => {
-            console.log('[AI-LongPress] Starting animation');
-            startLongPressAnimation(startX, startY);
-          }, 150);
-          aiLongPressTimer = setTimeout(() => {
-            console.log('[AI-LongPress] Trigger timer fired! isDragging:', isDragging);
-            aiLongPressTimer = null;
-            if (!isDragging) {
-              wasWordLongPressTriggered = true;
-              console.log('[AI-LongPress] Triggering AI translation for:', wordToSpeak);
-              
-              if (longPressRing) {
-                longPressRing.classList.add('done');
-                setTimeout(() => {
-                  longPressRing.classList.remove('done');
-                  longPressRing.classList.remove('active');
-                }, 300);
-              }
-              
-              requestAiTranslation(wordToSpeak, initialTargetRect);
-            } else {
-              cancelLongPressAnimation();
-            }
-          }, 650);
-        }
-
-        // 監聽拖拽：如果移動超過 20px，切換到選擇模式（防止手指或滑鼠微抖誤判）
-        const onDragMove = (moveEvt) => {
-          const dx = moveEvt.clientX - startX;
-          const dy = moveEvt.clientY - startY;
-          const distSq = dx * dx + dy * dy;
-          if (distSq > 400) { // 20px 閾值
-            console.log('[AI-LongPress] Drag detected (distance > 20px):', Math.sqrt(distSq), 'cancelling long press');
-            isDragging = true;
-            isSelecting = true;
-            currentWord = null;
-            hidePopup();
-            if (aiLongPressTimer) {
-              clearTimeout(aiLongPressTimer);
-              aiLongPressTimer = null;
-              cancelLongPressAnimation();
-            }
-            pendingTranslateWord = null;
-            document.removeEventListener('mousemove', onDragMove);
-          }
-        };
-        document.addEventListener('mousemove', onDragMove);
-
-        // mouseup 時清理拖拽監聽，並恢復選區（如果是單擊）
-        const onDragEnd = () => {
-          console.log('[AI-LongPress] Mouseup on target word. isDragging:', isDragging, 'wasWordLongPressTriggered:', wasWordLongPressTriggered);
-          document.removeEventListener('mousemove', onDragMove);
-          
-          if (wasWordLongPressTriggered) {
-            ignoreNextRubyClick = true;
-            setTimeout(() => { ignoreNextRubyClick = false; }, 100);
-          }
-          
-          // 如果不是拖拽且之前有選區，恢復它
-          if (!isDragging && savedRange) {
-            const s = window.getSelection();
-            s.removeAllRanges();
-            s.addRange(savedRange);
-          }
-          if (!isDragging && !wasWordLongPressTriggered && transTrigger === 'click' && pendingTranslateWord) {
-            requestTranslation(pendingTranslateWord);
-            pendingTranslateWord = null;
-          }
-        };
-        document.addEventListener('mouseup', onDragEnd, { once: true });
-
-        return;
-      }
-
-      // 既然在非高亮區域點擊，說明不是雙擊高亮詞，清除 pending 狀態
-      pendingTranslateWord = null;
-
-      isSelecting = true;
-      currentWord = null;
-      waitingForMouseToEnterAfterExpand = false; // 點擊頁面其他地方時，也重置該鎖
-      if (hasEditableFocus()) {
-        if (popup) popup.style.display = 'none';
-        return;
-      }
-      hidePopup();
-      cancelLongPressAnimation();
-    }, true);
-
-    // 點擊注音區塊發音
-    document.addEventListener('click', (e) => {
-      if (!isEnabled) return;
-      if (ignoreNextRubyClick) return;
-      
-      const ruby = e.target.closest('.jyutping-ruby-injected');
-      if (ruby) {
-        let word = ruby.dataset.word;
-        if (word) {
-          speakCantonese(word);
-          startRubySpeakingState(ruby);
-          ruby.classList.add('jyutping-clicked-hover');
-        }
-      }
-    });
-
-    // 雙擊 → 觸發翻譯或顯示完整懸浮窗
-    document.addEventListener('dblclick', (e) => {
-      if (!isEnabled) return;
-
-      // 忽略來自於詞典浮窗或翻譯浮窗內部的雙擊
-      // 使用 composedPath() 確保在 Shadow DOM 內部的雙擊也能被正確攔截
-      const path = e.composedPath ? e.composedPath() : [];
-      if (path.some(el => el.id === 'jyutping-shadow-host' || el.id === 'cantonese-popup-dict' || el.id === 'cantonese-translate-popup')) {
-        return;
-      }
-
-      // 情況 0：雙擊注音區塊顯示完整懸浮窗
-      const ruby = e.target.closest('.jyutping-ruby-injected');
-      if (ruby) {
-        e.preventDefault();
-        window.getSelection().removeAllRanges();
-        
-        let word = ruby.dataset.word;
-        
-        if (word && dictionary && dictionary[word]) {
-          const rect = ruby.getBoundingClientRect();
-          currentWord = word;
-          try {
-            currentRange = document.createRange();
-            currentRange.selectNodeContents(ruby);
-          } catch (err) {}
-          showPopup({ word: word, entry: dictionary[word] }, rect, true);
-        }
-        return;
-      }
-
-      // 情況 1：雙擊高亮詞
-      if (pendingTranslateWord) {
-        e.preventDefault();
-        // 清除雙擊產生的原生選區，避免覆蓋原本的高亮背景色
-        window.getSelection().removeAllRanges();
-        if (transTrigger === 'dblclick') {
-          requestTranslation(pendingTranslateWord);
-        }
-        pendingTranslateWord = null;
-        return;
-      }
-
-      // 情況 2：雙擊用戶選區
-      if (hasUserSelection) {
-        const selection = window.getSelection();
-        const text = selection.toString().trim();
-        if (text) {
-          e.preventDefault();
-          if (transTrigger === 'dblclick') {
-            requestTranslation(text);
-          }
-        }
-      }
-    });
-
-    // 釋放滑鼠後檢查用戶是否手動選中了文本
-    document.addEventListener('mouseup', (e) => {
-      // 清除 AI 長按計時器
-      if (aiLongPressTimer) {
-        console.log('[AI] mouseup 清除長按計時器');
-        clearTimeout(aiLongPressTimer);
-        aiLongPressTimer = null;
-        cancelLongPressAnimation();
-      }
-
-      // 只有用戶真正拖拽過（isSelecting 為 true）才檢測手動選中
-      if (!isSelecting) return;
-
-      setTimeout(() => {
-        isSelecting = false;
-
-        // 檢查用戶是否手動選中了文本（超過 1 個字符的選區）
-        const selection = window.getSelection();
-        const selectedText = selection.toString().trim();
-        
-        if (selectedText.length > 1 && /[\u4e00-\u9fff]/.test(selectedText)) {
-          hasUserSelection = true;
-          hidePopup();
-        } else {
-          hasUserSelection = false;
-        }
-      }, 50);
-    }, true);
-
-    // 滾動時隱藏彈窗
-    document.addEventListener('scroll', () => {
-      // 如果打開了 Q&A，不自動隱藏
-      if (popup && popup.querySelector('.popup-qa-container')) return;
-      if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
-
-      hidePopup();
-      // 如果用戶仍有選中文字（藍底），保留保護狀態，防止吸附覆蓋選區
-      const sel = window.getSelection();
-      if (!sel || sel.toString().trim().length === 0) {
-        hasUserSelection = false;
-      }
+    function showSelectionSpeakerPopup(rect, textToSpeak) {
+      if (!popup) return null;
+      const popupMain = popup.querySelector(".popup-main");
+      const popupExamples = popup.querySelector(".popup-examples");
+      const popupTranslate = popup.querySelector(".popup-translate");
+      const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
+      const reportForm = popup.querySelector(".popup-report-form");
+      if (popupExamples) popupExamples.style.display = "none";
+      if (popupTranslate) popupTranslate.style.display = "none";
+      if (actionsWrapper) actionsWrapper.style.display = "none";
+      if (reportForm) reportForm.style.display = "none";
+      popup.classList.remove("expanded-mode");
       hideTranslatePopup();
-      if (aiLongPressTimer) {
-        clearTimeout(aiLongPressTimer);
-        aiLongPressTimer = null;
-      }
-      cancelLongPressAnimation();
-    }, true);
-
-    // 監聽按鍵
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') {
-        hidePopup();
-        hideTranslatePopup();
-        hasUserSelection = false;
-      }
-      
-      // 如果按下了設定的修飾鍵，立刻觸發懸停查詞
-      const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
-      if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
-        // 模擬滑鼠移動觸發查詞，強制更新最後已知坐標以通過防抖
-        lastX = currentMouseX;
-        lastY = currentMouseY;
-        handleMouseOver({ 
-          clientX: currentMouseX, 
-          clientY: currentMouseY,
-          altKey: e.altKey || e.key === 'Alt',
-          ctrlKey: e.ctrlKey || e.key === 'Control',
-          shiftKey: e.shiftKey || e.key === 'Shift',
-          metaKey: e.metaKey || e.key === 'Meta'
-        });
-        // 完整模式下按修飾鍵觸發時，自動發音
-        if (popupDisplayStyle === 'full' && ttsEnabled && currentWord && dictionary[currentWord]) {
-          speakCantonese(dictionary[currentWord].traditional || currentWord);
-        }
-      }
-    });
-
-
-  }
-
-  // 檢查元素是否可編輯（輸入框、文本域、contenteditable）
-  function isEditableElement(element) {
-    if (!element) return false;
-    
-    const tagName = element.tagName.toLowerCase();
-    
-    // 輸入框和文本域
-    if (tagName === 'input' || tagName === 'textarea') {
-      return true;
-    }
-    
-    // contenteditable 元素
-    if (element.isContentEditable) {
-      return true;
-    }
-    
-    // 檢查父元素是否可編輯（對於嵌套元素）
-    let parent = element.parentElement;
-    while (parent) {
-      if (parent.isContentEditable) {
-        return true;
-      }
-      parent = parent.parentElement;
-    }
-    
-    return false;
-  }
-
-  // 檢查是否有可編輯元素正在獲得焦點
-  function hasEditableFocus() {
-    const activeEl = document.activeElement;
-    if (!activeEl) return false;
-    
-    // 如果焦點在我們自己的彈窗輸入框內，不視為外部可編輯元素獲得焦點
-    if (activeEl.closest && (activeEl.closest('#cantonese-popup-dict') || activeEl.closest('#cantonese-translate-popup'))) {
-      return false;
-    }
-    
-    return (
-      activeEl.tagName === 'INPUT' ||
-      activeEl.tagName === 'TEXTAREA' ||
-      activeEl.isContentEditable ||
-      activeEl.getAttribute('contenteditable') === 'true' ||
-      (activeEl.closest && activeEl.closest('[contenteditable="true"]'))
-    );
-  }
-
-  // 獲取 Shadow DOM 中最深層的元素
-  function getDeepestElementAtPoint(x, y) {
-    let element = document.elementFromPoint(x, y);
-    if (!element) return null;
-    
-    // 遞歸穿透 Shadow DOM
-    while (element && element.shadowRoot) {
-      const shadowElement = element.shadowRoot.elementFromPoint(x, y);
-      if (!shadowElement || shadowElement === element) break;
-      element = shadowElement;
-    }
-    
-    return element;
-  }
-
-  // 從 Shadow DOM 中獲取文字範圍
-  function getCaretRangeFromPointInShadow(x, y) {
-    // 首先嘗試標準方法
-    let range = document.caretRangeFromPoint(x, y);
-    if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
-      return range;
-    }
-    
-    // 如果標準方法失敗，嘗試穿透 Shadow DOM
-    const element = getDeepestElementAtPoint(x, y);
-    if (!element) return null;
-    
-    // 獲取元素所在的根（可能是 ShadowRoot 或 document）
-    const root = element.getRootNode();
-    
-    // 如果是 ShadowRoot，使用它的 caretRangeFromPoint（如果支持）
-    if (root && root !== document && typeof root.caretRangeFromPoint === 'function') {
-      range = root.caretRangeFromPoint(x, y);
-      if (range && range.startContainer.nodeType === Node.TEXT_NODE) {
-        return range;
-      }
-    }
-    
-    // 回退方案：遍歷元素的文字節點
-    const textNodes = getTextNodesIn(element);
-    for (const textNode of textNodes) {
-      const nodeRange = document.createRange();
-      for (let i = 0; i < textNode.textContent.length; i++) {
-        try {
-          nodeRange.setStart(textNode, i);
-          nodeRange.setEnd(textNode, i + 1);
-          const rect = nodeRange.getBoundingClientRect();
-          if (x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom) {
-            nodeRange.setStart(textNode, i);
-            nodeRange.setEnd(textNode, i);
-            return nodeRange;
-          }
-        } catch (e) {
-          continue;
-        }
-      }
-    }
-    
-    return null;
-  }
-
-  // 獲取元素內的所有文字節點
-  function getTextNodesIn(element) {
-    const textNodes = [];
-    const walker = document.createTreeWalker(
-      element,
-      NodeFilter.SHOW_TEXT,
-      null,
-      false
-    );
-    let node;
-    while (node = walker.nextNode()) {
-      if (node.textContent.trim()) {
-        textNodes.push(node);
-      }
-    }
-    return textNodes;
-  }
-
-  // 處理滑鼠懸停事件
-  function handleMouseOver(e) {
-    if (!isEnabled) return;
-    
-    // 優先且絕對地忽略彈窗內部的任何滑鼠移動，防止因為 DOM 刷新或 isMouseOverPopup 狀態延遲而導致彈窗異常消失
-    const targetNode = e.target;
-    if (targetNode && targetNode.closest && (targetNode.closest('#cantonese-popup-dict') || targetNode.closest('#cantonese-translate-popup'))) {
-      return;
-    }
-    
-    // 如果打開了 Q&A，則不處理懸停事件，保持 Q&A 窗口開啟
-    if (popup && popup.querySelector('.popup-qa-container')) return;
-    if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
-
-    // 如果正在顯示翻譯彈窗（如 AI 翻譯），為避免滑鼠移動到彈窗過程中導致高亮消失，
-    // 暫停新的懸停事件，直到翻譯彈窗關閉
-    if (translatePopup && translatePopup.style.display !== 'none') {
-      if (!isMouseOverPopup) {
-        scheduleHidePopup();
-      }
-      return;
-    }
-    if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
-    if (expandLockTimer) return; // 展開按鈕冷卻期內不重新渲染
-    if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不重新渲染
-    
-    // 檢查修飾鍵是否按下（精簡模式不需要修飾鍵）
-    const modifierPressed = popupDisplayStyle === 'compact' || hoverModifier === 'none' ||
-      (hoverModifier === 'alt' && e.altKey) ||
-      (hoverModifier === 'ctrl' && e.ctrlKey) ||
-      (hoverModifier === 'shift' && e.shiftKey) ||
-      (hoverModifier === 'meta' && e.metaKey);
-
-    // 如果是用戶正在瀏覽的導航彈窗，且滑鼠不在彈窗上
-    // 此時不應該讓移動滑鼠打斷導航，除非用戶再次進入
-    // (這部分邏輯已在 setupEventListeners 中處理)
-
-    const clientX = e.clientX;
-    const clientY = e.clientY;
-
-    // ★ 檢查是否懸停在已高亮的文字上
-    const targetElement = document.elementFromPoint(clientX, clientY);
-    if (targetElement && (targetElement.closest('#cantonese-popup-dict') || targetElement.closest('#cantonese-translate-popup'))) {
-      return;
-    }
-    
-    // 如果是已經被全文注音的區域，則顯示懸浮窗並高亮該 ruby 元素
-    const rubyElement = targetElement && targetElement.closest('.jyutping-ruby-injected');
-    if (rubyElement) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
-      
-      const word = rubyElement.dataset.word;
-      if (word && dictionary[word]) {
-        justNavigated = false;
-        
-        if (currentWord !== word || highlightedRubyElement !== rubyElement) {
-          removeHighlight(); // 移除舊的高亮
-          
-          // 對於已經全文注音的 ruby，我們不需要加黃色高亮背景，保留其原生樣式即可。
-          // rubyElement.classList.add('jyutping-highlight');
-          // rubyElement.classList.add('hl-' + (highlightStyle || 'yellow'));
-          highlightedRubyElement = rubyElement;
-          
-          currentWord = word;
-          currentContextSentence = word;
-          
-          currentRange = document.createRange();
-          currentRange.selectNodeContents(rubyElement);
-        }
-        
-        const result = { word: word, entry: dictionary[word] };
-        
-        // 對於已經有注音的 ruby 元素，只有在「真正按下了修飾鍵」時才在懸停時顯示彈窗。
-        // 避免在 hoverModifier 為 'none' 時，滑鼠一移動就彈出視窗（影響閱讀體驗），這部分應留給雙擊觸發。
-        const actualModifierPressed = (hoverModifier === 'alt' && e.altKey) ||
-                                      (hoverModifier === 'ctrl' && e.ctrlKey) ||
-                                      (hoverModifier === 'shift' && e.shiftKey) ||
-                                      (hoverModifier === 'meta' && e.metaKey);
-        
-        if (actualModifierPressed) {
-          showPopup(result, rubyElement.getBoundingClientRect());
-        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          scheduleHidePopup();
-        }
-      } else {
-        if (!justNavigated) scheduleHidePopup();
-      }
-      return;
-    }
-    
-    if (targetElement && (targetElement.classList.contains('jyutping-highlight') || targetElement.closest('.jyutping-hover-ruby'))) {
-      if (hideTimeout) {
-        clearTimeout(hideTimeout);
-        hideTimeout = null;
-      }
-      
-      // 如果按下了修飾鍵，且彈窗目前隱藏，則直接顯示彈窗（不需要重新解析文字）
-      if (modifierPressed && popup && popup.style.display === 'none' && currentWord && dictionary[currentWord]) {
-        const result = { word: currentWord, entry: dictionary[currentWord] };
-        showPopup(result, currentRange ? currentRange.getBoundingClientRect() : {
-          left: clientX, right: clientX, top: clientY, bottom: clientY, width: 0, height: 0
-        });
-      }
-      return;
-    }
-
-    // ★ 測試滑鼠是否在文字上
-    let range = getCaretRangeFromPointInShadow(clientX, clientY);
-    if (!range) {
-      // 滑鼠在空白處
-      if (!justNavigated) {
-        scheduleHidePopup();
-      }
-      return; // ★ 核心修復：在空白處移動時，保留舊的高亮，讓它跟隨彈窗生命週期
-    }
-
-    // 到這裡說明滑鼠在真正的文字上。移除舊高亮並清理 DOM。
-    const previousWord = currentWord;
-    if (highlightSpans.length > 0) {
-      removeHighlight();
-      // 由於 removeHighlight 調用了 normalize() 合併了文字節點，
-      // 原來的 range.startContainer 可能已經失效，所以必須重新獲取一次
-      range = getCaretRangeFromPointInShadow(clientX, clientY);
-      if (!range) {
-        if (!justNavigated) scheduleHidePopup();
-        return;
-      }
-    }
-
-    const textNode = range.startContainer;
-    if (textNode.nodeType !== Node.TEXT_NODE) {
-      if (!justNavigated) scheduleHidePopup();
-      return;
-    }
-
-    // 使用精確定位找出最近的字符
-    const offset = getAccurateOffset(textNode, clientX, clientY);
-    if (offset === -1) {
-      if (!justNavigated) scheduleHidePopup();
-      return;
-    }
-
-    // 提取文字內容
-    const text = textNode.textContent;
-    currentContextSentence = text.trim();
-    
-    // 從當前位置往後取 15 個字符（標準查詞行為：只匹配光標後的詞）
-    // 這樣符合大多數詞典插件（如 Zhongwen, Rikaikun）的習慣
-    const searchText = text.substring(offset, offset + 15);
-    const result = lookupWord(searchText);
-    
-    if (result) {
-      // 如果是用戶正在瀏覽的導航彈窗，而現在滑鼠移到了其他文字上
-      // 我們應該取消導航狀態，轉為顯示新詞
-      justNavigated = false;
-
-      // 無論是否同詞，都重新應用高亮（因為上面已經移除了）
-      highlightText(textNode, offset, result);
-
-      // 如果是同一個詞，且彈窗已顯示，不需要重建彈窗內容
-      if (previousWord === result.word && popup.style.display !== 'none') {
-        currentWord = result.word;
-        // 如果有待執行的隱藏任務，取消它（因為用戶又回來了）
-        if (hideTimeout) {
-          clearTimeout(hideTimeout);
-          hideTimeout = null;
-        }
-        return;
-      }
-      
-      // 新詞，更新顯示
-      currentWord = result.word;
-      
-      // 使用文字本身的位置來定位彈窗（而非滑鼠位置）
-      if (currentRange) {
-        const bestRect = getBestRectForRange(currentRange);
-        
-        if (modifierPressed) {
-          showPopup(result, bestRect || currentRange.getBoundingClientRect());
-        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          scheduleHidePopup();
-        }
-      } else {
-        // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
-        if (modifierPressed) {
-          showPopup(result, {
-            left: clientX, right: clientX, 
-            top: clientY, bottom: clientY,
-            width: 0, height: 0
-          });
-        } else if (popup && popup.style.display !== 'none' && !isMouseOverPopup) {
-          scheduleHidePopup();
-        }
-      }
-    } else {
-      // 未匹配到詞
-      currentWord = null;
-      if (!justNavigated) {
-        scheduleHidePopup();
-      }
-    }
-  }
-
-  // 精確定位：只有光標直接在中文字符上才返回
-  function getAccurateOffset(textNode, clientX, clientY) {
-    const text = textNode.textContent;
-    if (!text) return -1;
-
-    const range = document.createRange();
-
-    // 遍歷每個字符，檢查光標是否直接在其上面
-    for (let i = 0; i < text.length; i++) {
-      const char = text[i];
-      
-      // 只考慮中文字符
-      if (!/[\u4e00-\u9fff]/.test(char)) continue;
-
-      try {
-        range.setStart(textNode, i);
-        range.setEnd(textNode, i + 1);
-        const rect = range.getBoundingClientRect();
-        
-        // 跳過不可見的字符
-        if (rect.width === 0 || rect.height === 0) continue;
-
-        // 只有光標直接在字符範圍內才返回
-        if (clientX >= rect.left && clientX <= rect.right &&
-            clientY >= rect.top && clientY <= rect.bottom) {
-          return i;
-        }
-      } catch (e) {
-        // 忽略 range 操作錯誤
-      }
-    }
-
-    // 光標不在任何中文字符上，不顯示
-    return -1;
-  }
-
-  // 查詞函數：從長到短匹配（標準：從左向右）
-  function lookupWord(text) {
-    if (!text) return null;
-    
-    // 只處理中文字符
-    if (!/[\u4e00-\u9fff]/.test(text)) {
-      return null;
-    }
-
-    // 從最長開始匹配（最多 8 個字）
-    for (let len = Math.min(text.length, 8); len > 0; len--) {
-      const word = text.substring(0, len);
-      
-      if (dictionary[word]) {
-        return {
-          word: word,
-          entry: dictionary[word],
-          length: len
-        };
-      }
-    }
-
-    return null;
-  }
-
-  // 發音函數
-  function speakText(text) {
-    if (!ttsEnabled) return;
-    
-    if (ttsEngine === 'chromeTts') {
-      chrome.runtime.sendMessage({
-        action: 'chromeTtsSpeak',
-        text: text,
-        options: { lang: 'zh-HK', rate: ttsRate }
-      });
-    } else if (ttsEngine === 'edgeTts') {
-      const baseUrl = edgeTtsMode === 'custom' ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
-      chrome.runtime.sendMessage({
-        action: 'edgeTtsSpeak',
-        text: text,
-        baseUrl: baseUrl,
-        rate: ttsRate
-      });
-    } else if (ttsEngine === 'bertVits2') {
-      chrome.runtime.sendMessage({
-        action: 'bertVits2Speak',
-        text: text,
-        rate: ttsRate
-      });
-    } else if (ttsEngine === 'azureTts') {
-      if (azureTtsMode === 'custom') {
-        chrome.runtime.sendMessage({
-          action: 'azureTtsSpeak',
-          text: text,
-          azureKey: azureTtsKey,
-          azureRegion: azureTtsRegion,
-          azureVoice: azureTtsVoice,
-          rate: ttsRate
-        });
-      } else {
-        chrome.runtime.sendMessage({
-          action: 'azureTtsProxySpeak',
-          text: text,
-          azureVoice: azureTtsVoice,
-          rate: ttsRate
-        });
-      }
-    } else {
-      // Web Speech API 回退（直接在 content script 中執行）
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'zh-HK';
-      utterance.rate = ttsRate;
-      speechSynthesis.speak(utterance);
-    }
-  }
-
-  // ========== 選區發音彈窗：僅顯示喇叭 ==========
-  function showSelectionSpeakerPopup(rect, textToSpeak) {
-    if (!popup) return null;
-
-    const popupMain = popup.querySelector('.popup-main');
-    const popupExamples = popup.querySelector('.popup-examples');
-    const popupTranslate = popup.querySelector('.popup-translate');
-    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
-    const reportForm = popup.querySelector('.popup-report-form');
-
-    // 重置/隱藏非必要元素
-    if (popupExamples) popupExamples.style.display = 'none';
-    if (popupTranslate) popupTranslate.style.display = 'none';
-    if (actionsWrapper) actionsWrapper.style.display = 'none';
-    if (reportForm) reportForm.style.display = 'none';
-    popup.classList.remove('expanded-mode');
-    
-    // 隱藏翻譯浮窗
-    hideTranslatePopup();
-
-    applyCompactStyles();
-    popup.classList.add('compact-mode');
-
-    // 構建喇叭內容
-    popupMain.innerHTML = `
+      applyCompactStyles();
+      popup.classList.add("compact-mode");
+      popupMain.innerHTML = `
       <div class="compact-pronunciation" style="padding: 2px 8px;">
         <button class="tts-speaker-btn speaking" title="播放發音" style="background: transparent; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; padding: 4px; margin: 0; color: var(--popup-accent);">
           <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2841,499 +2535,394 @@
         </button>
       </div>
     `;
-
-    const speakerBtn = popupMain.querySelector('.tts-speaker-btn');
-    if (speakerBtn) {
-      speakerBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        speakCantonese(textToSpeak, speakerBtn);
+      const speakerBtn = popupMain.querySelector(".tts-speaker-btn");
+      if (speakerBtn) {
+        speakerBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          speakCantonese(textToSpeak, speakerBtn);
+        });
+      }
+      if (rect) {
+        popup.style.visibility = "hidden";
+        popup.style.display = "block";
+        const popupWidth = popup.offsetWidth || 44;
+        const popupHeight = popup.offsetHeight || 36;
+        const viewportWidth = window.innerWidth;
+        const ARROW_HEIGHT = 8;
+        const GAP = 2;
+        let left = rect.left + rect.width / 2 - popupWidth / 2;
+        if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
+        if (left < 5) left = 5;
+        let top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+        let arrowDirection = "down";
+        if (top < 5) {
+          top = rect.bottom + GAP + ARROW_HEIGHT;
+          arrowDirection = "up";
+        }
+        popup.style.position = "absolute";
+        popup.style.left = left + window.scrollX + "px";
+        popup.style.top = top + window.scrollY + "px";
+        if (popupArrow) {
+          popupArrow.className = "popup-arrow popup-arrow-" + arrowDirection;
+          const highlightCenterX = rect.left + rect.width / 2;
+          let arrowCenter = highlightCenterX - left;
+          arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+          popupArrow.style.left = arrowCenter + "px";
+        }
+        popup.style.visibility = "visible";
+      } else {
+        popup.style.display = "block";
+        if (popupArrow) popupArrow.className = "popup-arrow popup-arrow-hidden";
+      }
+      popup.style.pointerEvents = "auto";
+      return speakerBtn;
+    }
+    function applyCompactStyles() {
+      if (!popup) return;
+      popup.style.setProperty("width", "max-content", "important");
+      popup.style.setProperty("min-width", "unset", "important");
+      popup.style.setProperty("max-width", "320px", "important");
+      const inner = popup.querySelector(".popup-inner");
+      if (inner) {
+        inner.style.setProperty("width", "auto", "important");
+        inner.style.setProperty("min-width", "unset", "important");
+        inner.style.setProperty("height", "auto", "important");
+      }
+      const container = popup.querySelector(".popup-container");
+      if (container) {
+        container.style.setProperty("width", "auto", "important");
+      }
+      const popupMain = popup.querySelector(".popup-main");
+      if (popupMain) {
+        popupMain.style.setProperty("width", "auto", "important");
+        popupMain.style.setProperty("min-width", "unset", "important");
+        popupMain.style.setProperty("padding", "2px 8px", "important");
+      }
+    }
+    function removeCompactStyles() {
+      if (!popup) return;
+      popup.style.removeProperty("width");
+      popup.style.removeProperty("min-width");
+      popup.style.removeProperty("max-width");
+      popup.style.removeProperty("background");
+      popup.style.removeProperty("box-shadow");
+      popup.style.removeProperty("border");
+      popup.style.removeProperty("padding");
+      popup.style.removeProperty("margin");
+      popup.style.removeProperty("pointer-events");
+      popup.classList.remove("popup-ruby-mode");
+      popup.classList.remove("with-bg");
+      popup.classList.remove("fade-bg");
+      popup.classList.remove("dark-bg");
+      const classesToRemove = [];
+      popup.classList.forEach((cls) => {
+        if (cls.startsWith("hl-ruby-")) {
+          classesToRemove.push(cls);
+        }
       });
-    }
-
-    // 定位
-    if (rect) {
-      popup.style.visibility = 'hidden';
-      popup.style.display = 'block';
-      
-      const popupWidth = popup.offsetWidth || 44;
-      const popupHeight = popup.offsetHeight || 36;
-      const viewportWidth = window.innerWidth;
-      const ARROW_HEIGHT = 8;
-      const GAP = 2;
-
-      let left = rect.left + rect.width / 2 - popupWidth / 2;
-      if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
-      if (left < 5) left = 5;
-
-      let top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
-      let arrowDirection = 'down';
-
-      if (top < 5) {
-        top = rect.bottom + GAP + ARROW_HEIGHT;
-        arrowDirection = 'up';
+      classesToRemove.forEach((cls) => popup.classList.remove(cls));
+      const inner = popup.querySelector(".popup-inner");
+      if (inner) {
+        inner.style.removeProperty("width");
+        inner.style.removeProperty("min-width");
+        inner.style.removeProperty("height");
+        inner.style.removeProperty("background");
+        inner.style.removeProperty("border");
+        inner.style.removeProperty("box-shadow");
+        inner.style.removeProperty("padding");
+        inner.style.removeProperty("margin");
       }
-
-      popup.style.position = 'absolute';
-      popup.style.left = (left + window.scrollX) + 'px';
-      popup.style.top = (top + window.scrollY) + 'px';
-
-      if (popupArrow) {
-        popupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
-        const highlightCenterX = rect.left + rect.width / 2;
-        let arrowCenter = highlightCenterX - left;
-        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
-        popupArrow.style.left = arrowCenter + 'px';
+      const container = popup.querySelector(".popup-container");
+      if (container) {
+        container.style.removeProperty("width");
+        container.style.removeProperty("padding");
+        container.style.removeProperty("margin");
+        container.style.removeProperty("background");
       }
-      
-      popup.style.visibility = 'visible';
-    } else {
-      popup.style.display = 'block';
-      if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
-    }
-    popup.style.pointerEvents = 'auto';
-
-    return speakerBtn;
-  }
-
-  // 套用精簡模式/選區喇叭的自適應寬度樣式，防止被完整模式的行內或 CSS 樣式干擾
-  function applyCompactStyles() {
-    if (!popup) return;
-    popup.style.setProperty('width', 'max-content', 'important');
-    popup.style.setProperty('min-width', 'unset', 'important');
-    popup.style.setProperty('max-width', '320px', 'important');
-
-    const inner = popup.querySelector('.popup-inner');
-    if (inner) {
-      inner.style.setProperty('width', 'auto', 'important');
-      inner.style.setProperty('min-width', 'unset', 'important');
-      inner.style.setProperty('height', 'auto', 'important');
-    }
-
-    const container = popup.querySelector('.popup-container');
-    if (container) {
-      container.style.setProperty('width', 'auto', 'important');
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    if (popupMain) {
-      popupMain.style.setProperty('width', 'auto', 'important');
-      popupMain.style.setProperty('min-width', 'unset', 'important');
-      popupMain.style.setProperty('padding', '2px 8px', 'important');
-    }
-  }
-
-  // 清除精簡模式和 Ruby 浮動標籤模式的行內樣式，恢復完整模式
-  function removeCompactStyles() {
-    if (!popup) return;
-    popup.style.removeProperty('width');
-    popup.style.removeProperty('min-width');
-    popup.style.removeProperty('max-width');
-    popup.style.removeProperty('background');
-    popup.style.removeProperty('box-shadow');
-    popup.style.removeProperty('border');
-    popup.style.removeProperty('padding');
-    popup.style.removeProperty('margin');
-    popup.style.removeProperty('pointer-events');
-
-    // 清除 popup-ruby-mode 相關類名
-    popup.classList.remove('popup-ruby-mode');
-    popup.classList.remove('with-bg');
-    popup.classList.remove('fade-bg');
-    popup.classList.remove('dark-bg');
-    const classesToRemove = [];
-    popup.classList.forEach(cls => {
-      if (cls.startsWith('hl-ruby-')) {
-        classesToRemove.push(cls);
+      const popupMain = popup.querySelector(".popup-main");
+      if (popupMain) {
+        popupMain.style.removeProperty("width");
+        popupMain.style.removeProperty("min-width");
+        popupMain.style.removeProperty("padding");
+        popupMain.style.removeProperty("margin");
+        popupMain.style.removeProperty("background");
       }
-    });
-    classesToRemove.forEach(cls => popup.classList.remove(cls));
-
-    const inner = popup.querySelector('.popup-inner');
-    if (inner) {
-      inner.style.removeProperty('width');
-      inner.style.removeProperty('min-width');
-      inner.style.removeProperty('height');
-      inner.style.removeProperty('background');
-      inner.style.removeProperty('border');
-      inner.style.removeProperty('box-shadow');
-      inner.style.removeProperty('padding');
-      inner.style.removeProperty('margin');
     }
-
-    const container = popup.querySelector('.popup-container');
-    if (container) {
-      container.style.removeProperty('width');
-      container.style.removeProperty('padding');
-      container.style.removeProperty('margin');
-      container.style.removeProperty('background');
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    if (popupMain) {
-      popupMain.style.removeProperty('width');
-      popupMain.style.removeProperty('min-width');
-      popupMain.style.removeProperty('padding');
-      popupMain.style.removeProperty('margin');
-      popupMain.style.removeProperty('background');
-    }
-  }
-
-  // ========== 精簡模式彈窗：僅顯示音標 ==========
-  function showCompactPopup(result, entry, pronunciation, rect) {
-    if (!pronunciation) {
-      hidePopup();
-      return;
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    const popupExamples = popup.querySelector('.popup-examples');
-    const popupTranslate = popup.querySelector('.popup-translate');
-    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
-    const reportForm = popup.querySelector('.popup-report-form');
-
-    // 重置/隱藏非必要元素
-    popupExamples.style.display = 'none';
-    popupExamples.innerHTML = '';
-    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
-    if (actionsWrapper) actionsWrapper.style.display = 'none';
-    if (reportForm) reportForm.style.display = 'none';
-    popup.classList.remove('expanded-mode');
-    // 隱藏上一次的獨立翻譯浮窗（避免殘留）
-    hideTranslatePopup();
-
-    // 套用精簡模式自適應寬度樣式
-    applyCompactStyles();
-    popup.classList.add('compact-mode');
-
-    // 構建精簡內容：僅拼音文字（點擊可發聲）
-    popupMain.innerHTML = `
+    function showCompactPopup(result, entry, pronunciation, rect) {
+      if (!pronunciation) {
+        hidePopup();
+        return;
+      }
+      const popupMain = popup.querySelector(".popup-main");
+      const popupExamples = popup.querySelector(".popup-examples");
+      const popupTranslate = popup.querySelector(".popup-translate");
+      const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
+      const reportForm = popup.querySelector(".popup-report-form");
+      popupExamples.style.display = "none";
+      popupExamples.innerHTML = "";
+      if (popupTranslate) {
+        popupTranslate.style.display = "none";
+        popupTranslate.innerHTML = "";
+      }
+      if (actionsWrapper) actionsWrapper.style.display = "none";
+      if (reportForm) reportForm.style.display = "none";
+      popup.classList.remove("expanded-mode");
+      hideTranslatePopup();
+      applyCompactStyles();
+      popup.classList.add("compact-mode");
+      popupMain.innerHTML = `
       <div class="compact-pronunciation">
         <span class="compact-text">${pronunciation}</span>
       </div>
     `;
-
-    // 如果開啟了展開按鈕，添加到精簡彈窗中
-    if (compactExpandBtn) {
-      const expandBtn = document.createElement('span');
-      expandBtn.className = 'compact-expand-btn';
-      
-      let iconUrl = '';
-      try {
-        iconUrl = chrome.runtime.getURL('icon_favicon.svg');
-      } catch (e) {
-        console.warn('[Content] Failed to get URL, extension might be reloaded.', e);
-        // Fallback or empty URL
+      if (compactExpandBtn) {
+        const expandBtn = document.createElement("span");
+        expandBtn.className = "compact-expand-btn";
+        let iconUrl = "";
+        try {
+          iconUrl = chrome.runtime.getURL("icon_favicon.svg");
+        } catch (e) {
+          console.warn("[Content] Failed to get URL, extension might be reloaded.", e);
+        }
+        expandBtn.innerHTML = `<img src="${iconUrl}" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block; pointer-events: none;" />`;
+        expandBtn.title = "Show full dictionary";
+        expandBtn.addEventListener("mousedown", (e) => {
+          if (e.button !== 0) return;
+          e.stopPropagation();
+          e.preventDefault();
+          waitingForMouseToEnterAfterExpand = true;
+          if (expandLockTimer) clearTimeout(expandLockTimer);
+          expandLockTimer = setTimeout(() => {
+            expandLockTimer = null;
+          }, 400);
+          showPopup(result, rect, true);
+        });
+        const compactPron = popupMain.querySelector(".compact-pronunciation");
+        if (compactPron) compactPron.appendChild(expandBtn);
       }
-      
-      expandBtn.innerHTML = `<img src="${iconUrl}" style="width: 14px; height: 14px; filter: grayscale(100%); transition: filter 0.15s ease; vertical-align: middle; display: block; pointer-events: none;" />`;
-      expandBtn.title = 'Show full dictionary';
-      
-      // 使用 mousedown 替代 click，防止鼠標微抖導致 click 事件無法觸發（小圖標常見問題）
-      expandBtn.addEventListener('mousedown', (e) => {
-        // 只處理左鍵點擊
-        if (e.button !== 0) return;
-        
-        e.stopPropagation();
-        e.preventDefault();
-        
-        // 設置展開後等待滑鼠移入彈窗的標誌，防止鼠標還沒移入彈窗就被判定為移出而隱藏
-        waitingForMouseToEnterAfterExpand = true;
-        
-        // 設定冷卻鎖：在 400ms 內阻止 scheduleHidePopup 和 handleMouseOver 隱藏彈窗
-        if (expandLockTimer) clearTimeout(expandLockTimer);
-        expandLockTimer = setTimeout(() => { expandLockTimer = null; }, 400);
-        // 以完整模式重新渲染 (使用 forceFull = true 參數)
-        showPopup(result, rect, true);
+      const compactText = popupMain.querySelector(".compact-text");
+      if (compactText) {
+        compactText.style.cursor = "pointer";
+        compactText.addEventListener("pointerup", (e) => {
+          if (e.button !== 0) return;
+          e.stopPropagation();
+          speakCantonese(entry.traditional);
+          compactText.classList.remove("playing");
+          void compactText.offsetWidth;
+          compactText.classList.add("playing");
+        });
+      }
+      if (rect) {
+        popup.style.visibility = "hidden";
+        popup.style.display = "block";
+        const popupWidth = popup.offsetWidth || 120;
+        const popupHeight = popup.offsetHeight || 36;
+        const viewportWidth = window.innerWidth;
+        const ARROW_HEIGHT = 8;
+        const GAP = 2;
+        let left = rect.left + rect.width / 2 - popupWidth / 2;
+        if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
+        if (left < 5) left = 5;
+        let top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+        let arrowDirection = "down";
+        if (top < 5) {
+          top = rect.bottom + GAP + ARROW_HEIGHT;
+          arrowDirection = "up";
+        }
+        popup.style.position = "absolute";
+        popup.style.left = left + window.scrollX + "px";
+        popup.style.top = top + window.scrollY + "px";
+        if (popupArrow) {
+          popupArrow.className = "popup-arrow popup-arrow-" + arrowDirection;
+          const highlightCenterX = rect.left + rect.width / 2;
+          let arrowCenter = highlightCenterX - left;
+          arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+          popupArrow.style.left = arrowCenter + "px";
+        }
+        popup.style.visibility = "visible";
+      } else {
+        popup.style.display = "block";
+        if (popupArrow) popupArrow.className = "popup-arrow popup-arrow-hidden";
+      }
+      popup.style.pointerEvents = "auto";
+    }
+    function applyRubyStyles() {
+      if (!popup) return;
+      popup.style.setProperty("width", "max-content", "important");
+      popup.style.setProperty("min-width", "unset", "important");
+      popup.style.setProperty("max-width", "320px", "important");
+      popup.style.setProperty("background", "transparent", "important");
+      popup.style.setProperty("box-shadow", "none", "important");
+      popup.style.setProperty("border", "none", "important");
+      popup.style.setProperty("padding", "0", "important");
+      popup.style.setProperty("margin", "0", "important");
+      const inner = popup.querySelector(".popup-inner");
+      if (inner) {
+        inner.style.setProperty("width", "auto", "important");
+        inner.style.setProperty("min-width", "unset", "important");
+        inner.style.setProperty("height", "auto", "important");
+        inner.style.setProperty("background", "transparent", "important");
+        inner.style.setProperty("border", "none", "important");
+        inner.style.setProperty("box-shadow", "none", "important");
+        inner.style.setProperty("padding", "0", "important");
+        inner.style.setProperty("margin", "0", "important");
+      }
+      const container = popup.querySelector(".popup-container");
+      if (container) {
+        container.style.setProperty("width", "auto", "important");
+        container.style.setProperty("padding", "0", "important");
+        container.style.setProperty("margin", "0", "important");
+        container.style.setProperty("background", "transparent", "important");
+      }
+      const popupMain = popup.querySelector(".popup-main");
+      if (popupMain) {
+        popupMain.style.setProperty("width", "auto", "important");
+        popupMain.style.setProperty("min-width", "unset", "important");
+        popupMain.style.setProperty("padding", "0", "important");
+        popupMain.style.setProperty("margin", "0", "important");
+        popupMain.style.setProperty("background", "transparent", "important");
+      }
+    }
+    function showRubyFloatingPopup(result, entry, pronunciation, rect) {
+      if (!pronunciation) {
+        hidePopup();
+        return;
+      }
+      const popupMain = popup.querySelector(".popup-main");
+      const popupExamples = popup.querySelector(".popup-examples");
+      const popupTranslate = popup.querySelector(".popup-translate");
+      const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
+      const reportForm = popup.querySelector(".popup-report-form");
+      popupExamples.style.display = "none";
+      popupExamples.innerHTML = "";
+      if (popupTranslate) {
+        popupTranslate.style.display = "none";
+        popupTranslate.innerHTML = "";
+      }
+      if (actionsWrapper) actionsWrapper.style.display = "none";
+      if (reportForm) reportForm.style.display = "none";
+      popup.classList.remove("expanded-mode");
+      popup.classList.remove("compact-mode");
+      hideTranslatePopup();
+      applyRubyStyles();
+      popup.classList.add("popup-ruby-mode");
+      popup.classList.remove("with-bg", "fade-bg");
+      if (rubyRtBackground === "solid") {
+        popup.classList.add("with-bg");
+      } else if (rubyRtBackground === "fade") {
+        popup.classList.add("fade-bg");
+      }
+      let isDark = false;
+      let bgColor = "rgba(255, 255, 255, 0.9)";
+      if (currentRange && currentRange.startContainer) {
+        const parent = currentRange.startContainer.nodeType === Node.TEXT_NODE ? currentRange.startContainer.parentElement : currentRange.startContainer;
+        const detectedColor = getElementBackgroundColor(parent);
+        if (detectedColor) {
+          bgColor = detectedColor;
+          isDark = checkIsDarkColor(detectedColor);
+        }
+      }
+      if (isDark) {
+        popup.classList.add("dark-bg");
+      } else {
+        popup.classList.remove("dark-bg");
+      }
+      const hoverColorClass = "hl-ruby-" + (rubyHoverStyle || "ruby-red");
+      const classesToRemove = [];
+      popup.classList.forEach((cls) => {
+        if (cls.startsWith("hl-ruby-")) {
+          classesToRemove.push(cls);
+        }
       });
-      const compactPron = popupMain.querySelector('.compact-pronunciation');
-      if (compactPron) compactPron.appendChild(expandBtn);
-    }
-
-    // 綁定 TTS（點擊拼音文字即可播放）
-    const compactText = popupMain.querySelector('.compact-text');
-    if (compactText) {
-      compactText.style.cursor = 'pointer';
-      // 必須使用 mousedown 才能保證手抖時 100% 觸發（因為小目標極易發生 1px 拖拽導致 click 丟失）
-      // 注意：絕不能加 e.preventDefault()，否則會被瀏覽器 Autoplay Policy 攔截導致 NotAllowedError
-      compactText.addEventListener('pointerup', (e) => {
-        if (e.button !== 0) return;
-        e.stopPropagation();
-        speakCantonese(entry.traditional);
-        
-        // 觸發點擊動畫
-        compactText.classList.remove('playing');
-        void compactText.offsetWidth; // 強制瀏覽器重繪
-        compactText.classList.add('playing');
-      });
-    }
-
-    // 定位：固定顯示在文字上方
-    if (rect) {
-      popup.style.visibility = 'hidden';
-      popup.style.display = 'block';
-      
-      const popupWidth = popup.offsetWidth || 120;
-      const popupHeight = popup.offsetHeight || 36;
-      const viewportWidth = window.innerWidth;
-      const ARROW_HEIGHT = 8;
-      const GAP = 2;
-
-      // 水平：居中對齊高亮文字
-      let left = rect.left + rect.width / 2 - popupWidth / 2;
-      if (left + popupWidth > viewportWidth - 5) left = viewportWidth - popupWidth - 5;
-      if (left < 5) left = 5;
-
-      // 垂直：優先顯示在上方
-      let top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
-      let arrowDirection = 'down'; // 箭頭朝下指向文字
-
-      if (top < 5) {
-        // 上方空間不足，放下方
-        top = rect.bottom + GAP + ARROW_HEIGHT;
-        arrowDirection = 'up';
+      classesToRemove.forEach((cls) => popup.classList.remove(cls));
+      popup.classList.add(hoverColorClass);
+      let hoverColorVal = "#8A1C1C";
+      if (isDark) {
+        hoverColorVal = "#FFD54F";
+      } else {
+        switch (rubyHoverStyle) {
+          case "ruby-red":
+            hoverColorVal = "#8A1C1C";
+            break;
+          case "ruby-blue":
+            hoverColorVal = "#1565C0";
+            break;
+          case "ruby-green":
+            hoverColorVal = "#2E7D32";
+            break;
+          case "ruby-orange":
+            hoverColorVal = "#E65100";
+            break;
+          case "ruby-purple":
+            hoverColorVal = "#6A1B9A";
+            break;
+        }
       }
-
-      popup.style.position = 'absolute';
-      popup.style.left = (left + window.scrollX) + 'px';
-      popup.style.top = (top + window.scrollY) + 'px';
-
-      // 箭頭
-      if (popupArrow) {
-        popupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
-        const highlightCenterX = rect.left + rect.width / 2;
-        let arrowCenter = highlightCenterX - left;
-        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
-        popupArrow.style.left = arrowCenter + 'px';
-      }
-      
-      popup.style.visibility = 'visible';
-    } else {
-      popup.style.display = 'block';
-      if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
-    }
-    popup.style.pointerEvents = 'auto';
-  }
-
-  // 套用 Hover Ruby 特有樣式，使其像原本 rt 般輕量，且不接受事件
-  function applyRubyStyles() {
-    if (!popup) return;
-    popup.style.setProperty('width', 'max-content', 'important');
-    popup.style.setProperty('min-width', 'unset', 'important');
-    popup.style.setProperty('max-width', '320px', 'important');
-    popup.style.setProperty('background', 'transparent', 'important');
-    popup.style.setProperty('box-shadow', 'none', 'important');
-    popup.style.setProperty('border', 'none', 'important');
-    popup.style.setProperty('padding', '0', 'important');
-    popup.style.setProperty('margin', '0', 'important');
-
-    const inner = popup.querySelector('.popup-inner');
-    if (inner) {
-      inner.style.setProperty('width', 'auto', 'important');
-      inner.style.setProperty('min-width', 'unset', 'important');
-      inner.style.setProperty('height', 'auto', 'important');
-      inner.style.setProperty('background', 'transparent', 'important');
-      inner.style.setProperty('border', 'none', 'important');
-      inner.style.setProperty('box-shadow', 'none', 'important');
-      inner.style.setProperty('padding', '0', 'important');
-      inner.style.setProperty('margin', '0', 'important');
-    }
-
-    const container = popup.querySelector('.popup-container');
-    if (container) {
-      container.style.setProperty('width', 'auto', 'important');
-      container.style.setProperty('padding', '0', 'important');
-      container.style.setProperty('margin', '0', 'important');
-      container.style.setProperty('background', 'transparent', 'important');
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    if (popupMain) {
-      popupMain.style.setProperty('width', 'auto', 'important');
-      popupMain.style.setProperty('min-width', 'unset', 'important');
-      popupMain.style.setProperty('padding', '0', 'important');
-      popupMain.style.setProperty('margin', '0', 'important');
-      popupMain.style.setProperty('background', 'transparent', 'important');
-    }
-  }
-
-  // ========== 內嵌 Ruby 模式的浮動標籤（防止被 overflow 裁剪） ==========
-  function showRubyFloatingPopup(result, entry, pronunciation, rect) {
-    if (!pronunciation) {
-      hidePopup();
-      return;
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    const popupExamples = popup.querySelector('.popup-examples');
-    const popupTranslate = popup.querySelector('.popup-translate');
-    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
-    const reportForm = popup.querySelector('.popup-report-form');
-
-    // 重置/隱藏非必要元素
-    popupExamples.style.display = 'none';
-    popupExamples.innerHTML = '';
-    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
-    if (actionsWrapper) actionsWrapper.style.display = 'none';
-    if (reportForm) reportForm.style.display = 'none';
-    popup.classList.remove('expanded-mode');
-    popup.classList.remove('compact-mode');
-    hideTranslatePopup();
-
-    // 套用 Hover Ruby 特有樣式
-    applyRubyStyles();
-    popup.classList.add('popup-ruby-mode');
-
-    popup.classList.remove('with-bg', 'fade-bg');
-    if (rubyRtBackground === 'solid') {
-      popup.classList.add('with-bg');
-    } else if (rubyRtBackground === 'fade') {
-      popup.classList.add('fade-bg');
-    }
-
-    // 判斷是否在暗色背景，並獲取實際背景顏色
-    let isDark = false;
-    let bgColor = 'rgba(255, 255, 255, 0.9)'; // 預設淺色背景
-    if (currentRange && currentRange.startContainer) {
-      const parent = currentRange.startContainer.nodeType === Node.TEXT_NODE 
-        ? currentRange.startContainer.parentElement 
-        : currentRange.startContainer;
-      
-      const detectedColor = getElementBackgroundColor(parent);
-      if (detectedColor) {
-        bgColor = detectedColor;
-        isDark = checkIsDarkColor(detectedColor);
-      }
-    }
-    
-    if (isDark) {
-      popup.classList.add('dark-bg');
-    } else {
-      popup.classList.remove('dark-bg');
-    }
-
-    // 設置主題懸停色 CSS 變量
-    const hoverColorClass = 'hl-ruby-' + (rubyHoverStyle || 'ruby-red');
-    
-    // 清除舊的顏色類，添加新的
-    const classesToRemove = [];
-    popup.classList.forEach(cls => {
-      if (cls.startsWith('hl-ruby-')) {
-        classesToRemove.push(cls);
-      }
-    });
-    classesToRemove.forEach(cls => popup.classList.remove(cls));
-    popup.classList.add(hoverColorClass);
-
-    // 為了安全，也可以在 popup 上直接寫 CSS 變量
-    let hoverColorVal = '#8A1C1C';
-    if (isDark) {
-      hoverColorVal = '#FFD54F';
-    } else {
-      switch (rubyHoverStyle) {
-        case 'ruby-red': hoverColorVal = '#8A1C1C'; break;
-        case 'ruby-blue': hoverColorVal = '#1565C0'; break;
-        case 'ruby-green': hoverColorVal = '#2E7D32'; break;
-        case 'ruby-orange': hoverColorVal = '#E65100'; break;
-        case 'ruby-purple': hoverColorVal = '#6A1B9A'; break;
-      }
-    }
-    popup.style.setProperty('--ruby-hover-color', hoverColorVal, 'important');
-
-    // 構建拼音內容
-    popupMain.innerHTML = `
+      popup.style.setProperty("--ruby-hover-color", hoverColorVal, "important");
+      popupMain.innerHTML = `
       <span class="ruby-floating-text" style="cursor: pointer;">${pronunciation}</span>
     `;
-
-    // 綁定發音事件
-    const rubyText = popupMain.querySelector('.ruby-floating-text');
-    if (rubyText) {
-      rubyText.addEventListener('pointerup', (e) => {
-        if (e.button !== 0) return;
-        e.stopPropagation();
-        speakCantonese(entry.traditional);
-        
-        rubyText.style.opacity = '0.5';
-        setTimeout(() => rubyText.style.opacity = '1', 200);
-      });
-    }
-
-    // 設置 pointer-events = auto 以允許點擊
-    popup.style.pointerEvents = 'auto';
-
-    // 定位
-    if (rect) {
-      popup.style.visibility = 'hidden';
-      popup.style.display = 'block';
-
-      const popupWidth = popup.offsetWidth || 60;
-      const popupHeight = popup.offsetHeight || 16;
-      const viewportWidth = window.innerWidth;
-
-      // 水平居中
-      let left = rect.left + rect.width / 2 - popupWidth / 2;
-      left = Math.max(5, Math.min(left, viewportWidth - popupWidth - 5));
-
-      // 垂直定位：
-      // 原版 <rt> 使用 CSS：bottom: 100%; transform: translate(-50%, -0.2em)
-      // 等效於：注音底部位於字頂端上方 0.2em（約 3px）處
-      // 有背景時稍微再高一點，留出背景框的 padding 空間
-      const floatingText = popupMain.querySelector('.ruby-floating-text');
-      const textHeight = floatingText ? floatingText.offsetHeight : popupHeight;
-      let top;
-      if (rubyRtBackground === 'solid') {
-        // 有實色背景框：整體在字頂端上方，留空間給 padding/border
-        top = rect.top - textHeight - 4;
+      const rubyText = popupMain.querySelector(".ruby-floating-text");
+      if (rubyText) {
+        rubyText.addEventListener("pointerup", (e) => {
+          if (e.button !== 0) return;
+          e.stopPropagation();
+          speakCantonese(entry.traditional);
+          rubyText.style.opacity = "0.5";
+          setTimeout(() => rubyText.style.opacity = "1", 200);
+        });
+      }
+      popup.style.pointerEvents = "auto";
+      if (rect) {
+        popup.style.visibility = "hidden";
+        popup.style.display = "block";
+        const popupWidth = popup.offsetWidth || 60;
+        const popupHeight = popup.offsetHeight || 16;
+        const viewportWidth = window.innerWidth;
+        let left = rect.left + rect.width / 2 - popupWidth / 2;
+        left = Math.max(5, Math.min(left, viewportWidth - popupWidth - 5));
+        const floatingText = popupMain.querySelector(".ruby-floating-text");
+        const textHeight = floatingText ? floatingText.offsetHeight : popupHeight;
+        let top;
+        if (rubyRtBackground === "solid") {
+          top = rect.top - textHeight - 4;
+        } else {
+          top = rect.top - textHeight - 5;
+        }
+        if (top < 2) {
+          top = rect.bottom + (rubyRtBackground === "solid" ? 2 : 1);
+        }
+        popup.style.position = "absolute";
+        popup.style.left = left + window.scrollX + "px";
+        popup.style.top = top + window.scrollY + "px";
+        if (popupArrow) popupArrow.className = "popup-arrow popup-arrow-hidden";
+        popup.style.visibility = "visible";
+        if (rubyRtBackground === "fade") {
+          showRubyFadeMask(left + window.scrollX, top + window.scrollY, popupWidth, textHeight, bgColor);
+        } else {
+          hideRubyFadeMask();
+        }
       } else {
-        // 無背景 / 消散背景：緊貼字頂端上方
-        top = rect.top - textHeight - 5;
+        popup.style.display = "block";
+        if (popupArrow) popupArrow.className = "popup-arrow popup-arrow-hidden";
       }
-
-      if (top < 2) {
-        // 上方空間不足，放到下方
-        top = rect.bottom + (rubyRtBackground === 'solid' ? 2 : 1);
+    }
+    function showRubyFadeMask(x, y, w, h, bgColor) {
+      if (!rubyFadeMask) {
+        rubyFadeMask = document.createElement("div");
+        rubyFadeMask.id = "jyutping-ruby-fade-mask";
+        document.body.appendChild(rubyFadeMask);
       }
-
-      popup.style.position = 'absolute';
-      popup.style.left = (left + window.scrollX) + 'px';
-      popup.style.top = (top + window.scrollY) + 'px';
-
-      if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
-      popup.style.visibility = 'visible';
-
-      // 消散模式：在主 DOM 中創建/更新隱形遮罩，用 backdrop-filter 擦除頁面文字
-      if (rubyRtBackground === 'fade') {
-        showRubyFadeMask(left + window.scrollX, top + window.scrollY, popupWidth, textHeight, bgColor);
-      } else {
-        hideRubyFadeMask();
+      const padX = 8;
+      const padTop = 0;
+      const padBottom = 2;
+      const maskW = w + padX * 2;
+      const maskH = h + padTop + padBottom;
+      let solidBgColor = bgColor;
+      if (bgColor.startsWith("rgba")) {
+        solidBgColor = bgColor.replace(/rgba\((.*?),\s*[\d.]+\)/, "rgb($1)");
       }
-    } else {
-      popup.style.display = 'block';
-      if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
-    }
-  }
-
-  // 消散模式遮罩：在主 DOM 中創建 div，背景色與原網頁背景一致，邊緣羽化
-  function showRubyFadeMask(x, y, w, h, bgColor) {
-    if (!rubyFadeMask) {
-      rubyFadeMask = document.createElement('div');
-      rubyFadeMask.id = 'jyutping-ruby-fade-mask';
-      document.body.appendChild(rubyFadeMask);
-    }
-    
-    const padX = 8;
-    const padTop = 0;
-    const padBottom = 2;
-    const maskW = w + padX * 2;
-    const maskH = h + padTop + padBottom;
-    
-    // 提取純淨顏色，不加透明度，以確保中間區域能完全遮擋文字
-    let solidBgColor = bgColor;
-    if (bgColor.startsWith('rgba')) {
-      // 嘗試把 rgba 轉成 rgb，簡單粗暴去透明度
-      solidBgColor = bgColor.replace(/rgba\((.*?),\s*[\d.]+\)/, 'rgb($1)');
-    }
-    
-    rubyFadeMask.style.cssText = `
+      rubyFadeMask.style.cssText = `
       position: absolute;
       pointer-events: none;
       z-index: 2147483644;
@@ -3353,88 +2942,62 @@
       mask-composite: intersect;
       display: block;
     `;
-  }
-
-  function hideRubyFadeMask() {
-    if (rubyFadeMask) {
-      rubyFadeMask.style.display = 'none';
     }
-  }
-
-  // 顯示彈窗
-  // rect: { left, right, top, bottom, width, height }
-  function showPopup(result, rect, forceFull = false) {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      hideTimeout = null;
-    }
-    
-    if (activePopupRubyElement) {
-      activePopupRubyElement.classList.remove('jyutping-popup-active');
-      activePopupRubyElement = null;
-    }
-    if (currentRange && currentRange.commonAncestorContainer) {
-      const container = currentRange.commonAncestorContainer;
-      const ruby = container.nodeType === Node.TEXT_NODE ? container.parentElement.closest('ruby') : (container.closest ? container.closest('ruby') : null);
-      if (ruby) {
-        activePopupRubyElement = ruby;
-        activePopupRubyElement.classList.add('jyutping-popup-active');
+    function hideRubyFadeMask() {
+      if (rubyFadeMask) {
+        rubyFadeMask.style.display = "none";
       }
     }
-
-    const entry = result.entry;
-
-    // 隱藏翻譯浮窗，避免雙彈窗
-    hideTranslatePopup();
-    
-    // 儲存最後一次的彈窗數據與位置（供展開/Q&A使用）
-    lastPopupResult = result;
-    if (rect) lastPopupRect = rect;
-    
-    // 更新 Q&A 內容緩存
-    activeQAContext.word = result.word || (result.entry ? result.entry.traditional : '');
-    activeQAContext.sentence = getSurroundingSentence(currentRange) || '';
-    activeQAContext.originalTranslation = (result.entry && result.entry.english) ? result.entry.english.join('; ') : '';
-    activeQAContext.history = []; // 重置對話歷史
-    
-    // 選擇顯示的拼音格式
-    let pronunciation = displayMode === 'yale' 
-      ? (entry.yale || entry.jyutping)
-      : entry.jyutping;
-
-    if (pronunciation && toneStyle === 'superscript' && popupDisplayStyle === 'compact' && !forceFull) {
-      pronunciation = pronunciation.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
-    }
-
-    if (pronunciation && toneStyle === 'superscript' && popupDisplayStyle === 'ruby' && !forceFull) {
-      pronunciation = convertToSuperscriptTone(pronunciation);
-    }
-
-    // ========== 內嵌 Ruby 模式的浮動標籤（防止被 overflow 裁剪） ==========
-    if (popupDisplayStyle === 'ruby' && !forceFull) {
-      showRubyFloatingPopup(result, entry, pronunciation, rect);
-      return;
-    }
-
-    // ========== 精簡模式：僅顯示音標 ==========
-    if (popupDisplayStyle === 'compact' && !forceFull) {
-      showCompactPopup(result, entry, pronunciation, rect);
-      return;
-    }
-
-    // 構建 HTML 內容
-    let html = `
+    function showPopup(result, rect, forceFull = false) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      if (activePopupRubyElement) {
+        activePopupRubyElement.classList.remove("jyutping-popup-active");
+        activePopupRubyElement = null;
+      }
+      if (currentRange && currentRange.commonAncestorContainer) {
+        const container = currentRange.commonAncestorContainer;
+        const ruby = container.nodeType === Node.TEXT_NODE ? container.parentElement.closest("ruby") : container.closest ? container.closest("ruby") : null;
+        if (ruby) {
+          activePopupRubyElement = ruby;
+          activePopupRubyElement.classList.add("jyutping-popup-active");
+        }
+      }
+      const entry = result.entry;
+      hideTranslatePopup();
+      lastPopupResult = result;
+      if (rect) lastPopupRect = rect;
+      activeQAContext.word = result.word || (result.entry ? result.entry.traditional : "");
+      activeQAContext.sentence = getSurroundingSentence(currentRange) || "";
+      activeQAContext.originalTranslation = result.entry && result.entry.english ? result.entry.english.join("; ") : "";
+      activeQAContext.history = [];
+      let pronunciation = displayMode === "yale" ? entry.yale || entry.jyutping : entry.jyutping;
+      if (pronunciation && toneStyle === "superscript" && popupDisplayStyle === "compact" && !forceFull) {
+        pronunciation = pronunciation.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
+      }
+      if (pronunciation && toneStyle === "superscript" && popupDisplayStyle === "ruby" && !forceFull) {
+        pronunciation = convertToSuperscriptTone(pronunciation);
+      }
+      if (popupDisplayStyle === "ruby" && !forceFull) {
+        showRubyFloatingPopup(result, entry, pronunciation, rect);
+        return;
+      }
+      if (popupDisplayStyle === "compact" && !forceFull) {
+        showCompactPopup(result, entry, pronunciation, rect);
+        return;
+      }
+      let html = `
       <div class="word-section">
         <span class="word-text">${entry.traditional}</span>
-        ${entry.simplified !== entry.traditional ? 
-          `<span class="word-simplified">${entry.simplified}</span>` : ''}
+        ${entry.simplified !== entry.traditional ? `<span class="word-simplified">${entry.simplified}</span>` : ""}
       </div>
     `;
-
-    if (pronunciation) {
-      html += `
+      if (pronunciation) {
+        html += `
         <div class="pronunciation-section">
-          <span class="pronunciation-label">${displayMode === 'yale' ? 'Yale' : '粵拼'}:</span>
+          <span class="pronunciation-label">${displayMode === "yale" ? "Yale" : "粵拼"}:</span>
           <span class="pronunciation-text">${pronunciation}</span>
           <button class="tts-speaker-btn" title="播放發音" aria-label="播放發音">
             <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3445,257 +3008,183 @@
           </button>
         </div>
       `;
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    const popupExamples = popup.querySelector('.popup-examples');
-    const popupTranslate = popup.querySelector('.popup-translate');
-    
-    // 重置樣式
-    popupExamples.style.display = 'none';
-    popupExamples.innerHTML = '';
-    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
-    popupMain.innerHTML = '';
-    popup.classList.remove('expanded-mode');
-    popup.classList.remove('compact-mode');
-    removeCompactStyles();
-    popup.style.width = '320px'; // 默認寬度
-    // 恢復完整模式下的操作按鈕
-    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
-    if (actionsWrapper) actionsWrapper.style.display = 'flex';
-    const reportForm = popup.querySelector('.popup-report-form');
-    if (reportForm) reportForm.style.display = 'none';
-
-    // 清空之前的 html 内容，只保留 Header (词头+拼音)
-    // 注意：目前的 html 變量包含了 Header。
-    // 我们需要把 Header 放入 popupMain，然后追加 Definitions。
-    // 但是 popupMain.innerHTML = html 会覆盖？
-    // 让我们重构一下：html 变量只包含 Definition？
-    // 不，Header 也是需要的。
-    // 现在的 html 变量包含了 Header + (Double Definition Block 1)。
-    // 我们删除了 Block 1。
-    // 所以 html 依然包含 Header。
-    // 然后追加 Block 2 的 Definition 到 html。
-    // 最后 popupMain.innerHTML = html。
-    // 这样 Header + Definition 都在 popupMain 里。
-    // 正确。
-
-    if (entry.english && entry.english.length > 0) {
-      const defItems = entry.english.slice(0, 5).map((def, index) => {
-        let className = 'def-item';
-        let hasExamples = false;
-        
-        if (entry.examples && entry.examples[index] && entry.examples[index].length > 0) {
-          className += ' has-examples';
-          hasExamples = true;
-        }
-
-        if (def.startsWith('[粵]')) {
-          className += ' def-yue';
-        }
-        
-        return `<div class="${className}" ${hasExamples ? `data-example-index="${index}"` : ''}>${def}</div>`;
-      }).join('');
-      
-      html += `
+      }
+      const popupMain = popup.querySelector(".popup-main");
+      const popupExamples = popup.querySelector(".popup-examples");
+      const popupTranslate = popup.querySelector(".popup-translate");
+      popupExamples.style.display = "none";
+      popupExamples.innerHTML = "";
+      if (popupTranslate) {
+        popupTranslate.style.display = "none";
+        popupTranslate.innerHTML = "";
+      }
+      popupMain.innerHTML = "";
+      popup.classList.remove("expanded-mode");
+      popup.classList.remove("compact-mode");
+      removeCompactStyles();
+      popup.style.width = "320px";
+      const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
+      if (actionsWrapper) actionsWrapper.style.display = "flex";
+      const reportForm = popup.querySelector(".popup-report-form");
+      if (reportForm) reportForm.style.display = "none";
+      if (entry.english && entry.english.length > 0) {
+        const defItems = entry.english.slice(0, 5).map((def, index) => {
+          let className = "def-item";
+          let hasExamples = false;
+          if (entry.examples && entry.examples[index] && entry.examples[index].length > 0) {
+            className += " has-examples";
+            hasExamples = true;
+          }
+          if (def.startsWith("[粵]")) {
+            className += " def-yue";
+          }
+          return `<div class="${className}" ${hasExamples ? `data-example-index="${index}"` : ""}>${def}</div>`;
+        }).join("");
+        html += `
         <div class="definition-section">
           ${defItems}
         </div>
       `;
-    }
-    // 近義詞、反義詞、參觀 放在同一個區塊
-    const refLines = [];
-
-    if (entry.sims && entry.sims.length > 0) {
-      const simLinks = entry.sims.map(w => 
-        `<span class="see-also-link" data-word="${w}">${w}</span>`
-      ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">近義：</span>${simLinks}</div>`);
-    }
-
-    if (entry.ants && entry.ants.length > 0) {
-      const antLinks = entry.ants.map(w => 
-        `<span class="see-also-link" data-word="${w}">${w}</span>`
-      ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">反義：</span>${antLinks}</div>`);
-    }
-
-    if (entry.see_also && entry.see_also.length > 0) {
-      const seeLinks = entry.see_also.map(w => 
-        `<span class="see-also-link" data-word="${w}">${w}</span>`
-      ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">異體：</span>${seeLinks}</div>`);
-    }
-
-    if (refLines.length > 0) {
-      html += `<div class="see-also-section">${refLines.join('')}</div>`;
-    }
-
-    popupMain.innerHTML = html;
-
-    // 綁定點擊發音 (Word)
-    const wordSection = popupMain.querySelector('.word-section');
-    if (wordSection) {
-      wordSection.style.cursor = 'pointer';
-      wordSection.addEventListener('click', (e) => {
+      }
+      const refLines = [];
+      if (entry.sims && entry.sims.length > 0) {
+        const simLinks = entry.sims.map(
+          (w) => `<span class="see-also-link" data-word="${w}">${w}</span>`
+        ).join("、");
+        refLines.push(`<div class="ref-line"><span class="see-also-label">近義：</span>${simLinks}</div>`);
+      }
+      if (entry.ants && entry.ants.length > 0) {
+        const antLinks = entry.ants.map(
+          (w) => `<span class="see-also-link" data-word="${w}">${w}</span>`
+        ).join("、");
+        refLines.push(`<div class="ref-line"><span class="see-also-label">反義：</span>${antLinks}</div>`);
+      }
+      if (entry.see_also && entry.see_also.length > 0) {
+        const seeLinks = entry.see_also.map(
+          (w) => `<span class="see-also-link" data-word="${w}">${w}</span>`
+        ).join("、");
+        refLines.push(`<div class="ref-line"><span class="see-also-label">異體：</span>${seeLinks}</div>`);
+      }
+      if (refLines.length > 0) {
+        html += `<div class="see-also-section">${refLines.join("")}</div>`;
+      }
+      popupMain.innerHTML = html;
+      const wordSection = popupMain.querySelector(".word-section");
+      if (wordSection) {
+        wordSection.style.cursor = "pointer";
+        wordSection.addEventListener("click", (e) => {
+          e.stopPropagation();
+          speakCantonese(entry.traditional);
+        });
+      }
+      const pronunciationText = popupMain.querySelector(".pronunciation-text");
+      const speakerBtn = popupMain.querySelector(".tts-speaker-btn");
+      function triggerTTS(e) {
         e.stopPropagation();
-        speakCantonese(entry.traditional);
-      });
-    }
-
-    // 綁定發音點擊（拼音文字 + 喇叭按鈕均可觸發發聲）
-    const pronunciationText = popupMain.querySelector('.pronunciation-text');
-    const speakerBtn = popupMain.querySelector('.tts-speaker-btn');
-    
-    function triggerTTS(e) {
-      e.stopPropagation();
-      speakCantonese(entry.traditional, speakerBtn);
-    }
-    
-    if (pronunciationText) {
-      pronunciationText.style.cursor = 'pointer';
-      pronunciationText.addEventListener('click', triggerTTS);
-    }
-    if (speakerBtn) {
-      speakerBtn.addEventListener('click', triggerTTS);
-    }
-
-    // 綁定例句點擊事件
-    if (entry.examples) {
-      popupMain.querySelectorAll('.has-examples').forEach(el => {
-        el.addEventListener('click', (e) => {
-          e.stopPropagation(); // 防止觸發 document click
-          
-          // 如果已經是 active 狀態，點擊則收回
-          if (el.classList.contains('active')) {
-            el.classList.remove('active');
-            popupExamples.style.display = 'none';
-            popup.classList.remove('expanded-mode');
-            popup.style.width = '320px';
-            adjustPopupPosition();
-            return;
-          }
-          
-          // 移除其他 active 狀態
-          popupMain.querySelectorAll('.def-item').forEach(d => d.classList.remove('active'));
-          el.classList.add('active');
-
-          const index = parseInt(el.dataset.exampleIndex);
-          const examples = entry.examples[index];
-          
-          if (examples && examples.length > 0) {
-            renderExamples(examples);
-            popupExamples.style.display = 'block';
-            popup.classList.add('expanded-mode');
-            popup.style.width = '640px'; // 變寬
-            
-            // 重新調整位置，確保不超出屏幕邊緣
-            adjustPopupPosition();
+        speakCantonese(entry.traditional, speakerBtn);
+      }
+      if (pronunciationText) {
+        pronunciationText.style.cursor = "pointer";
+        pronunciationText.addEventListener("click", triggerTTS);
+      }
+      if (speakerBtn) {
+        speakerBtn.addEventListener("click", triggerTTS);
+      }
+      if (entry.examples) {
+        popupMain.querySelectorAll(".has-examples").forEach((el) => {
+          el.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (el.classList.contains("active")) {
+              el.classList.remove("active");
+              popupExamples.style.display = "none";
+              popup.classList.remove("expanded-mode");
+              popup.style.width = "320px";
+              adjustPopupPosition();
+              return;
+            }
+            popupMain.querySelectorAll(".def-item").forEach((d) => d.classList.remove("active"));
+            el.classList.add("active");
+            const index = parseInt(el.dataset.exampleIndex);
+            const examples = entry.examples[index];
+            if (examples && examples.length > 0) {
+              renderExamples(examples);
+              popupExamples.style.display = "block";
+              popup.classList.add("expanded-mode");
+              popup.style.width = "640px";
+              adjustPopupPosition();
+            }
+          });
+        });
+      }
+      popup.querySelectorAll(".see-also-link").forEach((link) => {
+        link.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const word = link.dataset.word;
+          if (dictionary[word]) {
+            isMouseOverPopup = true;
+            justNavigated = true;
+            currentWord = word;
+            showPopup({ word, entry: dictionary[word], length: word.length }, null);
+            isMouseOverPopup = true;
           }
         });
       });
-    }
-
-    // 綁定近義、反義、異體鏈接的點擊事件
-    popup.querySelectorAll('.see-also-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const word = link.dataset.word;
-        if (dictionary[word]) {
-          // 防止重新渲染期間彈窗被隱藏
-          isMouseOverPopup = true;
-          justNavigated = true; // 標記為剛導航
-          
-          currentWord = word;
-          // 傳入 null 表示保持當前位置
-          showPopup({ word, entry: dictionary[word], length: word.length }, null);
-          isMouseOverPopup = true; // 重新渲染後重設
-        }
-      });
-    });
-
-    // 如果傳入了座標，則重新計算位置
-    if (rect) {
-      // 先隱藏顯示以計算尺寸
-      popup.style.visibility = 'hidden';
-      popup.style.display = 'block';
-      
-      const popupWidth = popup.offsetWidth || (popup.classList.contains('expanded-mode') ? 640 : 320);
-      const popupHeight = popup.offsetHeight || 150;
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-
-      let left, top;
-      let arrowDirection = 'up'; // 箭頭方向：up = 彈窗在下方，箭頭朝上指向詞語
-      
-      const x = rect.left;
-      const y = rect.bottom; // 默認參考點
-      const ARROW_HEIGHT = 8; // 箭頭高度
-      const GAP = 2; // 箭頭與文字的間距
-
-      // 水平位置：居中對齊高亮詞
-      const highlightCenterX = rect.left + rect.width / 2;
-      left = highlightCenterX - popupWidth / 2;
-
-      // 邊界檢查
-      if (left + popupWidth > viewportWidth - 5) {
-        left = viewportWidth - popupWidth - 5;
-      }
-      if (left < 5) {
-        left = 5;
-      }
-
-      // 垂直位置：優先顯示在文字下方
-      if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
-        top = rect.bottom + GAP + ARROW_HEIGHT;
-        arrowDirection = 'up';
-      } else {
-        // 下方不足，放上方
-        top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
-        arrowDirection = 'down';
-        
-        if (top < 5) {
-            top = 5;
-            arrowDirection = 'up';
-        }
-      }
-      
-      popup.style.position = 'absolute';
-      popup.style.left = (left + window.scrollX) + 'px';
-      popup.style.top = (top + window.scrollY) + 'px';
-      
-      // 設置箭頭位置和方向
-      if (popupArrow) {
-        popupArrow.className = 'popup-arrow popup-arrow-' + arrowDirection;
-        // 計算箭頭水平位置：指向高亮文字的中心
+      if (rect) {
+        popup.style.visibility = "hidden";
+        popup.style.display = "block";
+        const popupWidth = popup.offsetWidth || (popup.classList.contains("expanded-mode") ? 640 : 320);
+        const popupHeight = popup.offsetHeight || 150;
+        const viewportWidth = window.innerWidth;
+        const viewportHeight = window.innerHeight;
+        let left, top;
+        let arrowDirection = "up";
+        const x = rect.left;
+        const y = rect.bottom;
+        const ARROW_HEIGHT = 8;
+        const GAP = 2;
         const highlightCenterX = rect.left + rect.width / 2;
-        let arrowCenter = highlightCenterX - left;
-        // 確保箭頭在彈窗範圍內
-        arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
-        popupArrow.style.left = arrowCenter + 'px';
+        left = highlightCenterX - popupWidth / 2;
+        if (left + popupWidth > viewportWidth - 5) {
+          left = viewportWidth - popupWidth - 5;
+        }
+        if (left < 5) {
+          left = 5;
+        }
+        if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
+          top = rect.bottom + GAP + ARROW_HEIGHT;
+          arrowDirection = "up";
+        } else {
+          top = rect.top - popupHeight - GAP - ARROW_HEIGHT;
+          arrowDirection = "down";
+          if (top < 5) {
+            top = 5;
+            arrowDirection = "up";
+          }
+        }
+        popup.style.position = "absolute";
+        popup.style.left = left + window.scrollX + "px";
+        popup.style.top = top + window.scrollY + "px";
+        if (popupArrow) {
+          popupArrow.className = "popup-arrow popup-arrow-" + arrowDirection;
+          const highlightCenterX2 = rect.left + rect.width / 2;
+          let arrowCenter = highlightCenterX2 - left;
+          arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+          popupArrow.style.left = arrowCenter + "px";
+        }
+        popup.style.visibility = "visible";
+      } else {
+        popup.style.display = "block";
+        if (popupArrow) popupArrow.className = "popup-arrow popup-arrow-hidden";
       }
-      
-      popup.style.visibility = 'visible';
-    } else {
-       popup.style.display = 'block';
-       // 保持當前位置時隱藏箭頭
-       if (popupArrow) popupArrow.className = 'popup-arrow popup-arrow-hidden';
+      popup.style.pointerEvents = "auto";
     }
-    popup.style.pointerEvents = 'auto'; // 允許交互
-
-    // 朗讀（如果是新詞）
-    // speakCantonese(result.word); 
-  }
-
-  // 渲染例句到右側面板
-  function renderExamples(examples) {
-    const popupExamples = popup.querySelector('.popup-examples');
-    let html = '<div class="example-title">例句</div>';
-    
-    examples.forEach((eg, i) => {
-      const engPart = eg.eng ? `<div class="example-eng">${eg.eng}</div>` : '';
-      html += `
+    function renderExamples(examples) {
+      const popupExamples = popup.querySelector(".popup-examples");
+      let html = '<div class="example-title">例句</div>';
+      examples.forEach((eg, i) => {
+        const engPart = eg.eng ? `<div class="example-eng">${eg.eng}</div>` : "";
+        html += `
         <div class="example-item">
           <div class="example-yue">
             <span class="example-yue-text">${eg.yue}</span>
@@ -3710,714 +3199,538 @@
           ${engPart}
         </div>
       `;
-    });
-    popupExamples.innerHTML = html;
-
-    // 綁定例句喇叭點擊事件
-    const exampleBtns = popupExamples.querySelectorAll('.example-tts-btn');
-    exampleBtns.forEach((btn) => {
-      btn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const index = btn.getAttribute('data-index');
-        if (examples[index] && examples[index].yue) {
-          // 移除任何標點符號再朗讀效果更好，但這裡直接傳原文
-          speakCantonese(examples[index].yue, btn);
-        }
       });
-    });
-  }
-
-
-
-  // 調整彈窗位置（當變寬時）
-  function adjustPopupPosition() {
-    const rect = popup.getBoundingClientRect();
-    const viewportWidth = window.innerWidth;
-    const targetWidth = 640; // 擴展後的目標寬度
-    
-    // 檢查擴展後的右邊界是否會超出屏幕
-    // 注意：由於有 CSS transition，rect.right 和 rect.width 可能還是舊值
-    // 所以我們使用 rect.left + targetWidth 來判斷
-    if (rect.left + targetWidth > viewportWidth) {
-      let newLeft = viewportWidth - targetWidth - 10;
-      if (newLeft < 5) newLeft = 5;
-      popup.style.left = newLeft + 'px';
-    }
-  }
-
-
-  // 延遲隱藏（給用戶時間移動到彈窗上）
-  function scheduleHidePopup(delay = 400) {
-    if (hideTimeout) {
-      clearTimeout(hideTimeout);
-      hideTimeout = null;
-    }
-    if (expandLockTimer) return; // 展開按鈕冷卻期內不隱藏
-    if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不自動隱藏
-    
-    // 如果打開了 Q&A，則不自動隱藏（用戶需要通過點擊外部來關閉）
-    if (popup && popup.querySelector('.popup-qa-container')) return;
-    if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
-
-    let actualDelay = delay;
-    if (translatePopup && translatePopup.style.display !== 'none') {
-      actualDelay = Math.max(actualDelay, 800);
-    }
-
-    hideTimeout = setTimeout(() => {
-      // 只有在滑鼠移出且不是粘滯的情況下隱藏
-      // 現在主要依賴點擊隱藏，但離開彈窗也會隱藏
-      if (!isMouseOverPopup) {
-        hidePopup();
-      }
-      hideTimeout = null;
-    }, actualDelay); 
-  }
-
-  // 隱藏彈窗
-  function hidePopup(keepHighlight = false) {
-    if (activePopupRubyElement) {
-      activePopupRubyElement.classList.remove('jyutping-popup-active');
-      activePopupRubyElement = null;
-    }
-
-    if (popup) {
-      popup.style.display = 'none';
-      hideRubyFadeMask();
-      removeCompactStyles();
-      const qaContainer = popup.querySelector('.popup-qa-container');
-      if (qaContainer) {
-        qaContainer.remove();
-      }
-      const qaUpperDisplay = popup.querySelector('.qa-upper-display');
-      if (qaUpperDisplay) {
-        qaUpperDisplay.remove();
-      }
-      const inner = popup.querySelector('.popup-inner');
-      if (inner) {
-        Array.from(inner.children).forEach(child => {
-          if (child.className !== 'popup-qa-container' && child.className !== 'qa-upper-display') {
-            child.style.display = '';
+      popupExamples.innerHTML = html;
+      const exampleBtns = popupExamples.querySelectorAll(".example-tts-btn");
+      exampleBtns.forEach((btn) => {
+        btn.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const index = btn.getAttribute("data-index");
+          if (examples[index] && examples[index].yue) {
+            speakCantonese(examples[index].yue, btn);
           }
         });
+      });
+    }
+    function adjustPopupPosition() {
+      const rect = popup.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const targetWidth = 640;
+      if (rect.left + targetWidth > viewportWidth) {
+        let newLeft = viewportWidth - targetWidth - 10;
+        if (newLeft < 5) newLeft = 5;
+        popup.style.left = newLeft + "px";
       }
     }
-    // 精簡模式下翻譯結果用獨立浮窗，一併隱藏
-    hideTranslatePopup();
-    
-    // 如果是用戶手動選中的文本，或者要求保留高亮，則不清除選區
-    if (!hasUserSelection && !keepHighlight) {
-      currentWord = null;
-      removeHighlight();
+    function scheduleHidePopup(delay = 400) {
+      if (hideTimeout) {
+        clearTimeout(hideTimeout);
+        hideTimeout = null;
+      }
+      if (expandLockTimer) return;
+      if (waitingForMouseToEnterAfterExpand) return;
+      if (popup && popup.querySelector(".popup-qa-container")) return;
+      if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+      let actualDelay = delay;
+      if (translatePopup && translatePopup.style.display !== "none") {
+        actualDelay = Math.max(actualDelay, 800);
+      }
+      hideTimeout = setTimeout(() => {
+        if (!isMouseOverPopup) {
+          hidePopup();
+        }
+        hideTimeout = null;
+      }, actualDelay);
     }
-    clearQAContext();
-  }
-
-  const SUPERSCRIPT_MAP = {
-    '1': '¹', '2': '²', '3': '³', '4': '⁴', '5': '⁵', '6': '⁶', '7': '⁷', '8': '⁸', '9': '⁹'
-  };
-
-  function convertToSuperscriptTone(str) {
-    if (!str) return str;
-    return str.replace(/\d/g, match => SUPERSCRIPT_MAP[match] || match);
-  }
-
-  // 檢測元素是否在暗色背景上（用於自動調整 Ruby 注音顏色）
-  function getElementBackgroundColor(element) {
-    try {
-      let el = element;
-      while (el && el !== document.documentElement) {
-        const style = window.getComputedStyle(el);
-        const bg = style.backgroundColor;
-        if (bg && bg !== 'rgba(0, 0, 0, 0)' && bg !== 'transparent') {
-            return bg;
+    function hidePopup(keepHighlight = false) {
+      if (activePopupRubyElement) {
+        activePopupRubyElement.classList.remove("jyutping-popup-active");
+        activePopupRubyElement = null;
+      }
+      if (popup) {
+        popup.style.display = "none";
+        hideRubyFadeMask();
+        removeCompactStyles();
+        const qaContainer = popup.querySelector(".popup-qa-container");
+        if (qaContainer) {
+          qaContainer.remove();
         }
-        el = el.parentElement;
+        const qaUpperDisplay = popup.querySelector(".qa-upper-display");
+        if (qaUpperDisplay) {
+          qaUpperDisplay.remove();
+        }
+        const inner = popup.querySelector(".popup-inner");
+        if (inner) {
+          Array.from(inner.children).forEach((child) => {
+            if (child.className !== "popup-qa-container" && child.className !== "qa-upper-display") {
+              child.style.display = "";
+            }
+          });
+        }
       }
-      
-      // 如果一直找到根節點都沒顏色，嘗試從 body 取，如果還沒有預設為白色
-      const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-      if (bodyBg && bodyBg !== 'rgba(0, 0, 0, 0)' && bodyBg !== 'transparent') {
-        return bodyBg;
+      hideTranslatePopup();
+      if (!hasUserSelection && !keepHighlight) {
+        currentWord = null;
+        removeHighlight();
       }
-    } catch (e) { /* ignore */ }
-    return 'rgb(255, 255, 255)'; // 預設白色
-  }
-
-  function checkIsDarkColor(bgColorStr) {
-    if (!bgColorStr) return false;
-    const match = bgColorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (match) {
-      const r = parseInt(match[1]);
-      const g = parseInt(match[2]);
-      const b = parseInt(match[3]);
-      // W3C 相對亮度公式
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
-      return luminance < 0.5;
+      clearQAContext();
     }
-    return false;
-  }
-
-  function isElementOnDarkBackground(element) {
-    return checkIsDarkColor(getElementBackgroundColor(element));
-  }
-
-  // 選中文字（使用 CSS 高亮 span 或內嵌 Ruby 代替原生 Selection）
-  function highlightText(textNode, offset, result) {
-    try {
-      // 先移除舊的高亮
-      removeHighlight();
-      
-      const length = result.length;
-      const end = Math.min(offset + length, textNode.textContent.length);
-      const originalText = textNode.textContent.substring(offset, end);
-      
-      // 創建 Range 用於定位彈窗
-      const range = document.createRange();
-      range.setStart(textNode, offset);
-      range.setEnd(textNode, end);
-      
-      let wrapper;
-      
-      if (popupDisplayStyle === 'ruby') {
-        // 內嵌 Ruby 模式
-        const entry = result.entry;
-        
-        wrapper = document.createElement('ruby');
-        wrapper.className = 'jyutping-hover-ruby hl-' + (rubyHoverStyle || 'ruby-red');
-        console.log('[Jyutping] Creating hover ruby. rubyRtBackground:', rubyRtBackground, 'rubyHoverStyle:', rubyHoverStyle);
-        if (rubyRtBackground === 'solid') {
-          wrapper.classList.add('with-bg');
-        } else if (rubyRtBackground === 'fade') {
-          wrapper.classList.add('fade-bg');
-        }
-        if (isElementOnDarkBackground(textNode.parentElement)) {
-          wrapper.classList.add('dark-bg');
-        }
-        wrapper.dataset.originalText = originalText;
-        wrapper.dataset.word = result.word;
-        
-        wrapper.appendChild(document.createTextNode(originalText));
-        // 不再創建和添加 <rt> 標籤，防裁剪防佈局擴張，拼音將改用 Shadow DOM 浮動層顯示
-        
-        // 提取並替換內容
-        range.deleteContents();
-        range.insertNode(wrapper);
-        
-      } else {
-        // 標準高亮模式
-        wrapper = document.createElement('span');
-        wrapper.className = 'jyutping-highlight hl-' + (highlightStyle || 'yellow');
-        range.surroundContents(wrapper);
-      }
-      
-      highlightSpans.push(wrapper);
-      
-      // 更新 currentRange 指向高亮節點的範圍（用於彈窗定位）
-      currentRange = document.createRange();
-      currentRange.selectNodeContents(wrapper);
-    } catch (e) {
-      console.log('Highlight failed:', e);
-      // 回退方案
+    function highlightText(textNode, offset, result) {
       try {
+        removeHighlight();
+        const length = result.length;
+        const end = Math.min(offset + length, textNode.textContent.length);
+        const originalText = textNode.textContent.substring(offset, end);
         const range = document.createRange();
         range.setStart(textNode, offset);
-        range.setEnd(textNode, Math.min(offset + result.length, textNode.textContent.length));
-        currentRange = range;
-      } catch (e2) {
-        console.log('Fallback range also failed:', e2);
-      }
-    }
-  }
-
-  // 移除高亮
-  function removeHighlight() {
-    // 移除所有高亮 span，恢復原始文字節點
-    highlightSpans.forEach(span => {
-      if (span && span.parentNode) {
-        const parent = span.parentNode;
-        
-        if (span.tagName === 'RUBY') {
-          // 對於 Ruby 模式，我們不能把 <rt> 標籤也提取出來，否則會變成普通文字顯示
-          // 我們只需要還原它原本的文字即可
-          const originalText = span.dataset.originalText || span.textContent.replace(/[a-zA-Z0-9\u200A]+/g, '');
-          const textNode = document.createTextNode(originalText);
-          parent.insertBefore(textNode, span);
+        range.setEnd(textNode, end);
+        let wrapper;
+        if (popupDisplayStyle === "ruby") {
+          const entry = result.entry;
+          wrapper = document.createElement("ruby");
+          wrapper.className = "jyutping-hover-ruby hl-" + (rubyHoverStyle || "ruby-red");
+          console.log("[Jyutping] Creating hover ruby. rubyRtBackground:", rubyRtBackground, "rubyHoverStyle:", rubyHoverStyle);
+          if (rubyRtBackground === "solid") {
+            wrapper.classList.add("with-bg");
+          } else if (rubyRtBackground === "fade") {
+            wrapper.classList.add("fade-bg");
+          }
+          if (isElementOnDarkBackground(textNode.parentElement)) {
+            wrapper.classList.add("dark-bg");
+          }
+          wrapper.dataset.originalText = originalText;
+          wrapper.dataset.word = result.word;
+          wrapper.appendChild(document.createTextNode(originalText));
+          range.deleteContents();
+          range.insertNode(wrapper);
         } else {
-          // 將 span 內容提取回父節點
-          while (span.firstChild) {
-            parent.insertBefore(span.firstChild, span);
-          }
+          wrapper = document.createElement("span");
+          wrapper.className = "jyutping-highlight hl-" + (highlightStyle || "yellow");
+          range.surroundContents(wrapper);
         }
-        
-        parent.removeChild(span);
-        // 合併相鄰的文字節點
-        parent.normalize();
-      }
-    });
-    highlightSpans = [];
-    
-    // 移除全文注音模式下的 ruby 高亮
-    if (highlightedRubyElement) {
-      highlightedRubyElement.classList.remove('jyutping-highlight', 'jyutping-clicked-hover');
-      highlightedRubyElement.classList.remove('hl-yellow', 'hl-blue', 'hl-red', 'hl-green', 'hl-gray', 'hl-underline-dashed', 'hl-border-dashed');
-      highlightedRubyElement = null;
-    }
-    
-    currentRange = null;
-  }
-
-  // 監聽來自 popup 的消息（切換開關、設定等）
-  chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-    if (request.action === 'toggleEnabled') {
-      isEnabled = request.enabled;
-      if (!isEnabled) {
-        hidePopup();
-        if (isFullPageRubyActive) removeRubyAnnotations(document.body);
-      } else {
-        if (isFullPageRubyActive) injectRubyAnnotations(document.body);
-      }
-    } else if (request.action === 'changeHoverModifier') {
-      hoverModifier = request.modifier;
-      if (hoverModifier !== 'none' && popup && !isMouseOverPopup) {
-        hidePopup();
-      }
-    } else if (request.action === 'changeDisplayMode') {
-      displayMode = request.mode;
-    } else if (request.action === 'changeToneStyle') {
-      toneStyle = request.style;
-    } else if (request.action === 'changePopupDisplayStyle') {
-      popupDisplayStyle = request.style;
-    } else if (request.action === 'changeCompactExpandBtn') {
-      compactExpandBtn = request.enabled;
-    } else if (request.action === 'changeRubyRtBackground') {
-      rubyRtBackground = request.value;
-    } else if (request.action === 'changeHighlightStyle') {
-      if (request.style && request.style.startsWith('ruby-')) {
-        rubyHoverStyle = request.style;
-      } else {
-        highlightStyle = request.style;
-      }
-    } else if (request.action === 'changePopupTheme') {
-      popupTheme = request.theme;
-      applyPopupTheme(popupTheme);
-    } else if (request.action === 'changeCustomFont') {
-      if (request.customZhFont !== undefined) customZhFont = request.customZhFont;
-      if (request.customEnFont !== undefined) customEnFont = request.customEnFont;
-      applyPopupTheme(popupTheme);
-    } else if (request.action === 'changeTtsEnabled') {
-      ttsEnabled = request.ttsEnabled;
-    } else if (request.action === 'changeTtsEngine') {
-      ttsEngine = request.ttsEngine;
-    } else if (request.action === 'changeEdgeTtsUrl') {
-      edgeTtsUrl = request.edgeTtsUrl;
-    } else if (request.action === 'changeEdgeTtsMode') {
-      edgeTtsMode = request.edgeTtsMode;
-    } else if (request.action === 'changeAzureTtsKey') {
-      azureTtsKey = request.azureTtsKey;
-    } else if (request.action === 'changeAzureTtsRegion') {
-      azureTtsRegion = request.azureTtsRegion;
-    } else if (request.action === 'changeAzureTtsMode') {
-      azureTtsMode = request.azureTtsMode;
-    } else if (request.action === 'changeAzureTtsVoice') {
-      azureTtsVoice = request.azureTtsVoice;
-    } else if (request.action === 'changeTtsRate') {
-      ttsRate = request.ttsRate;
-    } else if (request.action === 'changeTransLangs') {
-      transLangs = request.transLangs;
-    } else if (request.action === 'changeTransLang') {
-      let tls = request.transLang;
-      if (tls === 'both') transLangs = ['zh-Hans', 'en'];
-      else if (tls === 'mandarin') transLangs = ['zh-Hans'];
-      else if (tls === 'english') transLangs = ['en'];
-    } else if (request.action === 'changeTransTrigger') {
-      transTrigger = request.transTrigger;
-    } else if (request.action === 'playAudio') {
-      // 防止舊 content script 重複播放（擴展重載後舊腳本仍在監聽）
-      const myId = document.documentElement.getAttribute('data-jyutping-tts-owner');
-      if (myId !== contentScriptId) return;
-      
-      const audioSrc = request.audioData.startsWith('data:') ? createBlobUrlFromDataUri(request.audioData) : request.audioData;
-
-      // 緩存音頻數據
-      if (pendingTtsText) {
-        if (ttsCache.size >= TTS_CACHE_MAX) {
-          // 刪除最舊的緩存條目
-          const firstKey = ttsCache.keys().next().value;
-          const oldAudioSrc = ttsCache.get(firstKey);
-          if (oldAudioSrc && oldAudioSrc.startsWith('blob:')) {
-            URL.revokeObjectURL(oldAudioSrc);
-          }
-          ttsCache.delete(firstKey);
-        }
-        ttsCache.set(pendingTtsText, audioSrc);
-        pendingTtsText = '';
-      }
-      // 播放音頻
-      const audio = new Audio(audioSrc);
-      audio.ontimeupdate = () => {
-        if (audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
-      };
-      audio.onended = stopSpeakerAnimation;
-      audio.onerror = stopSpeakerAnimation;
-      audio.play().catch(err => {
-        console.warn('[Content] TTS Playback failed (NotAllowedError or missing interaction):', err);
-        stopSpeakerAnimation();
-      });
-    } else if (request.action === 'translateResult') {
-      if (request.success) {
-                let trans = request.translations;
-        if (!trans && (request.mandarin || request.english)) {
-          trans = {};
-          if (request.mandarin) trans['zh-Hans'] = request.mandarin;
-          if (request.english) trans['en'] = request.english;
-        }
-        showTranslatePopup(null, trans, false);
-      } else {
-        showTranslatePopup(null, {'zh-Hans': '❌ ' + request.error}, false);
-        showToast('翻譯失敗: ' + request.error);
-      }
-    } else if (request.action === 'aiTranslateResult') {
-      if (request.success) {
-        showAiResult(request.word, request.explanation, activeQAContext.targetRect);
-        if (activeQAContext.word === request.word) {
-          activeQAContext.originalTranslation = request.explanation;
-        }
-      } else {
-        showAiResult(request.word, '❌ ' + request.error, activeQAContext.targetRect);
-        if (activeQAContext.word === request.word) {
-          activeQAContext.originalTranslation = '❌ ' + request.error;
+        highlightSpans.push(wrapper);
+        currentRange = document.createRange();
+        currentRange.selectNodeContents(wrapper);
+      } catch (e) {
+        console.log("Highlight failed:", e);
+        try {
+          const range = document.createRange();
+          range.setStart(textNode, offset);
+          range.setEnd(textNode, Math.min(offset + result.length, textNode.textContent.length));
+          currentRange = range;
+        } catch (e2) {
+          console.log("Fallback range also failed:", e2);
         }
       }
-    } else if (request.action === 'changeAiEnabled') {
-      aiEnabled = request.aiEnabled;
-    } else if (request.action === 'toggleRuby') {
-      console.log('[Content] Received toggleRuby message from background');
-      toggleRubyAnnotations();
-    } else if (request.action === 'ttsEnded') {
-      stopSpeakerAnimation();
     }
-  });
-
-  // ==================== 全文注音功能 ====================
-  let isFullPageRubyActive = sessionStorage.getItem('jyutping_full_page_ruby') === 'true';
-
-  // 監聽全局快捷鍵用於退出全文注音
-  document.addEventListener('keydown', (e) => {
-    // Escape: 如果全文注音開啟，則退出
-    if (e.key === 'Escape') {
-      if (isFullPageRubyActive) {
-        toggleRubyAnnotations();
-      }
-    }
-  });
-
-  async function toggleRubyAnnotations() {
-    console.log('[Content] toggleRubyAnnotations called. isEnabled:', isEnabled, 'isFullPageRubyActive:', isFullPageRubyActive);
-    if (!isEnabled) {
-      console.log('[Content] Extension is disabled, aborting toggle.');
-      return;
-    }
-    
-    // 確保詞典已載入
-    if (!dictionary || Object.keys(dictionary).length === 0) {
-      showToast("正在加載粵語詞典，請稍候...", 1500);
-      await loadDictionary();
-    }
-    
-    isFullPageRubyActive = !isFullPageRubyActive;
-    sessionStorage.setItem('jyutping_full_page_ruby', isFullPageRubyActive ? 'true' : 'false');
-    
-    if (isFullPageRubyActive) {
-      console.log('[Content] Jyutping Full Page Ruby: ON');
-      injectRubyAnnotations(document.body);
-      showToast(tt('toastRubyEnabled'), 2000, 'success');
-    } else {
-      console.log('Jyutping Full Page Ruby: OFF');
-      removeRubyAnnotations(document.body);
-      showToast(tt('toastRubyDisabled'), 2000, 'error');
-    }
-  }
-
-  function removeRubyAnnotations(rootElement) {
-    const rubies = rootElement.querySelectorAll('ruby.jyutping-ruby-injected');
-    rubies.forEach(ruby => {
-      const wordText = ruby.dataset.word || '';
-      if (wordText) {
-        const textNode = document.createTextNode(wordText);
-        if (ruby.parentNode) {
-          ruby.parentNode.replaceChild(textNode, ruby);
-        }
-      }
-    });
-
-    // 恢復被修改過的父節點行高
-    const parents = rootElement.querySelectorAll('.jyutping-ruby-parent');
-    parents.forEach(p => {
-      if (!p.querySelector('ruby.jyutping-ruby-injected')) {
-        p.classList.remove('jyutping-ruby-parent');
-        const originalLh = p.getAttribute('data-jp-original-lh');
-        if (originalLh !== null) {
-          if (originalLh === '') {
-            p.style.removeProperty('line-height');
+    function removeHighlight() {
+      highlightSpans.forEach((span) => {
+        if (span && span.parentNode) {
+          const parent = span.parentNode;
+          if (span.tagName === "RUBY") {
+            const originalText = span.dataset.originalText || span.textContent.replace(/[a-zA-Z0-9\u200A]+/g, "");
+            const textNode = document.createTextNode(originalText);
+            parent.insertBefore(textNode, span);
           } else {
-            p.style.setProperty('line-height', originalLh);
+            while (span.firstChild) {
+              parent.insertBefore(span.firstChild, span);
+            }
           }
-          p.removeAttribute('data-jp-original-lh');
+          parent.removeChild(span);
+          parent.normalize();
         }
+      });
+      highlightSpans = [];
+      if (highlightedRubyElement) {
+        highlightedRubyElement.classList.remove("jyutping-highlight", "jyutping-clicked-hover");
+        highlightedRubyElement.classList.remove("hl-yellow", "hl-blue", "hl-red", "hl-green", "hl-gray", "hl-underline-dashed", "hl-border-dashed");
+        highlightedRubyElement = null;
       }
-    });
-    
-    // 恢復外層背景方塊的高度限制
-    const expandedAncestors = rootElement.querySelectorAll('.jyutping-ruby-expanded');
-    expandedAncestors.forEach(p => {
-      if (!p.querySelector('ruby.jyutping-ruby-injected')) {
-        p.classList.remove('jyutping-ruby-expanded');
-        
-        const origHeight = p.getAttribute('data-jp-original-height');
-        if (origHeight !== null) {
-          if (origHeight === '') p.style.removeProperty('height');
-          else p.style.setProperty('height', origHeight);
-          p.removeAttribute('data-jp-original-height');
-        }
-        
-        const origMinHeight = p.getAttribute('data-jp-original-min-height');
-        if (origMinHeight !== null) {
-          if (origMinHeight === '') p.style.removeProperty('min-height');
-          else p.style.setProperty('min-height', origMinHeight);
-          p.removeAttribute('data-jp-original-min-height');
-        }
-      }
-    });
-    
-    // 觸發全局 resize 事件
-    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
-    setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
-  }
-
-  // ========== Toast 系統 ==========
-  let currentToastTimeout = null;
-  let currentToastRemoveTimeout = null;
-
-  function showToast(message, duration = 2000, type = '') {
-    // 避免在 iframe 內部重複顯示 Toast
-    if (window !== window.top) return;
-    
-    let container = document.getElementById('jyutping-toast-container');
-    if (!container) {
-      container = document.createElement('div');
-      container.id = 'jyutping-toast-container';
-      document.body.appendChild(container);
+      currentRange = null;
     }
-    
-    // 清除舊的 Toast 和定時器，確保只顯示最新的一條
-    container.innerHTML = '';
-    if (currentToastTimeout) clearTimeout(currentToastTimeout);
-    if (currentToastRemoveTimeout) clearTimeout(currentToastRemoveTimeout);
-    
-    const toast = document.createElement('div');
-    toast.className = 'jyutping-toast' + (type ? ' jyutping-toast-' + type : '');
-    toast.innerHTML = message;
-    
-    container.appendChild(toast);
-    
-    // 強制 reflow 觸發動畫
-    toast.offsetHeight;
-    toast.classList.add('show');
-    
-    currentToastTimeout = setTimeout(() => {
-      toast.classList.remove('show');
-      currentToastRemoveTimeout = setTimeout(() => {
-        if (toast.parentNode) {
-          toast.parentNode.removeChild(toast);
+    chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+      if (request.action === "toggleEnabled") {
+        isEnabled = request.enabled;
+        if (!isEnabled) {
+          hidePopup();
+          if (isFullPageRubyActive) removeRubyAnnotations(document.body);
+        } else {
+          if (isFullPageRubyActive) injectRubyAnnotations(document.body);
         }
-        if (container.childNodes.length === 0 && container.parentNode) {
-          container.parentNode.removeChild(container);
+      } else if (request.action === "changeHoverModifier") {
+        hoverModifier = request.modifier;
+        if (hoverModifier !== "none" && popup && !isMouseOverPopup) {
+          hidePopup();
         }
-      }, 300); // 等待動畫結束
-    }, duration);
-  }
-
-  function injectRubyAnnotations(rootElement) {
-    console.log('[Content] injectRubyAnnotations started on element:', rootElement);
-    if (!dictionary || Object.keys(dictionary).length === 0) {
-      console.warn('[Content] Dictionary not loaded or empty! Cannot inject rubies.');
-      return;
-    }
-    console.log('[Content] Dictionary seems valid, total entries:', Object.keys(dictionary).length);
-
-    const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_TEXT, {
-      acceptNode: function(node) {
-        const parent = node.parentNode;
-        if (!parent || !parent.tagName) return NodeFilter.FILTER_REJECT;
-        
-        const tagName = parent.tagName.toLowerCase();
-        if (['script', 'style', 'noscript', 'textarea', 'input', 'code', 'pre', 'ruby', 'rt', 'rp', 'option', 'optgroup', 'title'].includes(tagName)) {
-          return NodeFilter.FILTER_REJECT;
+      } else if (request.action === "changeDisplayMode") {
+        displayMode = request.mode;
+      } else if (request.action === "changeToneStyle") {
+        toneStyle = request.style;
+      } else if (request.action === "changePopupDisplayStyle") {
+        popupDisplayStyle = request.style;
+      } else if (request.action === "changeCompactExpandBtn") {
+        compactExpandBtn = request.enabled;
+      } else if (request.action === "changeRubyRtBackground") {
+        rubyRtBackground = request.value;
+      } else if (request.action === "changeHighlightStyle") {
+        if (request.style && request.style.startsWith("ruby-")) {
+          rubyHoverStyle = request.style;
+        } else {
+          highlightStyle = request.style;
         }
-        
-        // 忽略插件自己生成的 UI 元素（懸浮窗、提示框），防止在提示文字上再次注入拼音
-        if (parent.closest('#jyutping-toast-container, #jyutping-popup')) {
-          return NodeFilter.FILTER_REJECT;
-        }
-        
-        if (parent.isContentEditable) {
-          return NodeFilter.FILTER_REJECT;
-        }
-        
-        if (!/[\u4e00-\u9fff]/.test(node.textContent)) {
-          return NodeFilter.FILTER_REJECT;
-        }
-        
-        return NodeFilter.FILTER_ACCEPT;
-      }
-    });
-
-    const nodesToProcess = [];
-    let currentNode;
-    while (currentNode = walker.nextNode()) {
-      nodesToProcess.push(currentNode);
-    }
-
-    console.log(`[Content] Found ${nodesToProcess.length} text nodes containing Chinese characters.`);
-
-    let replacedWordsCount = 0;
-    const BATCH_SIZE = 50; // 每批處理 50 個文本節點，避免阻塞主線程
-
-    function processNode(node) {
-      const text = node.textContent;
-      const fragment = document.createDocumentFragment();
-      let currentIndex = 0;
-      let nonChineseBuffer = ''; // 緩衝非中文字符，合併為一個文本節點
-
-      while (currentIndex < text.length) {
-        const char = text[currentIndex];
-        
-        if (/[\u4e00-\u9fff]/.test(char)) {
-          // 先清空非中文緩衝
-          if (nonChineseBuffer) {
-            fragment.appendChild(document.createTextNode(nonChineseBuffer));
-            nonChineseBuffer = '';
+      } else if (request.action === "changePopupTheme") {
+        popupTheme = request.theme;
+        applyPopupTheme(popupTheme);
+      } else if (request.action === "changeCustomFont") {
+        if (request.customZhFont !== void 0) customZhFont = request.customZhFont;
+        if (request.customEnFont !== void 0) customEnFont = request.customEnFont;
+        applyPopupTheme(popupTheme);
+      } else if (request.action === "changeTtsEnabled") {
+        ttsEnabled = request.ttsEnabled;
+      } else if (request.action === "changeTtsEngine") {
+        ttsEngine = request.ttsEngine;
+      } else if (request.action === "changeEdgeTtsUrl") {
+        edgeTtsUrl = request.edgeTtsUrl;
+      } else if (request.action === "changeEdgeTtsMode") {
+        edgeTtsMode = request.edgeTtsMode;
+      } else if (request.action === "changeAzureTtsKey") {
+        azureTtsKey = request.azureTtsKey;
+      } else if (request.action === "changeAzureTtsRegion") {
+        azureTtsRegion = request.azureTtsRegion;
+      } else if (request.action === "changeAzureTtsMode") {
+        azureTtsMode = request.azureTtsMode;
+      } else if (request.action === "changeAzureTtsVoice") {
+        azureTtsVoice = request.azureTtsVoice;
+      } else if (request.action === "changeTtsRate") {
+        ttsRate = request.ttsRate;
+      } else if (request.action === "changeTransLangs") {
+        transLangs = request.transLangs;
+      } else if (request.action === "changeTransLang") {
+        let tls = request.transLang;
+        if (tls === "both") transLangs = ["zh-Hans", "en"];
+        else if (tls === "mandarin") transLangs = ["zh-Hans"];
+        else if (tls === "english") transLangs = ["en"];
+      } else if (request.action === "changeTransTrigger") {
+        transTrigger = request.transTrigger;
+      } else if (request.action === "playAudio") {
+        const myId = document.documentElement.getAttribute("data-jyutping-tts-owner");
+        if (myId !== contentScriptId) return;
+        const audioSrc = request.audioData.startsWith("data:") ? createBlobUrlFromDataUri(request.audioData) : request.audioData;
+        if (pendingTtsText) {
+          if (ttsCache.size >= TTS_CACHE_MAX) {
+            const firstKey = ttsCache.keys().next().value;
+            const oldAudioSrc = ttsCache.get(firstKey);
+            if (oldAudioSrc && oldAudioSrc.startsWith("blob:")) {
+              URL.revokeObjectURL(oldAudioSrc);
+            }
+            ttsCache.delete(firstKey);
           }
-          
-          const remainingText = text.substring(currentIndex);
-          try {
-            const match = lookupWord(remainingText);
-            if (match && match.length > 0) {
-              const wordText = match.word;
-              const entry = match.entry;
-              
-              let jpString = '';
-              if (displayMode === 'jyutping') {
-                jpString = entry.jyutping ? (Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping) : '';
-              } else {
-                jpString = entry.yale ? (Array.isArray(entry.yale) ? entry.yale[0] : entry.yale) : '';
-              }
-              
-              if (jpString) {
-                if (toneDisplayStyle === 'superscript') {
-                  jpString = convertToSuperscriptTone(jpString);
-                } else if (toneDisplayStyle === 'hidden') {
-                  jpString = jpString.replace(/\d/g, '');
+          ttsCache.set(pendingTtsText, audioSrc);
+          pendingTtsText = "";
+        }
+        const audio = new Audio(audioSrc);
+        audio.ontimeupdate = () => {
+          if (audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
+        };
+        audio.onended = stopSpeakerAnimation;
+        audio.onerror = stopSpeakerAnimation;
+        audio.play().catch((err) => {
+          console.warn("[Content] TTS Playback failed (NotAllowedError or missing interaction):", err);
+          stopSpeakerAnimation();
+        });
+      } else if (request.action === "translateResult") {
+        if (request.success) {
+          let trans = request.translations;
+          if (!trans && (request.mandarin || request.english)) {
+            trans = {};
+            if (request.mandarin) trans["zh-Hans"] = request.mandarin;
+            if (request.english) trans["en"] = request.english;
+          }
+          showTranslatePopup(null, trans, false);
+        } else {
+          showTranslatePopup(null, { "zh-Hans": "❌ " + request.error }, false);
+          showToast("翻譯失敗: " + request.error);
+        }
+      } else if (request.action === "aiTranslateResult") {
+        if (request.success) {
+          showAiResult(request.word, request.explanation, activeQAContext.targetRect);
+          if (activeQAContext.word === request.word) {
+            activeQAContext.originalTranslation = request.explanation;
+          }
+        } else {
+          showAiResult(request.word, "❌ " + request.error, activeQAContext.targetRect);
+          if (activeQAContext.word === request.word) {
+            activeQAContext.originalTranslation = "❌ " + request.error;
+          }
+        }
+      } else if (request.action === "changeAiEnabled") {
+        aiEnabled = request.aiEnabled;
+      } else if (request.action === "toggleRuby") {
+        console.log("[Content] Received toggleRuby message from background");
+        toggleRubyAnnotations();
+      } else if (request.action === "ttsEnded") {
+        stopSpeakerAnimation();
+      }
+    });
+    let isFullPageRubyActive = sessionStorage.getItem("jyutping_full_page_ruby") === "true";
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape") {
+        if (isFullPageRubyActive) {
+          toggleRubyAnnotations();
+        }
+      }
+    });
+    async function toggleRubyAnnotations() {
+      console.log("[Content] toggleRubyAnnotations called. isEnabled:", isEnabled, "isFullPageRubyActive:", isFullPageRubyActive);
+      if (!isEnabled) {
+        console.log("[Content] Extension is disabled, aborting toggle.");
+        return;
+      }
+      if (!dictionary || Object.keys(dictionary).length === 0) {
+        showToast("正在加載粵語詞典，請稍候...", 1500);
+        await loadDictionary();
+      }
+      isFullPageRubyActive = !isFullPageRubyActive;
+      sessionStorage.setItem("jyutping_full_page_ruby", isFullPageRubyActive ? "true" : "false");
+      if (isFullPageRubyActive) {
+        console.log("[Content] Jyutping Full Page Ruby: ON");
+        injectRubyAnnotations(document.body);
+        showToast(tt("toastRubyEnabled"), 2e3, "success");
+      } else {
+        console.log("Jyutping Full Page Ruby: OFF");
+        removeRubyAnnotations(document.body);
+        showToast(tt("toastRubyDisabled"), 2e3, "error");
+      }
+    }
+    function removeRubyAnnotations(rootElement) {
+      const rubies = rootElement.querySelectorAll("ruby.jyutping-ruby-injected");
+      rubies.forEach((ruby) => {
+        const wordText = ruby.dataset.word || "";
+        if (wordText) {
+          const textNode = document.createTextNode(wordText);
+          if (ruby.parentNode) {
+            ruby.parentNode.replaceChild(textNode, ruby);
+          }
+        }
+      });
+      const parents = rootElement.querySelectorAll(".jyutping-ruby-parent");
+      parents.forEach((p) => {
+        if (!p.querySelector("ruby.jyutping-ruby-injected")) {
+          p.classList.remove("jyutping-ruby-parent");
+          const originalLh = p.getAttribute("data-jp-original-lh");
+          if (originalLh !== null) {
+            if (originalLh === "") {
+              p.style.removeProperty("line-height");
+            } else {
+              p.style.setProperty("line-height", originalLh);
+            }
+            p.removeAttribute("data-jp-original-lh");
+          }
+        }
+      });
+      const expandedAncestors = rootElement.querySelectorAll(".jyutping-ruby-expanded");
+      expandedAncestors.forEach((p) => {
+        if (!p.querySelector("ruby.jyutping-ruby-injected")) {
+          p.classList.remove("jyutping-ruby-expanded");
+          const origHeight = p.getAttribute("data-jp-original-height");
+          if (origHeight !== null) {
+            if (origHeight === "") p.style.removeProperty("height");
+            else p.style.setProperty("height", origHeight);
+            p.removeAttribute("data-jp-original-height");
+          }
+          const origMinHeight = p.getAttribute("data-jp-original-min-height");
+          if (origMinHeight !== null) {
+            if (origMinHeight === "") p.style.removeProperty("min-height");
+            else p.style.setProperty("min-height", origMinHeight);
+            p.removeAttribute("data-jp-original-min-height");
+          }
+        }
+      });
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 50);
+      setTimeout(() => {
+        window.dispatchEvent(new Event("resize"));
+      }, 500);
+    }
+    let currentToastTimeout = null;
+    let currentToastRemoveTimeout = null;
+    function showToast(message, duration = 2e3, type = "") {
+      if (window !== window.top) return;
+      let container = document.getElementById("jyutping-toast-container");
+      if (!container) {
+        container = document.createElement("div");
+        container.id = "jyutping-toast-container";
+        document.body.appendChild(container);
+      }
+      container.innerHTML = "";
+      if (currentToastTimeout) clearTimeout(currentToastTimeout);
+      if (currentToastRemoveTimeout) clearTimeout(currentToastRemoveTimeout);
+      const toast = document.createElement("div");
+      toast.className = "jyutping-toast" + (type ? " jyutping-toast-" + type : "");
+      toast.innerHTML = message;
+      container.appendChild(toast);
+      toast.offsetHeight;
+      toast.classList.add("show");
+      currentToastTimeout = setTimeout(() => {
+        toast.classList.remove("show");
+        currentToastRemoveTimeout = setTimeout(() => {
+          if (toast.parentNode) {
+            toast.parentNode.removeChild(toast);
+          }
+          if (container.childNodes.length === 0 && container.parentNode) {
+            container.parentNode.removeChild(container);
+          }
+        }, 300);
+      }, duration);
+    }
+    function injectRubyAnnotations(rootElement) {
+      console.log("[Content] injectRubyAnnotations started on element:", rootElement);
+      if (!dictionary || Object.keys(dictionary).length === 0) {
+        console.warn("[Content] Dictionary not loaded or empty! Cannot inject rubies.");
+        return;
+      }
+      console.log("[Content] Dictionary seems valid, total entries:", Object.keys(dictionary).length);
+      const walker = document.createTreeWalker(rootElement, NodeFilter.SHOW_TEXT, {
+        acceptNode: function(node) {
+          const parent = node.parentNode;
+          if (!parent || !parent.tagName) return NodeFilter.FILTER_REJECT;
+          const tagName = parent.tagName.toLowerCase();
+          if (["script", "style", "noscript", "textarea", "input", "code", "pre", "ruby", "rt", "rp", "option", "optgroup", "title"].includes(tagName)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (parent.closest("#jyutping-toast-container, #jyutping-popup")) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (parent.isContentEditable) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          if (!/[\u4e00-\u9fff]/.test(node.textContent)) {
+            return NodeFilter.FILTER_REJECT;
+          }
+          return NodeFilter.FILTER_ACCEPT;
+        }
+      });
+      const nodesToProcess = [];
+      let currentNode;
+      while (currentNode = walker.nextNode()) {
+        nodesToProcess.push(currentNode);
+      }
+      console.log(`[Content] Found ${nodesToProcess.length} text nodes containing Chinese characters.`);
+      let replacedWordsCount = 0;
+      const BATCH_SIZE = 50;
+      function processNode(node) {
+        const text = node.textContent;
+        const fragment = document.createDocumentFragment();
+        let currentIndex = 0;
+        let nonChineseBuffer = "";
+        while (currentIndex < text.length) {
+          const char = text[currentIndex];
+          if (/[\u4e00-\u9fff]/.test(char)) {
+            if (nonChineseBuffer) {
+              fragment.appendChild(document.createTextNode(nonChineseBuffer));
+              nonChineseBuffer = "";
+            }
+            const remainingText = text.substring(currentIndex);
+            try {
+              const match = lookupWord(remainingText);
+              if (match && match.length > 0) {
+                const wordText = match.word;
+                const entry = match.entry;
+                let jpString = "";
+                if (displayMode === "jyutping") {
+                  jpString = entry.jyutping ? Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping : "";
+                } else {
+                  jpString = entry.yale ? Array.isArray(entry.yale) ? entry.yale[0] : entry.yale : "";
                 }
-                
-                // 將標準空格替換為窄空格(Hair Space)以縮減拼音長度
-                jpString = jpString.replace(/ /g, '\u200A');
-                
-                const ruby = document.createElement('ruby');
-                ruby.className = 'jyutping-ruby-injected';
-                if (isElementOnDarkBackground(node.parentElement || node)) ruby.classList.add('dark-bg');
-                ruby.dataset.word = wordText;
-                
-                const chars = wordText.split('');
-                const pinyins = jpString.split('\u200A');
-                
-                if (chars.length === pinyins.length) {
-                  for (let i = 0; i < chars.length; i++) {
-                    ruby.appendChild(document.createTextNode(chars[i]));
-                    const rt = document.createElement('rt');
-                    rt.textContent = pinyins[i];
+                if (jpString) {
+                  if (toneDisplayStyle === "superscript") {
+                    jpString = convertToSuperscriptTone(jpString);
+                  } else if (toneDisplayStyle === "hidden") {
+                    jpString = jpString.replace(/\d/g, "");
+                  }
+                  jpString = jpString.replace(/ /g, " ");
+                  const ruby = document.createElement("ruby");
+                  ruby.className = "jyutping-ruby-injected";
+                  if (isElementOnDarkBackground(node.parentElement || node)) ruby.classList.add("dark-bg");
+                  ruby.dataset.word = wordText;
+                  const chars = wordText.split("");
+                  const pinyins = jpString.split(" ");
+                  if (chars.length === pinyins.length) {
+                    for (let i = 0; i < chars.length; i++) {
+                      ruby.appendChild(document.createTextNode(chars[i]));
+                      const rt = document.createElement("rt");
+                      rt.textContent = pinyins[i];
+                      ruby.appendChild(rt);
+                    }
+                  } else {
+                    ruby.appendChild(document.createTextNode(wordText));
+                    const rt = document.createElement("rt");
+                    rt.textContent = jpString;
                     ruby.appendChild(rt);
                   }
+                  fragment.appendChild(ruby);
+                  replacedWordsCount++;
                 } else {
-                  ruby.appendChild(document.createTextNode(wordText));
-                  const rt = document.createElement('rt');
-                  rt.textContent = jpString;
-                  ruby.appendChild(rt);
+                  fragment.appendChild(document.createTextNode(wordText));
                 }
-                
-                fragment.appendChild(ruby);
-                replacedWordsCount++;
+                currentIndex += match.length;
               } else {
-                fragment.appendChild(document.createTextNode(wordText));
+                nonChineseBuffer += char;
+                currentIndex++;
               }
-              currentIndex += match.length;
-            } else {
+            } catch (err) {
+              console.error("lookupWord error:", err);
               nonChineseBuffer += char;
               currentIndex++;
             }
-          } catch (err) {
-            console.error('lookupWord error:', err);
+          } else {
             nonChineseBuffer += char;
             currentIndex++;
           }
-        } else {
-          nonChineseBuffer += char;
-          currentIndex++;
         }
-      }
-      
-      // 清空剩餘的非中文緩衝
-      if (nonChineseBuffer) {
-        fragment.appendChild(document.createTextNode(nonChineseBuffer));
-      }
-      
-      if (node.parentNode) {
-        const parent = node.parentNode;
-        parent.replaceChild(fragment, node);
-        
-        if (parent.tagName && parent.tagName.toLowerCase() !== 'body') {
-          parent.classList.add('jyutping-ruby-parent');
-          if (!parent.hasAttribute('data-jp-original-lh')) {
-            parent.setAttribute('data-jp-original-lh', parent.style.lineHeight || '');
-            parent.style.setProperty('line-height', '2.2', 'important');
+        if (nonChineseBuffer) {
+          fragment.appendChild(document.createTextNode(nonChineseBuffer));
+        }
+        if (node.parentNode) {
+          const parent = node.parentNode;
+          parent.replaceChild(fragment, node);
+          if (parent.tagName && parent.tagName.toLowerCase() !== "body") {
+            parent.classList.add("jyutping-ruby-parent");
+            if (!parent.hasAttribute("data-jp-original-lh")) {
+              parent.setAttribute("data-jp-original-lh", parent.style.lineHeight || "");
+              parent.style.setProperty("line-height", "2.2", "important");
+            }
           }
         }
       }
-    }
-
-    // 分批異步處理，每批 BATCH_SIZE 個節點後讓出主線程
-    function processBatch(startIndex) {
-      const endIndex = Math.min(startIndex + BATCH_SIZE, nodesToProcess.length);
-      
-      for (let i = startIndex; i < endIndex; i++) {
-        processNode(nodesToProcess[i]);
+      function processBatch(startIndex) {
+        const endIndex = Math.min(startIndex + BATCH_SIZE, nodesToProcess.length);
+        for (let i = startIndex; i < endIndex; i++) {
+          processNode(nodesToProcess[i]);
+        }
+        if (endIndex < nodesToProcess.length) {
+          setTimeout(() => processBatch(endIndex), 0);
+        } else {
+          console.log(`[Content] Finished injecting ruby annotations. Replacements made:`, replacedWordsCount);
+          setTimeout(() => {
+            window.dispatchEvent(new Event("resize"));
+          }, 50);
+          setTimeout(() => {
+            window.dispatchEvent(new Event("resize"));
+          }, 500);
+        }
       }
-      
-      if (endIndex < nodesToProcess.length) {
-        // 讓出主線程，避免 "Page Unresponsive"
-        setTimeout(() => processBatch(endIndex), 0);
-      } else {
-        // 全部處理完畢
-        console.log(`[Content] Finished injecting ruby annotations. Replacements made:`, replacedWordsCount);
-        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 50);
-        setTimeout(() => { window.dispatchEvent(new Event('resize')); }, 500);
+      if (nodesToProcess.length > 0) {
+        processBatch(0);
       }
     }
-
-    if (nodesToProcess.length > 0) {
-      processBatch(0);
-    }
-  }
-
-  // 顯示 AI 隨身問答界面
-  function showPopupQA(activePopup) {
-    // 注入 Q&A 專屬動畫樣式 (精緻跳動圓點 - 緊湊版) 到 Shadow DOM 中
-    const styleId = 'cantonese-qa-style';
-    if (!shadowRoot.getElementById(styleId)) {
-      const style = document.createElement('style');
-      style.id = styleId;
-      style.textContent = `
+    function showPopupQA(activePopup) {
+      const styleId = "cantonese-qa-style";
+      if (!shadowRoot.getElementById(styleId)) {
+        const style = document.createElement("style");
+        style.id = styleId;
+        style.textContent = `
         .qa-loading-dots {
           display: flex;
           align-items: center;
@@ -4452,63 +3765,49 @@
           }
         }
       `;
-      shadowRoot.appendChild(style);
-    }
-
-    // 清除選區，避免雙擊產生的選取干擾
-    try {
-      window.getSelection().removeAllRanges();
-    } catch (e) {}
-
-    // 1. 如果已存在 Q&A 界面，則直接 focus 輸入框，不重複添加
-    const existingQA = activePopup.querySelector('.popup-qa-container');
-    if (existingQA) {
-      const textarea = existingQA.querySelector('.qa-input-textarea');
-      if (textarea) textarea.focus();
-      return;
-    }
-
-    // 2. 如果是精簡模式，先切換為完整模式以顯示詞義與問答
-    if (activePopup.id === 'cantonese-popup-dict' && activePopup.classList.contains('compact-mode')) {
-      waitingForMouseToEnterAfterExpand = true;
-      if (expandLockTimer) clearTimeout(expandLockTimer);
-      expandLockTimer = setTimeout(() => { expandLockTimer = null; }, 400);
-      
-      const savedStyle = popupDisplayStyle;
-      popupDisplayStyle = 'full';
-      showPopup(lastPopupResult, lastPopupRect);
-      popupDisplayStyle = savedStyle;
-    }
-
-    // 強制將彈窗寬度改為固定值，以配合問答界面的顯示，防止在 loading 時收縮
-    activePopup.style.setProperty('width', '320px', 'important');
-    activePopup.style.setProperty('min-width', '320px', 'important');
-    activePopup.style.setProperty('max-width', '320px', 'important');
-
-    const inner = activePopup.querySelector('.popup-inner');
-    if (!inner) return;
-    inner.style.setProperty('width', '100%', 'important');
-    inner.style.setProperty('max-width', '100%', 'important');
-    inner.style.setProperty('min-width', '100%', 'important');
-    inner.style.setProperty('box-sizing', 'border-box', 'important');
-
-    // 根據不同彈窗類型，計算邊距以實現完美對齊
-    const isTranslate = activePopup.id === 'cantonese-translate-popup';
-    const marginStyle = isTranslate ? 'margin: 0 -12px -8px -12px;' : 'margin: 0;';
-    const upperMarginStyle = isTranslate ? 'margin: -8px -12px 0 -12px;' : 'margin: 0;';
-    const paddingLeft = isTranslate ? '12px' : '16px';
-
-    // 4. 創建 Q&A 上部顯示容器 (用於顯示 AI 回答)
-    const qaUpperDisplay = document.createElement('div');
-    qaUpperDisplay.className = 'qa-upper-display';
-    qaUpperDisplay.style.cssText = `max-height: 180px; overflow-y: auto; font-size: 13px; color: var(--popup-text); line-height: 1.4; white-space: pre-wrap; display: none; width: auto; box-sizing: border-box; ${upperMarginStyle}`;
-
-    // 5. 創建 Q&A 容器 (超精簡貼合版：邊框融合，直接填滿懸浮窗底部)
-    const qaContainer = document.createElement('div');
-    qaContainer.className = 'popup-qa-container';
-    qaContainer.style.cssText = `border-top: 1px solid var(--popup-divider); padding: 0; display: flex; flex-direction: column; box-sizing: border-box; background: var(--popup-bg); ${marginStyle} width: auto;`;
-    
-    qaContainer.innerHTML = `
+        shadowRoot.appendChild(style);
+      }
+      try {
+        window.getSelection().removeAllRanges();
+      } catch (e) {
+      }
+      const existingQA = activePopup.querySelector(".popup-qa-container");
+      if (existingQA) {
+        const textarea2 = existingQA.querySelector(".qa-input-textarea");
+        if (textarea2) textarea2.focus();
+        return;
+      }
+      if (activePopup.id === "cantonese-popup-dict" && activePopup.classList.contains("compact-mode")) {
+        waitingForMouseToEnterAfterExpand = true;
+        if (expandLockTimer) clearTimeout(expandLockTimer);
+        expandLockTimer = setTimeout(() => {
+          expandLockTimer = null;
+        }, 400);
+        const savedStyle = popupDisplayStyle;
+        popupDisplayStyle = "full";
+        showPopup(lastPopupResult, lastPopupRect);
+        popupDisplayStyle = savedStyle;
+      }
+      activePopup.style.setProperty("width", "320px", "important");
+      activePopup.style.setProperty("min-width", "320px", "important");
+      activePopup.style.setProperty("max-width", "320px", "important");
+      const inner = activePopup.querySelector(".popup-inner");
+      if (!inner) return;
+      inner.style.setProperty("width", "100%", "important");
+      inner.style.setProperty("max-width", "100%", "important");
+      inner.style.setProperty("min-width", "100%", "important");
+      inner.style.setProperty("box-sizing", "border-box", "important");
+      const isTranslate = activePopup.id === "cantonese-translate-popup";
+      const marginStyle = isTranslate ? "margin: 0 -12px -8px -12px;" : "margin: 0;";
+      const upperMarginStyle = isTranslate ? "margin: -8px -12px 0 -12px;" : "margin: 0;";
+      const paddingLeft = isTranslate ? "12px" : "16px";
+      const qaUpperDisplay = document.createElement("div");
+      qaUpperDisplay.className = "qa-upper-display";
+      qaUpperDisplay.style.cssText = `max-height: 180px; overflow-y: auto; font-size: 13px; color: var(--popup-text); line-height: 1.4; white-space: pre-wrap; display: none; width: auto; box-sizing: border-box; ${upperMarginStyle}`;
+      const qaContainer = document.createElement("div");
+      qaContainer.className = "popup-qa-container";
+      qaContainer.style.cssText = `border-top: 1px solid var(--popup-divider); padding: 0; display: flex; flex-direction: column; box-sizing: border-box; background: var(--popup-bg); ${marginStyle} width: auto;`;
+      qaContainer.innerHTML = `
       <div class="qa-input-wrapper" style="display: flex; width: 100%; margin: 0;">
         <textarea class="qa-input-textarea" placeholder="輸入追問... (Enter 發送)" rows="1" style="width: 100%; min-height: 38px; max-height: 100px; padding: 10px ${paddingLeft}; border: none; background: transparent; color: var(--popup-text); font-size: 13px; resize: none; outline: none; box-sizing: border-box; font-family: inherit; line-height: 1.4; margin: 0; display: block;"></textarea>
       </div>
@@ -4520,339 +3819,102 @@
         </div>
       </div>
     `;
-
-    inner.appendChild(qaUpperDisplay);
-    inner.appendChild(qaContainer);
-
-    // 強制重繪後重新定位，避免彈窗寬度改變導致箭頭不居中
-    if (activePopup.id === 'cantonese-translate-popup' && lastTranslateRect) {
-      positionTranslatePopup(lastTranslateRect);
-    }
-
-    const textarea = qaContainer.querySelector('.qa-input-textarea');
-    const inputWrapper = qaContainer.querySelector('.qa-input-wrapper');
-    const loadingWrapper = qaContainer.querySelector('.qa-loading-wrapper');
-    
-    // 確保初始無任何空格
-    textarea.value = '';
-
-    // 6. 輸入框自適應高度且防止首位輸入空格/換行
-    textarea.addEventListener('input', () => {
-      if (textarea.value.startsWith(' ') || textarea.value.startsWith('\n')) {
-        textarea.value = textarea.value.trimStart();
+      inner.appendChild(qaUpperDisplay);
+      inner.appendChild(qaContainer);
+      if (activePopup.id === "cantonese-translate-popup" && lastTranslateRect) {
+        positionTranslatePopup(lastTranslateRect);
       }
-      textarea.style.height = 'auto';
-      textarea.style.height = Math.min(100, textarea.scrollHeight) + 'px';
-      adjustPopupVerticalPosition(activePopup);
-    });
-
-    // 7. Enter 鍵提交 (使用終極雙保險機制)
-    let lastShiftState = false;
-    
-    textarea.addEventListener('keydown', (e) => {
-      lastShiftState = e.shiftKey;
-      
-      // 第一道防線：能攔截的直接攔截（避免視覺閃爍）
-      // 必須確保不是在 IME 組合中，且不是 229
-      if (!e.isComposing && e.keyCode !== 229 && (e.code === 'Enter' || e.code === 'NumpadEnter') && !e.shiftKey) {
-        e.preventDefault();
-        setTimeout(() => sendMsg(), 10);
-      }
-    });
-
-    // 第二道防線：如果 Mac 輸入法偷偷把 keydown 吞了或者偽裝成 229/isComposing，
-    // 瀏覽器最終還是會執行默認行為（插入換行）。
-    // 所以只要監聽到插入換行，就說明輸入法根本沒處理它，這絕對是個發送指令！
-    textarea.addEventListener('input', (e) => {
-      if (e.inputType === 'insertLineBreak' && !lastShiftState) {
-        // 把剛才瀏覽器插進去的換行符刪掉
-        textarea.value = textarea.value.replace(/\n$/, '');
-        sendMsg();
-      }
-    });
-
-    // 8. 自動 focus
-    setTimeout(() => {
-      textarea.focus();
-    }, 50);
-
-    // 9. 首度調整垂直位置，避免下溢
-    adjustPopupVerticalPosition(activePopup);
-
-    function sendMsg() {
-      const text = textarea.value.trim();
-      if (!text) return;
-      textarea.value = '';
-      textarea.style.height = 'auto';
-
-      // 隱藏輸入框，顯示加載動畫
-      inputWrapper.style.display = 'none';
-      loadingWrapper.style.display = 'flex';
-
-      // 保持上部原有內容（釋義或之前的 AI 回答）不變，僅微調位置
-      adjustPopupVerticalPosition(activePopup);
-
-      // 發送 API 請求
-      chrome.runtime.sendMessage({
-        action: 'aiChatQuery',
-        word: activeQAContext.word,
-        sentence: activeQAContext.sentence,
-        originalTranslation: activeQAContext.originalTranslation,
-        question: text,
-        history: activeQAContext.history
-      }, (response) => {
-        // 恢復顯示輸入框，隱藏加載動畫
-        loadingWrapper.style.display = 'none';
-        inputWrapper.style.display = 'flex';
-        
-        // 隱藏所有其他非 Q&A 元素
-        Array.from(inner.children).forEach(child => {
-          if (child !== qaContainer && child !== qaUpperDisplay) {
-            child.style.display = 'none';
-          }
-        });
-
-        // 顯示上部回答區域並設置正常內邊距
-        qaUpperDisplay.style.display = 'block';
-        qaUpperDisplay.style.padding = `10px ${paddingLeft}`;
-
-        if (chrome.runtime.lastError) {
-          qaUpperDisplay.innerHTML = `<div style="color: var(--popup-text-muted); font-size: 13px; line-height: 1.4;">❌ 錯誤: ${chrome.runtime.lastError.message}</div>`;
-          adjustPopupVerticalPosition(activePopup);
-          setTimeout(() => { textarea.focus(); }, 50);
-          return;
+      const textarea = qaContainer.querySelector(".qa-input-textarea");
+      const inputWrapper = qaContainer.querySelector(".qa-input-wrapper");
+      const loadingWrapper = qaContainer.querySelector(".qa-loading-wrapper");
+      textarea.value = "";
+      textarea.addEventListener("input", () => {
+        if (textarea.value.startsWith(" ") || textarea.value.startsWith("\n")) {
+          textarea.value = textarea.value.trimStart();
         }
-
-        if (response && response.success) {
-          // 記錄對話歷史
-          activeQAContext.history.push({ role: 'user', content: text });
-          activeQAContext.history.push({ role: 'assistant', content: response.reply });
-
-          // 顯示回覆 (使用 Markdown 渲染)
-          qaUpperDisplay.innerHTML = `<div style="font-size: 13px; color: var(--popup-text); line-height: 1.4; white-space: pre-wrap;">${renderMarkdown(response.reply)}</div>`;
-        } else {
-          qaUpperDisplay.innerHTML = `<div style="color: var(--popup-text-muted); font-size: 13px; line-height: 1.4;">❌ 錯誤: ${response ? response.error : '未知錯誤'}</div>`;
-        }
-        
-        // 回覆內容只有單條最新內容，所以應該滾動到頂部以便用戶從頭閱讀
-        qaUpperDisplay.scrollTop = 0;
+        textarea.style.height = "auto";
+        textarea.style.height = Math.min(100, textarea.scrollHeight) + "px";
         adjustPopupVerticalPosition(activePopup);
-
-        // 聚焦輸入框以便繼續提問
-        setTimeout(() => {
-          textarea.focus();
-        }, 50);
       });
-    }
-  }
-
-  // 簡易 Markdown 渲染器，支持標題、列表、引用、粗體、斜體、行內代碼與超連結
-  function renderMarkdown(md) {
-    if (!md) return '';
-    
-    // 轉義 HTML 標記防止 XSS
-    let escaped = md
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;');
-
-    const lines = escaped.split(/\r?\n/);
-    let htmlResult = '';
-    const listStack = [];
-    let inTable = false;
-    let isTableHeader = false;
-
-    function parseInlineMarkdown(text) {
-      if (!text) return '';
-      let html = text;
-      // 粗體: **bold** 或 __bold__
-      html = html.replace(/(\*\*|__)(.*?)\1/g, '<strong>$2</strong>');
-      // 斜體: *italic* 或 _italic_
-      html = html.replace(/(\*|_)(.*?)\1/g, '<em>$2</em>');
-      // 行內代碼: `code`
-      html = html.replace(/`(.*?)`/g, '<code style="font-family: monospace; background: var(--popup-divider, rgba(0,0,0,0.06)); padding: 2px 4px; border-radius: 4px; font-size: 0.9em; word-break: break-all;">$1</code>');
-      // 超連結: [text](url)
-      html = html.replace(/\[(.*?)\]\((.*?)\)/g, '<a href="$2" target="_blank" style="color: var(--popup-accent, var(--popup-text-label)); text-decoration: underline; cursor: pointer;">$1</a>');
-      return html;
-    }
-
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      const trimmed = line.trim();
-
-      // 表格解析
-      const isTableLine = trimmed.startsWith('|') && trimmed.endsWith('|') && trimmed.length > 1;
-      
-      if (!isTableLine && inTable) {
-        inTable = false;
-        htmlResult += '</tbody></table></div>';
-      }
-
-      if (isTableLine) {
-        if (!inTable) {
-          while (listStack.length > 0) {
-            const top = listStack.pop();
-            htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
+      let lastShiftState = false;
+      textarea.addEventListener("keydown", (e) => {
+        lastShiftState = e.shiftKey;
+        if (!e.isComposing && e.keyCode !== 229 && (e.code === "Enter" || e.code === "NumpadEnter") && !e.shiftKey) {
+          e.preventDefault();
+          setTimeout(() => sendMsg(), 10);
+        }
+      });
+      textarea.addEventListener("input", (e) => {
+        if (e.inputType === "insertLineBreak" && !lastShiftState) {
+          textarea.value = textarea.value.replace(/\n$/, "");
+          sendMsg();
+        }
+      });
+      setTimeout(() => {
+        textarea.focus();
+      }, 50);
+      adjustPopupVerticalPosition(activePopup);
+      function sendMsg() {
+        const text = textarea.value.trim();
+        if (!text) return;
+        textarea.value = "";
+        textarea.style.height = "auto";
+        inputWrapper.style.display = "none";
+        loadingWrapper.style.display = "flex";
+        adjustPopupVerticalPosition(activePopup);
+        chrome.runtime.sendMessage({
+          action: "aiChatQuery",
+          word: activeQAContext.word,
+          sentence: activeQAContext.sentence,
+          originalTranslation: activeQAContext.originalTranslation,
+          question: text,
+          history: activeQAContext.history
+        }, (response) => {
+          loadingWrapper.style.display = "none";
+          inputWrapper.style.display = "flex";
+          Array.from(inner.children).forEach((child) => {
+            if (child !== qaContainer && child !== qaUpperDisplay) {
+              child.style.display = "none";
+            }
+          });
+          qaUpperDisplay.style.display = "block";
+          qaUpperDisplay.style.padding = `10px ${paddingLeft}`;
+          if (chrome.runtime.lastError) {
+            qaUpperDisplay.innerHTML = `<div style="color: var(--popup-text-muted); font-size: 13px; line-height: 1.4;">❌ 錯誤: ${chrome.runtime.lastError.message}</div>`;
+            adjustPopupVerticalPosition(activePopup);
+            setTimeout(() => {
+              textarea.focus();
+            }, 50);
+            return;
           }
-          inTable = true;
-          isTableHeader = true;
-          htmlResult += '<div style="overflow-x: auto; margin: 8px 0;"><table style="width: 100%; border-collapse: collapse; font-size: 0.95em; color: var(--popup-text);"><tbody>';
-        }
-
-        // 跳過分隔線 |---|---|
-        if (trimmed.replace(/\|/g, '').replace(/-/g, '').replace(/:/g, '').trim() === '') {
-          isTableHeader = false;
-          continue;
-        }
-
-        const cells = trimmed.split('|').slice(1, -1).map(cell => parseInlineMarkdown(cell.trim()));
-        htmlResult += '<tr>';
-        cells.forEach(cell => {
-          if (isTableHeader) {
-            htmlResult += `<th style="border: 1px solid var(--popup-divider, rgba(0,0,0,0.15)); padding: 6px 10px; background: var(--popup-active-bg, rgba(0,0,0,0.03)); font-weight: bold; text-align: left; line-height: 1.4;">${cell}</th>`;
+          if (response && response.success) {
+            activeQAContext.history.push({ role: "user", content: text });
+            activeQAContext.history.push({ role: "assistant", content: response.reply });
+            qaUpperDisplay.innerHTML = `<div style="font-size: 13px; color: var(--popup-text); line-height: 1.4; white-space: pre-wrap;">${renderMarkdown(response.reply)}</div>`;
           } else {
-            htmlResult += `<td style="border: 1px solid var(--popup-divider, rgba(0,0,0,0.15)); padding: 6px 10px; line-height: 1.4;">${cell}</td>`;
+            qaUpperDisplay.innerHTML = `<div style="color: var(--popup-text-muted); font-size: 13px; line-height: 1.4;">❌ 錯誤: ${response ? response.error : "未知錯誤"}</div>`;
           }
+          qaUpperDisplay.scrollTop = 0;
+          adjustPopupVerticalPosition(activePopup);
+          setTimeout(() => {
+            textarea.focus();
+          }, 50);
         });
-        htmlResult += '</tr>';
-        
-        isTableHeader = false;
-        continue;
       }
-
-      // 1. 分割線 (Horizontal Rule)
-      if (trimmed === '---' || trimmed === '***' || trimmed === '___') {
-        while (listStack.length > 0) {
-          const top = listStack.pop();
-          htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-        }
-        htmlResult += '<hr style="border: none; border-top: 1px solid var(--popup-divider, rgba(0,0,0,0.1)); margin: 8px 0;" />';
-        continue;
-      }
-
-      // 2. 標題 (Headers)
-      const headerMatch = line.match(/^(#{1,6})\s+(.*)$/);
-      if (headerMatch) {
-        while (listStack.length > 0) {
-          const top = listStack.pop();
-          htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-        }
-        const level = headerMatch[1].length;
-        const content = parseInlineMarkdown(headerMatch[2]);
-        const fontSize = 1.3 - (level - 1) * 0.08;
-        htmlResult += `<h${level} style="margin: 8px 0 4px 0; font-weight: bold; color: var(--popup-text); line-height: 1.3; font-size: ${fontSize}em;">${content}</h${level}>`;
-        continue;
-      }
-
-      // 3. 引用 (Blockquotes)
-      const quoteMatch = line.match(/^>\s*(.*)$/);
-      if (quoteMatch) {
-        while (listStack.length > 0) {
-          const top = listStack.pop();
-          htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-        }
-        const content = parseInlineMarkdown(quoteMatch[1]);
-        htmlResult += `<blockquote style="border-left: 3px solid var(--popup-divider, rgba(0,0,0,0.1)); padding-left: 8px; margin: 6px 0; color: var(--popup-text-muted, #666); font-style: italic;">${content}</blockquote>`;
-        continue;
-      }
-
-      // 4. 列表項 (List Items)
-      const ulMatch = line.match(/^(\s*)[-*+]\s+(.*)$/);
-      const olMatch = line.match(/^(\s*)\d+\.\s+(.*)$/);
-
-      if (ulMatch || olMatch) {
-        const isUl = !!ulMatch;
-        const match = isUl ? ulMatch : olMatch;
-        const indent = match[1].length;
-        const content = parseInlineMarkdown(match[2]);
-        const listType = isUl ? 'ul' : 'ol';
-
-        // 調整縮進層級
-        while (listStack.length > 0 && listStack[listStack.length - 1].indent > indent) {
-          const top = listStack.pop();
-          htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-        }
-
-        if (listStack.length === 0 || listStack[listStack.length - 1].indent < indent) {
-          // 開啟新列表
-          listStack.push({ type: listType, indent: indent });
-          const level = listStack.length;
-          let listStyle = '';
-          if (listType === 'ul') {
-            const bulletType = level === 1 ? 'disc' : (level === 2 ? 'circle' : 'square');
-            listStyle = `list-style-type: ${bulletType};`;
-          } else {
-            const numType = level === 1 ? 'decimal' : (level === 2 ? 'lower-alpha' : 'lower-roman');
-            listStyle = `list-style-type: ${numType};`;
-          }
-          htmlResult += `<${listType} style="margin: 4px 0; padding-left: 20px; ${listStyle}">`;
-        } else if (listStack[listStack.length - 1].type !== listType) {
-          // 縮進相同但類型改變 (ul -> ol 或 ol -> ul)
-          const top = listStack.pop();
-          htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-          listStack.push({ type: listType, indent: indent });
-          const level = listStack.length;
-          let listStyle = '';
-          if (listType === 'ul') {
-            const bulletType = level === 1 ? 'disc' : (level === 2 ? 'circle' : 'square');
-            listStyle = `list-style-type: ${bulletType};`;
-          } else {
-            const numType = level === 1 ? 'decimal' : (level === 2 ? 'lower-alpha' : 'lower-roman');
-            listStyle = `list-style-type: ${numType};`;
-          }
-          htmlResult += `<${listType} style="margin: 4px 0; padding-left: 20px; ${listStyle}">`;
-        }
-
-        htmlResult += `<li style="margin-bottom: 3px; line-height: 1.5;">${content}</li>`;
-        continue;
-      }
-
-      // 5. 空白行
-      if (trimmed === '') {
-        while (listStack.length > 0) {
-          const top = listStack.pop();
-          htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-        }
-        htmlResult += '<div style="height: 6px;"></div>';
-        continue;
-      }
-
-      // 6. 普通段落文字
-      while (listStack.length > 0) {
-        const top = listStack.pop();
-        htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
-      }
-      const parsedContent = parseInlineMarkdown(line);
-      htmlResult += `<div style="margin-bottom: 4px; line-height: 1.5;">${parsedContent}</div>`;
     }
-
-    // 關閉剩餘的列表或表格
-    while (listStack.length > 0) {
-      const top = listStack.pop();
-      htmlResult += (top.type === 'ul' ? '</ul>' : '</ol>');
+    function adjustPopupVerticalPosition(activePopup) {
+      const rect = activePopup.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      if (rect.bottom > viewportHeight - 10) {
+        const overflow = rect.bottom - (viewportHeight - 10);
+        const currentTop = parseFloat(activePopup.style.top) || rect.top;
+        activePopup.style.top = Math.max(5, currentTop - overflow) + "px";
+      }
     }
-    if (inTable) {
-      htmlResult += '</tbody></table></div>';
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
     }
-
-    return htmlResult;
-  }
-
-  // 垂直位置微調，防止彈窗下邊界溢出視口
-  function adjustPopupVerticalPosition(activePopup) {
-    const rect = activePopup.getBoundingClientRect();
-    const viewportHeight = window.innerHeight;
-    if (rect.bottom > viewportHeight - 10) {
-      const overflow = rect.bottom - (viewportHeight - 10);
-      const currentTop = parseFloat(activePopup.style.top) || rect.top;
-      activePopup.style.top = Math.max(5, currentTop - overflow) + 'px';
-    }
-  }
-
-  // 啟動
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
+  })();
 })();

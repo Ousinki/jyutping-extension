@@ -28,3 +28,25 @@ Thumbs.db
 # Test files
 test.html
 *.bak
+
+# Local dev / one-off scratch scripts (never part of the extension)
+patch_*.js
+patch_*.py
+test_*.js
+test_*.html
+update_*.js
+update_*.py
+add_*.js
+add_*.py
+fix_*.js
+check_*.js
+clean_*.js
+find_*.js
+translate.py
+scratch.html
+scratch/
+html_keys.txt
+update_func.txt
+transcript_diff.txt
+ziuruaiR
+
