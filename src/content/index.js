@@ -375,9 +375,10 @@ import { createBlobUrlFromDataUri } from './tts.js';
 
 
 
-  // 判斷當前是否為深色模式
-  // NOTE: 目前沒有任何呼叫點，uiTheme 設定因此未生效（潛在 bug，待決定是否接線）
-  // eslint-disable-next-line no-unused-vars -- 保留：uiTheme 設定的消費者，待接線
+  // 殘留代碼：content.js 內 uiTheme / isDarkMode 已無使用點。
+  // 深色模式由別處負責——設定頁主題見 options.js(applyUITheme)，
+  // 懸浮窗深色主題見 popupTheme / applyPopupTheme。此處保留不影響功能。
+  // eslint-disable-next-line no-unused-vars -- 殘留：uiTheme 在 content.js 已無消費者
   function isDarkMode() {
     return uiTheme === 'dark' || (uiTheme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
