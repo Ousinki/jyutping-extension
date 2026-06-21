@@ -2440,53 +2440,6 @@ ${userDesc || "未提供具體描述"}`;
       }
       return null;
     }
-    function speakText(text) {
-      if (!ttsEnabled) return;
-      if (ttsEngine === "chromeTts") {
-        chrome.runtime.sendMessage({
-          action: "chromeTtsSpeak",
-          text,
-          options: { lang: "zh-HK", rate: ttsRate }
-        });
-      } else if (ttsEngine === "edgeTts") {
-        const baseUrl = edgeTtsMode === "custom" ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
-        chrome.runtime.sendMessage({
-          action: "edgeTtsSpeak",
-          text,
-          baseUrl,
-          rate: ttsRate
-        });
-      } else if (ttsEngine === "bertVits2") {
-        chrome.runtime.sendMessage({
-          action: "bertVits2Speak",
-          text,
-          rate: ttsRate
-        });
-      } else if (ttsEngine === "azureTts") {
-        if (azureTtsMode === "custom") {
-          chrome.runtime.sendMessage({
-            action: "azureTtsSpeak",
-            text,
-            azureKey: azureTtsKey,
-            azureRegion: azureTtsRegion,
-            azureVoice: azureTtsVoice,
-            rate: ttsRate
-          });
-        } else {
-          chrome.runtime.sendMessage({
-            action: "azureTtsProxySpeak",
-            text,
-            azureVoice: azureTtsVoice,
-            rate: ttsRate
-          });
-        }
-      } else {
-        const utterance = new SpeechSynthesisUtterance(text);
-        utterance.lang = "zh-HK";
-        utterance.rate = ttsRate;
-        speechSynthesis.speak(utterance);
-      }
-    }
     function showSelectionSpeakerPopup(rect, textToSpeak) {
       if (!popup) return null;
       const popupMain = popup.querySelector(".popup-main");
@@ -3110,8 +3063,6 @@ ${userDesc || "未提供具體描述"}`;
         const viewportHeight = window.innerHeight;
         let left, top;
         let arrowDirection = "up";
-        const x = rect.left;
-        const y = rect.bottom;
         const ARROW_HEIGHT = 8;
         const GAP = 2;
         const highlightCenterX = rect.left + rect.width / 2;
@@ -3280,7 +3231,6 @@ ${userDesc || "未提供具體描述"}`;
         range.setEnd(textNode, end);
         let wrapper;
         if (popupDisplayStyle === "ruby") {
-          const entry = result.entry;
           wrapper = document.createElement("ruby");
           wrapper.className = "jyutping-hover-ruby hl-" + (rubyHoverStyle || "ruby-red");
           console.log("[Jyutping] Creating hover ruby. rubyRtBackground:", rubyRtBackground, "rubyHoverStyle:", rubyHoverStyle);

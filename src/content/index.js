@@ -374,7 +374,10 @@ import { createBlobUrlFromDataUri } from './tts.js';
   };
 
 
+
   // 判斷當前是否為深色模式
+  // NOTE: 目前沒有任何呼叫點，uiTheme 設定因此未生效（潛在 bug，待決定是否接線）
+  // eslint-disable-next-line no-unused-vars -- 保留：uiTheme 設定的消費者，待接線
   function isDarkMode() {
     return uiTheme === 'dark' || (uiTheme === 'auto' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
   }
@@ -2567,56 +2570,6 @@ import { createBlobUrlFromDataUri } from './tts.js';
     return null;
   }
 
-  // 發音函數
-  function speakText(text) {
-    if (!ttsEnabled) return;
-    
-    if (ttsEngine === 'chromeTts') {
-      chrome.runtime.sendMessage({
-        action: 'chromeTtsSpeak',
-        text: text,
-        options: { lang: 'zh-HK', rate: ttsRate }
-      });
-    } else if (ttsEngine === 'edgeTts') {
-      const baseUrl = edgeTtsMode === 'custom' ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
-      chrome.runtime.sendMessage({
-        action: 'edgeTtsSpeak',
-        text: text,
-        baseUrl: baseUrl,
-        rate: ttsRate
-      });
-    } else if (ttsEngine === 'bertVits2') {
-      chrome.runtime.sendMessage({
-        action: 'bertVits2Speak',
-        text: text,
-        rate: ttsRate
-      });
-    } else if (ttsEngine === 'azureTts') {
-      if (azureTtsMode === 'custom') {
-        chrome.runtime.sendMessage({
-          action: 'azureTtsSpeak',
-          text: text,
-          azureKey: azureTtsKey,
-          azureRegion: azureTtsRegion,
-          azureVoice: azureTtsVoice,
-          rate: ttsRate
-        });
-      } else {
-        chrome.runtime.sendMessage({
-          action: 'azureTtsProxySpeak',
-          text: text,
-          azureVoice: azureTtsVoice,
-          rate: ttsRate
-        });
-      }
-    } else {
-      // Web Speech API 回退（直接在 content script 中執行）
-      const utterance = new SpeechSynthesisUtterance(text);
-      utterance.lang = 'zh-HK';
-      utterance.rate = ttsRate;
-      speechSynthesis.speak(utterance);
-    }
-  }
 
   // ========== 選區發音彈窗：僅顯示喇叭 ==========
   function showSelectionSpeakerPopup(rect, textToSpeak) {
@@ -3434,8 +3387,6 @@ import { createBlobUrlFromDataUri } from './tts.js';
       let left, top;
       let arrowDirection = 'up'; // 箭頭方向：up = 彈窗在下方，箭頭朝上指向詞語
       
-      const x = rect.left;
-      const y = rect.bottom; // 默認參考點
       const ARROW_HEIGHT = 8; // 箭頭高度
       const GAP = 2; // 箭頭與文字的間距
 
@@ -3671,8 +3622,6 @@ import { createBlobUrlFromDataUri } from './tts.js';
       
       if (popupDisplayStyle === 'ruby') {
         // 內嵌 Ruby 模式
-        const entry = result.entry;
-        
         wrapper = document.createElement('ruby');
         wrapper.className = 'jyutping-hover-ruby hl-' + (rubyHoverStyle || 'ruby-red');
         console.log('[Jyutping] Creating hover ruby. rubyRtBackground:', rubyRtBackground, 'rubyHoverStyle:', rubyHoverStyle);

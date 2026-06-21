@@ -17,7 +17,9 @@ export default [
       // dangling references to functions that moved into a module, and
       // leftover dead bindings after an extraction.
       'no-undef': 'error',
-      'no-unused-vars': ['warn', { args: 'none', varsIgnorePattern: '^_' }],
+      // Unused catch bindings (catch (e) {} to swallow an error) are an
+      // accepted pattern here; caughtErrors:'none' keeps lint output signal.
+      'no-unused-vars': ['warn', { args: 'none', varsIgnorePattern: '^_', caughtErrors: 'none' }],
       'no-redeclare': 'error',
     },
   },
