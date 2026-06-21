@@ -19,6 +19,10 @@ OUTPUT="jyutping-extension-v${VERSION}.zip"
 
 echo "📦 正在打包粵語懸浮詞典 v${VERSION}..."
 
+# 先從 src/ 重新打包 content.js（避免打包到過時的構建產物）
+echo "🔨 構建 content.js..."
+npm run build
+
 # 刪除舊的打包文件（如果存在）
 rm -f "$OUTPUT"
 
