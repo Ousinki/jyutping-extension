@@ -3570,19 +3570,19 @@ import { createBlobUrlFromDataUri } from './tts.js';
     }
   }
 
-  // 延遲隱藏（給用戶時間移動到彈窗上）
-  function scheduleHidePopup(delay = 400) {
+  // 延遲隱藏（給用戶時間移動到彈窗上，數值越小消失越快）
+  function scheduleHidePopup(delay = 150) {
     cancelScheduledHide();
     if (expandLockTimer) return; // 展開按鈕冷卻期內不隱藏
     if (waitingForMouseToEnterAfterExpand) return; // 展開後等待滑鼠移入期間不自動隱藏
-    
+
     // 如果打開了 Q&A，則不自動隱藏（用戶需要通過點擊外部來關閉）
     if (popup && popup.querySelector('.popup-qa-container')) return;
     if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
 
     let actualDelay = delay;
     if (translatePopup && translatePopup.style.display !== 'none') {
-      actualDelay = Math.max(actualDelay, 800);
+      actualDelay = Math.max(actualDelay, 300);
     }
 
     hideTimeout = setTimeout(() => {

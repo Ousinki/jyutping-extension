@@ -3211,7 +3211,7 @@ ${userDesc || "未提供具體描述"}`;
         scheduleHidePopup();
       }
     }
-    function scheduleHidePopup(delay = 400) {
+    function scheduleHidePopup(delay = 150) {
       cancelScheduledHide();
       if (expandLockTimer) return;
       if (waitingForMouseToEnterAfterExpand) return;
@@ -3219,7 +3219,7 @@ ${userDesc || "未提供具體描述"}`;
       if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
       let actualDelay = delay;
       if (translatePopup && translatePopup.style.display !== "none") {
-        actualDelay = Math.max(actualDelay, 800);
+        actualDelay = Math.max(actualDelay, 300);
       }
       hideTimeout = setTimeout(() => {
         if (!isMouseOverPopup) {
