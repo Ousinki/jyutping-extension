@@ -547,12 +547,32 @@ async function handleAiTranslateParagraph(request, tabId) {
         return `<${tag}>`;
       });
 
-      if (cleanHtml.length > 1000) {
-        throw new Error('段落太長 (超過 1000 字元)，Bing 極速翻譯無法處理，請在設定中切換為「AI 模型」翻譯。');
+      await getBingAccessToken();
+
+      if (cleanHtml.length > 950) {
+        // 段落過長，使用句子分割法分段請求
+        const chunks = cleanHtml.split(/(?<=[。！？\n])(?![^<]*>)/);
+        let currentBatch = '';
+        const batches = [];
+        for (const chunk of chunks) {
+          if (currentBatch.length + chunk.length > 950) {
+            if (currentBatch) batches.push(currentBatch);
+            currentBatch = chunk;
+          } else {
+            currentBatch += chunk;
+          }
+        }
+        if (currentBatch) batches.push(currentBatch);
+
+        // 並行翻譯所有分段
+        const promises = batches.map(batch => translateWithBing(batch, 'auto', 'yue'));
+        const results = await Promise.all(promises);
+        
+        reply({ success: true, html: results.join('') });
+        return;
       }
 
       // 使用 Bing 進行極速段落翻譯
-      await getBingAccessToken();
       const result = await translateWithBing(cleanHtml, 'auto', 'yue');
       if (!result) {
         throw new Error('Bing Translate 返回空結果');
