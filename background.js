@@ -537,9 +537,23 @@ async function handleAiTranslateParagraph(request, tabId) {
     }
 
     if (engine === 'bing') {
+      // 移除多餘的 HTML 屬性 (保留 href) 以大幅縮減字元數，避免觸發 Bing 1000 字元限制
+      let cleanHtml = html.replace(/<([a-z0-9]+)([^>]*)>/gi, (match, tag, attrs) => {
+        if (tag.toLowerCase() === 'a') {
+          const hrefMatch = attrs.match(/href=(["'])(.*?)\1/i);
+          if (hrefMatch) return `<a href="${hrefMatch[2]}">`;
+          return `<a>`;
+        }
+        return `<${tag}>`;
+      });
+
+      if (cleanHtml.length > 1000) {
+        throw new Error('段落太長 (超過 1000 字元)，Bing 極速翻譯無法處理，請在設定中切換為「AI 模型」翻譯。');
+      }
+
       // 使用 Bing 進行極速段落翻譯
       await getBingAccessToken();
-      const result = await translateWithBing(html, 'auto', 'yue');
+      const result = await translateWithBing(cleanHtml, 'auto', 'yue');
       if (!result) {
         throw new Error('Bing Translate 返回空結果');
       }
