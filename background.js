@@ -517,14 +517,28 @@ async function handleAiTranslateParagraph(request, tabId) {
 
   try {
     const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
+    const syncSettings = await chrome.storage.sync.get(['paragraphTransEngine']);
+    const engine = syncSettings.paragraphTransEngine || 'bing';
     const { aiBaseUrl, aiApiKey, aiModel } = settings;
-
-    if (!aiBaseUrl || !aiApiKey || !aiModel) {
-      throw new Error('請先在設定頁面配置 AI 翻譯');
-    }
 
     if (!html || !html.trim()) {
       throw new Error('沒有可翻譯的內容');
+    }
+
+    if (engine === 'bing') {
+      // 使用 Bing 進行極速段落翻譯
+      await getBingAccessToken();
+      const result = await translateWithBing(html, 'auto', 'yue');
+      if (!result) {
+        throw new Error('Bing Translate 返回空結果');
+      }
+      reply({ success: true, html: result });
+      return;
+    }
+
+    // AI 翻譯邏輯
+    if (!aiBaseUrl || !aiApiKey || !aiModel) {
+      throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
     const prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段 HTML 片段中的文字內容翻譯成自然、地道的粵語書面語。
@@ -549,8 +563,7 @@ ${html}`;
         model: aiModel,
         messages: [{ role: 'user', content: prompt }],
         max_tokens: 2000,
-        temperature: 0.3,
-        stream: true
+        temperature: 0.3
       })
     });
 
@@ -559,49 +572,11 @@ ${html}`;
       throw new Error(`API 錯誤 (${response.status}): ${errText.substring(0, 100)}`);
     }
 
-    const reader = response.body.getReader();
-    const decoder = new TextDecoder('utf-8');
-    let done = false;
-    let fullHtml = '';
-    
-    // 用於處理跨 chunk 的 SSE 數據
-    let buffer = '';
-
-    while (!done) {
-      const { value, done: readerDone } = await reader.read();
-      done = readerDone;
-      if (value) {
-        buffer += decoder.decode(value, { stream: true });
-        
-        // 解析 SSE 格式 (data: {...}\n\n)
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // 保留最後一個可能不完整的行
-        
-        for (const line of lines) {
-          if (line.startsWith('data: ') && line !== 'data: [DONE]') {
-            try {
-              const data = JSON.parse(line.substring(6));
-              const content = data.choices?.[0]?.delta?.content || '';
-              if (content) {
-                fullHtml += content;
-                
-                // 發送 chunk 給 content script 進行實時渲染
-                chrome.tabs.sendMessage(tabId, {
-                  action: 'aiTranslateParagraphChunk',
-                  id,
-                  html: fullHtml
-                }).catch(() => {});
-              }
-            } catch (e) {
-              console.warn('SSE JSON parse error:', e, line);
-            }
-          }
-        }
-      }
-    }
+    const data = await response.json();
+    let result = data.choices?.[0]?.message?.content?.trim() || '';
 
     // 去除模型可能加上的 ```html ... ``` 圍欄
-    let result = fullHtml.replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    result = result.replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
     if (!result) {
       throw new Error('AI 返回空結果');
@@ -609,7 +584,7 @@ ${html}`;
 
     reply({ success: true, html: result });
   } catch (error) {
-    console.warn('AI 段落翻譯失敗:', error.message || error);
+    console.warn('段落翻譯失敗:', error.message || error);
     reply({ success: false, error: error.message || String(error) });
   }
 }

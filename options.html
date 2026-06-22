@@ -1271,6 +1271,19 @@
             </div>
           </div>
 
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optParaTransEngine">段落翻譯引擎</span>
+              <span class="setting-desc" data-i18n="optParaTransEngineDesc">Bing 翻譯極速出結果，AI 翻譯則更精準地道但需要等待幾秒鐘</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="paragraphTransEngine">
+                <option value="bing" data-i18n="optParaTransEngineBing">Bing 翻譯 (毫秒極速)</option>
+                <option value="ai" data-i18n="optParaTransEngineAI">AI 模型 (精準但較慢)</option>
+              </select>
+            </div>
+          </div>
+
           <!-- Paragraph Translation Demo Animation -->
           <div id="paraTransDemo" style="margin-top: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; font-size: 15px; color: var(--text-primary); line-height: 1.5; align-items: center; min-height: 160px; justify-content: flex-start;">
             

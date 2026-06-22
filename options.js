@@ -193,7 +193,7 @@ async function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -213,6 +213,11 @@ async function applyI18n(lang) {
     if (paraModeEl) {
       paraModeEl.value = result.paragraphTransMode || 'below';
       updateDemoParaMode(result.paragraphTransMode || 'below');
+    }
+    
+    const paraEngineEl = document.getElementById('paragraphTransEngine');
+    if (paraEngineEl) {
+      paraEngineEl.value = result.paragraphTransEngine || 'bing';
     }
     
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
@@ -660,6 +665,15 @@ async function applyI18n(lang) {
       GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransMode', value: paragraphTransMode });
       updateDemoParaMode(paragraphTransMode);
       notifyContentScripts({ action: 'changeParagraphTransMode', paragraphTransMode });
+    });
+  }
+
+  const paragraphTransEngineSelect = document.getElementById('paragraphTransEngine');
+  if (paragraphTransEngineSelect) {
+    paragraphTransEngineSelect.addEventListener('change', () => {
+      const paragraphTransEngine = paragraphTransEngineSelect.value;
+      chrome.storage.sync.set({ paragraphTransEngine });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransEngine', value: paragraphTransEngine });
     });
   }
 

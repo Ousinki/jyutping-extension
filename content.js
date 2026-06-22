@@ -3649,18 +3649,6 @@ ${userDesc || "未提供具體描述"}`;
       const child = block.querySelector(":scope > .jyutping-cantonese-trans");
       if (child) child.remove();
     }
-    function applyParagraphTranslationChunk(id, payloadHtml) {
-      const entry = pendingParaTrans.get(id);
-      if (!entry) return;
-      const { block, translationEl } = entry;
-      if (!translationEl || !translationEl.parentNode) {
-        if (block) block.removeAttribute("data-jyutping-trans-id");
-        pendingParaTrans.delete(id);
-        return;
-      }
-      let cleanHtml = payloadHtml.replace(/^```(?:html)?\s*/i, "").replace(/\s*```$/i, "");
-      translationEl.innerHTML = sanitizeTranslatedHtml(cleanHtml);
-    }
     function applyParagraphTranslation(id, success, payloadHtml, error) {
       const entry = pendingParaTrans.get(id);
       if (!entry) return;
@@ -3817,8 +3805,6 @@ ${userDesc || "未提供具體描述"}`;
         toggleRubyAnnotations();
       } else if (request.action === "ttsEnded") {
         stopSpeakerAnimation();
-      } else if (request.action === "aiTranslateParagraphChunk") {
-        applyParagraphTranslationChunk(request.id, request.html);
       } else if (request.action === "aiTranslateParagraphResult") {
         applyParagraphTranslation(request.id, request.success, request.html, request.error);
       } else if (request.action === "changeParagraphTransKey") {
