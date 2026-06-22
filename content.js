@@ -2382,16 +2382,72 @@ ${userDesc || "未提供具體描述"}`;
         }
         cancelLongPressAnimation();
       }, true);
+      document.addEventListener("mousedown", (e) => {
+        if (!isEnabled || paragraphTransKey !== "longpress") return;
+        if (e.button !== 0) return;
+        if (hasUserSelection) return;
+        const path = e.composedPath ? e.composedPath() : [];
+        if (path.some((el) => el.id === "jyutping-shadow-host" || el.id === "cantonese-popup-dict" || el.id === "cantonese-translate-popup")) return;
+        const startX = e.clientX, startY = e.clientY;
+        if (!findTranslatableBlock(startX, startY)) return;
+        let triggered = false;
+        let animTimer = setTimeout(() => {
+          startLongPressAnimation(startX, startY);
+        }, 150);
+        let pressTimer = setTimeout(() => {
+          pressTimer = null;
+          triggered = true;
+          if (longPressRing) {
+            longPressRing.classList.add("done");
+            setTimeout(() => {
+              longPressRing.classList.remove("done");
+              longPressRing.classList.remove("active");
+            }, 300);
+          }
+          translateBlockAtPoint(startX, startY);
+        }, 600);
+        const cleanup = () => {
+          if (animTimer) {
+            clearTimeout(animTimer);
+            animTimer = null;
+          }
+          if (pressTimer) {
+            clearTimeout(pressTimer);
+            pressTimer = null;
+            cancelLongPressAnimation();
+          }
+          document.removeEventListener("mousemove", onMove);
+          document.removeEventListener("mouseup", onUp, true);
+        };
+        const onMove = (mv) => {
+          const dx = mv.clientX - startX, dy = mv.clientY - startY;
+          if (dx * dx + dy * dy > 64) cleanup();
+        };
+        const onUp = () => {
+          if (triggered) {
+            const onClick = (ce) => {
+              ce.preventDefault();
+              ce.stopPropagation();
+              document.removeEventListener("click", onClick, true);
+            };
+            document.addEventListener("click", onClick, true);
+            setTimeout(() => document.removeEventListener("click", onClick, true), 400);
+          }
+          cleanup();
+        };
+        document.addEventListener("mousemove", onMove);
+        document.addEventListener("mouseup", onUp, true);
+      }, true);
       document.addEventListener("keydown", (e) => {
         if (e.key === "Escape") {
           hidePopup();
           hideTranslatePopup();
           hasUserSelection = false;
         }
-        if (isEnabled && paragraphTransKey !== "off" && !e.repeat) {
+        if (isEnabled && paragraphTransKey !== "off" && paragraphTransKey !== "longpress" && !e.repeat) {
           const paraKeyMap = { "shift": "Shift", "alt": "Alt", "ctrl": "Control", "meta": "Meta" };
           if (e.key === paraKeyMap[paragraphTransKey]) {
-            translateBlockUnderCursor();
+            translateBlockAtPoint(currentMouseX, currentMouseY);
           }
         }
         const keyMap = { "alt": "Alt", "ctrl": "Control", "shift": "Shift", "meta": "Meta" };
@@ -3442,9 +3498,9 @@ ${userDesc || "未提供具體描述"}`;
       }
       return null;
     }
-    function translateBlockUnderCursor() {
-      if (currentMouseX === 0 && currentMouseY === 0) return;
-      const block = findTranslatableBlock(currentMouseX, currentMouseY);
+    function translateBlockAtPoint(x, y) {
+      if (x === 0 && y === 0) return;
+      const block = findTranslatableBlock(x, y);
       if (!block) return;
       const existingId = block.getAttribute("data-jyutping-trans-id");
       if (existingId) {

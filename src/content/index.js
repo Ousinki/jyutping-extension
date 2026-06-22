@@ -2333,6 +2333,53 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       cancelLongPressAnimation();
     }, true);
 
+    // 段落整段粵語翻譯：長按滑鼠左鍵觸發（當觸發鍵設為 longpress 時）
+    document.addEventListener('mousedown', (e) => {
+      if (!isEnabled || paragraphTransKey !== 'longpress') return;
+      if (e.button !== 0) return;
+      if (hasUserSelection) return; // 有選區時讓位給選區 TTS/AI 長按
+      const path = e.composedPath ? e.composedPath() : [];
+      if (path.some(el => el.id === 'jyutping-shadow-host' || el.id === 'cantonese-popup-dict' || el.id === 'cantonese-translate-popup')) return;
+
+      const startX = e.clientX, startY = e.clientY;
+      // 必須長按在可翻譯段落上才啟動
+      if (!findTranslatableBlock(startX, startY)) return;
+
+      let triggered = false;
+      let animTimer = setTimeout(() => { startLongPressAnimation(startX, startY); }, 150);
+      let pressTimer = setTimeout(() => {
+        pressTimer = null;
+        triggered = true;
+        if (longPressRing) {
+          longPressRing.classList.add('done');
+          setTimeout(() => { longPressRing.classList.remove('done'); longPressRing.classList.remove('active'); }, 300);
+        }
+        translateBlockAtPoint(startX, startY);
+      }, 600);
+
+      const cleanup = () => {
+        if (animTimer) { clearTimeout(animTimer); animTimer = null; }
+        if (pressTimer) { clearTimeout(pressTimer); pressTimer = null; cancelLongPressAnimation(); }
+        document.removeEventListener('mousemove', onMove);
+        document.removeEventListener('mouseup', onUp, true);
+      };
+      const onMove = (mv) => {
+        const dx = mv.clientX - startX, dy = mv.clientY - startY;
+        if (dx * dx + dy * dy > 64) cleanup(); // 移動超過 8px 視為拖拽，取消
+      };
+      const onUp = () => {
+        // 長按已觸發時，攔截隨後的 click，避免長按落在連結上時誤導航/選字
+        if (triggered) {
+          const onClick = (ce) => { ce.preventDefault(); ce.stopPropagation(); document.removeEventListener('click', onClick, true); };
+          document.addEventListener('click', onClick, true);
+          setTimeout(() => document.removeEventListener('click', onClick, true), 400);
+        }
+        cleanup();
+      };
+      document.addEventListener('mousemove', onMove);
+      document.addEventListener('mouseup', onUp, true);
+    }, true);
+
     // 監聽按鍵
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape') {
@@ -2342,10 +2389,10 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       }
 
       // 段落整段粵語翻譯：按下設定的觸發鍵即翻譯鼠標下的段落（再按一次移除）
-      if (isEnabled && paragraphTransKey !== 'off' && !e.repeat) {
+      if (isEnabled && paragraphTransKey !== 'off' && paragraphTransKey !== 'longpress' && !e.repeat) {
         const paraKeyMap = { 'shift': 'Shift', 'alt': 'Alt', 'ctrl': 'Control', 'meta': 'Meta' };
         if (e.key === paraKeyMap[paragraphTransKey]) {
-          translateBlockUnderCursor();
+          translateBlockAtPoint(currentMouseX, currentMouseY);
         }
       }
 
@@ -3753,10 +3800,10 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     return null;
   }
 
-  // 觸發：翻譯鼠標下的段落（已翻譯則移除，toggle）
-  function translateBlockUnderCursor() {
-    if (currentMouseX === 0 && currentMouseY === 0) return;
-    const block = findTranslatableBlock(currentMouseX, currentMouseY);
+  // 觸發：翻譯指定座標下的段落（已翻譯則移除，toggle）
+  function translateBlockAtPoint(x, y) {
+    if (x === 0 && y === 0) return;
+    const block = findTranslatableBlock(x, y);
     if (!block) return;
 
     // 已有譯文 → 移除（toggle）

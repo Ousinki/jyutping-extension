@@ -286,6 +286,10 @@
     "message": "滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）",
     "description": "optParaTransKeyDesc"
   },
+  "optParaTransKeyLongPress": {
+    "message": "長按滑鼠左鍵",
+    "description": "optParaTransKeyLongPress"
+  },
   "optInspectDictColorDesc": {
     "message": "調整字典風格下的音標顏色深度。"
   },

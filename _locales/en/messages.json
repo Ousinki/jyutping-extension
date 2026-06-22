@@ -286,6 +286,10 @@
     "message": "Hover over a paragraph and press this key to AI-translate the whole paragraph into Cantonese below the original; press again to remove (requires AI translation configured)",
     "description": "optParaTransKeyDesc"
   },
+  "optParaTransKeyLongPress": {
+    "message": "Long-press left mouse button",
+    "description": "optParaTransKeyLongPress"
+  },
   "optInspectDictColorDesc": {
     "message": "Adjust the phonetic symbol color depth in dictionary style."
   },
