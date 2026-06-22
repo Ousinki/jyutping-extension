@@ -64,9 +64,116 @@
         padding: 40px 20px;
       }
 
+      .layout-wrapper {
+        position: relative;
+        max-width: 640px;
+        margin: 0 auto;
+      }
+
+      .toc-container {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: calc(100% + 40px);
+        width: 220px;
+      }
+
+      .toc-sidebar {
+        position: sticky;
+        top: 40px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        /* Removed background, padding, border, shadow for a clean floating look */
+      }
+
+      .toc-title {
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: var(--text-muted);
+        margin-bottom: 12px;
+        padding-left: 12px; /* Align with links */
+      }
+
+      .toc-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .toc-list li a {
+        display: block;
+        padding: 8px 12px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: 500;
+        border-radius: 8px;
+        transition: var(--transition);
+      }
+
+      .toc-list li a:hover {
+        background: rgba(138, 28, 28, 0.05);
+        color: var(--primary);
+      }
+
+      .toc-list li a.active {
+        background: rgba(138, 28, 28, 0.08); /* Light primary */
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      :root[data-theme="dark"] .toc-list li a:hover {
+        background: rgba(239, 68, 68, 0.1);
+      }
+      :root[data-theme="dark"] .toc-list li a.active {
+        background: rgba(239, 68, 68, 0.15);
+      }
+
+      kbd {
+        display: inline-block;
+        padding: 3px 6px;
+        font-family: Consolas, "SF Mono", ui-monospace, monospace;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--text-primary);
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.1);
+        border-bottom-width: 2px;
+        line-height: 1.2;
+        margin: 0 2px;
+      }
+
+      :root[data-theme="dark"] kbd {
+        background-color: var(--bg-input);
+        border-color: var(--border);
+        box-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+      }
+
       .container {
         max-width: 640px;
         margin: 0 auto;
+      }
+
+      @media (max-width: 1080px) {
+        .toc-container {
+          position: relative;
+          top: 0;
+          bottom: auto;
+          right: auto;
+          width: 100%;
+          margin-bottom: 24px;
+        }
+        .toc-sidebar {
+          position: relative;
+          top: 0;
+        }
       }
 
       /* Header */
@@ -513,8 +620,24 @@
     </style>
   </head>
   <body>
-    <div class="container">
-      <!-- Header -->
+    <div class="layout-wrapper">
+      <div class="toc-container">
+        <nav class="toc-sidebar">
+          <div class="toc-title" data-i18n="optTOC">目錄</div>
+          <ul class="toc-list" id="tocList">
+            <li><a href="#sec-general" data-i18n="optGenSettings">一般設定</a></li>
+            <li><a href="#sec-paragraph" data-i18n="optParaTransTitle">段落翻譯</a></li>
+            <li><a href="#sec-inspect" data-i18n="optInspectModeTitle">全文注音</a></li>
+            <li><a href="#sec-trans" data-i18n="optTransSettings">翻譯設定</a></li>
+            <li><a href="#sec-ai" data-i18n="optAISettings">✨ AI 語境翻譯</a></li>
+            <li><a href="#sec-tts" data-i18n="optTTSSettings">語音設定 (TTS)</a></li>
+            <li><a href="#sec-feedback" data-i18n="optFeedbackTitle">💡 意見與反饋</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <div class="container">
+        <!-- Header -->
       
       <div class="header" style="position: relative;">
 
@@ -583,7 +706,7 @@
       </div>
 
       <!-- General Settings -->
-      <div class="settings-card">
+      <div class="settings-card" id="sec-general">
         <div class="settings-section">
           <div class="section-title" data-i18n="optGenSettings">一般設定</div>
 
@@ -789,22 +912,6 @@
             </div>
           </div>
 
-          <div class="setting-item" id="paragraphTransKeyContainer">
-            <div class="setting-info">
-              <span class="setting-label" data-i18n="optParaTransKey">段落粵語翻譯觸發鍵</span>
-              <span class="setting-desc" data-i18n="optParaTransKeyDesc">滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）</span>
-            </div>
-            <div class="select-wrapper">
-              <select id="paragraphTransKey">
-                <option value="off" data-i18n="optKeyNone">無 (關閉)</option>
-                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
-                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
-                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
-                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
-                <option value="longpress" data-i18n="optParaTransKeyLongPress">長按滑鼠左鍵</option>
-              </select>
-            </div>
-          </div>
 
 
           <!-- Compact Mode Animation Demo -->
@@ -1129,14 +1236,156 @@
         </div>
       </div>
 
-      <!-- Inspect Mode Settings -->
-      <div class="settings-card">
+      <!-- Paragraph Translation Settings -->
+      <div class="settings-card" id="sec-paragraph">
         <div class="settings-section">
-          <div class="section-title" data-i18n="optInspectModeTitle">交互式區塊注音 (Inspect Mode)</div>
+          <div class="section-title" data-i18n="optParaTransTitle">段落翻譯</div>
+
+          <div class="setting-item" id="paragraphTransKeyContainer">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optParaTransKey">段落粵語翻譯觸發鍵</span>
+              <span class="setting-desc" data-i18n="optParaTransKeyDesc">滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="paragraphTransKey">
+                <option value="off" data-i18n="optKeyOff">無 (關閉)</option>
+                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
+                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
+                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
+                <option value="meta" data-i18n="optKeyMeta">Command (⌘)</option>
+                <option value="longpress" data-i18n="optParaTransKeyLongPress">長按滑鼠左鍵</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optParaTransMode">翻譯顯示方式</span>
+              <span class="setting-desc" data-i18n="optParaTransModeDesc">選擇譯文是放在原文下方，還是直接覆蓋原文</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="paragraphTransMode">
+                <option value="below" data-i18n="optParaTransModeBelow">顯示在原文下方</option>
+                <option value="replace" data-i18n="optParaTransModeReplace">直接覆蓋原文</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Paragraph Translation Demo Animation -->
+          <div id="paraTransDemo" style="margin-top: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 30px 24px; position: relative; overflow: hidden; display: flex; flex-direction: column; gap: 12px; font-size: 15px; color: var(--text-primary); line-height: 1.5; align-items: center; min-height: 160px; justify-content: flex-start;">
+            
+            <div style="position: relative; z-index: 1; max-width: 400px; width: 100%; margin-top: 10px;">
+              <span class="demo-para-text" data-i18n="optParaTransDemoText" style="display: block; font-weight: 500;">這是一段用來示範粵語段落翻譯功能的文字。</span>
+              
+              <!-- Translated paragraph (appears via animation) -->
+              <div class="demo-para-translated" style="margin-top: 6px; padding: 0; color: #888; font-size: 14.5px; text-indent: 0; display: flex; align-items: flex-end;">
+                <span data-i18n="optParaTransDemoTranslated">呢段係用嚟示範廣東話段落翻譯功能嘅文字。</span>
+                <button class="jyutping-speaker-btn" title="朗讀粵語翻譯" style="background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 2px; margin-left: 6px; color: inherit; opacity: 0.6; transition: opacity 0.2s, color 0.2s; vertical-align: middle;">
+                  <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                    <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07" style="opacity: 0.4;"></path>
+                    <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14" style="opacity: 0.4;"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+
+            <!-- Simulated Cursor -->
+            <div class="demo-para-cursor" style="position: absolute; width: 24px; height: 24px; z-index: 10;">
+              <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%;">
+                <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+              </svg>
+            </div>
+
+            <!-- Simulated Keyboard key press -->
+            <div id="demoParaKey" class="demo-para-key" style="position: absolute; bottom: 20px; right: 24px; background: #fff; border: 1px solid #d0d0d0; border-bottom: 3px solid #b0b0b0; padding: 4px 10px; border-radius: 6px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 13px; font-weight: bold; color: #555; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.05);">
+              Shift ⇧
+            </div>
+
+            <style>
+              .demo-para-cursor {
+                top: 120px; left: -40px;
+                opacity: 0;
+                animation: paraCursorMove 6s ease-in-out infinite;
+              }
+
+              .demo-para-key {
+                opacity: 0;
+                transform: translateY(0);
+                animation: paraKeyPress 6s ease-in-out infinite;
+              }
+
+              .demo-para-mouse {
+                opacity: 0;
+                transform: translateY(0);
+                animation: paraMouseShow 6s ease-in-out infinite;
+              }
+
+              @keyframes paraMouseShow {
+                0%, 30%  { opacity: 0; }
+                35%, 70% { opacity: 1; }
+                75%, 100%{ opacity: 0; }
+              }
+
+              .demo-para-mouse-click {
+                animation: paraMouseLeftClick 6s ease-in-out infinite;
+              }
+
+              @keyframes paraMouseLeftClick {
+                0%, 35%  { fill: transparent; }
+                40%, 70% { fill: #3b82f6; }
+                75%, 100%{ fill: transparent; }
+              }
+
+              .demo-para-text-replace {
+                animation: paraTextHide 6s ease-in-out infinite;
+              }
+
+              @keyframes paraTextHide {
+                0%, 40%  { opacity: 1; }
+                45%, 65% { opacity: 0; }
+                70%, 100%{ opacity: 1; }
+              }
+
+              .demo-para-translated {
+                opacity: 0;
+                transform: translateY(-5px);
+                animation: paraTranslatedShow 6s ease-in-out infinite;
+              }
+
+              @keyframes paraCursorMove {
+                0%, 10%  { top: 120px; left: -40px; opacity: 0; }
+                20%      { top: 45px; left: 30%; opacity: 1; }
+                40%, 75% { top: 45px; left: 45%; opacity: 1; }
+                85%      { top: 120px; left: 105%; opacity: 1; }
+                90%, 100%{ top: 120px; left: 105%; opacity: 0; }
+              }
+
+              @keyframes paraKeyPress {
+                0%, 30%  { opacity: 0; transform: translateY(0); border-bottom-width: 3px; margin-top: 0; background: #fff; }
+                35%      { opacity: 1; transform: translateY(0); border-bottom-width: 3px; margin-top: 0; background: #fff; }
+                40%, 70% { opacity: 1; transform: translateY(2px); border-bottom-width: 1px; margin-top: 2px; background: #f0f0f0; }
+                75%, 100%{ opacity: 0; transform: translateY(0); border-bottom-width: 3px; margin-top: 0; background: #fff; }
+              }
+
+              @keyframes paraTranslatedShow {
+                0%, 40%  { opacity: 0; transform: translateY(-5px); }
+                45%, 65% { opacity: 1; transform: translateY(0); }
+                70%, 100%{ opacity: 0; transform: translateY(-5px); }
+              }
+            </style>
+          </div>
+        </div>
+      </div>
+
+      <!-- Inspect Mode Settings -->
+      <div class="settings-card" id="sec-inspect">
+        <div class="settings-section">
+          <div class="section-title" data-i18n="optInspectModeTitle">全文注音</div>
 
           <div class="setting-item" id="rubyShortcutContainer">
             <div class="setting-info">
-              <span class="setting-label" data-i18n="optInspectShortcutTitle">區塊粵語注音快捷鍵</span>
+              <span class="setting-label" data-i18n="optInspectShortcutTitle">全文注音快捷鍵</span>
               <span class="setting-desc" id="inspectShortcutDesc">未設定快捷鍵。</span>
             </div>
             <div style="flex-shrink: 0;">
@@ -1149,7 +1398,7 @@
           <div class="setting-item">
             <div class="setting-info">
               <span class="setting-label" data-i18n="optInspectToneStyleTitle">音調數字顯示方式</span>
-              <span class="setting-desc" data-i18n="optInspectToneStyleDesc">選擇區塊注音時，音調數字是顯示在後方還是右上角上標。</span>
+              <span class="setting-desc" data-i18n="optInspectToneStyleDesc">選擇全文注音時，音調數字是顯示在後方還是右上角上標。</span>
             </div>
             <select id="toneDisplayStyle" class="setting-select">
               <option value="normal" data-i18n="optToneNormal">預設 (後方，如 jyut6)</option>
@@ -1335,7 +1584,7 @@
       </div>
 
 
-      <div class="settings-card">
+      <div class="settings-card" id="sec-trans">
         <div class="settings-section">
           <div class="section-title" data-i18n="optTransSettings">翻譯設定</div>
           <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 4px 0;">
@@ -1527,7 +1776,7 @@
       </div>
 
       <!-- AI Translation Settings -->
-      <div class="settings-card">
+      <div class="settings-card" id="sec-ai">
         <div class="settings-section">
           <div class="section-title" data-i18n="optAISettings">✨ AI 語境翻譯</div>
 
@@ -1851,7 +2100,7 @@
       </div>
 
       <!-- TTS Settings -->
-      <div class="settings-card">
+      <div class="settings-card" id="sec-tts">
         <div class="settings-section">
           <div class="section-title" data-i18n="optTTSSettings">語音設定 (TTS)</div>
 
@@ -2114,7 +2363,7 @@
         </div>
       </div>
       <!-- Feedback Card -->
-      <div class="settings-card">
+      <div class="settings-card" id="sec-feedback">
         <div class="settings-section">
           <h2 data-i18n="optFeedbackTitle">💡 意見與反饋</h2>
           <p class="section-desc">
@@ -2271,6 +2520,7 @@
           & <a href="https://cc-cedict.org" target="_blank">CC-CEDICT</a>
         </p>
         <p><span data-i18n="optFooterLicense">授權：</span>CC BY-SA 3.0</p>
+      </div>
       </div>
     </div>
     <!-- Changelog Notice Board -->

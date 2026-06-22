@@ -299,7 +299,7 @@
     "message": "上付き文字フォント"
   },
   "optInspectModeTitle": {
-    "message": "インタラクティブブロックルビ (Inspect Mode)"
+    "message": "全文ルビ"
   },
   "optInspectOpacityDesc": {
     "message": "上付きテキストの不透明度を調整します。"
@@ -324,7 +324,7 @@
     "message": "ショートカットが設定されていません。"
   },
   "optInspectShortcutTitle": {
-    "message": "ブロック広東語ルビショートカット"
+    "message": "全文ルビショートカット"
   },
   "optInspectStyleDesc": {
     "message": "上付きテキストの視覚スタイル（斜体、色など）。"
@@ -333,7 +333,7 @@
     "message": "ルビテキストスタイル"
   },
   "optInspectToneStyleDesc": {
-    "message": "Inspect Modeで声調番号をどのように表示するかを選択します。"
+    "message": "全文ルビで声調番号をどのように表示するかを選択します。"
   },
   "optInspectToneStyleTitle": {
     "message": "声調番号の表示"
@@ -347,7 +347,7 @@
     "description": "optKeyCtrl"
   },
   "optKeyMeta": {
-    "message": "Command (⌘) / Win",
+    "message": "Command (⌘)",
     "description": "optKeyMeta"
   },
   "optKeyNone": {
@@ -672,5 +672,45 @@
   },
   "optRubyBgSolid": {
     "message": "単色背景"
+  },
+  "optParaTransTitle": {
+    "message": "段落翻訳"
+  },
+  "optParaTransDemoText": {
+    "message": "これは段落翻訳機能をデモするためのテキストです。"
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optParaTransKey": {
+    "message": "段落広東語翻訳のトリガーキー"
+  },
+  "optParaTransKeyDesc": {
+    "message": "テキストの段落にカーソルを合わせ、このキーを押すと、AIを使用して段落全体を広東語に翻訳し、元のテキストの下に表示します。もう一度押すと削除されます（AI翻訳の設定が必要です）。"
+  },
+  "optParaTransKeyLongPress": {
+    "message": "左クリックを長押し"
+  },
+  "optKeyOff": {
+    "message": "なし (オフ)"
+  },
+  "optParaTransMode": {
+    "message": "翻訳の表示方法",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeDesc": {
+    "message": "翻訳を元のテキストの下に表示するか、元のテキストを置き換えるかを選択します。",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeBelow": {
+    "message": "元のテキストの下に表示",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeReplace": {
+    "message": "元のテキストを置き換える",
+    "description": "optParaTransModeReplace"
+  },
+  "optTOC": {
+    "message": "目次"
   }
 }

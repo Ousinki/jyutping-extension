@@ -303,7 +303,7 @@
     "message": "Superscript Font"
   },
   "optInspectModeTitle": {
-    "message": "Interactive Block Ruby (Inspect Mode)"
+    "message": "Full-text Ruby"
   },
   "optInspectOpacityDesc": {
     "message": "Adjust the opacity of the superscript text."
@@ -328,7 +328,7 @@
     "message": "No shortcut set."
   },
   "optInspectShortcutTitle": {
-    "message": "Inspect Mode Shortcut"
+    "message": "Full-text Ruby Shortcut"
   },
   "optInspectStyleDesc": {
     "message": "Visual style for superscript text (italics, colors, etc.)."
@@ -337,7 +337,7 @@
     "message": "Ruby Text Style"
   },
   "optInspectToneStyleDesc": {
-    "message": "Choose how tone numbers are displayed in Inspect Mode."
+    "message": "Choose how tone numbers are displayed in Full-text Ruby mode."
   },
   "optInspectToneStyleTitle": {
     "message": "Tone Number Display"
@@ -351,7 +351,7 @@
     "description": "optKeyCtrl"
   },
   "optKeyMeta": {
-    "message": "Command / Win",
+    "message": "Command (⌘)",
     "description": "optKeyMeta"
   },
   "optKeyNone": {
@@ -684,5 +684,36 @@
   },
   "optRubyBgSolid": {
     "message": "Solid"
+  },
+  "optParaTransTitle": {
+    "message": "Paragraph Translation"
+  },
+  "optParaTransDemoText": {
+    "message": "This is a paragraph used to demonstrate the translation feature."
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optKeyOff": {
+    "message": "None (Off)"
+  },
+  "optParaTransMode": {
+    "message": "Translation Display Mode",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeDesc": {
+    "message": "Choose whether to place the translation below the original text or replace it.",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeBelow": {
+    "message": "Below original text",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeReplace": {
+    "message": "Replace original text",
+    "description": "optParaTransModeReplace"
+  },
+  "optTOC": {
+    "message": "Table of Contents"
   }
 }

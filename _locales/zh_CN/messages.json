@@ -303,7 +303,7 @@
     "message": "角标拼音字体"
   },
   "optInspectModeTitle": {
-    "message": "交互式区块注音 (Inspect Mode)"
+    "message": "全文注音"
   },
   "optInspectOpacityDesc": {
     "message": "调整上方注音的透明度。"
@@ -328,7 +328,7 @@
     "message": "未设置快捷键。"
   },
   "optInspectShortcutTitle": {
-    "message": "区块粤语注音快捷键"
+    "message": "全文注音快捷键"
   },
   "optInspectStyleDesc": {
     "message": "选择上方注音的视觉风格（斜体、颜色等）。"
@@ -337,7 +337,7 @@
     "message": "音标排版风格"
   },
   "optInspectToneStyleDesc": {
-    "message": "选择区块注音时，音调数字是显示在后方还是右上角角标。"
+    "message": "选择全文注音时，音调数字是显示在后方还是右上角角标。"
   },
   "optInspectToneStyleTitle": {
     "message": "音调数字显示方式"
@@ -351,7 +351,7 @@
     "description": "optKeyCtrl"
   },
   "optKeyMeta": {
-    "message": "Command (⌘) / Win",
+    "message": "Command (⌘)",
     "description": "optKeyMeta"
   },
   "optKeyNone": {
@@ -684,5 +684,36 @@
   },
   "optRubyBgSolid": {
     "message": "实色背景"
+  },
+  "optParaTransTitle": {
+    "message": "段落翻译"
+  },
+  "optParaTransDemoText": {
+    "message": "这是一段用来示范段落翻译功能的文字。"
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段系用来示范段落翻译功能嘅文字。"
+  },
+  "optKeyOff": {
+    "message": "无 (关闭)"
+  },
+  "optParaTransMode": {
+    "message": "翻译显示方式",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeDesc": {
+    "message": "选择译文是放在原文下方，还是直接覆盖原文",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeBelow": {
+    "message": "显示在原文下方",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeReplace": {
+    "message": "直接覆盖原文",
+    "description": "optParaTransModeReplace"
+  },
+  "optTOC": {
+    "message": "目录"
   }
 }

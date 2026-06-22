@@ -193,7 +193,7 @@ async function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme', 'paragraphTransKey' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -204,7 +204,17 @@ async function applyI18n(lang) {
     // 其他設置
     document.getElementById('displayMode').value = result.displayMode || 'jyutping';
     document.getElementById('hoverModifier').value = result.hoverModifier || 'none';
-    document.getElementById('paragraphTransKey').value = result.paragraphTransKey || 'alt';
+    // 載入段落翻譯快捷鍵
+    document.getElementById('paragraphTransKey').value = result.paragraphTransKey || 'shift';
+    updateDemoParaKeyText(result.paragraphTransKey || 'shift');
+    
+    // 載入段落翻譯顯示方式
+    const paraModeEl = document.getElementById('paragraphTransMode');
+    if (paraModeEl) {
+      paraModeEl.value = result.paragraphTransMode || 'below';
+      updateDemoParaMode(result.paragraphTransMode || 'below');
+    }
+    
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
     
     const rubyRtBackgroundSelect = document.getElementById('rubyRtBackgroundSelect');
@@ -637,8 +647,112 @@ async function applyI18n(lang) {
       const paragraphTransKey = paragraphTransKeySelect.value;
       chrome.storage.sync.set({ paragraphTransKey });
       GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransKey', value: paragraphTransKey });
+      updateDemoParaKeyText(paragraphTransKey);
       notifyContentScripts({ action: 'changeParagraphTransKey', paragraphTransKey });
     });
+  }
+
+  const paragraphTransModeSelect = document.getElementById('paragraphTransMode');
+  if (paragraphTransModeSelect) {
+    paragraphTransModeSelect.addEventListener('change', () => {
+      const paragraphTransMode = paragraphTransModeSelect.value;
+      chrome.storage.sync.set({ paragraphTransMode });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransMode', value: paragraphTransMode });
+      updateDemoParaMode(paragraphTransMode);
+      notifyContentScripts({ action: 'changeParagraphTransMode', paragraphTransMode });
+    });
+  }
+
+  function updateDemoParaKeyText(val) {
+    const keyEl = document.getElementById('demoParaKey');
+    const demoParaDemo = document.getElementById('paraTransDemo');
+    if (!keyEl) return;
+    
+    if (val === 'off') {
+      if (demoParaDemo) demoParaDemo.style.opacity = '0.3';
+      keyEl.textContent = 'Off';
+      return;
+    } else {
+      if (demoParaDemo) demoParaDemo.style.opacity = '1';
+    }
+
+    const keyMap = {
+      'alt': 'Alt ⌥',
+      'ctrl': 'Ctrl ⌃',
+      'shift': 'Shift ⇧',
+      'meta': 'Cmd ⌘'
+    };
+    
+    if (val === 'longpress') {
+      keyEl.classList.remove('demo-para-key');
+      keyEl.classList.add('demo-para-mouse');
+      keyEl.style.background = 'transparent';
+      keyEl.style.border = 'none';
+      keyEl.style.boxShadow = 'none';
+      keyEl.style.padding = '0';
+      keyEl.innerHTML = `
+        <svg width="26" height="38" viewBox="0 0 26 38" style="vertical-align: middle; filter: drop-shadow(0 3px 6px rgba(0,0,0,0.08));">
+          <rect x="3" y="4" width="20" height="30" rx="10" fill="#ffffff" stroke="none"/>
+          <path class="demo-para-mouse-click" d="M 3 16 L 3 14 A 10 10 0 0 1 13 4 L 13 16 Z"/>
+          <rect x="3" y="4" width="20" height="30" rx="10" fill="none" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="3" y1="16" x2="23" y2="16" stroke="#94a3b8" stroke-width="1.5"/>
+          <line x1="13" y1="4" x2="13" y2="16" stroke="#94a3b8" stroke-width="1.5"/>
+          <rect x="12" y="7" width="2" height="6" rx="1" fill="#94a3b8"/>
+        </svg>
+      `;
+    } else {
+      keyEl.classList.remove('demo-para-mouse');
+      keyEl.classList.add('demo-para-key');
+      keyEl.style.background = '#fff';
+      keyEl.style.border = '1px solid #d0d0d0';
+      keyEl.style.borderBottom = '3px solid #b0b0b0';
+      keyEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+      keyEl.style.padding = '4px 10px';
+      keyEl.textContent = keyMap[val] || val;
+    }
+
+    if (demoParaDemo) {
+      const animElements = demoParaDemo.querySelectorAll('.demo-para-cursor, .demo-para-translated, .demo-para-key, .demo-para-mouse, .demo-para-mouse-click, .demo-para-text-replace');
+      animElements.forEach(el => el.style.animation = 'none');
+      void demoParaDemo.offsetWidth; // trigger reflow
+      animElements.forEach(el => el.style.animation = '');
+    }
+  }
+
+  function updateDemoParaMode(mode) {
+    const demoText = document.querySelector('.demo-para-text');
+    const demoTrans = document.querySelector('.demo-para-translated');
+    const demoParaDemo = document.getElementById('paraTransDemo');
+    if (!demoText || !demoTrans) return;
+
+    if (mode === 'replace') {
+      demoText.classList.add('demo-para-text-replace');
+      demoTrans.style.marginTop = '0';
+      demoTrans.style.color = 'var(--text-primary)';
+      demoTrans.style.fontSize = '15px';
+      demoTrans.style.fontWeight = '500';
+      demoTrans.style.position = 'absolute';
+      demoTrans.style.top = '0';
+      demoTrans.style.left = '0';
+      demoTrans.style.width = '100%';
+    } else {
+      demoText.classList.remove('demo-para-text-replace');
+      demoTrans.style.marginTop = '6px';
+      demoTrans.style.color = '#888';
+      demoTrans.style.fontSize = '14.5px';
+      demoTrans.style.fontWeight = 'normal';
+      demoTrans.style.position = 'static';
+      demoTrans.style.top = 'auto';
+      demoTrans.style.left = 'auto';
+      demoTrans.style.width = 'auto';
+    }
+
+    if (demoParaDemo && document.getElementById('paragraphTransKey').value !== 'off') {
+      const animElements = demoParaDemo.querySelectorAll('.demo-para-cursor, .demo-para-translated, .demo-para-key, .demo-para-mouse, .demo-para-mouse-click, .demo-para-text-replace');
+      animElements.forEach(el => el.style.animation = 'none');
+      void demoParaDemo.offsetWidth; // trigger reflow
+      animElements.forEach(el => el.style.animation = '');
+    }
   }
 
   // 監聽懸浮窗樣式切換
@@ -1521,5 +1635,50 @@ async function applyI18n(lang) {
   window.addEventListener('focus', () => {
     const lang = document.getElementById('langToggle').value || 'zh-HK';
     updateShortcutDesc(lang);
+  });
+
+  // TOC Navigation Logic
+  const tocLinks = document.querySelectorAll('.toc-list a');
+  const sections = document.querySelectorAll('.settings-card[id]');
+
+  // Smooth scroll
+  tocLinks.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      const targetId = link.getAttribute('href').substring(1);
+      const targetSection = document.getElementById(targetId);
+      if (targetSection) {
+        window.scrollTo({
+          top: targetSection.offsetTop - 20, // offset for padding
+          behavior: 'smooth'
+        });
+      }
+    });
+  });
+
+  // IntersectionObserver to highlight active section
+  const observerOptions = {
+    root: null,
+    rootMargin: '0px 0px -40% 0px',
+    threshold: 0.1
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        // Remove active class from all links
+        tocLinks.forEach(link => link.classList.remove('active'));
+        // Add active class to corresponding link
+        const id = entry.target.getAttribute('id');
+        const activeLink = document.querySelector(`.toc-list a[href="#${id}"]`);
+        if (activeLink) {
+          activeLink.classList.add('active');
+        }
+      }
+    });
+  }, observerOptions);
+
+  sections.forEach(section => {
+    observer.observe(section);
   });
 });

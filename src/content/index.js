@@ -62,7 +62,8 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   let currentMouseY = 0; // 用於記錄絕對鼠標 Y 位置
 
   // 段落整段粵語翻譯（按鍵觸發，譯文內聯顯示在原文下方）
-  let paragraphTransKey = 'alt'; // 觸發鍵：'off' | 'shift' | 'alt' | 'ctrl' | 'meta'（可在選項頁設定）
+  let paragraphTransKey = 'shift'; // 觸發鍵：'off' | 'shift' | 'alt' | 'ctrl' | 'meta'（可在選項頁設定）
+  let paragraphTransMode = 'below'; // 顯示方式：'below' | 'replace'
   let paraTransSeq = 0; // 翻譯請求自增 id
   const pendingParaTrans = new Map(); // id -> { block, translationEl }
 
@@ -628,13 +629,61 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
         margin-top: 0.15em !important;
         /* 繼承自原塊的字體/排版（淺克隆保留了 class），此處僅淡化以示區別 */
       }
+      .jyutping-cantonese-trans-replace {
+        opacity: 1 !important;
+        color: inherit !important;
+        margin-top: 0 !important;
+      }
       .jyutping-cantonese-trans a {
         color: inherit !important;
         text-decoration: underline !important;
       }
       .jyutping-cantonese-trans .jyutping-cantonese-trans-loading {
-        font-style: italic;
         opacity: 0.85;
+        display: inline-flex;
+        align-items: center;
+      }
+      .jyutping-loading-spinner {
+        display: inline-block;
+        width: 14px;
+        height: 14px;
+        margin-right: 6px;
+        border: 2px solid currentColor;
+        border-right-color: transparent;
+        border-radius: 50%;
+        animation: jyutping-spin 0.75s linear infinite;
+      }
+      @keyframes jyutping-spin {
+        100% { transform: rotate(360deg); }
+      }
+      
+      /* Speaker Button in Paragraph Translation */
+      .jyutping-speaker-btn {
+        background: transparent; border: none; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; padding: 2px; margin-left: 6px; color: inherit; opacity: 0.6; transition: opacity 0.2s, color 0.2s; vertical-align: middle;
+      }
+      .jyutping-speaker-btn:hover {
+        opacity: 1;
+      }
+      .jyutping-speaker-btn .tts-wave {
+        opacity: 0.4;
+        transition: opacity 0.2s;
+      }
+      .jyutping-speaker-btn:hover .tts-wave {
+        opacity: 0.8;
+      }
+      .jyutping-speaker-btn.speaking {
+        color: #8A1C1C !important;
+        opacity: 1;
+      }
+      .jyutping-speaker-btn.speaking .tts-wave-1 {
+        animation: tts-wave-anim 1.5s infinite;
+      }
+      .jyutping-speaker-btn.speaking .tts-wave-2 {
+        animation: tts-wave-anim 1.5s infinite 0.3s;
+      }
+      @keyframes tts-wave-anim {
+        0%, 100% { opacity: 0; }
+        50% { opacity: 1; }
       }
     `;
     document.head.appendChild(hostStyle);
@@ -1478,7 +1527,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   function loadSettings() {
     chrome.storage.sync.get([
       'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'paragraphTransKey'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'paragraphTransKey', 'paragraphTransMode'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
@@ -1490,7 +1539,8 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       else if (result.rubyRtBackground === false || !result.rubyRtBackground) rubyRtBackground = 'none';
       else rubyRtBackground = result.rubyRtBackground;
       hoverModifier = result.hoverModifier || 'none';
-      paragraphTransKey = result.paragraphTransKey || 'alt';
+      paragraphTransKey = result.paragraphTransKey || 'shift';
+      paragraphTransMode = result.paragraphTransMode || 'below';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
@@ -3834,10 +3884,18 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     } else {
       clone = block.cloneNode(false); // 淺克隆：保留標籤與 class，不含子節點
     }
-    clone.classList.add('jyutping-cantonese-trans');
+    clone.classList.add('jyutping-cantonese-trans', 'notranslate');
+    clone.setAttribute('translate', 'no'); // 防禦性更強的標準屬性
     clone.removeAttribute('id'); // 避免 id 重複
     clone.removeAttribute('data-jyutping-trans-id');
-    clone.innerHTML = '<span class="jyutping-cantonese-trans-loading">⏳ 粵語翻譯中…</span>';
+    
+    if (paragraphTransMode === 'replace') {
+      clone.classList.add('jyutping-cantonese-trans-replace');
+      block.setAttribute('data-jyutping-original-display', block.style.display || '');
+      block.style.display = 'none';
+    }
+    
+    clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
 
     if (block.nextSibling) {
       block.parentNode.insertBefore(clone, block.nextSibling);
@@ -3851,6 +3909,12 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   function removeBlockTranslation(block) {
     const id = block.getAttribute('data-jyutping-trans-id');
     block.removeAttribute('data-jyutping-trans-id');
+    
+    const origDisplay = block.getAttribute('data-jyutping-original-display');
+    if (origDisplay !== null) {
+      block.style.display = origDisplay;
+      block.removeAttribute('data-jyutping-original-display');
+    }
     if (id && pendingParaTrans.has(Number(id))) {
       const entry = pendingParaTrans.get(Number(id));
       if (entry.translationEl && entry.translationEl.parentNode) entry.translationEl.remove();
@@ -3875,6 +3939,26 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
     if (success && payloadHtml) {
       translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+      
+      const speakerIcon = document.createElement('button');
+      speakerIcon.className = 'jyutping-speaker-btn';
+      speakerIcon.innerHTML = `
+        <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+          <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+          <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+        </svg>
+      `;
+      speakerIcon.title = '朗讀粵語翻譯';
+      
+      speakerIcon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const textToSpeak = translationEl.textContent.trim();
+        speakCantonese(textToSpeak, speakerIcon);
+      });
+      
+      translationEl.appendChild(speakerIcon);
     } else {
       // 失敗：撤掉占位塊與標記，提示
       translationEl.remove();
@@ -4016,6 +4100,8 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       applyParagraphTranslation(request.id, request.success, request.html, request.error);
     } else if (request.action === 'changeParagraphTransKey') {
       paragraphTransKey = request.paragraphTransKey || 'off';
+    } else if (request.action === 'changeParagraphTransMode') {
+      paragraphTransMode = request.paragraphTransMode || 'below';
     }
   });
 

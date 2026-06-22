@@ -265,7 +265,7 @@
     "message": "위첨자 폰트"
   },
   "optInspectModeTitle": {
-    "message": "대화형 블록 루비 (Inspect Mode)"
+    "message": "전체 텍스트 루비"
   },
   "optInspectOpacityDesc": {
     "message": "위첨자 텍스트의 불투명도를 조정합니다."
@@ -290,7 +290,7 @@
     "message": "단축키가 설정되지 않았습니다."
   },
   "optInspectShortcutTitle": {
-    "message": "블록 루비 단축키"
+    "message": "전체 텍스트 루비 단축키"
   },
   "optInspectStyleDesc": {
     "message": "위첨자 텍스트의 시각적 스타일(기울임꼴, 색상 등)입니다."
@@ -299,7 +299,7 @@
     "message": "루비 텍스트 스타일"
   },
   "optInspectToneStyleDesc": {
-    "message": "Inspect Mode에서 성조 숫자가 표시되는 방식을 선택하세요."
+    "message": "전체 텍스트 루비에서 성조 숫자가 표시되는 방식을 선택하세요."
   },
   "optInspectToneStyleTitle": {
     "message": "성조 숫자 표시"
@@ -311,7 +311,7 @@
     "message": "Ctrl (⌃)"
   },
   "optKeyMeta": {
-    "message": "Command (⌘) / Win"
+    "message": "Command (⌘)"
   },
   "optKeyNone": {
     "message": "없음 (직접 호버)"
@@ -626,5 +626,45 @@
   },
   "optRubyBgSolid": {
     "message": "단색 배경"
+  },
+  "optParaTransTitle": {
+    "message": "단락 번역"
+  },
+  "optParaTransDemoText": {
+    "message": "이것은 단락 번역 기능을 시연하기 위한 텍스트입니다."
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optParaTransKey": {
+    "message": "단락 광둥어 번역 트리거 키"
+  },
+  "optParaTransKeyDesc": {
+    "message": "텍스트 단락 위에 마우스를 올리고 이 키를 누르면 AI를 사용하여 전체 단락을 광둥어로 번역하여 원본 아래에 표시합니다. 다시 누르면 제거됩니다 (AI 번역 구성 필요)."
+  },
+  "optParaTransKeyLongPress": {
+    "message": "마우스 왼쪽 버튼 길게 누르기"
+  },
+  "optKeyOff": {
+    "message": "없음 (끄기)"
+  },
+  "optParaTransMode": {
+    "message": "번역 표시 방식",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeDesc": {
+    "message": "번역을 원본 텍스트 아래에 표시할지, 원본 텍스트를 덮어쓸지 선택합니다.",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeBelow": {
+    "message": "원본 텍스트 아래에 표시",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeReplace": {
+    "message": "원본 텍스트 덮어쓰기",
+    "description": "optParaTransModeReplace"
+  },
+  "optTOC": {
+    "message": "목차"
   }
 }
