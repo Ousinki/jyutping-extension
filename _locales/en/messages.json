@@ -715,5 +715,8 @@
   },
   "optTOC": {
     "message": "Table of Contents"
+  },
+  "clItem7": {
+    "message": "✨ <b>New Paragraph Translation</b>: Hold the shortcut key (default Shift ⇧) and hover over a paragraph to trigger AI for accurate Cantonese translation!"
   }
 }
