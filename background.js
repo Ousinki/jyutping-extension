@@ -380,7 +380,7 @@ async function getBingAccessToken() {
   return bingTokenPromise;
 }
 
-async function translateWithBing(text, from, to) {
+async function translateWithBing(text, from, to, retryCount = 0) {
   const { token, key, IG, IID } = await getBingAccessToken();
   
   // Bing 語言代碼映射
@@ -403,7 +403,18 @@ async function translateWithBing(text, from, to) {
   if (data && data[0] && data[0].translations && data[0].translations[0]) {
     return data[0].translations[0].text;
   }
-  throw new Error('Bing Translate 返回空結果');
+
+  // Token 失效或被拒絕 (Bing 有時返回 200 OK，但內容是 statusCode: 401 等)
+  if (data && data.statusCode) {
+    bingAccessToken = null; // 清除失效的 Token
+    if (retryCount === 0) {
+      console.log('Bing Token expired or invalid, retrying...', data);
+      return translateWithBing(text, from, to, 1); // 重試一次
+    }
+    throw new Error(`Bing API Error: ${data.errorMessage || data.statusCode}`);
+  }
+
+  throw new Error(`Bing Translate 返回空結果: ${JSON.stringify(data)}`);
 }
 
 // ==================== AI 語境翻譯 ====================
