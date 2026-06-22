@@ -215,9 +215,12 @@ async function applyI18n(lang) {
       updateDemoParaMode(result.paragraphTransMode || 'below');
     }
     
-    const paraEngineEl = document.getElementById('paragraphTransEngine');
-    if (paraEngineEl) {
-      paraEngineEl.value = result.paragraphTransEngine || 'bing';
+    const paraEngineRadios = document.querySelectorAll('input[name="paragraphTransEngineRadio"]');
+    if (paraEngineRadios.length > 0) {
+      const selectedValue = result.paragraphTransEngine || 'bing';
+      paraEngineRadios.forEach(r => {
+        r.checked = (r.value === selectedValue);
+      });
     }
     
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
@@ -310,6 +313,9 @@ async function applyI18n(lang) {
       transHoverEngineRadios.forEach(radio => {
         radio.checked = (radio.value === val);
       });
+      if (typeof updateDemoTransHoverEngine === 'function') {
+        updateDemoTransHoverEngine(val);
+      }
     }
 
     displayModeSelect.value = result.displayMode || 'jyutping';
@@ -479,14 +485,75 @@ async function applyI18n(lang) {
   }
 
   function updateTransLangsDemo(langs) {
-    const zhHans = document.getElementById('demoTransZhHans');
-    const en = document.getElementById('demoTransEn');
-    const ja = document.getElementById('demoTransJa');
-    const ko = document.getElementById('demoTransKo');
-    if (zhHans) zhHans.style.display = langs.includes('zh-Hans') ? 'flex' : 'none';
-    if (en) en.style.display = langs.includes('en') ? 'flex' : 'none';
-    if (ja) ja.style.display = langs.includes('ja') ? 'flex' : 'none';
-    if (ko) ko.style.display = langs.includes('ko') ? 'flex' : 'none';
+    const rows = [
+      document.getElementById('demoTransZhHans'),
+      document.getElementById('demoTransEn'),
+      document.getElementById('demoTransJa'),
+      document.getElementById('demoTransKo')
+    ];
+    let foundFirst = false;
+    rows.forEach(row => {
+      if (!row) return;
+      const langMap = {
+        'demoTransZhHans': 'zh-Hans',
+        'demoTransEn': 'en',
+        'demoTransJa': 'ja',
+        'demoTransKo': 'ko'
+      };
+      const lang = langMap[row.id];
+      const isVisible = langs.includes(lang);
+      row.style.display = isVisible ? 'flex' : 'none';
+      
+      row.classList.remove('demo-animating-row');
+      if (isVisible && !foundFirst) {
+        row.classList.add('demo-animating-row');
+        foundFirst = true;
+      }
+    });
+    
+    // Manage demo state and restart animations to keep the 9-second loop perfectly synchronized
+    const demoContainer = document.getElementById('translateDemoContainer');
+    if (demoContainer) {
+      if (langs.length === 0) {
+        demoContainer.classList.add('demo-disabled');
+      } else {
+        demoContainer.classList.remove('demo-disabled');
+        const animElements = demoContainer.querySelectorAll('.demo-selection, .demo-popup, .demo-cursor, .demo-ripple, .demo-ai-badge, .demo-ai-loading');
+        animElements.forEach(el => {
+          el.style.animation = 'none';
+        });
+        void demoContainer.offsetWidth; // trigger reflow
+        animElements.forEach(el => {
+          el.style.animation = '';
+        });
+      }
+    }
+  }
+
+  function updateDemoTransHoverEngine(engine) {
+    const popup = document.querySelector('.demo-popup');
+    if (popup) {
+      if (engine === 'ai') {
+        popup.classList.remove('demo-engine-bing');
+        popup.classList.add('demo-engine-ai');
+      } else {
+        popup.classList.remove('demo-engine-ai');
+        popup.classList.add('demo-engine-bing');
+      }
+    }
+    
+    // Restart animations
+    const demoContainer = document.getElementById('translateDemoContainer');
+    if (demoContainer) {
+      const animElements = demoContainer.querySelectorAll('.demo-selection, .demo-popup, .demo-cursor, .demo-ripple, .demo-ai-badge, .demo-ai-loading');
+      animElements.forEach(el => {
+        el.style.animation = 'none';
+      });
+      void demoContainer.offsetWidth; // trigger reflow
+      animElements.forEach(el => {
+        el.style.animation = '';
+      });
+    }
   }
 
   function updateDemoTransTrigger(trigger) {
@@ -532,6 +599,7 @@ async function applyI18n(lang) {
           chrome.storage.sync.set({ transHoverEngine: val });
           GoogleAnalytics.fireEvent('change_setting', { setting: 'transHoverEngine', value: val });
           notifyContentScripts({ action: 'changeTransHoverEngine', transHoverEngine: val });
+          updateDemoTransHoverEngine(val);
         }
       });
     });
@@ -690,15 +758,17 @@ async function applyI18n(lang) {
     });
   }
 
-  const paragraphTransEngineSelect = document.getElementById('paragraphTransEngine');
-  if (paragraphTransEngineSelect) {
-    paragraphTransEngineSelect.addEventListener('change', () => {
-      const paragraphTransEngine = paragraphTransEngineSelect.value;
-      chrome.storage.sync.set({ paragraphTransEngine });
-      notifyContentScripts({ action: 'updateParagraphTransEngine', paragraphTransEngine });
-      GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransEngine', value: paragraphTransEngine });
+  const paragraphTransEngineRadios = document.querySelectorAll('input[name="paragraphTransEngineRadio"]');
+  paragraphTransEngineRadios.forEach(radio => {
+    radio.addEventListener('change', () => {
+      if (radio.checked) {
+        const paragraphTransEngine = radio.value;
+        chrome.storage.sync.set({ paragraphTransEngine });
+        notifyContentScripts({ action: 'updateParagraphTransEngine', paragraphTransEngine });
+        GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransEngine', value: paragraphTransEngine });
+      }
     });
-  }
+  });
 
   function updateDemoParaKeyText(val) {
     const keyEl = document.getElementById('demoParaKey');

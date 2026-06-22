@@ -908,6 +908,9 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   }
 
   function requestTranslation(text) {
+    // 如果沒有選擇任何翻譯語言，直接禁用翻譯功能
+    if (!transLangs || transLangs.length === 0) return;
+
     // 只翻譯包含中文的文本
     const chineseRatio = (text.match(/[\u4e00-\u9fff]/g) || []).length / text.length;
     if (chineseRatio < 0.3) return;
