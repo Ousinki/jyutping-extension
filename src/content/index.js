@@ -3981,7 +3981,25 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     if (child) child.remove();
   }
 
-  // 收到 background 的翻譯結果
+  // 收到 background 的翻譯 Chunk (流式)
+  function applyParagraphTranslationChunk(id, payloadHtml) {
+    const entry = pendingParaTrans.get(id);
+    if (!entry) return;
+    const { block, translationEl } = entry;
+    if (!translationEl || !translationEl.parentNode) {
+      if (block) block.removeAttribute('data-jyutping-trans-id');
+      pendingParaTrans.delete(id);
+      return;
+    }
+    
+    // 將 markdown 代碼圍欄去除（如果 LLM 開始輸出 ```html）
+    let cleanHtml = payloadHtml.replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/i, '');
+    
+    // 直接渲染不完整的 HTML，瀏覽器會自動容錯閉合標籤
+    translationEl.innerHTML = sanitizeTranslatedHtml(cleanHtml);
+  }
+
+  // 收到 background 的最終翻譯結果 (流式結束)
   function applyParagraphTranslation(id, success, payloadHtml, error) {
     const entry = pendingParaTrans.get(id);
     if (!entry) return;
@@ -4151,6 +4169,8 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       toggleRubyAnnotations();
     } else if (request.action === 'ttsEnded') {
       stopSpeakerAnimation();
+    } else if (request.action === 'aiTranslateParagraphChunk') {
+      applyParagraphTranslationChunk(request.id, request.html);
     } else if (request.action === 'aiTranslateParagraphResult') {
       applyParagraphTranslation(request.id, request.success, request.html, request.error);
     } else if (request.action === 'changeParagraphTransKey') {
