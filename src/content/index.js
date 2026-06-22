@@ -3914,7 +3914,6 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       clone.style.display = 'block';
       clone.style.marginTop = '6px';
       clone.style.paddingTop = '6px';
-      clone.style.borderTop = '1px dashed rgba(150, 150, 150, 0.3)';
       clone.style.color = 'inherit';
       clone.style.opacity = '0.9';
       clone.style.fontSize = '0.95em';
