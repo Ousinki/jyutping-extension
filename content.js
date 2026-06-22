@@ -3573,26 +3573,54 @@ ${userDesc || "未提供具體描述"}`;
     }
     function createTranslationPlaceholder(block) {
       let clone;
-      const tag = block.tagName;
-      if (tag === "TD" || tag === "TH" || tag === "LI" || tag === "DT" || tag === "DD") {
-        clone = document.createElement("div");
-      } else {
-        clone = block.cloneNode(false);
-      }
-      clone.classList.add("jyutping-cantonese-trans", "notranslate");
-      clone.setAttribute("translate", "no");
-      clone.removeAttribute("id");
-      clone.removeAttribute("data-jyutping-trans-id");
-      if (paragraphTransMode === "replace") {
-        clone.classList.add("jyutping-cantonese-trans-replace");
+      const hasComplexMedia = !!block.querySelector('video, img, iframe, [data-module-type="video"], [class*="video"]');
+      if (paragraphTransMode === "replace" && !hasComplexMedia) {
+        const tag = block.tagName;
+        if (tag === "TD" || tag === "TH" || tag === "LI" || tag === "DT" || tag === "DD") {
+          clone = document.createElement("div");
+        } else {
+          clone = block.cloneNode(false);
+        }
+        clone.classList.add("jyutping-cantonese-trans", "notranslate", "jyutping-cantonese-trans-replace");
+        clone.setAttribute("translate", "no");
+        clone.removeAttribute("id");
+        clone.removeAttribute("data-jyutping-trans-id");
         block.setAttribute("data-jyutping-original-display", block.style.display || "");
         block.style.display = "none";
-      }
-      clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
-      if (block.nextSibling) {
-        block.parentNode.insertBefore(clone, block.nextSibling);
+        clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
+        if (block.nextSibling) {
+          block.parentNode.insertBefore(clone, block.nextSibling);
+        } else {
+          block.parentNode.appendChild(clone);
+        }
       } else {
-        block.parentNode.appendChild(clone);
+        clone = document.createElement("span");
+        clone.style.display = "block";
+        clone.style.marginTop = "6px";
+        clone.style.paddingTop = "6px";
+        clone.style.borderTop = "1px dashed rgba(150, 150, 150, 0.3)";
+        clone.style.color = "inherit";
+        clone.style.opacity = "0.9";
+        clone.style.fontSize = "0.95em";
+        clone.classList.add("jyutping-cantonese-trans", "notranslate");
+        clone.setAttribute("translate", "no");
+        clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
+        let insertBeforeNode = null;
+        const childNodes = Array.from(block.childNodes);
+        for (let i = childNodes.length - 1; i >= 0; i--) {
+          const node = childNodes[i];
+          if (node.nodeType === 3 && node.textContent.trim().length > 0) break;
+          if (node.nodeType === 1) {
+            const tag = node.tagName.toLowerCase();
+            if (["span", "a", "sup", "sub", "strong", "em", "b", "i", "font"].includes(tag)) break;
+          }
+          insertBeforeNode = node;
+        }
+        if (insertBeforeNode) {
+          block.insertBefore(clone, insertBeforeNode);
+        } else {
+          block.appendChild(clone);
+        }
       }
       return clone;
     }
@@ -3612,6 +3640,8 @@ ${userDesc || "未提供具體描述"}`;
       }
       const sib = block.nextElementSibling;
       if (sib && sib.classList.contains("jyutping-cantonese-trans")) sib.remove();
+      const child = block.querySelector(":scope > .jyutping-cantonese-trans");
+      if (child) child.remove();
     }
     function applyParagraphTranslation(id, success, payloadHtml, error) {
       const entry = pendingParaTrans.get(id);

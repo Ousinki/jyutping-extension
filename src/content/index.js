@@ -3880,33 +3880,69 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   }
 
   // 淺克隆原塊作為譯文容器：繼承原標籤+class（網站 CSS 自動套用），疊加灰色透明度
+  // 修正：當使用雙語模式（或替換模式但塊內含媒體時），改為沉浸式翻譯樣式，直接在原塊內插入文本，防止穿透或隱藏視頻
   function createTranslationPlaceholder(block) {
     let clone;
-    const tag = block.tagName;
-    // 像 TD/TH/LI 這類需要特定父容器的元素，克隆為 DIV 以免破壞表格/列表結構
-    if (tag === 'TD' || tag === 'TH' || tag === 'LI' || tag === 'DT' || tag === 'DD') {
-      clone = document.createElement('div');
-    } else {
-      clone = block.cloneNode(false); // 淺克隆：保留標籤與 class，不含子節點
-    }
-    clone.classList.add('jyutping-cantonese-trans', 'notranslate');
-    clone.setAttribute('translate', 'no'); // 防禦性更強的標準屬性
-    clone.removeAttribute('id'); // 避免 id 重複
-    clone.removeAttribute('data-jyutping-trans-id');
+    const hasComplexMedia = !!block.querySelector('video, img, iframe, [data-module-type="video"], [class*="video"]');
     
-    if (paragraphTransMode === 'replace') {
-      clone.classList.add('jyutping-cantonese-trans-replace');
+    if (paragraphTransMode === 'replace' && !hasComplexMedia) {
+      // 傳統替換模式：克隆原塊以保留樣式，隱藏原塊
+      const tag = block.tagName;
+      if (tag === 'TD' || tag === 'TH' || tag === 'LI' || tag === 'DT' || tag === 'DD') {
+        clone = document.createElement('div');
+      } else {
+        clone = block.cloneNode(false);
+      }
+      clone.classList.add('jyutping-cantonese-trans', 'notranslate', 'jyutping-cantonese-trans-replace');
+      clone.setAttribute('translate', 'no');
+      clone.removeAttribute('id');
+      clone.removeAttribute('data-jyutping-trans-id');
+      
       block.setAttribute('data-jyutping-original-display', block.style.display || '');
       block.style.display = 'none';
+      
+      clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
+      
+      if (block.nextSibling) {
+        block.parentNode.insertBefore(clone, block.nextSibling);
+      } else {
+        block.parentNode.appendChild(clone);
+      }
+    } else {
+      // 沉浸式翻譯樣式（雙語模式或包含媒體時的退化）：在原塊內插入一個 span 容器，避免複製原塊背景，防止遮蓋視頻
+      clone = document.createElement('span');
+      clone.style.display = 'block';
+      clone.style.marginTop = '6px';
+      clone.style.paddingTop = '6px';
+      clone.style.borderTop = '1px dashed rgba(150, 150, 150, 0.3)';
+      clone.style.color = 'inherit';
+      clone.style.opacity = '0.9';
+      clone.style.fontSize = '0.95em';
+      
+      clone.classList.add('jyutping-cantonese-trans', 'notranslate');
+      clone.setAttribute('translate', 'no');
+      clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
+      
+      // 尋找最後一個文字/內聯元素，將翻譯插入在其之後，媒體之前
+      let insertBeforeNode = null;
+      const childNodes = Array.from(block.childNodes);
+      for (let i = childNodes.length - 1; i >= 0; i--) {
+        const node = childNodes[i];
+        if (node.nodeType === 3 && node.textContent.trim().length > 0) break;
+        if (node.nodeType === 1) {
+          const tag = node.tagName.toLowerCase();
+          if (['span', 'a', 'sup', 'sub', 'strong', 'em', 'b', 'i', 'font'].includes(tag)) break;
+        }
+        insertBeforeNode = node;
+      }
+      
+      if (insertBeforeNode) {
+        block.insertBefore(clone, insertBeforeNode);
+      } else {
+        block.appendChild(clone);
+      }
     }
     
-    clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
-
-    if (block.nextSibling) {
-      block.parentNode.insertBefore(clone, block.nextSibling);
-    } else {
-      block.parentNode.appendChild(clone);
-    }
     return clone;
   }
 
@@ -3929,6 +3965,9 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     // 後備：直接找緊鄰的譯文兄弟元素
     const sib = block.nextElementSibling;
     if (sib && sib.classList.contains('jyutping-cantonese-trans')) sib.remove();
+    // 後備：尋找塊內插入的沉浸式翻譯
+    const child = block.querySelector(':scope > .jyutping-cantonese-trans');
+    if (child) child.remove();
   }
 
   // 收到 background 的翻譯結果
