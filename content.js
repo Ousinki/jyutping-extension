@@ -1009,18 +1009,23 @@
       }
       .jyutping-cantonese-trans .jyutping-cantonese-trans-loading {
         opacity: 0.85;
-        display: inline-flex;
-        align-items: center;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: flex-start !important;
+        gap: 8px !important;
+        width: fit-content !important;
       }
       .jyutping-loading-spinner {
-        display: inline-block;
-        width: 14px;
-        height: 14px;
-        margin-right: 6px;
-        border: 2px solid currentColor;
-        border-right-color: transparent;
-        border-radius: 50%;
-        animation: jyutping-spin 0.75s linear infinite;
+        display: inline-block !important;
+        width: 14px !important;
+        height: 14px !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        flex-shrink: 0 !important;
+        border: 2px solid currentColor !important;
+        border-right-color: transparent !important;
+        border-radius: 50% !important;
+        animation: jyutping-spin 0.75s linear infinite !important;
       }
       @keyframes jyutping-spin {
         100% { transform: rotate(360deg); }
