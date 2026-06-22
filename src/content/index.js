@@ -624,19 +624,13 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
       /* ========== 段落粵語翻譯（內聯於原文下方，灰色半透明以示區別）========== */
       .jyutping-cantonese-trans {
-        opacity: 0.62 !important;
-        color: #6b7280 !important;
+        opacity: 0.65 !important;
         margin-top: 0.15em !important;
         /* 繼承自原塊的字體/排版（淺克隆保留了 class），此處僅淡化以示區別 */
       }
       .jyutping-cantonese-trans-replace {
         opacity: 1 !important;
-        color: inherit !important;
         margin-top: 0 !important;
-      }
-      .jyutping-cantonese-trans a {
-        color: inherit !important;
-        text-decoration: underline !important;
       }
       .jyutping-cantonese-trans .jyutping-cantonese-trans-loading {
         opacity: 0.85;
@@ -3914,8 +3908,6 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       clone.style.display = 'block';
       clone.style.marginTop = '6px';
       clone.style.paddingTop = '6px';
-      clone.style.color = 'inherit';
-      clone.style.opacity = '0.9';
       clone.style.fontSize = '0.95em';
       
       clone.classList.add('jyutping-cantonese-trans', 'notranslate');
