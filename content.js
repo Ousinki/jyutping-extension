@@ -3558,8 +3558,11 @@ ${userDesc || "未提供具體描述"}`;
         return;
       }
       const id = ++paraTransSeq;
-      const html = block.innerHTML;
-      if (!html || !block.textContent.trim()) return;
+      const tempClone = block.cloneNode(true);
+      const mediaNodes = tempClone.querySelectorAll('video, audio, iframe, embed, object, [data-module-type="video"]');
+      mediaNodes.forEach((n) => n.remove());
+      const html = tempClone.innerHTML;
+      if (!html || !tempClone.textContent.trim()) return;
       const translationEl = createTranslationPlaceholder(block);
       block.setAttribute("data-jyutping-trans-id", String(id));
       pendingParaTrans.set(id, { block, translationEl });

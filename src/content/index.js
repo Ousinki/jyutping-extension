@@ -3863,8 +3863,15 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     }
 
     const id = ++paraTransSeq;
-    const html = block.innerHTML;
-    if (!html || !block.textContent.trim()) return;
+    
+    // 預處理 HTML：移除可能包含大量無關文本的媒體模塊（如百度百科的視頻塊）
+    // 防止背景腳本翻譯了隱藏的視頻標題和時長
+    const tempClone = block.cloneNode(true);
+    const mediaNodes = tempClone.querySelectorAll('video, audio, iframe, embed, object, [data-module-type="video"]');
+    mediaNodes.forEach(n => n.remove());
+    
+    const html = tempClone.innerHTML;
+    if (!html || !tempClone.textContent.trim()) return;
 
     const translationEl = createTranslationPlaceholder(block);
     block.setAttribute('data-jyutping-trans-id', String(id));
