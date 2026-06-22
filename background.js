@@ -348,16 +348,24 @@ let bingAccessToken = null;
 let bingTokenPromise = null;
 
 async function getBingAccessToken() {
-  // Token 有效期內直接返回
+  // 1. 先檢查記憶體中是否有有效的 token
   if (bingAccessToken && (Date.now() - bingAccessToken.tokenTs < bingAccessToken.tokenExpiryInterval)) {
     return bingAccessToken;
   }
+
+  // 2. 如果沒有，嘗試從 storage 讀取（防止 Service Worker 休眠後丟失，省去 1 秒的獲取延遲）
+  const stored = await chrome.storage.local.get('bingAccessToken');
+  if (stored.bingAccessToken && (Date.now() - stored.bingAccessToken.tokenTs < stored.bingAccessToken.tokenExpiryInterval)) {
+    bingAccessToken = stored.bingAccessToken;
+    return bingAccessToken;
+  }
   
-  // 如果已經在獲取中，直接等待同一個 Promise（防止並發請求時抓取多次 token）
+  // 3. 如果已經在獲取中，直接等待同一個 Promise（防止並發請求時抓取多次 token）
   if (bingTokenPromise) {
     return bingTokenPromise;
   }
   
+  // 4. 重新發送請求抓取最新 Token
   bingTokenPromise = (async () => {
     try {
       const html = await (await fetch('https://www.bing.com/translator')).text();
@@ -371,6 +379,10 @@ async function getBingAccessToken() {
       
       const [key, token, interval] = JSON.parse(paramsMatch);
       bingAccessToken = { IG, IID, key, token, tokenTs: Date.now(), tokenExpiryInterval: interval, count: 0 };
+      
+      // 保存到 storage
+      await chrome.storage.local.set({ bingAccessToken });
+      
       return bingAccessToken;
     } finally {
       bingTokenPromise = null; // 請求完成後清除 Promise
@@ -407,6 +419,7 @@ async function translateWithBing(text, from, to, retryCount = 0) {
   // Token 失效或被拒絕 (Bing 有時返回 200 OK，但內容是 statusCode: 401 等)
   if (data && data.statusCode) {
     bingAccessToken = null; // 清除失效的 Token
+    chrome.storage.local.remove('bingAccessToken'); // 從 storage 中也清除
     if (retryCount === 0) {
       console.log('Bing Token expired or invalid, retrying...', data);
       return translateWithBing(text, from, to, 1); // 重試一次
