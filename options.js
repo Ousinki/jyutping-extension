@@ -424,6 +424,9 @@ async function applyI18n(lang) {
     const rate = result.ttsRate || 0.9;
     ttsRateSlider.value = rate;
     ttsRateValue.textContent = rate + 'x';
+    
+    // 觸發自定義 UI 更新
+    document.querySelectorAll('select').forEach(s => s.dispatchEvent(new Event('updateUI')));
   });
 
   // AI 設定用 local storage（避免 sync 配額不足）
@@ -438,6 +441,11 @@ async function applyI18n(lang) {
     }
     if (aiPromptInput) {
       aiPromptInput.value = result.aiPrompt || '';
+    }
+    
+    // 觸發自定義 UI 更新
+    if (aiLanguageSelect) {
+      aiLanguageSelect.dispatchEvent(new Event('updateUI'));
     }
   });
 
@@ -1739,6 +1747,127 @@ async function applyI18n(lang) {
       descEl.innerText = "";
     }
   }
+
+  // 初始化自定義下拉選單 (Progressive Enhancement)
+  function initCustomSelects() {
+    const selects = document.querySelectorAll('select:not(.native-only)');
+    selects.forEach(select => {
+      if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+        return;
+      }
+      
+      const wrapper = document.createElement('div');
+      wrapper.className = 'custom-select-wrapper';
+      
+      const trigger = document.createElement('div');
+      trigger.className = 'custom-select-trigger';
+      trigger.setAttribute('tabindex', '0');
+      
+      const label = document.createElement('span');
+      label.className = 'custom-select-label';
+      
+      const arrow = document.createElement('div');
+      arrow.className = 'custom-select-arrow';
+      arrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+      
+      trigger.appendChild(label);
+      trigger.appendChild(arrow);
+      
+      const panel = document.createElement('div');
+      panel.className = 'custom-select-panel';
+      
+      Array.from(select.options).forEach(option => {
+        const item = document.createElement('div');
+        item.className = 'custom-select-item';
+        
+        if (option.hasAttribute('data-i18n')) {
+          item.setAttribute('data-i18n', option.getAttribute('data-i18n'));
+        }
+        
+        if (option.selected) {
+          item.classList.add('selected');
+          label.textContent = option.textContent;
+          if (option.hasAttribute('data-i18n')) {
+            label.setAttribute('data-i18n', option.getAttribute('data-i18n'));
+          }
+        }
+        item.textContent = option.textContent;
+        item.dataset.value = option.value;
+        
+        item.addEventListener('click', (e) => {
+          e.stopPropagation();
+          select.value = option.value;
+          
+          label.textContent = option.textContent;
+          if (option.hasAttribute('data-i18n')) {
+            label.setAttribute('data-i18n', option.getAttribute('data-i18n'));
+          } else {
+            label.removeAttribute('data-i18n');
+          }
+          panel.querySelectorAll('.custom-select-item').forEach(i => i.classList.remove('selected'));
+          item.classList.add('selected');
+          
+          wrapper.classList.remove('open');
+          select.dispatchEvent(new Event('change'));
+        });
+        panel.appendChild(item);
+      });
+      
+      const updateUI = () => {
+        const selectedOption = select.options[select.selectedIndex];
+        if (selectedOption) {
+          label.textContent = selectedOption.textContent;
+          if (selectedOption.hasAttribute('data-i18n')) {
+            label.setAttribute('data-i18n', selectedOption.getAttribute('data-i18n'));
+          } else {
+            label.removeAttribute('data-i18n');
+          }
+          panel.querySelectorAll('.custom-select-item').forEach(i => {
+            if (i.dataset.value === selectedOption.value) {
+              i.classList.add('selected');
+            } else {
+              i.classList.remove('selected');
+            }
+          });
+        }
+      };
+      
+      select.addEventListener('change', updateUI);
+      select.addEventListener('updateUI', updateUI);
+      
+      wrapper.appendChild(trigger);
+      wrapper.appendChild(panel);
+      
+      select.parentNode.insertBefore(wrapper, select.nextSibling);
+      select.style.display = 'none';
+      
+      trigger.addEventListener('click', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        const isOpen = wrapper.classList.contains('open');
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+        if (!isOpen) {
+          wrapper.classList.add('open');
+          const rect = panel.getBoundingClientRect();
+          if (rect.bottom > window.innerHeight) {
+            panel.style.top = 'auto';
+            panel.style.bottom = 'calc(100% + 6px)';
+            panel.style.transform = 'translateY(6px)';
+          } else {
+            panel.style.top = 'calc(100% + 6px)';
+            panel.style.bottom = 'auto';
+            panel.style.transform = 'none';
+          }
+        }
+      });
+    });
+    
+    document.addEventListener('click', () => {
+      document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    });
+  }
+
+  initCustomSelects();
 
   // 監聽視窗聚焦，當用戶從 chrome://extensions/shortcuts 返回時自動更新快捷鍵顯示
   window.addEventListener('focus', () => {
