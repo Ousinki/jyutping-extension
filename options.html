@@ -789,6 +789,22 @@
             </div>
           </div>
 
+          <div class="setting-item" id="paragraphTransKeyContainer">
+            <div class="setting-info">
+              <span class="setting-label" data-i18n="optParaTransKey">段落粵語翻譯觸發鍵</span>
+              <span class="setting-desc" data-i18n="optParaTransKeyDesc">滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）</span>
+            </div>
+            <div class="select-wrapper">
+              <select id="paragraphTransKey">
+                <option value="off" data-i18n="optKeyNone">無 (關閉)</option>
+                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
+                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
+                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
+                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
+              </select>
+            </div>
+          </div>
+
 
           <!-- Compact Mode Animation Demo -->
           <div id="compactDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">

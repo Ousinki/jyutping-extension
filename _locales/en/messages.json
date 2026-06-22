@@ -278,6 +278,14 @@
     "message": "Require holding a key to show popup",
     "description": "optHoverModifierDesc"
   },
+  "optParaTransKey": {
+    "message": "Paragraph Cantonese translation key",
+    "description": "optParaTransKey"
+  },
+  "optParaTransKeyDesc": {
+    "message": "Hover over a paragraph and press this key to AI-translate the whole paragraph into Cantonese below the original; press again to remove (requires AI translation configured)",
+    "description": "optParaTransKeyDesc"
+  },
   "optInspectDictColorDesc": {
     "message": "Adjust the phonetic symbol color depth in dictionary style."
   },

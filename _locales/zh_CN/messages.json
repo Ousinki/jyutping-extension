@@ -278,6 +278,14 @@
     "message": "按住特定按键时才显示完整词典，避免日常干扰",
     "description": "optHoverModifierDesc"
   },
+  "optParaTransKey": {
+    "message": "段落粤语翻译触发键",
+    "description": "optParaTransKey"
+  },
+  "optParaTransKeyDesc": {
+    "message": "鼠标停在一段文字上时，按此键用 AI 将整段翻译成粤语，显示在原文下方；再按一次移除（需先配置 AI 翻译）",
+    "description": "optParaTransKeyDesc"
+  },
   "optInspectDictColorDesc": {
     "message": "调整字典风格下的音标颜色深度。"
   },

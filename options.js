@@ -193,7 +193,7 @@ async function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme', 'paragraphTransKey' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -204,6 +204,7 @@ async function applyI18n(lang) {
     // 其他設置
     document.getElementById('displayMode').value = result.displayMode || 'jyutping';
     document.getElementById('hoverModifier').value = result.hoverModifier || 'none';
+    document.getElementById('paragraphTransKey').value = result.paragraphTransKey || 'alt';
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
     
     const rubyRtBackgroundSelect = document.getElementById('rubyRtBackgroundSelect');
@@ -627,6 +628,16 @@ async function applyI18n(lang) {
       chrome.storage.sync.set({ hoverModifier: modifier });
       GoogleAnalytics.fireEvent('change_setting', { setting: 'hoverModifier', value: modifier });
       notifyContentScripts({ action: 'changeHoverModifier', modifier });
+    });
+  }
+
+  const paragraphTransKeySelect = document.getElementById('paragraphTransKey');
+  if (paragraphTransKeySelect) {
+    paragraphTransKeySelect.addEventListener('change', () => {
+      const paragraphTransKey = paragraphTransKeySelect.value;
+      chrome.storage.sync.set({ paragraphTransKey });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransKey', value: paragraphTransKey });
+      notifyContentScripts({ action: 'changeParagraphTransKey', paragraphTransKey });
     });
   }
 

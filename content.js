@@ -1699,7 +1699,8 @@ ${userDesc || "未提供具體描述"}`;
         "rubyDictionaryColor",
         "transLang",
         "transLangs",
-        "transTrigger"
+        "transTrigger",
+        "paragraphTransKey"
       ], (result) => {
         if (result.enabled !== void 0) isEnabled = result.enabled !== false;
         displayMode = result.displayMode || "jyutping";
@@ -1708,6 +1709,7 @@ ${userDesc || "未提供具體描述"}`;
         else if (result.rubyRtBackground === false || !result.rubyRtBackground) rubyRtBackground = "none";
         else rubyRtBackground = result.rubyRtBackground;
         hoverModifier = result.hoverModifier || "none";
+        paragraphTransKey = result.paragraphTransKey || "alt";
         popupDisplayStyle = result.popupDisplayStyle || "full";
         popupTheme = result.popupTheme || "classic";
         customZhFont = result.customZhFont || "";
