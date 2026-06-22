@@ -426,6 +426,17 @@
   padding: 1px 4px;
   flex-shrink: 0;
   line-height: 1.2;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+#cantonese-popup-dict .popup-translate .translate-label:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  /* Glowing pulse + shimmering background */
+  background-image: linear-gradient(110deg, transparent 25%, color-mix(in srgb, var(--label-color) 15%, white 40%) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: aiGlowPulse 2s infinite, aiShimmer 2.5s infinite linear;
 }
 
 #cantonese-popup-dict .popup-translate .translate-label-zh-Hans {
@@ -510,6 +521,43 @@
   padding: 1px 5px;
   flex-shrink: 0;
   line-height: 1.2;
+  transition: transform 0.15s ease, filter 0.15s ease, box-shadow 0.15s ease;
+}
+
+#cantonese-translate-popup .translate-label:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.05);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.08);
+  /* Glowing pulse + shimmering background */
+  background-image: linear-gradient(110deg, transparent 25%, color-mix(in srgb, var(--label-color) 15%, white 40%) 50%, transparent 75%);
+  background-size: 200% 100%;
+  animation: aiGlowPulse 2s infinite, aiShimmer 2.5s infinite linear;
+}
+
+@keyframes aiGlowPulse {
+  0% { box-shadow: 0 0 0 0 var(--label-border); }
+  70% { box-shadow: 0 0 0 3px transparent; }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+
+@keyframes aiShimmer {
+  0% { background-position: 200% center; }
+  100% { background-position: -200% center; }
+}
+
+
+
+#cantonese-popup-dict .popup-translate .translate-label-ai::after,
+#cantonese-translate-popup .translate-label-ai::after {
+  content: "AI";
+  position: relative;
+  top: -3px;
+  margin-left: 2px;
+  font-size: 8px;
+  font-weight: 700;
+  opacity: 0.55;
+  color: inherit;
+  pointer-events: none;
 }
 
 #cantonese-translate-popup .translate-label-zh-Hans {

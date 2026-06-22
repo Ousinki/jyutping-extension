@@ -67,9 +67,10 @@
     "description": "optAILanguage"
   },
   "optAIModelLabel": {
-    "message": "AI 模型",
+    "message": "自定義 AI",
     "description": "optAIModelLabel"
   },
+
   "optAIPromptLabel": {
     "message": "AI 翻譯 Prompt",
     "description": "optAIPromptLabel"
@@ -721,5 +722,23 @@
   },
   "optInspectDemoText": {
     "message": "全文注音示範"
+  },
+  "optParaTransEngine": {
+    "message": "段落翻譯引擎"
+  },
+  "optParaTransEngineDesc": {
+    "message": "Bing 翻譯極速出結果，AI 翻譯則更精準地道但需要等待幾秒鐘"
+  },
+  "optParaTransEngineBing": {
+    "message": "Bing"
+  },
+  "optParaTransEngineAI": {
+    "message": "AI"
+  },
+  "optHoverTransEngineTitle": {
+    "message": "預設翻譯引擎"
+  },
+  "optHoverTransEngineDesc": {
+    "message": "選擇懸浮窗翻譯所使用的預設引擎"
   }
 }

@@ -475,6 +475,7 @@
     let currentMouseY = 0;
     let paragraphTransKey = "shift";
     let paragraphTransMode = "below";
+    let paragraphTransEngine = "bing";
     let paraTransSeq = 0;
     const pendingParaTrans = /* @__PURE__ */ new Map();
     let activeQAContext = {
@@ -493,6 +494,7 @@
     }
     let transLangs = ["zh-Hans", "en"];
     let transTrigger = "dblclick";
+    let transHoverEngine = "bing";
     let translatePopup = null;
     let pendingTranslateWord = null;
     let aiEnabled = false;
@@ -1225,12 +1227,57 @@
     function requestTranslation(text) {
       const chineseRatio = (text.match(/[\u4e00-\u9fff]/g) || []).length / text.length;
       if (chineseRatio < 0.3) return;
-      showTranslatePopup(text, null, true);
-      chrome.runtime.sendMessage({
-        action: "translate",
-        text,
-        transLangs
-      });
+      if (transHoverEngine === "ai" && aiEnabled) {
+        let fakeTranslations = {};
+        transLangs.forEach((lang) => {
+          fakeTranslations[lang] = "AI 翻譯中...";
+        });
+        showTranslatePopup(text, fakeTranslations, false);
+        let rows;
+        if (translatePopup && translatePopup.style.display !== "none") {
+          rows = translatePopup.querySelectorAll(".translate-row");
+        } else if (popup && popup.style.display !== "none") {
+          rows = popup.querySelectorAll(".translate-row");
+        }
+        if (rows) {
+          rows.forEach((row) => {
+            const textEl = row.querySelector(".translate-text");
+            const labelEl = row.querySelector(".translate-label");
+            const key = row.dataset.key;
+            if (textEl) textEl.style.opacity = "0.5";
+            if (labelEl) {
+              let labelName = "AI";
+              if (key === "zh-Hans") labelName = pt("mandarin");
+              else if (key === "en") labelName = pt("english");
+              else if (key === "ja") labelName = pt("japanese");
+              else if (key === "ko") labelName = pt("korean");
+              labelEl.textContent = labelName;
+              labelEl.classList.add("translate-label-ai");
+              labelEl.title = "點擊使用 Bing 重新翻譯";
+            }
+          });
+        }
+        transLangs.forEach((lang) => {
+          let langName = "";
+          if (lang === "zh-Hans") langName = "現代標準漢語（普通話）";
+          else if (lang === "en") langName = "英文";
+          else if (lang === "ja") langName = "日文";
+          else if (lang === "ko") langName = "韓文";
+          chrome.runtime.sendMessage({
+            action: "aiTranslateSentenceLang",
+            text,
+            targetLang: langName,
+            key: lang
+          });
+        });
+      } else {
+        showTranslatePopup(text, null, true);
+        chrome.runtime.sendMessage({
+          action: "translate",
+          text,
+          transLangs
+        });
+      }
     }
     function showTranslatePopup(originalText, translations, loading) {
       cancelScheduledHide();
@@ -1253,14 +1300,72 @@
               const keys = Object.keys(translations);
               for (const key of keys) {
                 let label = "";
-                if (key === "zh-Hans") label = pt("mandarin");
-                else if (key === "en") label = pt("english");
-                else if (key === "ja") label = pt("japanese");
-                else if (key === "ko") label = pt("korean");
-                rows += `<div class="translate-row"><span class="translate-label translate-label-${key}">${label}</span><span class="translate-text">${translations[key] || ""}</span></div>`;
+                let langName = "";
+                if (key === "zh-Hans") {
+                  label = pt("mandarin");
+                  langName = "現代標準漢語（普通話）";
+                } else if (key === "en") {
+                  label = pt("english");
+                  langName = "英文";
+                } else if (key === "ja") {
+                  label = pt("japanese");
+                  langName = "日文";
+                } else if (key === "ko") {
+                  label = pt("korean");
+                  langName = "韓文";
+                }
+                rows += `<div class="translate-row" data-key="${key}" data-lang="${langName}"><span class="translate-label translate-label-${key}" title="點擊使用 AI 重新翻譯" style="cursor: pointer;">${label}</span><span class="translate-text">${translations[key] || ""}</span></div>`;
               }
             }
             translateDiv.innerHTML = rows;
+            translateDiv.querySelectorAll(".translate-label").forEach((labelEl) => {
+              labelEl.addEventListener("click", (e) => {
+                e.stopPropagation();
+                const row = labelEl.closest(".translate-row");
+                const key = row.dataset.key;
+                const langName = row.dataset.lang;
+                const textEl = row.querySelector(".translate-text");
+                if (popup) popup.classList.add("jyutping-popup-pinned");
+                if (translatePopup) translatePopup.classList.add("jyutping-popup-pinned");
+                if (labelEl.classList.contains("translate-label-ai")) {
+                  labelEl.classList.remove("translate-label-ai");
+                  if (key === "zh-Hans") labelEl.textContent = pt("mandarin");
+                  else if (key === "en") labelEl.textContent = pt("english");
+                  else if (key === "ja") labelEl.textContent = pt("japanese");
+                  else if (key === "ko") labelEl.textContent = pt("korean");
+                  labelEl.title = "點擊使用 AI 重新翻譯";
+                  if (textEl) {
+                    textEl.textContent = "Bing 翻譯中...";
+                    textEl.style.opacity = "0.5";
+                  }
+                  chrome.runtime.sendMessage({
+                    action: "bingTranslateSentenceLang",
+                    text: activeQAContext.sentence,
+                    targetLang: key,
+                    key
+                  });
+                } else {
+                  if (textEl) {
+                    textEl.textContent = "AI 翻譯中...";
+                    textEl.style.opacity = "0.5";
+                  }
+                  let labelName = "AI";
+                  if (key === "zh-Hans") labelName = pt("mandarin");
+                  else if (key === "en") labelName = pt("english");
+                  else if (key === "ja") labelName = pt("japanese");
+                  else if (key === "ko") labelName = pt("korean");
+                  labelEl.textContent = labelName;
+                  labelEl.title = "點擊使用 Bing 重新翻譯";
+                  labelEl.classList.add("translate-label-ai");
+                  chrome.runtime.sendMessage({
+                    action: "aiTranslateSentenceLang",
+                    text: activeQAContext.sentence,
+                    targetLang: langName,
+                    key
+                  });
+                }
+              });
+            });
           }
           translateDiv.style.display = "block";
           return;
@@ -1279,11 +1384,21 @@
           const keys = Object.keys(translations);
           for (const key of keys) {
             let label = "";
-            if (key === "zh-Hans") label = pt("mandarin");
-            else if (key === "en") label = pt("english");
-            else if (key === "ja") label = pt("japanese");
-            else if (key === "ko") label = pt("korean");
-            rows += `<div class="translate-row"><span class="translate-label translate-label-${key}">${label}</span><span class="translate-text">${translations[key] || ""}</span></div>`;
+            let langName = "";
+            if (key === "zh-Hans") {
+              label = pt("mandarin");
+              langName = "現代標準漢語（普通話）";
+            } else if (key === "en") {
+              label = pt("english");
+              langName = "英文";
+            } else if (key === "ja") {
+              label = pt("japanese");
+              langName = "日文";
+            } else if (key === "ko") {
+              label = pt("korean");
+              langName = "韓文";
+            }
+            rows += `<div class="translate-row" data-key="${key}" data-lang="${langName}"><span class="translate-label translate-label-${key}" title="點擊使用 AI 重新翻譯" style="cursor: pointer;">${label}</span><span class="translate-text">${translations[key] || ""}</span></div>`;
           }
         }
         innerContent = rows;
@@ -1294,6 +1409,55 @@
       </div>
       <div class="popup-arrow"></div>
     `;
+      translatePopup.querySelectorAll(".translate-label").forEach((labelEl) => {
+        labelEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          const row = labelEl.closest(".translate-row");
+          if (!row) return;
+          const key = row.dataset.key;
+          const langName = row.dataset.lang;
+          const textEl = row.querySelector(".translate-text");
+          if (popup) popup.classList.add("jyutping-popup-pinned");
+          if (translatePopup) translatePopup.classList.add("jyutping-popup-pinned");
+          if (labelEl.classList.contains("translate-label-ai")) {
+            labelEl.classList.remove("translate-label-ai");
+            if (key === "zh-Hans") labelEl.textContent = pt("mandarin");
+            else if (key === "en") labelEl.textContent = pt("english");
+            else if (key === "ja") labelEl.textContent = pt("japanese");
+            else if (key === "ko") labelEl.textContent = pt("korean");
+            labelEl.title = "點擊使用 AI 重新翻譯";
+            if (textEl) {
+              textEl.textContent = "Bing 翻譯中...";
+              textEl.style.opacity = "0.5";
+            }
+            chrome.runtime.sendMessage({
+              action: "bingTranslateSentenceLang",
+              text: activeQAContext.sentence,
+              targetLang: key,
+              key
+            });
+          } else {
+            if (textEl) {
+              textEl.textContent = "AI 翻譯中...";
+              textEl.style.opacity = "0.5";
+            }
+            let labelName = "AI";
+            if (key === "zh-Hans") labelName = pt("mandarin");
+            else if (key === "en") labelName = pt("english");
+            else if (key === "ja") labelName = pt("japanese");
+            else if (key === "ko") labelName = pt("korean");
+            labelEl.textContent = labelName;
+            labelEl.title = "點擊使用 Bing 重新翻譯";
+            labelEl.classList.add("translate-label-ai");
+            chrome.runtime.sendMessage({
+              action: "aiTranslateSentenceLang",
+              text: activeQAContext.sentence,
+              targetLang: langName,
+              key
+            });
+          }
+        });
+      });
       translatePopup.style.display = "block";
       translatePopup.style.setProperty("width", "max-content", "important");
       translatePopup.style.setProperty("min-width", "0", "important");
@@ -1330,6 +1494,7 @@
     }
     function hideTranslatePopup() {
       if (translatePopup) {
+        translatePopup.classList.remove("jyutping-popup-pinned");
         translatePopup.style.display = "none";
         translatePopup.style.removeProperty("width");
         translatePopup.style.removeProperty("min-width");
@@ -1748,8 +1913,10 @@ ${userDesc || "未提供具體描述"}`;
         "transLang",
         "transLangs",
         "transTrigger",
+        "transHoverEngine",
         "paragraphTransKey",
-        "paragraphTransMode"
+        "paragraphTransMode",
+        "paragraphTransEngine"
       ], (result) => {
         if (result.enabled !== void 0) isEnabled = result.enabled !== false;
         displayMode = result.displayMode || "jyutping";
@@ -1760,6 +1927,9 @@ ${userDesc || "未提供具體描述"}`;
         hoverModifier = result.hoverModifier || "none";
         paragraphTransKey = result.paragraphTransKey || "shift";
         paragraphTransMode = result.paragraphTransMode || "below";
+        paragraphTransEngine = result.paragraphTransEngine || "bing";
+        paragraphTransEngine = result.paragraphTransEngine || "bing";
+        paragraphTransEngine = result.paragraphTransEngine || "bing";
         popupDisplayStyle = result.popupDisplayStyle || "full";
         popupTheme = result.popupTheme || "classic";
         customZhFont = result.customZhFont || "";
@@ -1791,6 +1961,8 @@ ${userDesc || "未提供具體描述"}`;
         if (!tls) tls = ["zh-Hans", "en"];
         transLangs = tls;
         transTrigger = result.transTrigger || "dblclick";
+        transHoverEngine = result.transHoverEngine || "bing";
+        transHoverEngine = result.transHoverEngine || "bing";
         document.documentElement.style.setProperty("--jyutping-rt-opacity", rubyTextStyle === "dictionary" ? "1" : rubyTextOpacity, "important");
         if (rubyTextStyle === "dictionary") {
           document.documentElement.style.setProperty("--jyutping-rt-font", '"Chiron Hei HK WS", "Microsoft YaHei", sans-serif', "important");
@@ -1869,6 +2041,10 @@ ${userDesc || "未提供具體描述"}`;
           if (tls === "both") transLangs = ["zh-Hans", "en"];
           else if (tls === "mandarin") transLangs = ["zh-Hans"];
           else if (tls === "english") transLangs = ["en"];
+        } else if (changes.transTrigger) {
+          transTrigger = changes.transTrigger.newValue;
+        } else if (changes.transHoverEngine) {
+          transHoverEngine = changes.transHoverEngine.newValue;
         }
       } else if (area === "local") {
         if (changes.aiEnabled) {
@@ -2063,7 +2239,9 @@ ${userDesc || "未提供具體描述"}`;
               }
             }
             if (!isOverSelection) {
-              hidePopup(true);
+              if (canAutoHide()) {
+                hidePopup(true);
+              }
             }
           }
           return;
@@ -2090,12 +2268,11 @@ ${userDesc || "未提供具體描述"}`;
         handleMouseOver(e);
       });
       document.addEventListener("mouseleave", () => {
+        if (!canAutoHide()) return;
         if (hasEditableFocus()) {
           if (popup) popup.style.display = "none";
           return;
         }
-        if (popup && popup.querySelector(".popup-qa-container")) return;
-        if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
         hidePopup();
       });
       document.addEventListener("mousedown", (e) => {
@@ -3325,6 +3502,7 @@ ${userDesc || "未提供具體描述"}`;
     }
     function renderExamples(examples) {
       const popupExamples = popup.querySelector(".popup-examples");
+      const loadingText = paragraphTransEngine === "bing" ? "使用 Bing 翻譯中…" : "使用 AI 翻譯中…";
       let html = '<div class="example-title">例句</div>';
       examples.forEach((eg, i) => {
         const engPart = eg.eng ? `<div class="example-eng">${eg.eng}</div>` : "";
@@ -3385,6 +3563,8 @@ ${userDesc || "未提供具體描述"}`;
       if (isInExpandGrace()) return false;
       if (popup && popup.querySelector(".popup-qa-container")) return false;
       if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return false;
+      if (popup && popup.classList.contains("jyutping-popup-pinned")) return false;
+      if (translatePopup && translatePopup.classList.contains("jyutping-popup-pinned")) return false;
       return true;
     }
     function maybeScheduleHide() {
@@ -3415,6 +3595,7 @@ ${userDesc || "未提供具體描述"}`;
         activePopupRubyElement = null;
       }
       if (popup) {
+        popup.classList.remove("jyutping-popup-pinned");
         popup.style.display = "none";
         hideRubyFadeMask();
         removeCompactStyles();
@@ -3574,15 +3755,19 @@ ${userDesc || "未提供具體描述"}`;
         }
       }
       const html = container.innerHTML;
+      const tempContainer = container.cloneNode(true);
+      tempContainer.querySelectorAll("br").forEach((br) => br.replaceWith("\\n"));
+      const textContent = tempContainer.textContent.trim();
       if (!html || !hasTextContent) return;
       const translationEl = createTranslationPlaceholder(block);
       block.setAttribute("data-jyutping-trans-id", String(id));
       pendingParaTrans.set(id, { block, translationEl });
-      chrome.runtime.sendMessage({ action: "aiTranslateParagraph", id, html });
+      chrome.runtime.sendMessage({ action: "aiTranslateParagraph", id, html, textContent });
     }
     function createTranslationPlaceholder(block) {
       let clone;
       const hasComplexMedia = !!block.querySelector('video, img, iframe, [data-module-type="video"], [class*="video"]');
+      const loadingText = paragraphTransEngine === "bing" ? "使用 Bing 翻译" : "使用 AI 翻译";
       if (paragraphTransMode === "replace" && !hasComplexMedia) {
         const tag = block.tagName;
         if (tag === "TD" || tag === "TH" || tag === "LI" || tag === "DT" || tag === "DD") {
@@ -3596,7 +3781,7 @@ ${userDesc || "未提供具體描述"}`;
         clone.removeAttribute("data-jyutping-trans-id");
         block.setAttribute("data-jyutping-original-display", block.style.display || "");
         block.style.display = "none";
-        clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
+        clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
         if (block.nextSibling) {
           block.parentNode.insertBefore(clone, block.nextSibling);
         } else {
@@ -3610,7 +3795,7 @@ ${userDesc || "未提供具體描述"}`;
         clone.style.fontSize = "0.95em";
         clone.classList.add("jyutping-cantonese-trans", "notranslate");
         clone.setAttribute("translate", "no");
-        clone.innerHTML = '<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>粵語翻譯中…</span>';
+        clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
         let insertBeforeNode = null;
         const childNodes = Array.from(block.childNodes);
         for (let i = childNodes.length - 1; i >= 0; i--) {
@@ -3649,7 +3834,7 @@ ${userDesc || "未提供具體描述"}`;
       const child = block.querySelector(":scope > .jyutping-cantonese-trans");
       if (child) child.remove();
     }
-    function applyParagraphTranslation(id, success, payloadHtml, error) {
+    function applyParagraphTranslation(id, success, payloadHtml, error, isPlainText = false) {
       const entry = pendingParaTrans.get(id);
       if (!entry) return;
       pendingParaTrans.delete(id);
@@ -3659,7 +3844,12 @@ ${userDesc || "未提供具體描述"}`;
         return;
       }
       if (success && payloadHtml) {
-        translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+        if (isPlainText) {
+          translationEl.textContent = payloadHtml;
+          translationEl.style.whiteSpace = "pre-wrap";
+        } else {
+          translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+        }
         const speakerIcon = document.createElement("button");
         speakerIcon.className = "jyutping-speaker-btn";
         speakerIcon.innerHTML = `
@@ -3747,6 +3937,8 @@ ${userDesc || "未提供具體描述"}`;
         else if (tls === "english") transLangs = ["en"];
       } else if (request.action === "changeTransTrigger") {
         transTrigger = request.transTrigger;
+      } else if (request.action === "changeTransHoverEngine") {
+        transHoverEngine = request.transHoverEngine;
       } else if (request.action === "playAudio") {
         const myId = document.documentElement.getAttribute("data-jyutping-tts-owner");
         if (myId !== contentScriptId) return;
@@ -3806,11 +3998,83 @@ ${userDesc || "未提供具體描述"}`;
       } else if (request.action === "ttsEnded") {
         stopSpeakerAnimation();
       } else if (request.action === "aiTranslateParagraphResult") {
-        applyParagraphTranslation(request.id, request.success, request.html, request.error);
+        applyParagraphTranslation(request.id, request.success, request.html, request.error, request.isPlainText);
       } else if (request.action === "changeParagraphTransKey") {
         paragraphTransKey = request.paragraphTransKey || "off";
       } else if (request.action === "changeParagraphTransMode") {
         paragraphTransMode = request.paragraphTransMode || "below";
+      } else if (request.action === "updateParagraphTransEngine") {
+        paragraphTransEngine = request.paragraphTransEngine || "bing";
+      } else if (request.action === "aiTranslateSentenceLangResult") {
+        let row = null;
+        if (translatePopup && translatePopup.style.display !== "none") {
+          row = translatePopup.querySelector(`.translate-row[data-key="${request.key}"]`);
+        }
+        if (!row && popup && popup.style.display !== "none") {
+          row = popup.querySelector(`.translate-row[data-key="${request.key}"]`);
+        }
+        if (row) {
+          const textEl = row.querySelector(".translate-text");
+          const labelEl = row.querySelector(".translate-label");
+          if (textEl) {
+            if (request.success) {
+              textEl.textContent = request.translation;
+              textEl.style.opacity = "1";
+              if (labelEl) {
+                let labelName = "AI";
+                if (request.key === "zh-Hans") labelName = pt("mandarin");
+                else if (request.key === "en") labelName = pt("english");
+                else if (request.key === "ja") labelName = pt("japanese");
+                else if (request.key === "ko") labelName = pt("korean");
+                labelEl.textContent = labelName;
+                labelEl.title = "點擊使用 Bing 重新翻譯";
+                labelEl.classList.add("translate-label-ai");
+              }
+            } else {
+              textEl.textContent = "❌ " + request.error;
+              textEl.style.opacity = "1";
+              if (labelEl) {
+                labelEl.textContent = "錯誤";
+                labelEl.title = "AI 翻譯失敗，點擊使用 Bing 重新翻譯";
+                labelEl.style.cursor = "pointer";
+              }
+            }
+          }
+        }
+      } else if (request.action === "bingTranslateSentenceLangResult") {
+        let row = null;
+        if (translatePopup && translatePopup.style.display !== "none") {
+          row = translatePopup.querySelector(`.translate-row[data-key="${request.key}"]`);
+        }
+        if (!row && popup && popup.style.display !== "none") {
+          row = popup.querySelector(`.translate-row[data-key="${request.key}"]`);
+        }
+        if (row) {
+          const textEl = row.querySelector(".translate-text");
+          const labelEl = row.querySelector(".translate-label");
+          if (textEl) {
+            if (request.success) {
+              textEl.textContent = request.result;
+              textEl.style.opacity = "1";
+              if (labelEl) {
+                if (request.key === "zh-Hans") labelEl.textContent = pt("mandarin");
+                else if (request.key === "en") labelEl.textContent = pt("english");
+                else if (request.key === "ja") labelEl.textContent = pt("japanese");
+                else if (request.key === "ko") labelEl.textContent = pt("korean");
+                labelEl.title = "點擊使用 AI 重新翻譯";
+                labelEl.classList.remove("translate-label-ai");
+              }
+            } else {
+              textEl.textContent = "❌ " + request.error;
+              textEl.style.opacity = "1";
+              if (labelEl) {
+                labelEl.textContent = "錯誤";
+                labelEl.title = "Bing 翻譯失敗，點擊使用 AI 重新翻譯";
+                labelEl.style.cursor = "pointer";
+              }
+            }
+          }
+        }
       }
     });
     let isFullPageRubyActive = sessionStorage.getItem("jyutping_full_page_ruby") === "true";

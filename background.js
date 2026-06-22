@@ -54,6 +54,10 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'aiTranslateParagraph') {
     GoogleAnalytics.fireEvent('translate', { type: 'ai_paragraph' });
     handleAiTranslateParagraph(request, sender.tab.id);
+  } else if (request.action === 'aiTranslateSentenceLang') {
+    handleAiTranslateSentenceLang(request, sender.tab.id);
+  } else if (request.action === 'bingTranslateSentenceLang') {
+    handleBingTranslateSentenceLang(request, sender.tab.id);
   } else if (request.action === 'aiChatQuery') {
     handleAiChatQuery(request, sendResponse);
     return true; // Keep channel open
@@ -343,9 +347,43 @@ async function handleTranslate(request, tabId) {
   }
 }
 
+async function handleBingTranslateSentenceLang(request, tabId) {
+  const { text, targetLang, key } = request;
+  try {
+    await getBingAccessToken();
+    const result = await translateWithBing(text, 'yue', targetLang);
+    chrome.tabs.sendMessage(tabId, {
+      action: 'bingTranslateSentenceLangResult',
+      success: true,
+      result: result,
+      key: key
+    }).catch(() => {});
+  } catch (error) {
+    console.warn('Bing 單語翻譯失敗:', error);
+    chrome.tabs.sendMessage(tabId, {
+      action: 'bingTranslateSentenceLangResult',
+      success: false,
+      error: error.message || String(error),
+      key: key
+    }).catch(() => {});
+  }
+}
+
 // Bing 翻譯（免費，通過抓取頁面 token 調用）
 let bingAccessToken = null;
 let bingTokenPromise = null;
+
+// 修復 Chrome MV3 Service Worker 喚醒時常見的 "Failed to fetch" 網路錯誤
+async function fetchWithRetry(url, options = {}, retries = 3) {
+  for (let i = 0; i < retries; i++) {
+    try {
+      return await fetch(url, options);
+    } catch (error) {
+      if (i === retries - 1) throw error;
+      await new Promise(resolve => setTimeout(resolve, 500));
+    }
+  }
+}
 
 async function getBingAccessToken() {
   // 1. 先檢查記憶體中是否有有效的 token
@@ -368,7 +406,7 @@ async function getBingAccessToken() {
   // 4. 重新發送請求抓取最新 Token
   bingTokenPromise = (async () => {
     try {
-      const html = await (await fetch('https://www.bing.com/translator')).text();
+      const html = await (await fetchWithRetry('https://www.bing.com/translator')).text();
       const IG = html.match(/IG:"([^"]+)"/)?.[1];
       const IID = html.match(/data-iid="([^"]+)"/)?.[1];
       const paramsMatch = html.match(/params_AbusePreventionHelper\s?=\s?([^\]]+\])/)?.[1];
@@ -402,7 +440,7 @@ async function translateWithBing(text, from, to, retryCount = 0) {
   const searchParams = new URLSearchParams({ IG, isVertical: '1' });
   if (IID) searchParams.set('IID', IID + '.' + bingAccessToken.count++);
   
-  const response = await fetch(`https://www.bing.com/ttranslatev3?${searchParams}`, {
+  const response = await fetchWithRetry(`https://www.bing.com/ttranslatev3?${searchParams}`, {
     method: 'POST',
     body: new URLSearchParams({ text, fromLang: bingFrom, to: bingTo, token, key })
   });
@@ -520,16 +558,78 @@ async function handleAiTranslate(request, tabId) {
     chrome.tabs.sendMessage(tabId, {
       action: 'aiTranslateResult',
       success: false,
-      error: error.message,
+      error: error.message || String(error),
       word: word
     }).catch(() => {});
   }
 }
 
-// 段落整段翻譯成粵語（保留 HTML 結構）。與 handleAiTranslate 共用 AI 設定，
-// 但要求更大的 max_tokens 並保留標籤/emoji，結果以 HTML 回傳給 content script。
+// 點擊語言標籤，使用 AI 反向翻譯句子
+async function handleAiTranslateSentenceLang(request, tabId) {
+  const { text, targetLang, key } = request;
+  
+  try {
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
+    const { aiBaseUrl, aiApiKey, aiModel } = settings;
+    
+    if (!aiBaseUrl || !aiApiKey || !aiModel) {
+      throw new Error('請先在設定頁面配置自定義 AI');
+    }
+    
+    const prompt = `你是一個專業的翻譯。請將以下句子翻譯成${targetLang}，只輸出翻譯結果，不需要任何解釋。
+句子：
+${text}`;
+    
+    const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
+    const response = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${aiApiKey}`
+      },
+      body: JSON.stringify({
+        model: aiModel,
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 500,
+        temperature: 0.3
+      })
+    });
+    
+    if (!response.ok) {
+      const errText = await response.text();
+      throw new Error(`API 錯誤 (${response.status}): ${errText.substring(0, 100)}`);
+    }
+    
+    const data = await response.json();
+    let translation = data.choices?.[0]?.message?.content?.trim() || '';
+    
+    // 清理 markdown 標記
+    translation = translation.replace(/^\`\`\`(?:html|text)?\\s*/i, '').replace(/\\s*\`\`\`$/i, '').trim();
+    
+    if (!translation) {
+      throw new Error('AI 返回空結果');
+    }
+    
+    chrome.tabs.sendMessage(tabId, {
+      action: 'aiTranslateSentenceLangResult',
+      success: true,
+      key: key,
+      translation: translation
+    }).catch(() => {});
+  } catch (error) {
+    console.warn('AI 反向翻譯失敗:', error.message || error);
+    chrome.tabs.sendMessage(tabId, {
+      action: 'aiTranslateSentenceLangResult',
+      success: false,
+      key: key,
+      error: error.message || String(error)
+    }).catch(() => {});
+  }
+}
+
+// 段落整段翻譯成粵語。AI 模式改為純文字輸出，Bing 模式維持 HTML 替換。
 async function handleAiTranslateParagraph(request, tabId) {
-  const { html, id } = request;
+  const { html, textContent, id } = request;
 
   const reply = (payload) => {
     chrome.tabs.sendMessage(tabId, {
@@ -599,16 +699,14 @@ async function handleAiTranslateParagraph(request, tabId) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
-    const prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段 HTML 片段中的文字內容翻譯成自然、地道的粵語書面語。
+    const prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段文字翻譯成自然、地道的粵語書面語。
 
 嚴格要求：
-1. 只翻譯可見文字，原樣保留所有 HTML 標籤、屬性（尤其是 <a> 的 href）、以及 emoji 與標點。
-2. 標籤的結構與順序保持不變，只替換其中的文字。
-3. 不要新增/刪除標籤，不要加入解釋、Markdown 或程式碼圍欄。
-4. 只輸出翻譯後的 HTML 片段本身，不要任何前後綴。
+1. 只輸出翻譯後的文字本身，不要任何前後綴或解釋。
+2. 不要加上引號、Markdown 標記或程式碼圍欄。
 
-待翻譯 HTML：
-${html}`;
+待翻譯文字：
+${textContent || html}`;
 
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
     const response = await fetch(url, {
@@ -633,14 +731,14 @@ ${html}`;
     const data = await response.json();
     let result = data.choices?.[0]?.message?.content?.trim() || '';
 
-    // 去除模型可能加上的 ```html ... ``` 圍欄
-    result = result.replace(/^```(?:html)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    // 去除模型可能加上的 markdown 圍欄
+    result = result.replace(/^```(?:html|text)?\s*/i, '').replace(/\s*```$/i, '').trim();
 
     if (!result) {
       throw new Error('AI 返回空結果');
     }
 
-    reply({ success: true, html: result });
+    reply({ success: true, html: result, isPlainText: true });
   } catch (error) {
     console.warn('段落翻譯失敗:', error.message || error);
     reply({ success: false, error: error.message || String(error) });

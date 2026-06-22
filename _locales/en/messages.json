@@ -721,5 +721,23 @@
   },
   "optInspectDemoText": {
     "message": "Full-text Ruby Demo"
+  },
+  "optParaTransEngine": {
+    "message": "Paragraph Translation Engine"
+  },
+  "optParaTransEngineDesc": {
+    "message": "Bing Translator is fast, while AI is more accurate but takes a few seconds."
+  },
+  "optParaTransEngineBing": {
+    "message": "Bing"
+  },
+  "optParaTransEngineAI": {
+    "message": "AI"
+  },
+  "optHoverTransEngineTitle": {
+    "message": "Default Translation Engine"
+  },
+  "optHoverTransEngineDesc": {
+    "message": "Choose the default engine for the hover translation popup."
   }
 }

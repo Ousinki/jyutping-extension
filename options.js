@@ -193,7 +193,7 @@ async function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'transHoverEngine', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -265,6 +265,7 @@ async function applyI18n(lang) {
     const rubyDictionaryColorContainer = document.getElementById('rubyDictionaryColorContainer');
     const transLangsCheckboxes = document.querySelectorAll('input[name="transLangs"]');
     const transTriggerSelect = document.getElementById('transTriggerSelect');
+    const transHoverEngineRadios = document.querySelectorAll('input[name="transHoverEngineRadio"]');
 
     if (toneDisplayStyleSelect) toneDisplayStyleSelect.value = result.toneDisplayStyle || 'normal';
     
@@ -302,6 +303,13 @@ async function applyI18n(lang) {
     if (transTriggerSelect) {
       transTriggerSelect.value = result.transTrigger || 'dblclick';
       updateDemoTransTrigger(result.transTrigger || 'dblclick');
+    }
+
+    if (transHoverEngineRadios.length > 0) {
+      const val = result.transHoverEngine || 'bing';
+      transHoverEngineRadios.forEach(radio => {
+        radio.checked = (radio.value === val);
+      });
     }
 
     displayModeSelect.value = result.displayMode || 'jyutping';
@@ -461,6 +469,7 @@ async function applyI18n(lang) {
   const rubyDictionaryColorSelect = document.getElementById('rubyDictionaryColor');
   const transLangsCheckboxes = document.querySelectorAll('input[name="transLangs"]');
   const transTriggerSelect = document.getElementById('transTriggerSelect');
+  const transHoverEngineRadios = document.querySelectorAll('input[name="transHoverEngineRadio"]');
   const modifyShortcutBtn = document.getElementById('modifyShortcutBtn');
   
   if (modifyShortcutBtn) {
@@ -512,6 +521,19 @@ async function applyI18n(lang) {
       chrome.storage.sync.set({ transTrigger: val });
       updateDemoTransTrigger(val);
       notifyContentScripts({ action: 'changeTransTrigger', transTrigger: val });
+    });
+  }
+
+  if (transHoverEngineRadios.length > 0) {
+    transHoverEngineRadios.forEach(radio => {
+      radio.addEventListener('change', (e) => {
+        if (e.target.checked) {
+          const val = e.target.value;
+          chrome.storage.sync.set({ transHoverEngine: val });
+          GoogleAnalytics.fireEvent('change_setting', { setting: 'transHoverEngine', value: val });
+          notifyContentScripts({ action: 'changeTransHoverEngine', transHoverEngine: val });
+        }
+      });
     });
   }
 
@@ -673,6 +695,7 @@ async function applyI18n(lang) {
     paragraphTransEngineSelect.addEventListener('change', () => {
       const paragraphTransEngine = paragraphTransEngineSelect.value;
       chrome.storage.sync.set({ paragraphTransEngine });
+      notifyContentScripts({ action: 'updateParagraphTransEngine', paragraphTransEngine });
       GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransEngine', value: paragraphTransEngine });
     });
   }
@@ -1635,9 +1658,11 @@ async function applyI18n(lang) {
 
         if (currentShortcut) {
           const formattedShortcut = currentShortcut.replace(/Command/g, '⌘').replace(/Ctrl/g, 'Ctrl');
-          descEl.innerHTML = `${prefix}<kbd>${formattedShortcut}</kbd>。${hint}`;
+          const separator = (lang === 'en' || lang === 'ko') ? '. ' : '。';
+          descEl.innerHTML = `${prefix}<kbd>${formattedShortcut}</kbd>${separator}${hint}`;
         } else {
-          descEl.innerHTML = `${none}${hint}`;
+          const space = (lang === 'en' || lang === 'ko') ? ' ' : '';
+          descEl.innerHTML = `${none}${space}${hint}`;
         }
       });
     } else {

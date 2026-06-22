@@ -10,6 +10,9 @@
     "fontSettings",
     "contextMenus"
   ],
+  "host_permissions": [
+    "*://*.bing.com/*"
+  ],
   "background": {
     "service_worker": "background.js",
     "type": "module"
