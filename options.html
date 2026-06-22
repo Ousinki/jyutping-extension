@@ -1457,125 +1457,101 @@
             </select>
           </div>
 
-          <!-- Inspect Mode Animation Demo -->
+          <!-- Full-text Ruby Animation Demo -->
           <div id="inspectDemo" style="margin-top: 12px; margin-bottom: 8px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 0 24px; position: relative; display: flex; justify-content: center; align-items: center; height: 140px; overflow: hidden;">
             
-            <div class="demo-inspect-block" style="position: relative; padding: 8px 12px; border-radius: 6px; color: var(--text-primary); font-weight: 500; font-size: 16px; transition: all 0.2s ease; border: 2px solid transparent; background-color: transparent;">
+            <div class="demo-ruby-block" style="position: relative; padding: 8px 12px; border-radius: 6px; color: var(--text-primary); font-weight: 500; font-size: 16px; transition: all 0.2s ease;">
               
               <!-- The Ruby annotations that fade in -->
-              <div class="demo-inspect-rubies" style="position: absolute; top: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 0px; opacity: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 9px; color: #1565c0; letter-spacing: -0.5px; transform: scale(0.9); transform-origin: center bottom;">
-                <span style="flex: 1; text-align: center;">dim2</span>
-                <span style="flex: 1; text-align: center;">gik1</span>
-                <span style="flex: 1; text-align: center;">gou1</span>
-                <span style="flex: 1; text-align: center;">loeng6</span>
-                <span style="flex: 1; text-align: center;">au1</span>
-                <span style="flex: 1; text-align: center;">faai3</span>
+              <div class="demo-ruby-rubies" style="position: absolute; top: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 0px; opacity: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 9px; color: var(--primary); letter-spacing: -0.5px; transform: scale(0.9); transform-origin: center bottom;">
+                <span style="flex: 1; text-align: center;">cyun4</span>
+                <span style="flex: 1; text-align: center;">man4</span>
+                <span style="flex: 1; text-align: center;">zyu3</span>
+                <span style="flex: 1; text-align: center;">jam1</span>
+                <span style="flex: 1; text-align: center;">si6</span>
+                <span style="flex: 1; text-align: center;">faan6</span>
               </div>
 
-              <span style="position: relative; z-index: 1;">點擊高亮區塊</span>
-
-              <!-- Highlight effect background -->
-              <div class="demo-inspect-highlight-bg" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; border-radius: 6px; z-index: 0; opacity: 0;"></div>
+              <span data-i18n="optInspectDemoText" style="position: relative; z-index: 1;">全文注音示範</span>
             </div>
-
-            <!-- Simulated Cursor -->
-            <div class="demo-inspect-cursor" style="position: absolute; width: 22px; height: 22px; z-index: 10;">
-              <svg viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2)); width: 100%; height: 100%;">
-                <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
-              </svg>
-            </div>
-            
-            <!-- Click ripple effect -->
-            <div class="demo-inspect-ripple" style="position: absolute; width: 20px; height: 20px; border-radius: 50%; background: rgba(245, 158, 11, 0.5); z-index: 9; opacity: 0; pointer-events: none; transform: translate(-50%, -50%);"></div>
 
             <!-- Simulated Keyboard Shortcut -->
-            <div class="demo-inspect-keys" style="position: absolute; bottom: 12px; right: 16px; display: flex; gap: 4px; z-index: 5; opacity: 0;">
-              <div class="demo-key demo-key-cmd">⌘</div>
-              <div class="demo-key demo-key-shift">⇧</div>
-              <div class="demo-key demo-key-x">X</div>
+            <div class="demo-ruby-keys" style="position: absolute; bottom: 12px; right: 16px; display: flex; gap: 4px; z-index: 5; opacity: 0;">
+              <div class="demo-key">⇧</div>
+              <div class="demo-key">⌘</div>
+              <div class="demo-key">X</div>
             </div>
 
             <style>
-              .demo-inspect-cursor {
-                opacity: 0;
-                animation: inspectCursorAnim 5s infinite;
-              }
-              
-              .demo-inspect-block {
-                animation: inspectBlockAnim 5s infinite;
-              }
-
-              .demo-inspect-rubies {
-                animation: inspectRubiesAnim 5s infinite;
-              }
-
-              .demo-inspect-ripple {
-                animation: inspectRippleAnim 5s infinite;
-              }
-
               .demo-key {
-                background: #ffffff;
-                border: 1px solid #d0d0d0;
+                background: var(--bg-card);
+                border: 1px solid var(--border);
                 border-radius: 4px;
                 padding: 2px 5px;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                 font-size: 11px;
                 font-weight: 500;
-                color: #555555;
-                box-shadow: 0 2px 0 #d0d0d0;
+                color: var(--text-secondary);
+                box-shadow: 0 2px 0 var(--border);
                 transition: all 0.1s ease;
               }
 
-              .demo-inspect-keys {
-                animation: inspectKeysAnim 5s infinite;
+              :root[data-theme="dark"] .demo-key {
+                background: var(--bg-input);
+                box-shadow: 0 2px 0 rgba(0,0,0,0.5);
               }
 
-              @keyframes inspectKeysAnim {
-                0%, 2% { opacity: 0; transform: translateY(4px); }
-                5%, 20% { opacity: 1; transform: translateY(0); }
-                25%, 100% { opacity: 0; transform: translateY(4px); }
+              .demo-ruby-keys {
+                animation: rubyKeysAnim 5s infinite;
               }
 
-              @keyframes inspectKeyPressAnim {
-                0%, 8% { box-shadow: 0 2px 0 #d0d0d0; transform: translateY(0) scale(1); background: #ffffff; }
-                9%, 18% { box-shadow: 0 0px 0 #d0d0d0; transform: translateY(2px) scale(0.95); background: #f1f5f9; }
-                19%, 100% { box-shadow: 0 2px 0 #d0d0d0; transform: translateY(0) scale(1); background: #ffffff; }
+              /* Keys fade in, stay, fade out */
+              @keyframes rubyKeysAnim {
+                0%, 10% { opacity: 0; transform: translateY(4px); }
+                15%, 85% { opacity: 1; transform: translateY(0); }
+                90%, 100% { opacity: 0; transform: translateY(4px); }
               }
 
-              /* Cursor moves in, hovers, clicks, leaves */
-              @keyframes inspectCursorAnim {
-                0%, 15% { top: 80px; left: 10%; opacity: 0; }
-                25%     { top: 50px; left: 45%; opacity: 1; }
-                40%     { top: 50px; left: 45%; opacity: 1; transform: scale(1); }
-                45%     { top: 50px; left: 45%; opacity: 1; transform: scale(0.85); } /* Click press */
-                50%     { top: 50px; left: 45%; opacity: 1; transform: scale(1); }   /* Click release */
-                60%, 80%{ top: 80px; left: 80%; opacity: 1; } /* move away */
-                90%, 100%{ top: 80px; left: 80%; opacity: 0; }
+              /* Key press effect */
+              .demo-ruby-keys .demo-key {
+                animation: rubyKeyPressAnim 5s infinite;
               }
 
-              /* Block highlight and expansion */
-              @keyframes inspectBlockAnim {
-                0%, 25% { outline: none; border-color: transparent; background-color: transparent; font-size: 16px; padding-top: 8px; }
-                /* Hover state */
-                30%, 45% { border-color: transparent; outline: 2px dashed #f59e0b; background-color: rgba(245, 158, 11, 0.1); font-size: 16px; padding-top: 8px; }
-                /* Clicked -> Expanding state */
-                50%, 85% { border-color: transparent; outline: none; background-color: transparent; font-size: 20px; padding-top: 20px; }
-                95%, 100%{ outline: none; border-color: transparent; background-color: transparent; font-size: 16px; padding-top: 8px; }
+              @keyframes rubyKeyPressAnim {
+                0%, 25% { box-shadow: 0 2px 0 var(--border); transform: translateY(0); }
+                30%, 80% { box-shadow: 0 0px 0 var(--border); transform: translateY(2px); background: var(--bg-hover); }
+                85%, 100% { box-shadow: 0 2px 0 var(--border); transform: translateY(0); }
+              }
+              
+              :root[data-theme="dark"] .demo-ruby-keys .demo-key {
+                 animation: rubyKeyPressAnimDark 5s infinite;
+              }
+              @keyframes rubyKeyPressAnimDark {
+                0%, 25% { box-shadow: 0 2px 0 rgba(0,0,0,0.5); transform: translateY(0); }
+                30%, 80% { box-shadow: 0 0px 0 rgba(0,0,0,0.5); transform: translateY(2px); background: rgba(255,255,255,0.05); }
+                85%, 100% { box-shadow: 0 2px 0 rgba(0,0,0,0.5); transform: translateY(0); }
+              }
+
+              .demo-ruby-block {
+                animation: rubyBlockAnim 5s infinite;
+              }
+
+              /* Text makes room for rubies */
+              @keyframes rubyBlockAnim {
+                0%, 25% { font-size: 16px; padding-top: 8px; }
+                30%, 80% { font-size: 20px; padding-top: 20px; color: var(--primary); }
+                85%, 100% { font-size: 16px; padding-top: 8px; }
+              }
+
+              .demo-ruby-rubies {
+                animation: rubyRubiesAnim 5s infinite;
               }
 
               /* Rubies fade in */
-              @keyframes inspectRubiesAnim {
-                0%, 48% { opacity: 0; transform: scale(0.9) translateY(4px); }
-                52%, 85% { opacity: 1; transform: scale(0.9) translateY(0); }
-                90%, 100% { opacity: 0; transform: scale(0.9) translateY(4px); }
-              }
-
-              /* Click Ripple */
-              @keyframes inspectRippleAnim {
-                0%, 44% { opacity: 0; transform: translate(-50%, -50%) scale(0.5); top: 50px; left: 45%; }
-                45%     { opacity: 1; transform: translate(-50%, -50%) scale(1); top: 50px; left: 45%; }
-                55%     { opacity: 0; transform: translate(-50%, -50%) scale(2); top: 50px; left: 45%; }
-                100%    { opacity: 0; top: 50px; left: 45%; }
+              @keyframes rubyRubiesAnim {
+                0%, 28% { opacity: 0; transform: scale(0.9) translateY(4px); }
+                32%, 78% { opacity: 1; transform: scale(0.9) translateY(0); }
+                82%, 100% { opacity: 0; transform: scale(0.9) translateY(4px); }
               }
             </style>
           </div>
