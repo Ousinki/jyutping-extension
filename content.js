@@ -3558,11 +3558,23 @@ ${userDesc || "未提供具體描述"}`;
         return;
       }
       const id = ++paraTransSeq;
-      const tempClone = block.cloneNode(true);
-      const mediaNodes = tempClone.querySelectorAll('video, audio, iframe, embed, object, [data-module-type="video"]');
-      mediaNodes.forEach((n) => n.remove());
-      const html = tempClone.innerHTML;
-      if (!html || !tempClone.textContent.trim()) return;
+      const container = document.createElement("div");
+      const ALLOWED_INLINE_TAGS = /* @__PURE__ */ new Set(["span", "a", "b", "strong", "i", "em", "sup", "sub", "font", "ruby", "rt", "br", "label", "time", "mark", "q", "cite", "code"]);
+      let hasTextContent = false;
+      for (const child of block.childNodes) {
+        if (child.nodeType === 3) {
+          if (child.textContent.trim()) hasTextContent = true;
+          container.appendChild(child.cloneNode(true));
+        } else if (child.nodeType === 1) {
+          const tag = child.tagName.toLowerCase();
+          if (ALLOWED_INLINE_TAGS.has(tag)) {
+            if (child.textContent.trim()) hasTextContent = true;
+            container.appendChild(child.cloneNode(true));
+          }
+        }
+      }
+      const html = container.innerHTML;
+      if (!html || !hasTextContent) return;
       const translationEl = createTranslationPlaceholder(block);
       block.setAttribute("data-jyutping-trans-id", String(id));
       pendingParaTrans.set(id, { block, translationEl });

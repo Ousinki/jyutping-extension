@@ -3864,14 +3864,27 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
     const id = ++paraTransSeq;
     
-    // 預處理 HTML：移除可能包含大量無關文本的媒體模塊（如百度百科的視頻塊）
-    // 防止背景腳本翻譯了隱藏的視頻標題和時長
-    const tempClone = block.cloneNode(true);
-    const mediaNodes = tempClone.querySelectorAll('video, audio, iframe, embed, object, [data-module-type="video"]');
-    mediaNodes.forEach(n => n.remove());
+    // 提取精確的段落文本 HTML：白名單過濾
+    // 只提取文字節點和內聯文字標籤，精確定位文本流，徹底過濾掉視頻、廣告、無關組件等非文字區塊
+    const container = document.createElement('div');
+    const ALLOWED_INLINE_TAGS = new Set(['span', 'a', 'b', 'strong', 'i', 'em', 'sup', 'sub', 'font', 'ruby', 'rt', 'br', 'label', 'time', 'mark', 'q', 'cite', 'code']);
     
-    const html = tempClone.innerHTML;
-    if (!html || !tempClone.textContent.trim()) return;
+    let hasTextContent = false;
+    for (const child of block.childNodes) {
+      if (child.nodeType === 3) {
+        if (child.textContent.trim()) hasTextContent = true;
+        container.appendChild(child.cloneNode(true));
+      } else if (child.nodeType === 1) {
+        const tag = child.tagName.toLowerCase();
+        if (ALLOWED_INLINE_TAGS.has(tag)) {
+          if (child.textContent.trim()) hasTextContent = true;
+          container.appendChild(child.cloneNode(true));
+        }
+      }
+    }
+    
+    const html = container.innerHTML;
+    if (!html || !hasTextContent) return;
 
     const translationEl = createTranslationPlaceholder(block);
     block.setAttribute('data-jyutping-trans-id', String(id));
