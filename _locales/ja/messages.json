@@ -3,6 +3,9 @@
     "message": "このアップデートには以下の改善が含まれています：",
     "description": "Changelog description"
   },
+  "clItem10": {
+    "message": "<b>右クリックメニューで保存</b>：任意の中国語テキストを選択し、右クリックするだけで、ホバーポップアップを開かずにすばやく単語帳に追加できます。"
+  },
   "clItem5": {
     "message": "🎨 <b>新しいルビ背景スタイル</b>：ルビ注音モードで「単色背景」と「フェード背景」をサポートし、どんなウェブページの背景でも発音記号がはっきりと見えるようになりました。",
     "description": "Changelog item 5"
@@ -10,6 +13,15 @@
   "clItem6": {
     "message": "🐛 <b>ポップアップスタイルの修正</b>：一部のウェブページでホバーポップアップのレイアウトが崩れる問題や、マスクの高さが不正確になる問題を修正しました。",
     "description": "Changelog item 6"
+  },
+  "clItem7": {
+    "message": "✨ <b>新機能「段落翻訳」</b>：ショートカットキー（デフォルトは Shift ⇧）を押しながら段落にホバーすると、AIが正確な広東語翻訳を提供します！"
+  },
+  "clItem8": {
+    "message": "<b>新しい「単語帳」機能</b>：ホバーポップアップに⭐保存ボタンを追加しました。<kbd>S</kbd>キーを押すだけで、現在検索している広東語の語彙をローカル単語帳にすばやく保存できます。"
+  },
+  "clItem9": {
+    "message": "<b>単語帳管理ページ</b>：検索、並べ替え、一括管理をサポートし、4つのエクスポート形式（JSON、CSV、Markdown、TXT）とバックアップのインポートを提供します。"
   },
   "clTitle": {
     "message": "🚀 新機能",
@@ -50,6 +62,13 @@
     "message": "OpenAI互換のAPIエンドポイント",
     "description": "optAIBaseUrlDesc"
   },
+  "optAIDblClickHint": {
+    "message": "AI 解説ボックスまたは API 翻訳ボックスをダブルクリックすると、AI フォローアップ会話を開始できます",
+    "description": "optAIDblClickHint"
+  },
+  "optAIDefaultPrompt": {
+    "message": "あなたは広東語の言語専門家です。ユーザーが広東語の記事を読んでいるときに単語を選択しました。文脈に基づいて、この文におけるその単語の具体的な意味を{targetLang}で簡潔に説明してください（1〜2文）。説明内容のみを返信し、フォーマットマークアップは不要です。\n\n【単語】{word}\n【文】{sentence}"
+  },
   "optAIEnable": {
     "message": "AI翻訳を有効にする",
     "description": "optAIEnable"
@@ -77,6 +96,12 @@
   "optAIModelLabel": {
     "message": "AI モデル",
     "description": "optAIModelLabel"
+  },
+  "optAIPrompt": {
+    "message": "カスタムプロンプト (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "AIに送信するプロンプトテンプレートを設定します。変数 {word}（選択された単語）と {sentence}（文脈文）をサポートします。空欄の場合はデフォルトが使用されます。"
   },
   "optAIPromptLabel": {
     "message": "AI 翻訳プロンプト",
@@ -202,6 +227,9 @@
     "message": "Bert-VITS2 (広東語ニューラル音声)",
     "description": "optEngineBert"
   },
+  "optFail": {
+    "message": "❌ 接続失敗："
+  },
   "optFeedback": {
     "message": "情報とフィードバック",
     "description": "optFeedback"
@@ -286,6 +314,9 @@
     "message": "特定のキーを押している間だけ完全な辞書を表示し、日常的な干渉を避ける",
     "description": "optHoverModifierDesc"
   },
+  "optInspectDemoText": {
+    "message": "全文ルビのデモ"
+  },
   "optInspectDictColorDesc": {
     "message": "辞書スタイルの発音記号の色の深さを調整します。"
   },
@@ -354,6 +385,9 @@
     "message": "なし (直接ホバー)",
     "description": "optKeyNone"
   },
+  "optKeyOff": {
+    "message": "なし (オフ)"
+  },
   "optKeyShift": {
     "message": "Shift (⇧)",
     "description": "optKeyShift"
@@ -374,6 +408,9 @@
     "message": "どのようにお呼びすればよろしいですか？",
     "description": "optNamePlaceholder"
   },
+  "optNoReply": {
+    "message": "（応答なし）"
+  },
   "optOpacity100": {
     "message": "100% (完全不透明)"
   },
@@ -386,9 +423,49 @@
   "optOpacity85": {
     "message": "85% (やや透明)"
   },
+  "optOpenWordbook": {
+    "message": "単語帳を開く"
+  },
   "optOptional": {
     "message": "(任意)",
     "description": "optOptional"
+  },
+  "optParaTransDemoText": {
+    "message": "これは段落翻訳機能をデモするためのテキストです。"
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optParaTransKey": {
+    "message": "段落広東語翻訳のトリガーキー"
+  },
+  "optParaTransKeyDesc": {
+    "message": "テキストの段落にカーソルを合わせ、このキーを押すと、AIを使用して段落全体を広東語に翻訳し、元のテキストの下に表示します。もう一度押すと削除されます（AI翻訳の設定が必要です）。"
+  },
+  "optParaTransKeyLongPress": {
+    "message": "左クリックを長押し"
+  },
+  "optParaTransMode": {
+    "message": "翻訳の表示方法",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeBelow": {
+    "message": "元のテキストの下に表示",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeDesc": {
+    "message": "翻訳を元のテキストの下に表示するか、元のテキストを置き換えるかを選択します。",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeReplace": {
+    "message": "元のテキストを置き換える",
+    "description": "optParaTransModeReplace"
+  },
+  "optParaTransTitle": {
+    "message": "段落翻訳"
+  },
+  "optPlaying": {
+    "message": "再生中..."
   },
   "optPopupStyle": {
     "message": "ポップアップスタイル",
@@ -418,6 +495,26 @@
   },
   "optPopupStyleSystem": {
     "message": "システムデフォルト"
+  },
+  "optRubyBgFade": {
+    "message": "フェード背景"
+  },
+  "optRubyBgNone": {
+    "message": "背景なし"
+  },
+  "optRubyBgSolid": {
+    "message": "単色背景"
+  },
+  "optRubyHoverStyle": {
+    "message": "ホバーフォントスタイル",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "Rubyモードでのホバー時のフォントカラー効果を選択",
+    "description": "optRubyHoverStyleDesc"
+  },
+  "optRubyRtBgToggle": {
+    "message": "ルビ注音背景モード"
   },
   "optSend": {
     "message": "フィードバックを送信",
@@ -457,6 +554,12 @@
     "message": "拡張機能の設定",
     "description": "optSubtitle"
   },
+  "optSuccess": {
+    "message": "✅ 接続成功！\nモデルの返答："
+  },
+  "optTOC": {
+    "message": "目次"
+  },
   "optTTSEngine": {
     "message": "音声エンジン",
     "description": "optTTSEngine"
@@ -477,9 +580,16 @@
     "message": " 音声をテスト",
     "description": "optTestTTS"
   },
+  "optTestingAI": {
+    "message": "テスト中..."
+  },
   "optTheme": {
     "message": "テーマ",
     "description": "optTheme"
+  },
+  "optThemeAuto": {
+    "message": "システム",
+    "description": "optThemeAuto"
   },
   "optThemeClassic": {
     "message": "クラシック",
@@ -504,6 +614,10 @@
   "optThemeInk": {
     "message": "インク",
     "description": "optThemeInk"
+  },
+  "optThemeLight": {
+    "message": "ライト",
+    "description": "optThemeLight"
   },
   "optThemeMint": {
     "message": "ミントグリーン",
@@ -617,106 +731,11 @@
     "message": "全ページ広東語ルビが有効になりました。<br>レイアウトが崩れる場合は、ページを更新 (F5) してください。",
     "description": "Toast shown when full page ruby is enabled"
   },
-  "optPlaying": {
-    "message": "再生中..."
+  "wordbookDetailMode": {
+    "message": "辞書モード",
+    "description": "Wordbook: toggle detail mode"
   },
-  "optTestingAI": {
-    "message": "テスト中..."
-  },
-  "optSuccess": {
-    "message": "✅ 接続成功！\nモデルの返答："
-  },
-  "optFail": {
-    "message": "❌ 接続失敗："
-  },
-  "optNoReply": {
-    "message": "（応答なし）"
-  },
-  "optAIPrompt": {
-    "message": "カスタムプロンプト (System Prompt)"
-  },
-  "optAIPromptDesc": {
-    "message": "AIに送信するプロンプトテンプレートを設定します。変数 {word}（選択された単語）と {sentence}（文脈文）をサポートします。空欄の場合はデフォルトが使用されます。"
-  },
-  "optAIDefaultPrompt": {
-    "message": "あなたは広東語の言語専門家です。ユーザーが広東語の記事を読んでいるときに単語を選択しました。文脈に基づいて、この文におけるその単語の具体的な意味を{targetLang}で簡潔に説明してください（1〜2文）。説明内容のみを返信し、フォーマットマークアップは不要です。\n\n【単語】{word}\n【文】{sentence}"
-  },
-  "optRubyHoverStyle": {
-    "message": "ホバーフォントスタイル",
-    "description": "optRubyHoverStyle"
-  },
-  "optRubyHoverStyleDesc": {
-    "message": "Rubyモードでのホバー時のフォントカラー効果を選択",
-    "description": "optRubyHoverStyleDesc"
-  },
-  "optThemeAuto": {
-    "message": "システム",
-    "description": "optThemeAuto"
-  },
-  "optThemeLight": {
-    "message": "ライト",
-    "description": "optThemeLight"
-  },
-  "optAIDblClickHint": {
-    "message": "AI 解説ボックスまたは API 翻訳ボックスをダブルクリックすると、AI フォローアップ会話を開始できます",
-    "description": "optAIDblClickHint"
-  },
-  "optRubyRtBgToggle": {
-    "message": "ルビ注音背景モード"
-  },
-  "optRubyBgNone": {
-    "message": "背景なし"
-  },
-  "optRubyBgFade": {
-    "message": "フェード背景"
-  },
-  "optRubyBgSolid": {
-    "message": "単色背景"
-  },
-  "optParaTransTitle": {
-    "message": "段落翻訳"
-  },
-  "optParaTransDemoText": {
-    "message": "これは段落翻訳機能をデモするためのテキストです。"
-  },
-  "optParaTransDemoTranslated": {
-    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
-  },
-  "optParaTransKey": {
-    "message": "段落広東語翻訳のトリガーキー"
-  },
-  "optParaTransKeyDesc": {
-    "message": "テキストの段落にカーソルを合わせ、このキーを押すと、AIを使用して段落全体を広東語に翻訳し、元のテキストの下に表示します。もう一度押すと削除されます（AI翻訳の設定が必要です）。"
-  },
-  "optParaTransKeyLongPress": {
-    "message": "左クリックを長押し"
-  },
-  "optKeyOff": {
-    "message": "なし (オフ)"
-  },
-  "optParaTransMode": {
-    "message": "翻訳の表示方法",
-    "description": "optParaTransMode"
-  },
-  "optParaTransModeDesc": {
-    "message": "翻訳を元のテキストの下に表示するか、元のテキストを置き換えるかを選択します。",
-    "description": "optParaTransModeDesc"
-  },
-  "optParaTransModeBelow": {
-    "message": "元のテキストの下に表示",
-    "description": "optParaTransModeBelow"
-  },
-  "optParaTransModeReplace": {
-    "message": "元のテキストを置き換える",
-    "description": "optParaTransModeReplace"
-  },
-  "optTOC": {
-    "message": "目次"
-  },
-  "clItem7": {
-    "message": "✨ <b>新機能「段落翻訳」</b>：ショートカットキー（デフォルトは Shift ⇧）を押しながら段落にホバーすると、AIが正確な広東語翻訳を提供します！"
-  },
-  "optInspectDemoText": {
-    "message": "全文ルビのデモ"
+  "wordbookEmptyDetail": {
+    "message": "左側の単語をクリックして<br>辞書の詳細を表示します"
   }
 }

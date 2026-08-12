@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>粵語懸浮詞典 - 設定</title>
+    <script src="theme-init.js"></script>
     <link rel="icon" type="image/svg+xml" href="icon_favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -639,11 +640,11 @@
         align-items: center;
         justify-content: space-between;
         padding: 6px 12px;
-        background: var(--bg-input, #ffffff);
-        border: 1px solid var(--border, #e2e8f0);
+        background: var(--bg-input);
+        border: 1px solid var(--border);
         border-radius: 6px;
         font-size: 14px;
-        color: var(--text-primary, #1e293b);
+        color: var(--text-primary);
         cursor: pointer;
         transition: all 0.2s ease;
         min-height: 36px;
@@ -654,21 +655,19 @@
         white-space: nowrap;
       }
       .custom-select-trigger:hover {
-        border-color: var(--primary-light, #cbd5e1);
-        background: var(--bg-hover, #f8fafc);
+        border-color: var(--primary-light);
       }
-      html[data-theme="dark"] .custom-select-trigger:hover {
-        border-color: var(--primary, #475569);
-        background: var(--bg-hover);
+      :root[data-theme="dark"] .custom-select-trigger:hover {
+        border-color: var(--primary);
       }
       .custom-select-wrapper.open .custom-select-trigger {
-        border-color: var(--primary, #3b82f6);
+        border-color: var(--primary);
         box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
       }
       .custom-select-arrow {
         display: flex;
         align-items: center;
-        color: #94a3b8;
+        color: var(--text-muted);
         transition: transform 0.2s ease;
         margin-left: 8px;
       }
@@ -682,8 +681,8 @@
         min-width: 100%;
         width: max-content;
         max-width: 320px;
-        background: var(--bg-overlay, #ffffff);
-        border: 1px solid var(--border, #e2e8f0);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
         border-radius: 8px;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
         z-index: 100;
@@ -695,7 +694,7 @@
         overflow-y: auto;
         padding: 6px;
       }
-      html[data-theme="dark"] .custom-select-panel {
+      :root[data-theme="dark"] .custom-select-panel {
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
       }
       .custom-select-wrapper.open .custom-select-panel {
@@ -707,25 +706,22 @@
         padding: 8px 10px 8px 32px;
         border-radius: 6px;
         font-size: 14px;
-        color: var(--text-primary, #1e293b);
+        color: var(--text-primary);
         cursor: pointer;
         position: relative;
         transition: background-color 0.15s ease;
       }
       .custom-select-item:hover {
-        background: #f1f5f9;
-      }
-      html[data-theme="dark"] .custom-select-item:hover {
-        background: #334155;
+        background: var(--bg-input);
       }
       .custom-select-item.selected {
         background: color-mix(in srgb, var(--primary) 10%, transparent);
         color: var(--primary);
         font-weight: 500;
       }
-      html[data-theme="dark"] .custom-select-item.selected {
+      :root[data-theme="dark"] .custom-select-item.selected {
         background: color-mix(in srgb, var(--primary) 20%, transparent);
-        color: var(--primary-light, #60a5fa);
+        color: var(--primary-light);
       }
       .custom-select-item.selected::before {
         content: "";
@@ -739,8 +735,8 @@
         -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / contain;
         mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'%3E%3C/polyline%3E%3C/svg%3E") no-repeat center / contain;
       }
-      html[data-theme="dark"] .custom-select-item.selected::before {
-        background-color: var(--primary-light, #60a5fa);
+      :root[data-theme="dark"] .custom-select-item.selected::before {
+        background-color: var(--primary-light);
       }
       
       /* Make sure select-wrapper has visible overflow for the floating panel */
@@ -833,6 +829,14 @@
         </div>
         <h1 data-i18n="optTitle">粵語懸浮詞典</h1>
         <p data-i18n="optSubtitle">Jyutping Hover Dictionary</p>
+        <a href="wordbook.html" id="wordbookEntryBtn" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 10px 20px; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 200ms ease; background: transparent;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+          </svg>
+          <span data-i18n="optOpenWordbook">打開生詞本</span>
+          <span id="wordbookCountBadge" style="background: var(--primary); color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 600; min-width: 20px; text-align: center;">0</span>
+        </a>
       </div>
 
       <!-- General Settings -->
@@ -2765,7 +2769,7 @@
       <div class="changelog-header">
         <div class="changelog-title">
           <span data-i18n="clTitle">🚀 最新更新</span>
-          <span class="changelog-version" id="changelogVersionBadge">v1.5.6</span>
+          <span class="changelog-version" id="changelogVersionBadge">v1.5.7</span>
         </div>
         <button id="closeChangelogBtn" class="changelog-close" title="關閉" data-i18n="titleClose">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2777,9 +2781,9 @@
       <div class="changelog-content">
         <p data-i18n="clDesc">本次更新帶來了以下優化：</p>
         <ul class="changelog-list">
-          <li data-i18n="clItem7">✨ <b>全新「段落翻譯」功能</b>：按住指定快捷鍵（預設 Shift ⇧）滑鼠懸停於段落上，即可呼出 AI 提供精準的粵語翻譯！</li>
-          <li data-i18n="clItem5">🎨 <b>新增注音背景樣式</b>：Ruby 內嵌注音模式現已支援「實色背景」與「消散背景」，在任何網頁背景下都能保證音標清晰可見。</li>
-          <li data-i18n="clItem6">🐛 <b>修復懸浮窗樣式問題</b>：修復了在部分網頁（如深色模式或複雜佈局）上懸浮窗排版錯亂及遮罩高度不準確的問題。</li>
+          <li data-i18n="clItem8"><b>全新「生詞本」功能</b>：懸浮窗新增 ⭐ 收藏按鈕，或按 <kbd>S</kbd> 鍵即可快速收藏當前查詢的粵語詞彙到本地生詞本。</li>
+          <li data-i18n="clItem9"><b>生詞本管理頁面</b>：支持搜索、排序、批量管理，並提供 JSON / CSV / Markdown / TXT 四種格式導出，亦可導入備份。</li>
+          <li data-i18n="clItem10"><b>右鍵菜單收藏</b>：選中任意中文文字，右鍵即可快速加入生詞本，無需打開懸浮窗。</li>
         </ul>
       </div>
     </div>

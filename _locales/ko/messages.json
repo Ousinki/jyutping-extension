@@ -2,6 +2,26 @@
   "clDesc": {
     "message": "이번 업데이트에는 다음과 같은 개선 사항이 포함되어 있습니다:"
   },
+  "clItem10": {
+    "message": "<b>컨텍스트 메뉴 저장</b>: 중국어 텍스트를 선택하고 마우스 오른쪽 버튼을 클릭하면 호버 팝업을 열지 않고도 단어장에 빠르게 추가할 수 있습니다."
+  },
+  "clItem5": {
+    "message": "🎨 <b>새로운 루비 배경 스타일</b>: 루비 주음 모드에서 '단색 배경' 및 '페이드 배경'을 지원하여 어떤 웹페이지 배경에서도 발음 기호가 선명하게 보이도록 개선했습니다.",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🐛 <b>플로팅 팝업 스타일 수정</b>: 특정 웹페이지에서 플로팅 팝업 레이아웃이 깨지거나 마스크 높이가 부정확한 문제를 수정했습니다.",
+    "description": "Changelog item 6"
+  },
+  "clItem7": {
+    "message": "✨ <b>새로운 단락 번역 기능</b>: 단축키(기본값 Shift ⇧)를 누른 상태에서 단락 위에 마우스를 올리면 AI가 정확한 광둥어 번역을 제공합니다!"
+  },
+  "clItem8": {
+    "message": "<b>새로운 \"단어장\" 기능</b>: 호버 팝업에 ⭐ 저장 버튼이 추가되었습니다. <kbd>S</kbd> 키를 눌러 현재 검색 중인 광둥어 어휘를 로컬 단어장에 빠르게 저장할 수도 있습니다."
+  },
+  "clItem9": {
+    "message": "<b>단어장 관리 페이지</b>: 검색, 정렬 및 일괄 관리를 지원합니다. 4가지 내보내기 형식(JSON, CSV, Markdown, TXT)을 제공하며 백업 가져오기도 지원합니다."
+  },
   "clTitle": {
     "message": "🚀 새로운 기능"
   },
@@ -33,6 +53,13 @@
   "optAIBaseUrlDesc": {
     "message": "OpenAI 호환 API 주소"
   },
+  "optAIDblClickHint": {
+    "message": "AI 설명 창 또는 API 번역 창을 더블 클릭하면 AI 후속 질문 대화를 시작할 수 있습니다",
+    "description": "optAIDblClickHint"
+  },
+  "optAIDefaultPrompt": {
+    "message": "귀하는 광둥어 언어 전문가입니다. 사용자가 광둥어 기사를 읽는 중 단어를 선택했습니다. 문맥에 따라 이 문장에서 해당 단어의 구체적인 의미를 {targetLang}(으)로 간략하게 설명해 주세요(1~2문장). 설명 내용 자체만 회신하고 서식 마크업은 제외해 주세요.\n\n【단어】{word}\n【문장】{sentence}"
+  },
   "optAIEnable": {
     "message": "AI 번역 사용"
   },
@@ -57,6 +84,12 @@
   },
   "optAIModelLabel": {
     "message": "AI 모델"
+  },
+  "optAIPrompt": {
+    "message": "사용자 정의 프롬프트 (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "AI에 보낼 프롬프트 템플릿을 설정합니다. 변수 {word}(선택된 단어) 및 {sentence}(맥락 문장)을 지원합니다. 비워두면 기본값이 사용됩니다."
   },
   "optAIPromptLabel": {
     "message": "시스템 프롬프트"
@@ -175,6 +208,9 @@
     "message": "Bert-VITS2 (광둥어 신경망 음성)",
     "description": "optEngineBert"
   },
+  "optFail": {
+    "message": "❌ 연결 실패:"
+  },
   "optFeedback": {
     "message": "정보 및 피드백"
   },
@@ -252,6 +288,9 @@
   "optHoverModifierDesc": {
     "message": "특정 키를 누르고 있을 때만 팝업 표시 (일상적인 간섭 방지)"
   },
+  "optInspectDemoText": {
+    "message": "전체 텍스트 루비 데모"
+  },
   "optInspectDictColorDesc": {
     "message": "사전 스타일의 발음 기호 색상 깊이를 조정합니다."
   },
@@ -316,6 +355,9 @@
   "optKeyNone": {
     "message": "없음 (직접 호버)"
   },
+  "optKeyOff": {
+    "message": "없음 (끄기)"
+  },
   "optKeyShift": {
     "message": "Shift (⇧)"
   },
@@ -334,6 +376,9 @@
     "message": "어떻게 불러드릴까요?",
     "description": "optNamePlaceholder"
   },
+  "optNoReply": {
+    "message": "(응답 없음)"
+  },
   "optOpacity100": {
     "message": "100% (완전 불투명)"
   },
@@ -346,9 +391,49 @@
   "optOpacity85": {
     "message": "85% (약간 투명)"
   },
+  "optOpenWordbook": {
+    "message": "단어장 열기"
+  },
   "optOptional": {
     "message": "(선택 사항)",
     "description": "optOptional"
+  },
+  "optParaTransDemoText": {
+    "message": "이것은 단락 번역 기능을 시연하기 위한 텍스트입니다."
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optParaTransKey": {
+    "message": "단락 광둥어 번역 트리거 키"
+  },
+  "optParaTransKeyDesc": {
+    "message": "텍스트 단락 위에 마우스를 올리고 이 키를 누르면 AI를 사용하여 전체 단락을 광둥어로 번역하여 원본 아래에 표시합니다. 다시 누르면 제거됩니다 (AI 번역 구성 필요)."
+  },
+  "optParaTransKeyLongPress": {
+    "message": "마우스 왼쪽 버튼 길게 누르기"
+  },
+  "optParaTransMode": {
+    "message": "번역 표시 방식",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeBelow": {
+    "message": "원본 텍스트 아래에 표시",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeDesc": {
+    "message": "번역을 원본 텍스트 아래에 표시할지, 원본 텍스트를 덮어쓸지 선택합니다.",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeReplace": {
+    "message": "원본 텍스트 덮어쓰기",
+    "description": "optParaTransModeReplace"
+  },
+  "optParaTransTitle": {
+    "message": "단락 번역"
+  },
+  "optPlaying": {
+    "message": "재생 중..."
   },
   "optPopupStyle": {
     "message": "팝업 스타일",
@@ -378,6 +463,26 @@
   },
   "optPopupStyleSystem": {
     "message": "시스템 기본값"
+  },
+  "optRubyBgFade": {
+    "message": "페이드 배경"
+  },
+  "optRubyBgNone": {
+    "message": "배경 없음"
+  },
+  "optRubyBgSolid": {
+    "message": "단색 배경"
+  },
+  "optRubyHoverStyle": {
+    "message": "호버 글꼴 스타일",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "Ruby 모드에서 호버 시 글꼴 색상 효과 선택",
+    "description": "optRubyHoverStyleDesc"
+  },
+  "optRubyRtBgToggle": {
+    "message": "루비 주음 배경 모드"
   },
   "optSend": {
     "message": "피드백 보내기"
@@ -413,6 +518,12 @@
   "optSubtitle": {
     "message": "확장 프로그램 설정"
   },
+  "optSuccess": {
+    "message": "✅ 연결 성공!\n모델 응답:"
+  },
+  "optTOC": {
+    "message": "목차"
+  },
   "optTTSEngine": {
     "message": "음성 엔진",
     "description": "optTTSEngine"
@@ -433,9 +544,16 @@
     "message": " 음성 테스트",
     "description": "optTestTTS"
   },
+  "optTestingAI": {
+    "message": "테스트 중..."
+  },
   "optTheme": {
     "message": "테마",
     "description": "optTheme"
+  },
+  "optThemeAuto": {
+    "message": "자동",
+    "description": "optThemeAuto"
   },
   "optThemeClassic": {
     "message": "클래식",
@@ -459,6 +577,10 @@
   "optThemeInk": {
     "message": "잉크",
     "description": "optThemeInk"
+  },
+  "optThemeLight": {
+    "message": "라이트",
+    "description": "optThemeLight"
   },
   "optThemeMint": {
     "message": "민트 그린",
@@ -563,114 +685,11 @@
     "message": "전체 페이지 광둥어 발음기호가 활성화되었습니다.<br>레이아웃이 겹치면 페이지를 새로고침(F5) 해주세요.",
     "description": "Toast shown when full page ruby is enabled"
   },
-  "optPlaying": {
-    "message": "재생 중..."
+  "wordbookDetailMode": {
+    "message": "사전 모드",
+    "description": "Wordbook: toggle detail mode"
   },
-  "optTestingAI": {
-    "message": "테스트 중..."
-  },
-  "optSuccess": {
-    "message": "✅ 연결 성공!\n모델 응답:"
-  },
-  "optFail": {
-    "message": "❌ 연결 실패:"
-  },
-  "optNoReply": {
-    "message": "(응답 없음)"
-  },
-  "optAIPrompt": {
-    "message": "사용자 정의 프롬프트 (System Prompt)"
-  },
-  "optAIPromptDesc": {
-    "message": "AI에 보낼 프롬프트 템플릿을 설정합니다. 변수 {word}(선택된 단어) 및 {sentence}(맥락 문장)을 지원합니다. 비워두면 기본값이 사용됩니다."
-  },
-  "optAIDefaultPrompt": {
-    "message": "귀하는 광둥어 언어 전문가입니다. 사용자가 광둥어 기사를 읽는 중 단어를 선택했습니다. 문맥에 따라 이 문장에서 해당 단어의 구체적인 의미를 {targetLang}(으)로 간략하게 설명해 주세요(1~2문장). 설명 내용 자체만 회신하고 서식 마크업은 제외해 주세요.\n\n【단어】{word}\n【문장】{sentence}"
-  },
-  "optRubyHoverStyle": {
-    "message": "호버 글꼴 스타일",
-    "description": "optRubyHoverStyle"
-  },
-  "optRubyHoverStyleDesc": {
-    "message": "Ruby 모드에서 호버 시 글꼴 색상 효과 선택",
-    "description": "optRubyHoverStyleDesc"
-  },
-  "optThemeAuto": {
-    "message": "자동",
-    "description": "optThemeAuto"
-  },
-  "optThemeLight": {
-    "message": "라이트",
-    "description": "optThemeLight"
-  },
-  "optAIDblClickHint": {
-    "message": "AI 설명 창 또는 API 번역 창을 더블 클릭하면 AI 후속 질문 대화를 시작할 수 있습니다",
-    "description": "optAIDblClickHint"
-  },
-  "clItem5": {
-    "message": "🎨 <b>새로운 루비 배경 스타일</b>: 루비 주음 모드에서 '단색 배경' 및 '페이드 배경'을 지원하여 어떤 웹페이지 배경에서도 발음 기호가 선명하게 보이도록 개선했습니다.",
-    "description": "Changelog item 5"
-  },
-  "clItem6": {
-    "message": "🐛 <b>플로팅 팝업 스타일 수정</b>: 특정 웹페이지에서 플로팅 팝업 레이아웃이 깨지거나 마스크 높이가 부정확한 문제를 수정했습니다.",
-    "description": "Changelog item 6"
-  },
-  "optRubyRtBgToggle": {
-    "message": "루비 주음 배경 모드"
-  },
-  "optRubyBgNone": {
-    "message": "배경 없음"
-  },
-  "optRubyBgFade": {
-    "message": "페이드 배경"
-  },
-  "optRubyBgSolid": {
-    "message": "단색 배경"
-  },
-  "optParaTransTitle": {
-    "message": "단락 번역"
-  },
-  "optParaTransDemoText": {
-    "message": "이것은 단락 번역 기능을 시연하기 위한 텍스트입니다."
-  },
-  "optParaTransDemoTranslated": {
-    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
-  },
-  "optParaTransKey": {
-    "message": "단락 광둥어 번역 트리거 키"
-  },
-  "optParaTransKeyDesc": {
-    "message": "텍스트 단락 위에 마우스를 올리고 이 키를 누르면 AI를 사용하여 전체 단락을 광둥어로 번역하여 원본 아래에 표시합니다. 다시 누르면 제거됩니다 (AI 번역 구성 필요)."
-  },
-  "optParaTransKeyLongPress": {
-    "message": "마우스 왼쪽 버튼 길게 누르기"
-  },
-  "optKeyOff": {
-    "message": "없음 (끄기)"
-  },
-  "optParaTransMode": {
-    "message": "번역 표시 방식",
-    "description": "optParaTransMode"
-  },
-  "optParaTransModeDesc": {
-    "message": "번역을 원본 텍스트 아래에 표시할지, 원본 텍스트를 덮어쓸지 선택합니다.",
-    "description": "optParaTransModeDesc"
-  },
-  "optParaTransModeBelow": {
-    "message": "원본 텍스트 아래에 표시",
-    "description": "optParaTransModeBelow"
-  },
-  "optParaTransModeReplace": {
-    "message": "원본 텍스트 덮어쓰기",
-    "description": "optParaTransModeReplace"
-  },
-  "optTOC": {
-    "message": "목차"
-  },
-  "clItem7": {
-    "message": "✨ <b>새로운 단락 번역 기능</b>: 단축키(기본값 Shift ⇧)를 누른 상태에서 단락 위에 마우스를 올리면 AI가 정확한 광둥어 번역을 제공합니다!"
-  },
-  "optInspectDemoText": {
-    "message": "전체 텍스트 루비 데모"
+  "wordbookEmptyDetail": {
+    "message": "왼쪽 단어를 클릭하여<br>사전 세부 정보를 봅니다"
   }
 }

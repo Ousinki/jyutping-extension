@@ -63,6 +63,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     return true; // Keep channel open
   } else if (request.action === 'openOptionsPage') {
     chrome.runtime.openOptionsPage();
+  } else if (request.action === 'openWordbook') {
+    chrome.tabs.create({ url: chrome.runtime.getURL('wordbook.html') });
   }
   return true;
 });
@@ -649,17 +651,22 @@ async function handleAiTranslateParagraph(request, tabId) {
       throw new Error('沒有可翻譯的內容');
     }
 
-    if (engine === 'bing') {
-      // 移除多餘的 HTML 屬性 (保留 href) 以大幅縮減字元數，避免觸發 Bing 1000 字元限制
-      let cleanHtml = html.replace(/<([a-z0-9]+)([^>]*)>/gi, (match, tag, attrs) => {
-        if (tag.toLowerCase() === 'a') {
-          const hrefMatch = attrs.match(/href=(["'])(.*?)\1/i);
-          if (hrefMatch) return `<a href="${hrefMatch[2]}">`;
-          return `<a>`;
-        }
-        return `<${tag}>`;
-      });
+    // 移除多餘的 HTML 屬性 (保留 href) 以大幅縮減字元數，避免觸發 Bing 1000 字元限制，同時為 AI 省 Token
+    let cleanHtml = html.replace(/<([a-z0-9]+)([^>]*)>/gi, (match, tag, attrs) => {
+      const t = tag.toLowerCase();
+      // 完整保留媒體標籤的所有屬性（如 src, class, alt, width）
+      if (['img', 'iframe', 'video', 'audio', 'source'].includes(t)) {
+        return match;
+      }
+      if (t === 'a') {
+        const hrefMatch = attrs.match(/href=(["'])(.*?)\1/i);
+        if (hrefMatch) return `<a href="${hrefMatch[2]}">`;
+        return `<a>`;
+      }
+      return `<${tag}>`;
+    });
 
+    if (engine === 'bing') {
       await getBingAccessToken();
 
       if (cleanHtml.length > 950) {
@@ -702,11 +709,11 @@ async function handleAiTranslateParagraph(request, tabId) {
     const prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段文字翻譯成自然、地道的粵語書面語。
 
 嚴格要求：
-1. 只輸出翻譯後的文字本身，不要任何前後綴或解釋。
-2. 不要加上引號、Markdown 標記或程式碼圍欄。
+1. 只輸出翻譯後的結果本身，不要任何前後綴或解釋。
+2. 保持原文的 HTML 標籤結構完全不變（包括標籤及其屬性），只翻譯純文字內容。
 
-待翻譯文字：
-${textContent || html}`;
+待翻譯內容：
+${cleanHtml}`;
 
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
     const response = await fetch(url, {
@@ -841,6 +848,27 @@ chrome.runtime.onInstalled.addListener(() => {
     title: chrome.i18n.getMessage("ctxMenuSettings") || "詞典設定...",
     contexts: ["all"]
   });
+
+  chrome.contextMenus.create({
+    id: "sep3",
+    parentId: "jyutping-parent",
+    type: "separator",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
+    id: "add-to-wordbook",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("ctxAddWord") || "📌 加入生詞本",
+    contexts: ["selection"]
+  });
+
+  chrome.contextMenus.create({
+    id: "open-wordbook",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("ctxOpenWordbook") || "📖 打開生詞本",
+    contexts: ["all"]
+  });
   
   initState();
 });
@@ -864,6 +892,16 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     GoogleAnalytics.fireEvent('change_setting_context', { setting: 'popupDisplayStyle', value: 'compact' });
   } else if (info.menuItemId === "open-settings") {
     chrome.runtime.openOptionsPage();
+  } else if (info.menuItemId === "open-wordbook") {
+    chrome.tabs.create({ url: chrome.runtime.getURL('wordbook.html') });
+  } else if (info.menuItemId === "add-to-wordbook") {
+    // 將選中的文字發送到 content script 以加入生詞本
+    if (tab && tab.id && info.selectionText) {
+      chrome.tabs.sendMessage(tab.id, {
+        action: 'addToWordbook',
+        text: info.selectionText
+      }).catch(() => {});
+    }
   }
 });
 
@@ -1017,7 +1055,7 @@ async function handleAiChatQuery(request, sendResponse) {
       body: JSON.stringify({
         model: aiModel,
         messages: messages,
-        max_tokens: 300,
+        max_tokens: 800,
         temperature: 0.5
       })
     });

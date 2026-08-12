@@ -9,6 +9,7 @@ import { convertToSuperscriptTone } from './text-utils.js';
 import { isEditableElement, hasEditableFocus, getCaretRangeFromPointInShadow, getAccurateOffset } from './dom.js';
 import { createBlobUrlFromDataUri } from './tts.js';
 import { sanitizeTranslatedHtml } from './paragraph-translate.js';
+import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.js';
 
 (function() {
   'use strict';
@@ -19,6 +20,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
   let dictionary = {};
   let popup = null;
+  let lastPopupShowTime = 0; // 記錄上次顯示彈窗的時間，用於過濾幽靈 mouseleave 事件
   let popupArrow = null; // 彈窗箭頭元素
   let isEnabled = true;
   let displayMode = 'jyutping';
@@ -110,7 +112,27 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       noPronunciation: "找不到該詞的讀音",
       speak: "發音",
       copy: "複製",
-      cantConnect: "無法連接字典伺服器"
+      cantConnect: "無法連接字典伺服器",
+      wordbookSaved: "已加入生詞本",
+      wordbookExists: "此詞已在生詞本中",
+      wordbookRemoved: "已從生詞本移除",
+      wordbookSaveFailed: "收藏失敗，請重試"
+    },
+    "zh-CN": {
+      translating: "翻译中...",
+      mandarin: "普",
+      english: "英",
+      japanese: "日",
+      korean: "韩",
+      aiExplaining: "AI 释义中...",
+      noPronunciation: "找不到该词的读音",
+      speak: "发音",
+      copy: "复制",
+      cantConnect: "无法连接字典服务器",
+      wordbookSaved: "已加入生词本",
+      wordbookExists: "此词已在生词本中",
+      wordbookRemoved: "已从生词本移除",
+      wordbookSaveFailed: "收藏失败，请重试"
     },
     "en": {
       translating: "Translating...",
@@ -122,7 +144,43 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       noPronunciation: "Pronunciation not found",
       speak: "Speak",
       copy: "Copy",
-      cantConnect: "Cannot connect to server"
+      cantConnect: "Cannot connect to server",
+      wordbookSaved: "Saved to Word Book",
+      wordbookExists: "Already in Word Book",
+      wordbookRemoved: "Removed from Word Book",
+      wordbookSaveFailed: "Save failed, please retry"
+    },
+    "ja": {
+      translating: "翻訳中...",
+      mandarin: "普",
+      english: "英",
+      japanese: "日",
+      korean: "韓",
+      aiExplaining: "AI 解説中...",
+      noPronunciation: "発音が見つかりません",
+      speak: "発音",
+      copy: "コピー",
+      cantConnect: "サーバーに接続できません",
+      wordbookSaved: "単語帳に保存しました",
+      wordbookExists: "単語帳に登録済み",
+      wordbookRemoved: "単語帳から削除しました",
+      wordbookSaveFailed: "保存に失敗しました"
+    },
+    "ko": {
+      translating: "번역 중...",
+      mandarin: "普",
+      english: "英",
+      japanese: "日",
+      korean: "韓",
+      aiExplaining: "AI 설명 중...",
+      noPronunciation: "발음을 찾을 수 없습니다",
+      speak: "발음",
+      copy: "복사",
+      cantConnect: "서버에 연결할 수 없습니다",
+      wordbookSaved: "단어장에 저장됨",
+      wordbookExists: "이미 단어장에 있음",
+      wordbookRemoved: "단어장에서 삭제됨",
+      wordbookSaveFailed: "저장 실패, 다시 시도해주세요"
     }
   };
   let currentLang = 'zh-HK';
@@ -530,21 +588,25 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
       /* ========== Toast 提示框 ========== */
       #jyutping-toast-container {
-        position: fixed; top: 20px; right: 20px; z-index: 2147483647;
-        display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+        z-index: 2147483647; display: flex; flex-direction: column;
+        align-items: center; gap: 8px; pointer-events: none;
       }
       .jyutping-toast {
-        background: #ffffff; color: #333333; border: 1px solid #d0d0d0;
-        border-left: 4px solid #f44336; border-radius: 8px; padding: 12px 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 14px;
-        line-height: 1.4; max-width: 300px; word-wrap: break-word; pointer-events: auto;
-        opacity: 0; transform: translateX(100%);
-        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(30, 30, 30, 0.88); color: #f0f0f0;
+        border: none; border-radius: 20px; padding: 8px 18px 8px 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 13px; font-weight: 500; line-height: 1.4;
+        max-width: 320px; word-wrap: break-word; pointer-events: auto;
+        opacity: 0; transform: translateY(-12px) scale(0.95);
+        transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
-      .jyutping-toast.show { opacity: 1; transform: translateX(0); }
-      .jyutping-toast-success { border-left-color: #4CAF50 !important; }
-      .jyutping-toast-error { border-left-color: #f44336 !important; }
+      .jyutping-toast.show { opacity: 1; transform: translateY(0) scale(1); }
+      .jyutping-toast-success { background: rgba(120, 30, 30, 0.72) !important; color: #fff !important; backdrop-filter: blur(16px) saturate(180%) !important; -webkit-backdrop-filter: blur(16px) saturate(180%) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; }
+      .jyutping-toast-error { background: rgba(60, 60, 60, 0.92) !important; color: #f0f0f0 !important; }
 
       /* ========== Translation Highlight ========== */
       ::highlight(jyutping-translate-hl) {
@@ -708,6 +770,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       await loadDictionary();
       console.log('[Content] Auto-restoring Jyutping Full Page Ruby from sessionStorage');
       injectRubyAnnotations(document.body);
+      startRubyObserver();
     }
   }
 
@@ -718,6 +781,9 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     translatePopup = document.createElement('div');
     translatePopup.id = 'cantonese-translate-popup';
     translatePopup.style.display = 'none';
+    translatePopup.style.position = 'absolute';
+    translatePopup.style.left = '-9999px';
+    translatePopup.style.top = '-9999px';
     shadowRoot.appendChild(translatePopup);
     translatePopup.addEventListener('mousedown', (e) => {
       // 允許 QA 容器內的元素正常響應點擊（輸入框焦點、按鈕點擊等）
@@ -740,6 +806,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     });
     translatePopup.addEventListener('mouseleave', () => {
       isMouseOverPopup = false;
+      if (Date.now() - lastPopupShowTime < 400) return; // 忽略剛顯示時因為 DOM 變動觸發的幽靈事件
       scheduleHidePopup();
     });
 
@@ -804,13 +871,21 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
   // 對於跨行/多行選區，選取距離當前滑鼠最近的行/區塊 Rect，並合併同行的 rects
   function getBestRectForRange(range) {
-    if (!range) return null;
+    if (!range) {
+      console.log('[Debug] getBestRectForRange: range is null');
+      return null;
+    }
     const rects = Array.from(range.getClientRects());
+    console.log('[Debug] getBestRectForRange: rects count =', rects.length);
+    if (rects.length > 1) {
+      console.log('[Debug] getBestRectForRange: multiple rects detected', rects);
+    }
     if (rects.length === 0) return null;
     if (rects.length === 1) return rects[0];
 
     // 如果滑鼠位置為 0，預設使用整體 bounding rect
     if (currentMouseX === 0 && currentMouseY === 0) {
+      console.log('[Debug] getBestRectForRange: mouse position is 0, returning bounding box', range.getBoundingClientRect());
       return range.getBoundingClientRect();
     }
 
@@ -846,17 +921,16 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       }
     }
 
-    // 計算整體的 top 和 bottom，以確保彈窗不會遮擋任何跨行的文字
-    const fullRect = range.getBoundingClientRect();
-
-    return {
+    const finalRect = {
       left: minX,
       right: maxX,
-      top: fullRect.top,
-      bottom: fullRect.bottom,
+      top: minY,
+      bottom: maxY,
       width: maxX - minX,
-      height: fullRect.bottom - fullRect.top
+      height: maxY - minY
     };
+    console.log('[Debug] getBestRectForRange: returning merged finalRect', finalRect);
+    return finalRect;
   }
 
   // 定位翻譯和AI浮窗（包含箭頭）
@@ -974,6 +1048,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
   function showTranslatePopup(originalText, translations, loading) {
     cancelScheduledHide();
+    lastPopupShowTime = Date.now();
     
     if (originalText !== null) {
       activeQAContext.word = '';
@@ -1052,7 +1127,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
                 chrome.runtime.sendMessage({
                   action: 'aiTranslateSentenceLang',
                   text: activeQAContext.sentence,
-                  targetLang: langName,
+                  targetLang: labelName,
                   key: key
                 });
               }
@@ -1145,7 +1220,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
           chrome.runtime.sendMessage({
             action: 'aiTranslateSentenceLang',
             text: activeQAContext.sentence,
-            targetLang: langName,
+            targetLang: labelName,
             key: key
           });
         }
@@ -1403,6 +1478,63 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   }
 
 
+  // ==================== 生詞本功能 ====================
+
+  /**
+   * 將當前懸浮窗顯示的詞語存入生詞本
+   * @param {Object} [overrideEntry] - 可選覆蓋的字典條目
+   * @returns {Promise<void>}
+   */
+  async function saveCurrentWordToWordbook(overrideEntry) {
+    const word = currentWord;
+    if (!word) return;
+
+    const entry = overrideEntry || (dictionary && dictionary[word]);
+
+    try {
+      const result = await addWord({
+        character: word,
+        simplified: entry ? entry.simplified : word,
+        jyutping: entry ? entry.jyutping : '',
+        yale: entry ? (entry.yale || '') : '',
+        english: entry ? (entry.english || []) : [],
+        sourceUrl: window.location.href,
+        sourceTitle: document.title
+      });
+
+      // 更新懸浮窗中的書籤按鈕狀態
+      updateBookmarkBtnState(true);
+
+      if (result.isNew) {
+        showToast(pt('wordbookSaved'), 1500, 'success');
+      } else {
+        showToast(pt('wordbookExists'), 1500, 'success');
+      }
+    } catch (e) {
+      console.error('[Wordbook] Save failed:', e);
+      showToast(pt('wordbookSaveFailed'), 1500, 'error');
+    }
+  }
+
+  /**
+   * 更新懸浮窗中的書籤按鈕圖標狀態
+   * @param {boolean} isSaved
+   */
+  function updateBookmarkBtnState(isSaved) {
+    if (!popup) return;
+    const btn = popup.querySelector('.popup-bookmark-btn');
+    if (!btn) return;
+    const svg = btn.querySelector('svg');
+    if (!svg) return;
+
+    if (isSaved) {
+      svg.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#D4AF37" stroke="#D4AF37" stroke-width="1.5"></polygon>';
+      btn.title = pt('wordbookRemoved').replace('已從', '從').replace('移除', '生詞本移除');
+    } else {
+      svg.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" stroke-width="1.5"></polygon>';
+      btn.title = pt('wordbookSaved');
+    }
+  }
 
   // 創建彈窗 DOM 元素
   function createPopup() {
@@ -1414,6 +1546,9 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     popup = document.createElement('div');
     popup.id = 'cantonese-popup-dict';
     popup.style.display = 'none';
+    popup.style.position = 'absolute';
+    popup.style.left = '-9999px';
+    popup.style.top = '-9999px';
     
     // 箭頭元素
     popupArrow = document.createElement('div');
@@ -1431,6 +1566,12 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
               <line x1="4" y1="22" x2="4" y2="15"></line>
             </svg>
             <span style="transform: translateY(-0.5px)">報告</span>
+          </div>
+          <!-- 生詞本收藏按鈕 -->
+          <div class="popup-bookmark-btn" title="加入生詞本" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; width: 0; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); padding: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" stroke-width="1.5"></polygon>
+            </svg>
           </div>
           <!-- 設定按鈕 -->
           <div class="popup-settings-btn" title="設定" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
@@ -1472,11 +1613,12 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
     const settingsBtn = popup.querySelector('.popup-settings-btn');
     const reportBtn = popup.querySelector('.popup-report-btn');
+    const bookmarkBtn = popup.querySelector('.popup-bookmark-btn');
     const popupContainer = popup.querySelector('.popup-container');
     const popupTranslate = popup.querySelector('.popup-translate');
     const reportForm = popup.querySelector('.popup-report-form');
 
-    // Hover 整個 wrapper 時：設定按鈕變亮，報告按鈕向左滑出
+    // Hover 整個 wrapper 時：設定按鈕變亮，報告 + 書籤按鈕向左滑出
     actionsWrapper.addEventListener('mouseenter', () => {
       // 如果報告表單正在顯示，則不顯示按鈕
       if (reportForm.style.display === 'flex') return;
@@ -1488,6 +1630,11 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       reportBtn.style.width = '60px'; // 展開寬度
       reportBtn.style.padding = '0 8px';
       reportBtn.style.marginRight = '4px';
+
+      bookmarkBtn.style.opacity = '1';
+      bookmarkBtn.style.width = '24px';
+      bookmarkBtn.style.padding = '0 5px';
+      bookmarkBtn.style.marginRight = '4px';
     });
     
     actionsWrapper.addEventListener('mouseleave', () => {
@@ -1499,6 +1646,12 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       reportBtn.style.padding = '0';
       reportBtn.style.marginRight = '0';
       reportBtn.style.backgroundColor = 'var(--popup-divider)'; // reset hover
+
+      bookmarkBtn.style.opacity = '0';
+      bookmarkBtn.style.width = '0';
+      bookmarkBtn.style.padding = '0';
+      bookmarkBtn.style.marginRight = '0';
+      bookmarkBtn.style.backgroundColor = 'var(--popup-divider)';
     });
 
     // Report 按鈕獨立 hover 效果
@@ -1507,6 +1660,35 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     });
     reportBtn.addEventListener('mouseleave', () => {
       reportBtn.style.backgroundColor = 'var(--popup-divider)';
+    });
+
+    // Bookmark 按鈕 hover + click
+    bookmarkBtn.addEventListener('mouseenter', () => {
+      bookmarkBtn.style.backgroundColor = 'var(--popup-divider-strong)';
+    });
+    bookmarkBtn.addEventListener('mouseleave', () => {
+      bookmarkBtn.style.backgroundColor = 'var(--popup-divider)';
+    });
+    bookmarkBtn.addEventListener('click', async (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      
+      // 彈跳動畫
+      bookmarkBtn.style.transition = 'transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)';
+      bookmarkBtn.style.transform = 'scale(1.3)';
+      setTimeout(() => {
+        bookmarkBtn.style.transform = 'scale(1)';
+      }, 200);
+
+      // 檢查是否已收藏，如已收藏則移除
+      const saved = await isWordSaved(currentWord);
+      if (saved) {
+        await removeWordByCharacter(currentWord);
+        updateBookmarkBtnState(false);
+        showToast(pt('wordbookRemoved'), 1500, 'success');
+      } else {
+        await saveCurrentWordToWordbook();
+      }
     });
 
     // 點擊報告錯誤：展開內聯表單
@@ -1623,6 +1805,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     // 滑鼠離開彈窗時隱藏
     popup.addEventListener('mouseleave', () => {
       isMouseOverPopup = false;
+      if (Date.now() - lastPopupShowTime < 400) return; // 忽略剛顯示時因為 DOM 變動觸發的幽靈事件
       
       // 如果剛導航過（點擊鏈接），則不隱藏彈窗
       if (justNavigated) {
@@ -1937,7 +2120,10 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
         };
         audio.onended = stopSpeakerAnimation;
         audio.onerror = stopSpeakerAnimation;
-        audio.play();
+        audio.play().catch(err => {
+          console.warn('[Content] Cached TTS Playback failed:', err);
+          stopSpeakerAnimation();
+        });
         return;
       }
     }
@@ -1975,6 +2161,11 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
         }
       }
     } catch (error) {
+      if (error && error.message && error.message.includes('Extension context invalidated')) {
+        console.warn('[Jyutping Extension] Extension context invalidated. Please refresh the page.');
+        stopSpeakerAnimation();
+        return;
+      }
       console.error('TTS error:', error);
       stopSpeakerAnimation();
       if (!window.hasShownTtsFallbackToast) {
@@ -2147,7 +2338,12 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       // 如果用戶有手動選中的文本，檢查點擊是否在選區內
       if (hasUserSelection) {
         const selection = window.getSelection();
-        if (selection.rangeCount > 0 && selection.toString().trim()) {
+        const textToSpeak = selection.toString().trim();
+        
+        // 防止全選或不小心選中極大段文本導致無法取消選區，以及造成崩潰或瘋狂發音
+        if (textToSpeak.length > 1000) return;
+        
+        if (selection.rangeCount > 0 && textToSpeak) {
           const range = selection.getRangeAt(0);
           const rects = range.getClientRects();
           let clickInSelection = false;
@@ -2468,13 +2664,13 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
         let word = ruby.dataset.word;
         
         if (word && dictionary && dictionary[word]) {
-          const rect = ruby.getBoundingClientRect();
           currentWord = word;
           try {
             currentRange = document.createRange();
             currentRange.selectNodeContents(ruby);
           } catch (err) {}
-          showPopup({ word: word, entry: dictionary[word] }, rect, true);
+          const bestRect = currentRange ? getBestRectForRange(currentRange) : null;
+          showPopup({ word: word, entry: dictionary[word] }, bestRect || ruby.getBoundingClientRect(), true);
         }
         return;
       }
@@ -2602,6 +2798,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
 
     // 監聽按鍵
     document.addEventListener('keydown', (e) => {
+      console.log('[Debug] keydown triggered:', e.key);
       if (e.key === 'Escape') {
         hidePopup();
         hideTranslatePopup();
@@ -2619,6 +2816,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       // 如果按下了設定的修飾鍵，立刻觸發懸停查詞
       const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
       if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+        console.log('[Debug] Trigger key pressed! Key:', e.key, 'mouseX:', currentMouseX, 'mouseY:', currentMouseY);
         // 模擬滑鼠移動觸發查詞，強制更新最後已知坐標以通過防抖
         lastX = currentMouseX;
         lastY = currentMouseY;
@@ -2628,7 +2826,8 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
           altKey: e.altKey || e.key === 'Alt',
           ctrlKey: e.ctrlKey || e.key === 'Control',
           shiftKey: e.shiftKey || e.key === 'Shift',
-          metaKey: e.metaKey || e.key === 'Meta'
+          metaKey: e.metaKey || e.key === 'Meta',
+          isTriggerKey: true
         });
         // 完整模式下按修飾鍵觸發時，自動發音
         if (popupDisplayStyle === 'full' && ttsEnabled && currentWord && dictionary[currentWord]) {
@@ -2652,19 +2851,19 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     }
     
     // 如果打開了 Q&A，則不處理懸停事件，保持 Q&A 窗口開啟
-    if (popup && popup.querySelector('.popup-qa-container')) return;
-    if (translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
+    if (!e.isTriggerKey && popup && popup.querySelector('.popup-qa-container')) return;
+    if (!e.isTriggerKey && translatePopup && translatePopup.querySelector('.popup-qa-container')) return;
 
     // 如果正在顯示翻譯彈窗（如 AI 翻譯），為避免滑鼠移動到彈窗過程中導致高亮消失，
     // 暫停新的懸停事件，直到翻譯彈窗關閉
-    if (translatePopup && translatePopup.style.display !== 'none') {
+    if (!e.isTriggerKey && translatePopup && translatePopup.style.display !== 'none') {
       if (!isMouseOverPopup) {
         scheduleHidePopup();
       }
       return;
     }
-    if (isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
-    if (isInExpandGrace()) return; // 展開寬限期內不重新渲染
+    if (!e.isTriggerKey && isMouseOverPopup) return; // 滑鼠在彈窗上時不處理，保留高亮
+    if (!e.isTriggerKey && isInExpandGrace()) return; // 展開寬限期內不重新渲染
     
     // 檢查修飾鍵是否按下（精簡模式不需要修飾鍵）
     const modifierPressed = popupDisplayStyle === 'compact' || hoverModifier === 'none' ||
@@ -2680,9 +2879,29 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     const clientX = e.clientX;
     const clientY = e.clientY;
 
+    // 如果是按下觸發鍵，我們需要穿透彈窗，因為舊彈窗可能正蓋在新詞上方
+    let originalPointerEvents = '';
+    let originalTranslatePointerEvents = '';
+    if (e.isTriggerKey) {
+      if (popup) {
+        originalPointerEvents = popup.style.pointerEvents;
+        popup.style.pointerEvents = 'none';
+      }
+      if (translatePopup) {
+        originalTranslatePointerEvents = translatePopup.style.pointerEvents;
+        translatePopup.style.pointerEvents = 'none';
+      }
+    }
+
     // ★ 檢查是否懸停在已高亮的文字上
     const targetElement = document.elementFromPoint(clientX, clientY);
-    if (targetElement && (targetElement.closest('#cantonese-popup-dict') || targetElement.closest('#cantonese-translate-popup'))) {
+
+    if (e.isTriggerKey) {
+      if (popup) popup.style.pointerEvents = originalPointerEvents;
+      if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+    }
+
+    if (!e.isTriggerKey && targetElement && (targetElement.closest('#cantonese-popup-dict') || targetElement.closest('#cantonese-translate-popup'))) {
       return;
     }
     
@@ -2720,7 +2939,9 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
                                       (hoverModifier === 'meta' && e.metaKey);
         
         if (actualModifierPressed) {
-          showPopup(result, rubyElement.getBoundingClientRect());
+          const bestRect = currentRange ? getBestRectForRange(currentRange) : null;
+          console.log('[Debug] hover-ruby early block actualModifierPressed. bestRect:', bestRect);
+          showPopup(result, bestRect || rubyElement.getBoundingClientRect());
         } else {
           scheduleHideIfMouseOutside();
         }
@@ -2731,20 +2952,35 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     }
     
     if (targetElement && (targetElement.classList.contains('jyutping-highlight') || targetElement.closest('.jyutping-hover-ruby'))) {
-      cancelScheduledHide();
+      if (!popup || popup.getAttribute('data-current-word') === currentWord) {
+        cancelScheduledHide();
+      }
       
-      // 如果按下了修飾鍵，且彈窗目前隱藏，則直接顯示彈窗（不需要重新解析文字）
-      if (modifierPressed && popup && popup.style.display === 'none' && currentWord && dictionary[currentWord]) {
-        const result = { word: currentWord, entry: dictionary[currentWord] };
-        showPopup(result, currentRange ? currentRange.getBoundingClientRect() : {
-          left: clientX, right: clientX, top: clientY, bottom: clientY, width: 0, height: 0
-        });
+      // 如果按下了修飾鍵，且彈窗目前隱藏或正在顯示其他詞，則直接顯示新彈窗（不需要重新解析文字）
+      if (modifierPressed && popup && currentWord && dictionary[currentWord]) {
+        console.log('[Debug] highlight early block modifierPressed=true. word:', currentWord);
+        if (popup.style.display === 'none' || popup.getAttribute('data-current-word') !== currentWord) {
+          const result = { word: currentWord, entry: dictionary[currentWord] };
+          const bestRect = currentRange ? getBestRectForRange(currentRange) : null;
+          console.log('[Debug] highlight early block calling showPopup. bestRect:', bestRect);
+          showPopup(result, bestRect || (currentRange ? currentRange.getBoundingClientRect() : {
+            left: clientX, right: clientX, top: clientY, bottom: clientY, width: 0, height: 0
+          }));
+        }
       }
       return;
     }
 
     // ★ 測試滑鼠是否在文字上
+    if (e.isTriggerKey) {
+      if (popup) popup.style.pointerEvents = 'none';
+      if (translatePopup) translatePopup.style.pointerEvents = 'none';
+    }
     let range = getCaretRangeFromPointInShadow(clientX, clientY);
+    if (e.isTriggerKey) {
+      if (popup) popup.style.pointerEvents = originalPointerEvents;
+      if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+    }
     if (!range) {
       // 滑鼠在空白處
       maybeScheduleHide();
@@ -2757,7 +2993,15 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       removeHighlight();
       // 由於 removeHighlight 調用了 normalize() 合併了文字節點，
       // 原來的 range.startContainer 可能已經失效，所以必須重新獲取一次
+      if (e.isTriggerKey) {
+        if (popup) popup.style.pointerEvents = 'none';
+        if (translatePopup) translatePopup.style.pointerEvents = 'none';
+      }
       range = getCaretRangeFromPointInShadow(clientX, clientY);
+      if (e.isTriggerKey) {
+        if (popup) popup.style.pointerEvents = originalPointerEvents;
+        if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+      }
       if (!range) {
         maybeScheduleHide();
         return;
@@ -2809,14 +3053,14 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       if (currentRange) {
         const bestRect = getBestRectForRange(currentRange);
         
-        if (modifierPressed) {
+        if (modifierPressed || popupDisplayStyle === 'ruby' || popupDisplayStyle === 'compact') {
           showPopup(result, bestRect || currentRange.getBoundingClientRect());
         } else {
           scheduleHideIfMouseOutside();
         }
       } else {
         // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
-        if (modifierPressed) {
+        if (modifierPressed || popupDisplayStyle === 'ruby' || popupDisplayStyle === 'compact') {
           showPopup(result, {
             left: clientX, right: clientX, 
             top: clientY, bottom: clientY,
@@ -3414,7 +3658,9 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   // 顯示彈窗
   // rect: { left, right, top, bottom, width, height }
   function showPopup(result, rect, forceFull = false) {
+    console.log('[Debug] showPopup called. word:', result.word, 'rect:', rect, 'forceFull:', forceFull);
     cancelScheduledHide();
+    lastPopupShowTime = Date.now();
     
     if (activePopupRubyElement) {
       activePopupRubyElement.classList.remove('jyutping-popup-active');
@@ -3430,6 +3676,7 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     }
 
     const entry = result.entry;
+    if (popup) popup.setAttribute('data-current-word', result.word);
 
     // 隱藏翻譯浮窗，避免雙彈窗
     hideTranslatePopup();
@@ -3579,6 +3826,11 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     }
 
     popupMain.innerHTML = html;
+
+    // 異步檢查當前詞是否已收藏，更新書籤按鈕狀態
+    isWordSaved(result.word).then(saved => {
+      updateBookmarkBtnState(saved);
+    });
 
     // 綁定點擊發音 (Word)
     const wordSection = popupMain.querySelector('.word-section');
@@ -4066,73 +4318,46 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     const textContent = tempContainer.textContent.trim();
     if (!html || !hasTextContent) return;
 
+    const hasComplexMedia = !!block.querySelector('video, iframe, [data-module-type="video"], [class*="video"]');
+    const isReplaceMode = paragraphTransMode === 'replace' && !hasComplexMedia;
+
     const translationEl = createTranslationPlaceholder(block);
     block.setAttribute('data-jyutping-trans-id', String(id));
-    pendingParaTrans.set(id, { block, translationEl });
+    pendingParaTrans.set(id, { block, translationEl, isReplaceMode });
 
     chrome.runtime.sendMessage({ action: 'aiTranslateParagraph', id, html, textContent });
   }
 
-  // 淺克隆原塊作為譯文容器：繼承原標籤+class（網站 CSS 自動套用），疊加灰色透明度
-  // 修正：當使用雙語模式（或替換模式但塊內含媒體時），改為沉浸式翻譯樣式，直接在原塊內插入文本，防止穿透或隱藏視頻
+  // 創建翻譯佔位符：永遠先在段落末尾添加一個 span 顯示 loading，不立刻隱藏原文
   function createTranslationPlaceholder(block) {
-    let clone;
-    const hasComplexMedia = !!block.querySelector('video, img, iframe, [data-module-type="video"], [class*="video"]');
     const loadingText = paragraphTransEngine === 'bing' ? '使用 Bing 翻译' : '使用 AI 翻译';
     
-    if (paragraphTransMode === 'replace' && !hasComplexMedia) {
-      // 傳統替換模式：克隆原塊以保留樣式，隱藏原塊
-      const tag = block.tagName;
-      if (tag === 'TD' || tag === 'TH' || tag === 'LI' || tag === 'DT' || tag === 'DD') {
-        clone = document.createElement('div');
-      } else {
-        clone = block.cloneNode(false);
+    const clone = document.createElement('span');
+    clone.style.display = 'inline-block';
+    clone.style.marginLeft = '8px';
+    clone.style.fontSize = '0.95em';
+    
+    clone.classList.add('jyutping-cantonese-trans', 'notranslate', 'jyutping-loading-container');
+    clone.setAttribute('translate', 'no');
+    clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
+    
+    // 尋找最後一個文字/內聯元素，將翻譯插入在其之後，媒體之前
+    let insertBeforeNode = null;
+    const childNodes = Array.from(block.childNodes);
+    for (let i = childNodes.length - 1; i >= 0; i--) {
+      const node = childNodes[i];
+      if (node.nodeType === 3 && node.textContent.trim().length > 0) break;
+      if (node.nodeType === 1) {
+        const tag = node.tagName.toLowerCase();
+        if (['span', 'a', 'sup', 'sub', 'strong', 'em', 'b', 'i', 'font'].includes(tag)) break;
       }
-      clone.classList.add('jyutping-cantonese-trans', 'notranslate', 'jyutping-cantonese-trans-replace');
-      clone.setAttribute('translate', 'no');
-      clone.removeAttribute('id');
-      clone.removeAttribute('data-jyutping-trans-id');
-      
-      block.setAttribute('data-jyutping-original-display', block.style.display || '');
-      block.style.display = 'none';
-      
-      clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
-      
-      if (block.nextSibling) {
-        block.parentNode.insertBefore(clone, block.nextSibling);
-      } else {
-        block.parentNode.appendChild(clone);
-      }
+      insertBeforeNode = node;
+    }
+    
+    if (insertBeforeNode) {
+      block.insertBefore(clone, insertBeforeNode);
     } else {
-      // 沉浸式翻譯樣式（雙語模式或包含媒體時的退化）：在原塊內插入一個 span 容器，避免複製原塊背景，防止遮蓋視頻
-      clone = document.createElement('span');
-      clone.style.display = 'block';
-      clone.style.marginTop = '6px';
-      clone.style.paddingTop = '6px';
-      clone.style.fontSize = '0.95em';
-      
-      clone.classList.add('jyutping-cantonese-trans', 'notranslate');
-      clone.setAttribute('translate', 'no');
-      clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
-      
-      // 尋找最後一個文字/內聯元素，將翻譯插入在其之後，媒體之前
-      let insertBeforeNode = null;
-      const childNodes = Array.from(block.childNodes);
-      for (let i = childNodes.length - 1; i >= 0; i--) {
-        const node = childNodes[i];
-        if (node.nodeType === 3 && node.textContent.trim().length > 0) break;
-        if (node.nodeType === 1) {
-          const tag = node.tagName.toLowerCase();
-          if (['span', 'a', 'sup', 'sub', 'strong', 'em', 'b', 'i', 'font'].includes(tag)) break;
-        }
-        insertBeforeNode = node;
-      }
-      
-      if (insertBeforeNode) {
-        block.insertBefore(clone, insertBeforeNode);
-      } else {
-        block.appendChild(clone);
-      }
+      block.appendChild(clone);
     }
     
     return clone;
@@ -4167,18 +4392,54 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     const entry = pendingParaTrans.get(id);
     if (!entry) return;
     pendingParaTrans.delete(id);
-    const { block, translationEl } = entry;
+    const { block, translationEl, isReplaceMode } = entry;
     if (!translationEl || !translationEl.parentNode) {
       if (block) block.removeAttribute('data-jyutping-trans-id');
       return;
     }
 
     if (success && payloadHtml) {
-      if (isPlainText) {
-        translationEl.textContent = payloadHtml;
-        translationEl.style.whiteSpace = 'pre-wrap';
+      let finalTargetEl = translationEl;
+
+      if (isReplaceMode) {
+        // 替換模式：現在才創建替換塊並隱藏原文
+        const tag = block.tagName;
+        let replaceClone;
+        if (tag === 'TD' || tag === 'TH' || tag === 'LI' || tag === 'DT' || tag === 'DD') {
+          replaceClone = document.createElement('div');
+        } else {
+          replaceClone = block.cloneNode(false);
+        }
+        replaceClone.classList.add('jyutping-cantonese-trans', 'notranslate', 'jyutping-cantonese-trans-replace');
+        replaceClone.setAttribute('translate', 'no');
+        replaceClone.removeAttribute('id');
+        replaceClone.removeAttribute('data-jyutping-trans-id');
+        
+        block.setAttribute('data-jyutping-original-display', block.style.display || '');
+        block.style.display = 'none';
+        
+        if (block.nextSibling) {
+          block.parentNode.insertBefore(replaceClone, block.nextSibling);
+        } else {
+          block.parentNode.appendChild(replaceClone);
+        }
+        
+        translationEl.remove(); // 移除臨時的 span loading
+        finalTargetEl = replaceClone; // 將內容寫入新的塊
       } else {
-        translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+        finalTargetEl.classList.remove('jyutping-loading-container');
+        finalTargetEl.innerHTML = '';
+        finalTargetEl.style.display = 'block';
+        finalTargetEl.style.marginTop = '6px';
+        finalTargetEl.style.paddingTop = '6px';
+        finalTargetEl.style.marginLeft = '0';
+      }
+
+      if (isPlainText) {
+        finalTargetEl.textContent = payloadHtml;
+        finalTargetEl.style.whiteSpace = 'pre-wrap';
+      } else {
+        finalTargetEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
       }
       
       const speakerIcon = document.createElement('button');
@@ -4195,11 +4456,11 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
       speakerIcon.addEventListener('click', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        const textToSpeak = translationEl.textContent.trim();
+        const textToSpeak = finalTargetEl.textContent.trim();
         speakCantonese(textToSpeak, speakerIcon);
       });
       
-      translationEl.appendChild(speakerIcon);
+      finalTargetEl.appendChild(speakerIcon);
     } else {
       // 失敗：撤掉占位塊與標記，提示
       translationEl.remove();
@@ -4337,6 +4598,29 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     } else if (request.action === 'toggleRuby') {
       console.log('[Content] Received toggleRuby message from background');
       toggleRubyAnnotations();
+    } else if (request.action === 'addToWordbook') {
+      // 右鍵菜單「加入生詞本」：查字典後存入
+      const text = (request.text || '').trim();
+      if (text) {
+        const entry = dictionary && dictionary[text];
+        addWord({
+          character: text,
+          simplified: entry ? entry.simplified : text,
+          jyutping: entry ? entry.jyutping : '',
+          yale: entry ? (entry.yale || '') : '',
+          english: entry ? (entry.english || []) : [],
+          sourceUrl: window.location.href,
+          sourceTitle: document.title
+        }).then(result => {
+          if (result.isNew) {
+            showToast(pt('wordbookSaved'), 1500, 'success');
+          } else {
+            showToast(pt('wordbookExists'), 1500, 'success');
+          }
+        }).catch(() => {
+          showToast(pt('wordbookSaveFailed'), 1500, 'error');
+        });
+      }
     } else if (request.action === 'ttsEnded') {
       stopSpeakerAnimation();
     } else if (request.action === 'aiTranslateParagraphResult') {
@@ -4423,13 +4707,26 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
   // ==================== 全文注音功能 ====================
   let isFullPageRubyActive = sessionStorage.getItem('jyutping_full_page_ruby') === 'true';
 
-  // 監聽全局快捷鍵用於退出全文注音
+  // 監聽全局快捷鍵用於退出全文注音 / 收藏生詞
   document.addEventListener('keydown', (e) => {
     // Escape: 如果全文注音開啟，則退出
     if (e.key === 'Escape') {
       if (isFullPageRubyActive) {
         toggleRubyAnnotations();
       }
+    }
+
+    // S 鍵：快捷收藏當前高亮詞到生詞本（所有模式通用）
+    // 僅在有高亮詞、不在輸入框、無修飾鍵時觸發
+    if (e.key === 's' && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+      if (!currentWord) return;
+      if (isEditableElement(document.activeElement) || hasEditableFocus()) return;
+      // 確認 popup 可見（任何模式）
+      if (!popup || popup.style.display === 'none') return;
+
+      e.preventDefault();
+      e.stopPropagation();
+      saveCurrentWordToWordbook();
     }
   });
 
@@ -4452,12 +4749,77 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     if (isFullPageRubyActive) {
       console.log('[Content] Jyutping Full Page Ruby: ON');
       injectRubyAnnotations(document.body);
+      startRubyObserver();
       showToast(tt('toastRubyEnabled'), 2000, 'success');
     } else {
       console.log('Jyutping Full Page Ruby: OFF');
+      stopRubyObserver();
       removeRubyAnnotations(document.body);
       showToast(tt('toastRubyDisabled'), 2000, 'error');
     }
+  }
+
+  let rubyMutationTimer = null;
+  let rubyMutationObserver = null;
+
+  function startRubyObserver() {
+    if (rubyMutationObserver) return;
+    rubyMutationObserver = new MutationObserver((mutations) => {
+      if (!isFullPageRubyActive) return;
+      
+      let shouldTrigger = false;
+      for (const m of mutations) {
+        if (m.type === 'childList') {
+          for (const node of m.addedNodes) {
+            if (node.nodeType === Node.ELEMENT_NODE) {
+              if (node.tagName === 'RUBY' && node.classList.contains('jyutping-ruby-injected')) continue;
+              if (node.tagName === 'RT') continue;
+              if (node.id === 'jyutping-toast-container' || node.id === 'jyutping-popup') continue;
+              // 忽略 svg 等非文本容器
+              if (['script', 'style', 'noscript'].includes(node.tagName.toLowerCase())) continue;
+              shouldTrigger = true;
+              break;
+            } else if (node.nodeType === Node.TEXT_NODE) {
+              if (/[\\u4e00-\\u9fff]/.test(node.textContent)) {
+                if (node.parentElement && node.parentElement.closest('ruby.jyutping-ruby-injected')) continue;
+                shouldTrigger = true;
+                break;
+              }
+            }
+          }
+        } else if (m.type === 'characterData') {
+          if (/[\\u4e00-\\u9fff]/.test(m.target.textContent)) {
+            if (m.target.parentElement && m.target.parentElement.closest('ruby.jyutping-ruby-injected')) continue;
+            shouldTrigger = true;
+            break;
+          }
+        }
+        if (shouldTrigger) break;
+      }
+      
+      if (shouldTrigger) {
+        clearTimeout(rubyMutationTimer);
+        rubyMutationTimer = setTimeout(() => {
+          if (isFullPageRubyActive) {
+            injectRubyAnnotations(document.body);
+          }
+        }, 500); // 500ms 延遲，防止頻繁重繪
+      }
+    });
+    
+    rubyMutationObserver.observe(document.body, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+  }
+
+  function stopRubyObserver() {
+    if (rubyMutationObserver) {
+      rubyMutationObserver.disconnect();
+      rubyMutationObserver = null;
+    }
+    clearTimeout(rubyMutationTimer);
   }
 
   function removeRubyAnnotations(rootElement) {
@@ -4538,7 +4900,14 @@ import { sanitizeTranslatedHtml } from './paragraph-translate.js';
     
     const toast = document.createElement('div');
     toast.className = 'jyutping-toast' + (type ? ' jyutping-toast-' + type : '');
-    toast.innerHTML = message;
+
+    // 添加圖標
+    const iconSvg = type === 'success'
+      ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>'
+      : type === 'error'
+        ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'
+        : '';
+    toast.innerHTML = iconSvg + '<span>' + message + '</span>';
     
     container.appendChild(toast);
     

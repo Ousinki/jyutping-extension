@@ -3,6 +3,26 @@
     "message": "本次更新帶來了以下優化：",
     "description": "Changelog description"
   },
+  "clItem10": {
+    "message": "<b>右鍵菜單收藏</b>：選中任意中文文字，右鍵即可快速加入生詞本，無需打開懸浮窗。"
+  },
+  "clItem5": {
+    "message": "🎨 <b>新增注音背景樣式</b>：Ruby 內嵌注音模式現已支援「實色背景」與「消散背景」，在任何網頁背景下都能保證音標清晰可見。",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🐛 <b>修復懸浮窗樣式問題</b>：修復了在部分網頁上懸浮窗排版錯亂及遮罩高度不準確的問題。",
+    "description": "Changelog item 6"
+  },
+  "clItem7": {
+    "message": "✨ <b>全新「段落翻譯」功能</b>：按住指定快捷鍵（預設 Shift ⇧）滑鼠懸停於段落上，即可呼出 AI 提供精準的粵語翻譯！"
+  },
+  "clItem8": {
+    "message": "<b>全新「生詞本」功能</b>：懸浮窗新增 ⭐ 收藏按鈕，或按 <kbd>S</kbd> 鍵即可快速收藏當前查詢的粵語詞彙到本地生詞本。"
+  },
+  "clItem9": {
+    "message": "<b>生詞本管理頁面</b>：支持搜索、排序、批量管理，並提供 JSON / CSV / Markdown / TXT 四種格式導出，亦可導入備份。"
+  },
   "clTitle": {
     "message": "🚀 最新更新",
     "description": "Changelog title"
@@ -42,6 +62,13 @@
     "message": "OpenAI 兼容接口地址（支持所有廠商）",
     "description": "optAIBaseUrlDesc"
   },
+  "optAIDblClickHint": {
+    "message": "雙擊 AI 解釋框或 API 翻譯框，即可開啟 AI 追問對話",
+    "description": "optAIDblClickHint"
+  },
+  "optAIDefaultPrompt": {
+    "message": "你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用{targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。\n\n【詞語】{word}\n【句子】{sentence}"
+  },
   "optAIEnable": {
     "message": "啟用 AI 翻譯",
     "description": "optAIEnable"
@@ -70,7 +97,12 @@
     "message": "自定義 AI",
     "description": "optAIModelLabel"
   },
-
+  "optAIPrompt": {
+    "message": "自訂提示詞 (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "設定發送給 AI 的提示詞範本，支援變數 {word}（選中詞語）和 {sentence}（整句語境）。若留空則使用預設值。"
+  },
   "optAIPromptLabel": {
     "message": "AI 翻譯 Prompt",
     "description": "optAIPromptLabel"
@@ -195,6 +227,9 @@
     "message": "Bert-VITS2 (粵語神經語音)",
     "description": "optEngineBert"
   },
+  "optFail": {
+    "message": "❌ 連接失敗："
+  },
   "optFeedback": {
     "message": "關於與意見反饋",
     "description": "optFeedback"
@@ -279,17 +314,14 @@
     "message": "按住特定按鍵時才顯示完整詞典，避免日常干擾",
     "description": "optHoverModifierDesc"
   },
-  "optParaTransKey": {
-    "message": "段落粵語翻譯觸發鍵",
-    "description": "optParaTransKey"
+  "optHoverTransEngineDesc": {
+    "message": "選擇懸浮窗翻譯所使用的預設引擎"
   },
-  "optParaTransKeyDesc": {
-    "message": "滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）",
-    "description": "optParaTransKeyDesc"
+  "optHoverTransEngineTitle": {
+    "message": "預設翻譯引擎"
   },
-  "optParaTransKeyLongPress": {
-    "message": "長按滑鼠左鍵",
-    "description": "optParaTransKeyLongPress"
+  "optInspectDemoText": {
+    "message": "全文注音示範"
   },
   "optInspectDictColorDesc": {
     "message": "調整字典風格下的音標顏色深度。"
@@ -359,6 +391,9 @@
     "message": "無 (直接懸停)",
     "description": "optKeyNone"
   },
+  "optKeyOff": {
+    "message": "無 (關閉)"
+  },
   "optKeyShift": {
     "message": "Shift (⇧)",
     "description": "optKeyShift"
@@ -379,6 +414,9 @@
     "message": "如何稱呼您？",
     "description": "optNamePlaceholder"
   },
+  "optNoReply": {
+    "message": "（無回覆）"
+  },
   "optOpacity100": {
     "message": "100% (完全不透明)"
   },
@@ -391,9 +429,64 @@
   "optOpacity85": {
     "message": "85% (預設微透)"
   },
+  "optOpenWordbook": {
+    "message": "打開生詞本"
+  },
   "optOptional": {
     "message": "(選填)",
     "description": "optOptional"
+  },
+  "optParaTransDemoText": {
+    "message": "這是一段用來示範段落翻譯功能的文字。"
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optParaTransEngine": {
+    "message": "段落翻譯引擎"
+  },
+  "optParaTransEngineAI": {
+    "message": "AI"
+  },
+  "optParaTransEngineBing": {
+    "message": "Bing"
+  },
+  "optParaTransEngineDesc": {
+    "message": "Bing 翻譯極速出結果，AI 翻譯則更精準地道但需要等待幾秒鐘"
+  },
+  "optParaTransKey": {
+    "message": "段落粵語翻譯觸發鍵",
+    "description": "optParaTransKey"
+  },
+  "optParaTransKeyDesc": {
+    "message": "滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）",
+    "description": "optParaTransKeyDesc"
+  },
+  "optParaTransKeyLongPress": {
+    "message": "長按滑鼠左鍵",
+    "description": "optParaTransKeyLongPress"
+  },
+  "optParaTransMode": {
+    "message": "翻譯顯示方式",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeBelow": {
+    "message": "顯示在原文下方",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeDesc": {
+    "message": "選擇譯文是放在原文下方，還是直接覆蓋原文",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeReplace": {
+    "message": "直接覆蓋原文",
+    "description": "optParaTransModeReplace"
+  },
+  "optParaTransTitle": {
+    "message": "段落翻譯"
+  },
+  "optPlaying": {
+    "message": "正在播放..."
   },
   "optPopupStyle": {
     "message": "懸浮窗樣式",
@@ -423,6 +516,26 @@
   },
   "optPopupStyleSystem": {
     "message": "系統預設 (System UI)"
+  },
+  "optRubyBgFade": {
+    "message": "消散背景"
+  },
+  "optRubyBgNone": {
+    "message": "無背景"
+  },
+  "optRubyBgSolid": {
+    "message": "實色背景"
+  },
+  "optRubyHoverStyle": {
+    "message": "懸停字體樣式",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "選擇 Ruby 模式下懸停時的字體顏色效果",
+    "description": "optRubyHoverStyleDesc"
+  },
+  "optRubyRtBgToggle": {
+    "message": "Ruby 注音背景模式"
   },
   "optSend": {
     "message": "發送反饋",
@@ -462,6 +575,12 @@
     "message": "Jyutping Hover Dictionary",
     "description": "optSubtitle"
   },
+  "optSuccess": {
+    "message": "✅ 連接成功！\n模型回覆："
+  },
+  "optTOC": {
+    "message": "目錄"
+  },
   "optTTSEngine": {
     "message": "語音引擎",
     "description": "optTTSEngine"
@@ -482,9 +601,16 @@
     "message": "測試語音",
     "description": "optTestTTS"
   },
+  "optTestingAI": {
+    "message": "正在測試..."
+  },
   "optTheme": {
     "message": "外觀主題",
     "description": "optTheme"
+  },
+  "optThemeAuto": {
+    "message": "跟隨系統",
+    "description": "optThemeAuto"
   },
   "optThemeClassic": {
     "message": "經典",
@@ -509,6 +635,10 @@
   "optThemeInk": {
     "message": "墨韻",
     "description": "optThemeInk"
+  },
+  "optThemeLight": {
+    "message": "淺色",
+    "description": "optThemeLight"
   },
   "optThemeMint": {
     "message": "薄荷綠",
@@ -622,123 +752,11 @@
     "message": "全文粵語注音已開啟。<br>如遇排版重疊，請刷新網頁 (F5) 以適應高度。",
     "description": "Toast shown when full page ruby is enabled"
   },
-  "optPlaying": {
-    "message": "正在播放..."
+  "wordbookDetailMode": {
+    "message": "詞典模式",
+    "description": "Wordbook: toggle detail mode"
   },
-  "optTestingAI": {
-    "message": "正在測試..."
-  },
-  "optSuccess": {
-    "message": "✅ 連接成功！\n模型回覆："
-  },
-  "optFail": {
-    "message": "❌ 連接失敗："
-  },
-  "optNoReply": {
-    "message": "（無回覆）"
-  },
-  "optAIPrompt": {
-    "message": "自訂提示詞 (System Prompt)"
-  },
-  "optAIPromptDesc": {
-    "message": "設定發送給 AI 的提示詞範本，支援變數 {word}（選中詞語）和 {sentence}（整句語境）。若留空則使用預設值。"
-  },
-  "optAIDefaultPrompt": {
-    "message": "你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用{targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。\n\n【詞語】{word}\n【句子】{sentence}"
-  },
-  "optRubyHoverStyle": {
-    "message": "懸停字體樣式",
-    "description": "optRubyHoverStyle"
-  },
-  "optRubyHoverStyleDesc": {
-    "message": "選擇 Ruby 模式下懸停時的字體顏色效果",
-    "description": "optRubyHoverStyleDesc"
-  },
-  "optThemeAuto": {
-    "message": "跟隨系統",
-    "description": "optThemeAuto"
-  },
-  "optThemeLight": {
-    "message": "淺色",
-    "description": "optThemeLight"
-  },
-  "optAIDblClickHint": {
-    "message": "雙擊 AI 解釋框或 API 翻譯框，即可開啟 AI 追問對話",
-    "description": "optAIDblClickHint"
-  },
-  "clItem5": {
-    "message": "🎨 <b>新增注音背景樣式</b>：Ruby 內嵌注音模式現已支援「實色背景」與「消散背景」，在任何網頁背景下都能保證音標清晰可見。",
-    "description": "Changelog item 5"
-  },
-  "clItem6": {
-    "message": "🐛 <b>修復懸浮窗樣式問題</b>：修復了在部分網頁上懸浮窗排版錯亂及遮罩高度不準確的問題。",
-    "description": "Changelog item 6"
-  },
-  "optRubyRtBgToggle": {
-    "message": "Ruby 注音背景模式"
-  },
-  "optRubyBgNone": {
-    "message": "無背景"
-  },
-  "optRubyBgFade": {
-    "message": "消散背景"
-  },
-  "optRubyBgSolid": {
-    "message": "實色背景"
-  },
-  "optParaTransTitle": {
-    "message": "段落翻譯"
-  },
-  "optParaTransDemoText": {
-    "message": "這是一段用來示範段落翻譯功能的文字。"
-  },
-  "optParaTransDemoTranslated": {
-    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
-  },
-  "optKeyOff": {
-    "message": "無 (關閉)"
-  },
-  "optParaTransMode": {
-    "message": "翻譯顯示方式",
-    "description": "optParaTransMode"
-  },
-  "optParaTransModeDesc": {
-    "message": "選擇譯文是放在原文下方，還是直接覆蓋原文",
-    "description": "optParaTransModeDesc"
-  },
-  "optParaTransModeBelow": {
-    "message": "顯示在原文下方",
-    "description": "optParaTransModeBelow"
-  },
-  "optParaTransModeReplace": {
-    "message": "直接覆蓋原文",
-    "description": "optParaTransModeReplace"
-  },
-  "optTOC": {
-    "message": "目錄"
-  },
-  "clItem7": {
-    "message": "✨ <b>全新「段落翻譯」功能</b>：按住指定快捷鍵（預設 Shift ⇧）滑鼠懸停於段落上，即可呼出 AI 提供精準的粵語翻譯！"
-  },
-  "optInspectDemoText": {
-    "message": "全文注音示範"
-  },
-  "optParaTransEngine": {
-    "message": "段落翻譯引擎"
-  },
-  "optParaTransEngineDesc": {
-    "message": "Bing 翻譯極速出結果，AI 翻譯則更精準地道但需要等待幾秒鐘"
-  },
-  "optParaTransEngineBing": {
-    "message": "Bing"
-  },
-  "optParaTransEngineAI": {
-    "message": "AI"
-  },
-  "optHoverTransEngineTitle": {
-    "message": "預設翻譯引擎"
-  },
-  "optHoverTransEngineDesc": {
-    "message": "選擇懸浮窗翻譯所使用的預設引擎"
+  "wordbookEmptyDetail": {
+    "message": "點擊左側單字<br>查看詳細詞典釋義"
   }
 }

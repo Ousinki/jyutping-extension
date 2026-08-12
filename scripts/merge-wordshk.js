@@ -163,8 +163,8 @@ function extractDefinitions(defs) {
 
 function main() {
   const dictJsonPath = path.join(
-    __dirname,
-    "wordshk-tools/examples/export_json_dict/app_tmp/dict.json"
+    "/Volumes/ExternalSSD/Projects/wordshk-tools",
+    "examples/export_json_dict/app_tmp/dict.json"
   );
   const dictionaryJsonPath = path.join(__dirname, "dictionary.json");
   const backupPath = path.join(__dirname, "dictionary.json.bak");

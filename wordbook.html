@@ -1,0 +1,1663 @@
+<!doctype html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>生詞本 - 粵語懸浮詞典</title>
+    <script src="theme-init.js"></script>
+    <link rel="icon" type="image/svg+xml" href="icon_favicon.svg" />
+    <link rel="stylesheet" href="popup.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #8A1C1C;
+        --primary-light: #B42929;
+        --primary-dark: #382424;
+        --accent: #22c55e;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-input: #f1f5f9;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --border: #e2e8f0;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+        --radius: 12px;
+        --transition: 200ms ease;
+        --gold: #D4AF37;
+      }
+
+      :root[data-theme="dark"] {
+        --primary: #ef4444;
+        --primary-light: #f87171;
+        --primary-dark: #b91c1c;
+        --accent: #22c55e;
+        --bg-page: #0f172a;
+        --bg-card: #1e293b;
+        --bg-input: #334155;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Detail Pane Dark Mode Support */
+      :root[data-theme="dark"] #cantonese-popup-dict {
+        --popup-bg: transparent;
+        --popup-border: var(--border);
+        --popup-text: var(--text-primary);
+        --popup-text-muted: var(--text-muted);
+        --popup-text-label: var(--text-secondary);
+        --popup-accent: #f87171;
+        --popup-accent-hover: #fca5a5;
+        --popup-word-color: #f8fafc;
+        --popup-def-color: var(--text-secondary);
+        --popup-def-yue: #e8b84e;
+        --popup-divider: rgba(255, 255, 255, 0.08);
+        --popup-divider-strong: var(--border);
+        --popup-example-bg: var(--bg-input);
+        --popup-btn-bg: var(--bg-input);
+        --popup-btn-hover: #475569;
+        --popup-btn-speaking: var(--primary);
+        --popup-btn-speaking-text: #ffffff;
+      }
+
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+
+      body {
+        font-family: "Noto Sans TC", -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg-page);
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+        padding: 40px 20px;
+        /* Flexbox layout for smooth sliding animations */
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        gap: 0;
+        transition: gap 0.5s cubic-bezier(0.16, 1, 0.3, 1), padding 0.3s ease;
+      }
+      body.detail-mode-active {
+        padding: 40px clamp(24px, 3vw, 60px);
+        gap: clamp(20px, 2.5vw, 40px);
+      }
+
+      .container {
+        width: 100%;
+        max-width: 960px;
+        position: relative;
+        flex-shrink: 0;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      /* ========== Fixed Detail Sidebar ========== */
+      .detail-pane-wrapper {
+        width: 0px;
+        opacity: 0;
+        visibility: hidden;
+        overflow: hidden;
+        position: sticky;
+        top: 40px;
+        height: calc(100vh - 80px);
+        flex-shrink: 0;
+        border-radius: var(--radius);
+        transition: width 0.5s cubic-bezier(0.16, 1, 0.3, 1),
+                    opacity 0.4s ease 0.05s,
+                    visibility 0.5s;
+      }
+
+      body.detail-mode-active .detail-pane-wrapper {
+        width: 420px;
+        opacity: 1;
+        visibility: visible;
+      }
+
+      .detail-pane {
+        width: 420px;
+        height: 100%;
+        overflow-y: auto;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 24px;
+        box-shadow: var(--shadow);
+        transform: translateX(30px);
+        transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+      
+      body.detail-mode-active .detail-pane {
+        transform: translateX(0);
+      }
+
+      @media (max-width: 1300px) {
+        body.detail-mode-active .detail-pane-wrapper,
+        body.detail-mode-active .detail-pane-wrapper .detail-pane {
+          width: 360px;
+        }
+      }
+
+      @media (max-width: 1000px) {
+        body.detail-mode-active .detail-pane-wrapper,
+        body.detail-mode-active .detail-pane-wrapper .detail-pane {
+          width: 300px;
+        }
+      }
+      .detail-empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1;
+        min-height: 0;
+        color: var(--text-muted);
+        text-align: center;
+        opacity: 0.8;
+      }
+
+      /* ========== AI Chat Section ========== */
+      .ai-chat-section {
+        margin-top: 20px;
+        padding-top: 16px;
+        border-top: 1px dashed var(--border);
+      }
+      .ai-chat-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--primary);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .ai-chat-header svg { flex-shrink: 0; }
+
+      .ai-quick-questions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 12px;
+      }
+      .ai-quick-btn {
+        padding: 4px 10px;
+        font-size: 11px;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: inherit;
+        line-height: 1.4;
+        white-space: nowrap;
+      }
+      .ai-quick-btn:hover {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+
+      .ai-input-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .ai-input {
+        flex: 1;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text-primary);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        transition: border-color var(--transition);
+      }
+      .ai-input:focus {
+        border-color: var(--primary);
+      }
+      .ai-input::placeholder {
+        color: var(--text-muted);
+      }
+      .ai-send-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        border: none;
+        background: var(--primary);
+        color: #fff;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all var(--transition);
+      }
+      .ai-send-btn:hover {
+        background: var(--primary-light);
+        transform: scale(1.05);
+      }
+      .ai-send-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      .ai-response-area {
+        margin-top: 16px;
+        min-height: 0;
+        max-height: 50vh;
+        overflow-y: auto;
+      }
+      .ai-response-bubble {
+        background: var(--bg-input);
+        border-radius: 10px;
+        padding: 14px 16px;
+        font-size: 13px;
+        line-height: 1.75;
+        color: var(--text-primary);
+        animation: aiFadeIn 0.3s ease;
+        word-break: break-word;
+      }
+      .ai-response-meta {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-bottom: 10px;
+      }
+      .ai-badge {
+        font-size: 9px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        color: #fff;
+        background: var(--primary);
+        border-radius: 4px;
+        padding: 1px 5px;
+        line-height: 1.4;
+      }
+      .ai-timing {
+        font-size: 11px;
+        color: var(--text-muted);
+        font-weight: 400;
+      }
+      .ai-response-content {}
+      .ai-response-bubble p { margin: 0 0 8px 0; }
+      .ai-response-bubble p:last-child { margin-bottom: 0; }
+      .ai-response-bubble ol,
+      .ai-response-bubble ul {
+        margin: 6px 0;
+        padding-left: 20px;
+      }
+      .ai-response-bubble li {
+        margin-bottom: 4px;
+      }
+      .ai-response-bubble strong {
+        font-weight: 600;
+      }
+      .ai-response-bubble em {
+        font-style: italic;
+      }
+
+      .ai-typing-indicator {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 14px 16px;
+        background: var(--bg-input);
+        border-radius: 10px;
+        animation: aiFadeIn 0.3s ease;
+      }
+      .ai-typing-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: var(--text-muted);
+        animation: aiDotPulse 1.4s ease-in-out infinite;
+      }
+      .ai-typing-dot:nth-child(2) { animation-delay: 0.2s; }
+      .ai-typing-dot:nth-child(3) { animation-delay: 0.4s; }
+
+      .ai-no-config {
+        text-align: center;
+        padding: 16px;
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.6;
+      }
+      .ai-no-config a {
+        color: var(--primary);
+        text-decoration: none;
+        font-weight: 600;
+        cursor: pointer;
+      }
+      .ai-no-config a:hover {
+        text-decoration: underline;
+      }
+
+      @keyframes aiFadeIn {
+        from { opacity: 0; transform: translateY(6px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      @keyframes aiDotPulse {
+        0%, 100% { opacity: 0.3; transform: scale(0.8); }
+        50% { opacity: 1; transform: scale(1.1); }
+      }
+
+      /* ========== Detail Panel Action Buttons ========== */
+      .detail-actions-wrapper {
+        position: absolute;
+        top: 0;
+        right: 0;
+        display: flex;
+        align-items: center;
+        gap: 0;
+        z-index: 10;
+      }
+
+      .detail-report-btn,
+      .detail-bookmark-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        color: var(--text-secondary);
+      }
+
+      .detail-report-btn {
+        height: 26px;
+        font-size: 12px;
+        white-space: nowrap;
+        overflow: hidden;
+        opacity: 0;
+        width: 0;
+        padding: 0;
+        margin-right: 0;
+        background: var(--bg-input);
+      }
+
+      /* Bookmark is always visible at low opacity as the hover anchor */
+      .detail-bookmark-btn {
+        height: 26px;
+        width: 26px;
+        padding: 0 6px;
+        opacity: 0.4;
+        background: transparent;
+      }
+
+      .detail-actions-wrapper:hover .detail-report-btn {
+        opacity: 1;
+        width: 60px;
+        padding: 0 8px;
+        margin-right: 4px;
+      }
+
+      .detail-actions-wrapper:hover .detail-bookmark-btn {
+        opacity: 1;
+        background: var(--bg-input);
+      }
+
+      .detail-report-btn:hover {
+        background: var(--border) !important;
+      }
+
+      .detail-bookmark-btn:hover {
+        background: var(--border) !important;
+      }
+
+      /* ========== Detail Report Form ========== */
+      .detail-report-form {
+        margin-top: 16px;
+        padding: 16px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--bg-card);
+        animation: dropdownSlideIn 0.15s ease-out;
+      }
+
+      .detail-report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-weight: 600;
+        font-size: 14px;
+        color: var(--text-primary);
+        margin-bottom: 10px;
+      }
+
+      .detail-report-close {
+        cursor: pointer;
+        opacity: 0.5;
+        font-size: 16px;
+        transition: opacity var(--transition);
+      }
+
+      .detail-report-close:hover {
+        opacity: 1;
+      }
+
+      .detail-report-preview {
+        font-size: 13px;
+        color: var(--text-secondary);
+        background: var(--bg-input);
+        padding: 8px 10px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+      }
+
+      .detail-report-textarea {
+        width: 100%;
+        height: 70px;
+        padding: 8px 10px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-size: 13px;
+        resize: none;
+        outline: none;
+        font-family: inherit;
+        margin-bottom: 10px;
+        transition: border-color var(--transition);
+      }
+
+      .detail-report-textarea:focus {
+        border-color: var(--primary);
+      }
+
+      .detail-report-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+      /* ========== Collapsible Header ========== */
+      .header-collapsible {
+        overflow: hidden;
+        max-height: 500px;
+        transition: max-height 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+                    opacity 0.25s ease,
+                    margin-bottom 0.35s ease;
+        opacity: 1;
+      }
+
+      .header-collapsible.collapsed {
+        max-height: 0;
+        opacity: 0;
+        margin-bottom: 0 !important;
+      }
+
+      .header-collapse-toggle {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 20px;
+        cursor: pointer;
+        color: var(--text-muted);
+        opacity: 0.5;
+        transition: all var(--transition);
+        margin-bottom: 4px;
+      }
+
+      .header-collapse-toggle:hover {
+        opacity: 1;
+        color: var(--primary);
+      }
+
+      .header-collapse-toggle svg {
+        transition: transform 0.3s ease;
+      }
+
+      .header-collapse-toggle.collapsed svg {
+        transform: rotate(180deg);
+      }
+
+      /* ========== Header ========== */
+      .header {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 20px;
+        margin-bottom: 32px;
+        padding-top: 10px;
+      }
+
+      .header-icon {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        filter: drop-shadow(0 2px 8px rgba(138, 28, 28, 0.15));
+      }
+      
+      .header-text-group {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+      }
+
+      .header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--primary);
+        margin: 0;
+        letter-spacing: 1px;
+        line-height: 1.1;
+      }
+
+      .header p {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-muted);
+        margin: 0;
+        letter-spacing: 0.5px;
+        opacity: 0.8;
+      }
+
+      .header-actions {
+        display: flex;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 16px;
+      }
+
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        transition: all var(--transition);
+        text-decoration: none;
+      }
+
+      .btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        box-shadow: var(--shadow);
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-light);
+        color: #fff;
+      }
+
+      /* ========== Warning Banner ========== */
+      .warning-banner {
+        background: var(--bg-card);
+        border: 1px solid var(--primary);
+        border-left: 4px solid var(--primary);
+        border-radius: 8px;
+        padding: 12px 16px;
+        margin-bottom: 20px;
+        font-size: 13px;
+        color: var(--text-secondary);
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+      }
+
+      .warning-banner svg {
+        flex-shrink: 0;
+        margin-top: 2px;
+        color: var(--primary);
+      }
+
+      .warning-banner a {
+        color: var(--primary);
+        text-decoration: underline;
+        cursor: pointer;
+        font-weight: 500;
+      }
+
+      /* ========== Stats Bar ========== */
+      .stats-bar {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+
+      .stat-value {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      /* ========== Search & Toolbar ========== */
+      .toolbar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .search-box {
+        flex: 1;
+        position: relative;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 10px 70px 10px 36px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 14px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color var(--transition);
+        font-family: inherit;
+      }
+
+      .search-box input:focus {
+        border-color: var(--primary);
+      }
+
+      .search-box svg {
+        position: absolute;
+        left: 10px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        z-index: 2;
+      }
+
+      /* Search Mode Toggle */
+      .search-mode-toggle {
+        position: absolute;
+        right: 4px;
+        top: 50%;
+        transform: translateY(-50%);
+        display: flex;
+        align-items: center;
+        background: var(--bg-input);
+        border-radius: 6px;
+        padding: 2px;
+        z-index: 2;
+        gap: 1px;
+      }
+
+      .search-mode-btn {
+        padding: 4px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 4px;
+        transition: all 0.15s ease;
+        font-family: inherit;
+        line-height: 1;
+        white-space: nowrap;
+      }
+
+      .search-mode-btn.active {
+        background: var(--bg-card);
+        color: var(--primary);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        font-weight: 600;
+      }
+
+      .search-mode-btn:hover:not(.active) {
+        color: var(--text-primary);
+      }
+
+      /* ========== Dictionary Search Dropdown ========== */
+      .dict-search-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        margin-top: 4px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.06);
+        max-height: 360px;
+        overflow-y: auto;
+        z-index: 50;
+        display: none;
+        overscroll-behavior: contain;
+      }
+
+      .dict-search-dropdown.show {
+        display: block;
+        animation: dropdownSlideIn 0.15s ease-out;
+      }
+
+      @keyframes dropdownSlideIn {
+        from { opacity: 0; transform: translateY(-4px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+
+      .dict-search-dropdown::-webkit-scrollbar {
+        width: 4px;
+      }
+      .dict-search-dropdown::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .dict-search-dropdown::-webkit-scrollbar-thumb {
+        background: var(--border);
+        border-radius: 2px;
+      }
+
+      .dict-dropdown-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px 6px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border);
+        position: sticky;
+        top: 0;
+        background: var(--bg-card);
+        z-index: 1;
+      }
+
+      .dict-dropdown-header .dict-count {
+        font-weight: 400;
+        text-transform: none;
+        letter-spacing: 0;
+      }
+
+      .dict-dropdown-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 9px 12px;
+        cursor: pointer;
+        transition: background-color 0.1s ease;
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
+      }
+
+      .dict-dropdown-item:last-child {
+        border-bottom: none;
+      }
+
+      .dict-dropdown-item:hover,
+      .dict-dropdown-item.active {
+        background: var(--bg-input);
+      }
+
+      .dict-dropdown-item .dict-item-char {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+        min-width: 40px;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .dict-dropdown-item .dict-item-info {
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+      }
+
+      .dict-dropdown-item .dict-item-jyutping {
+        font-size: 12px;
+        font-family: monospace;
+        color: var(--primary);
+        font-weight: 500;
+      }
+
+      .dict-dropdown-item .dict-item-def {
+        font-size: 12px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        margin-top: 1px;
+      }
+
+      .dict-dropdown-empty {
+        padding: 20px 12px;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      /* Highlight matching text */
+      .dict-match-highlight {
+        background: color-mix(in srgb, var(--primary) 15%, transparent);
+        border-radius: 2px;
+        padding: 0 1px;
+      }
+
+      :root[data-theme="dark"] .dict-search-dropdown {
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4), 0 2px 8px rgba(0, 0, 0, 0.2);
+      }
+
+      .sort-select {
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        background: var(--bg-card);
+        color: var(--text-primary);
+        cursor: pointer;
+        outline: none;
+        font-family: inherit;
+      }
+
+      /* ========== Export Dropdown ========== */
+      .export-wrapper {
+        position: relative;
+      }
+
+      .export-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 4px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: var(--shadow);
+        min-width: 180px;
+        z-index: 10;
+        display: none;
+        overflow: hidden;
+      }
+
+      .export-menu.show { display: block; }
+
+      .export-menu button {
+        width: 100%;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 16px;
+        border: none;
+        background: none;
+        font-size: 13px;
+        color: var(--text-primary);
+        cursor: pointer;
+        text-align: left;
+        font-family: inherit;
+        transition: background 0.15s ease, color 0.15s ease;
+      }
+      .export-menu button svg {
+        transition: stroke 0.15s ease;
+      }
+
+      .export-menu button:hover {
+        background: var(--bg-input);
+        color: var(--primary);
+      }
+      .export-menu button:hover svg {
+        stroke: var(--primary);
+      }
+
+      .export-menu .import-divider {
+        border-top: 1px solid var(--border);
+      }
+
+      /* ========== Data Table Layout ========== */
+      .word-list {
+        display: flex;
+        flex-direction: column;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        background: var(--bg-card);
+      }
+
+      .table-row {
+        display: grid;
+        grid-template-columns: 32px 100px 150px 1fr 85px;
+        column-gap: 16px;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        transition: background-color var(--transition);
+        cursor: pointer;
+      }
+      
+      .table-row.active-row {
+        background: var(--bg-hover);
+        border-left: 3px solid var(--primary);
+        padding-left: 13px; /* 16px - 3px border */
+      }
+
+      .table-header {
+        display: grid;
+        grid-template-columns: 32px 100px 150px 1fr 85px;
+        column-gap: 16px;
+        align-items: center;
+        padding: 12px 16px;
+        border-bottom: 1px solid var(--border);
+        background: var(--bg-input);
+        font-size: 13px;
+        font-weight: 700;
+        color: var(--text-muted);
+      }
+      .table-header > div {
+        text-align: center;
+        position: relative;
+      }
+      .table-header > div:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        right: -8px;
+        transform: translateY(-50%);
+        width: 1px;
+        height: 14px;
+        background-color: var(--border);
+      }
+
+      .table-row:last-child {
+        border-bottom: none;
+      }
+
+      .table-row:hover {
+        background: var(--bg-hover);
+      }
+
+      /* Compact card layout for long words */
+      .col-char-jyutping-merged {
+        grid-column: span 2;
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        padding: 2px 0;
+      }
+      .col-char-jyutping-merged .word-character {
+        font-size: 15px;
+        line-height: 1.3;
+      }
+      .merged-jyutping {
+        font-family: monospace;
+        font-size: 11px;
+        color: var(--text-muted);
+        line-height: 1.4;
+        cursor: pointer;
+      }
+      .merged-jyutping:hover {
+        color: var(--primary);
+      }
+
+      .col-selection {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .selection-label {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .selection-label input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+      }
+      .selection-label .selection-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        height: 100%;
+        border-radius: 8px;
+        font-size: 14px;
+        color: var(--text-secondary);
+        background-color: transparent;
+        border: 2px solid transparent;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      .table-header .selection-text {
+        font-weight: 700;
+        font-size: 13px;
+      }
+      .selection-label:hover .selection-text {
+        background-color: var(--bg-input);
+        color: var(--text-primary);
+      }
+      .selection-label input:checked ~ .selection-text {
+        background-color: transparent;
+        color: var(--primary);
+        font-weight: 700;
+        border: 2px solid var(--primary);
+        box-shadow: 0 2px 6px rgba(138, 28, 28, 0.1);
+      }
+
+      /* Sort header and context menu */
+      .col-header-sortable {
+        cursor: context-menu;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: 3px;
+      }
+      .col-header-sortable:hover {
+        color: var(--primary);
+      }
+      .sort-indicator {
+        opacity: 0.5;
+        flex-shrink: 0;
+      }
+      .col-header-sortable:hover .sort-indicator {
+        opacity: 1;
+      }
+      .sort-context-menu {
+        position: fixed;
+        z-index: 9999;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+        padding: 4px 0;
+        min-width: 140px;
+        display: none;
+      }
+      .sort-context-menu.show {
+        display: block;
+      }
+      .sort-context-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 14px;
+        font-size: 13px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .sort-context-menu-item:hover {
+        background: var(--bg-input);
+      }
+      .sort-context-menu-item.active {
+        color: var(--primary);
+        font-weight: 600;
+      }
+      .sort-context-menu-item svg {
+        flex-shrink: 0;
+        opacity: 0.6;
+      }
+      .sort-context-menu-item.active svg {
+        opacity: 1;
+      }
+      .sort-context-menu-section {
+        padding: 6px 14px 4px;
+        font-size: 11px;
+        font-weight: 600;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .sort-context-menu-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 0;
+      }
+      .sort-context-menu-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 7px 14px;
+        font-size: 13px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: background 0.15s;
+      }
+      .sort-context-menu-toggle:hover {
+        background: var(--bg-input);
+      }
+      .sort-context-menu-toggle input[type="checkbox"] {
+        accent-color: var(--primary);
+        width: 14px;
+        height: 14px;
+        cursor: pointer;
+      }
+
+      .table-row .col-char {
+        font-size: 15px;
+      }
+      .word-character {
+        font-weight: 600;
+        color: var(--text);
+        cursor: pointer;
+        display: inline-block;
+      }
+      .word-character:hover { color: var(--primary); }
+
+      .table-row .col-jyutping {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-family: monospace;
+        font-size: 14px;
+        color: var(--text);
+      }
+
+      .table-row .col-meaning {
+        font-size: 13px;
+        color: var(--text-secondary);
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        padding-right: 12px;
+      }
+
+      .table-row .col-date {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+
+
+      .jyutping-text {
+        cursor: pointer;
+        transition: color var(--transition);
+        display: inline-block;
+      }
+      
+      .jyutping-text:hover {
+        color: var(--primary);
+      }
+
+      .speaking {
+        color: var(--primary) !important;
+        animation: textPulse 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+      }
+
+      @keyframes textPulse {
+        0% { opacity: 0.5; }
+        100% { opacity: 1; }
+      }
+
+      /* ========== Bulk Actions ========== */
+      .bulk-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 16px;
+        padding: 12px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+      }
+
+      .bulk-actions label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        cursor: pointer;
+        color: var(--text-secondary);
+      }
+
+      .bulk-delete-btn {
+        margin-left: auto;
+      }
+
+      /* ========== Empty State ========== */
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--text-muted);
+      }
+
+      .empty-state svg {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 16px;
+        opacity: 0.3;
+      }
+
+      .empty-state h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+      }
+
+      .empty-state p {
+        font-size: 14px;
+        max-width: 360px;
+        margin: 0 auto;
+        line-height: 1.8;
+      }
+
+      .kbd {
+        display: inline-block;
+        padding: 2px 6px;
+        font-size: 12px;
+        font-family: monospace;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        color: var(--text-primary);
+      }
+
+      /* ========== Storage Bar ========== */
+      .storage-bar {
+        margin-top: 24px;
+        text-align: center;
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+
+      .storage-progress {
+        width: 200px;
+        height: 4px;
+        background: var(--bg-input);
+        border-radius: 2px;
+        margin: 6px auto 0;
+        overflow: hidden;
+      }
+
+      .storage-progress-fill {
+        height: 100%;
+        background: var(--primary);
+        border-radius: 2px;
+        transition: width 0.3s ease;
+      }
+
+      /* ========== Import Modal ========== */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 100;
+        display: none;
+      }
+
+      .modal-overlay.show { display: flex; }
+
+      .modal {
+        background: var(--bg-card);
+        border-radius: var(--radius);
+        padding: 24px;
+        max-width: 400px;
+        width: 100%;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      }
+
+      .modal h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+      }
+
+      .modal p {
+        font-size: 14px;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+      }
+
+      .modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+      }
+
+      .drop-zone {
+        border: 2px dashed var(--border);
+        border-radius: 8px;
+        padding: 32px;
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all var(--transition);
+        margin-bottom: 16px;
+      }
+
+      .drop-zone:hover, .drop-zone.drag-over {
+        border-color: var(--primary);
+        background: rgba(138, 28, 28, 0.04);
+      }
+
+      .drop-zone input {
+        display: none;
+      }
+
+      /* ========== Back Link ========== */
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        margin-bottom: 20px;
+        transition: color var(--transition);
+      }
+
+      .back-link:hover {
+        color: var(--primary);
+      }
+
+      /* ========== Top Right Actions ========== */
+      .top-right-actions {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        z-index: 100;
+      }
+
+      .theme-toggle {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-muted);
+        transition: all var(--transition);
+      }
+
+      .theme-toggle:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      .detail-mode-icon-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        transition: all var(--transition);
+      }
+
+      .detail-mode-icon-btn.active {
+        width: 36px;
+        height: 36px;
+        padding: 0;
+        justify-content: center;
+        border-radius: 8px;
+        background: var(--primary);
+        border-color: var(--primary);
+        color: #fff;
+      }
+
+      .detail-mode-icon-btn.active span {
+        display: none;
+      }
+
+      .detail-mode-icon-btn.active svg {
+        width: 16px;
+        height: 16px;
+      }
+
+      /* ========== Responsive ========== */
+      @media (max-width: 600px) {
+        body { padding: 20px 12px; }
+        .toolbar { flex-wrap: wrap; }
+        .word-card-body { padding-left: 0; }
+        .header-actions { flex-direction: column; align-items: stretch; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="top-right-actions">
+        <button class="btn detail-mode-icon-btn" id="detailModeToggleBtn" title="詞典模式">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="15" y1="3" x2="15" y2="21"></line>
+          </svg>
+          <span data-i18n="wordbookDetailMode">詞典模式</span>
+        </button>
+        <button class="theme-toggle" id="themeToggle" title="切換主題">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Back Link (always visible) -->
+      <a href="options.html" class="back-link" id="backLink">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="19" y1="12" x2="5" y2="12"></line>
+          <polyline points="12 19 5 12 12 5"></polyline>
+        </svg>
+        <span data-i18n="wordbookBackToSettings">返回設定</span>
+      </a>
+
+      <!-- Collapsible Header Section -->
+      <div class="header-collapsible" id="headerCollapsible">
+
+        <!-- Header -->
+        <div class="header">
+          <img src="icon_favicon.svg" alt="" class="header-icon" />
+          <div class="header-text-group">
+            <h1 data-i18n="wordbookTitle">我的生詞本</h1>
+            <p data-i18n="wordbookSubtitle">My Cantonese Word Book</p>
+          </div>
+        </div>
+
+        <!-- Warning Banner -->
+        <div class="warning-banner">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          <div>
+            <span data-i18n="wordbookWarning">生詞本數據僅保存在本機，不會上傳雲端。卸載插件或清除瀏覽數據可能導致生詞丟失。建議定期</span>
+            <a href="#" id="warningExportBtn" data-i18n="wordbookWarningExport">導出備份</a>
+            <span data-i18n="wordbookWarningEnd">以防數據遺失。</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Header Collapse Toggle -->
+      <div class="header-collapse-toggle" id="headerCollapseToggle" title="收起表頭">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+      </div>
+
+      <!-- Stats Bar -->
+      <div class="stats-bar" id="statsBar">
+        <div class="stat-item"><span data-i18n="wordbookTotal">共</span> <span class="stat-value" id="statTotal">0</span> <span data-i18n="wordbookWords">詞</span></div>
+        <div class="stat-item"><span data-i18n="wordbookToday">今日</span> +<span class="stat-value" id="statToday">0</span></div>
+        <div class="stat-item"><span data-i18n="wordbookWeek">本週</span> +<span class="stat-value" id="statWeek">0</span></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div class="search-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"></circle>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="搜索生詞..." data-i18n-placeholder="wordbookSearchPlaceholder" autocomplete="off" />
+          <div class="search-mode-toggle" id="searchModeToggle">
+            <button class="search-mode-btn active" data-mode="wordbook">生詞</button>
+            <button class="search-mode-btn" data-mode="dict">詞典</button>
+          </div>
+          <div class="dict-search-dropdown" id="dictSearchDropdown"></div>
+        </div>
+
+        <div class="export-wrapper">
+          <button class="btn" id="exportBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="7 10 12 15 17 10"></polyline>
+              <line x1="12" y1="15" x2="12" y2="3"></line>
+            </svg>
+            <span data-i18n="wordbookExport">導出</span>
+          </button>
+          <div class="export-menu" id="exportMenu">
+            <button data-format="json">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/></svg>
+              JSON（完整備份）
+            </button>
+            <button data-format="csv">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
+              CSV（Excel 兼容）
+            </button>
+            <button data-format="markdown">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M4 4h16v16H4z" rx="2"/><path d="M7 15V9l3 3 3-3v6"/><path d="M17 12l-2 3h0l-2-3"/></svg>
+              Markdown
+            </button>
+            <button data-format="txt">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
+              純文本 TXT
+            </button>
+            <div class="import-divider"></div>
+            <button id="importBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              導入...
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Word List -->
+      <div class="word-list" id="wordList"></div>
+
+      <!-- Bulk Actions -->
+      <div class="bulk-actions" id="bulkActions" style="display: none;">
+        <label>
+          <input type="checkbox" id="selectAll" class="word-card-checkbox" />
+          <span data-i18n="wordbookSelectAll">全選</span>
+        </label>
+        <button class="btn bulk-delete-btn" id="bulkDeleteBtn" disabled>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          <span data-i18n="wordbookDeleteSelected">刪除選中</span> (<span id="selectedCount">0</span>)
+        </button>
+      </div>
+
+      <!-- Storage Info -->
+      <div class="storage-bar" id="storageBar">
+        <span id="storageText"></span>
+        <div class="storage-progress">
+          <div class="storage-progress-fill" id="storageProgressFill" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Fixed Detail Pane -->
+    <div class="detail-pane-wrapper" id="detailPaneWrapper">
+      <div class="detail-pane" id="detailPane">
+        <div class="detail-empty-state">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 16px; opacity: 0.5;">
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path>
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path>
+          </svg>
+          <p data-i18n="wordbookEmptyDetail" style="font-size: 15px; margin: 0;">點擊左側單字<br>查看詳細詞典釋義</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Import Modal -->
+    <div class="modal-overlay" id="importModal">
+      <div class="modal">
+        <h3 data-i18n="wordbookImportTitle">導入生詞</h3>
+        <div class="drop-zone" id="dropZone">
+          <p>拖拽文件到此處，或<br><a href="#" id="chooseFileLink">選擇文件</a></p>
+          <p style="font-size: 12px; margin-top: 8px; opacity: 0.7;">支持 JSON、CSV 格式</p>
+          <input type="file" id="importFileInput" accept=".json,.csv" />
+        </div>
+        <div id="importPreview" style="display: none; margin-bottom: 16px; font-size: 14px; color: var(--text-secondary);"></div>
+        <div class="modal-actions">
+          <button class="btn" id="importCancelBtn" data-i18n="wordbookCancel">取消</button>
+          <button class="btn btn-primary" id="importConfirmBtn" style="display: none;" data-i18n="wordbookConfirmImport">確認導入</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Table Header Context Menu -->
+    <div class="sort-context-menu" id="tableHeaderMenu">
+      <div class="sort-context-menu-section">排序</div>
+      <div class="sort-context-menu-item" data-sort="newest">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+        <span>ID 倒序（最新優先）</span>
+      </div>
+      <div class="sort-context-menu-item" data-sort="oldest">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="18 15 12 9 6 15"></polyline>
+        </svg>
+        <span>ID 正序（最早優先）</span>
+      </div>
+      <div class="sort-context-menu-divider"></div>
+      <div class="sort-context-menu-section">顯示欄位</div>
+      <label class="sort-context-menu-toggle" data-col="col-char">
+        <input type="checkbox" checked />
+        <span>Character</span>
+      </label>
+      <label class="sort-context-menu-toggle" data-col="col-jyutping">
+        <input type="checkbox" checked />
+        <span>Jyutping</span>
+      </label>
+      <label class="sort-context-menu-toggle" data-col="col-meaning">
+        <input type="checkbox" checked />
+        <span>Meaning</span>
+      </label>
+      <label class="sort-context-menu-toggle" data-col="col-date">
+        <input type="checkbox" checked />
+        <span>Date</span>
+      </label>
+    </div>
+
+    <script src="wordbook.js"></script>
+  </body>
+</html>

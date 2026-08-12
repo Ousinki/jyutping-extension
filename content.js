@@ -426,6 +426,59 @@
     return template.innerHTML;
   }
 
+  // src/content/wordbook-storage.js
+  var WORDBOOK_KEY = "wordbook";
+  function generateId() {
+    return "w_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
+  }
+  async function getWordbook() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([WORDBOOK_KEY], (result) => {
+        resolve(result[WORDBOOK_KEY] || []);
+      });
+    });
+  }
+  async function addWord(wordData) {
+    const wordbook = await getWordbook();
+    const existing = wordbook.find((w) => w.character === wordData.character);
+    if (existing) {
+      return { success: true, isNew: false, entry: existing };
+    }
+    const entry = {
+      id: generateId(),
+      character: wordData.character,
+      simplified: wordData.simplified || wordData.character,
+      jyutping: wordData.jyutping || "",
+      yale: wordData.yale || "",
+      english: wordData.english || [],
+      timestamp: Date.now(),
+      sourceUrl: wordData.sourceUrl || "",
+      sourceTitle: wordData.sourceTitle || "",
+      tags: [],
+      notes: ""
+    };
+    wordbook.unshift(entry);
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
+        resolve({ success: true, isNew: true, entry });
+      });
+    });
+  }
+  async function isWordSaved(character) {
+    const wordbook = await getWordbook();
+    return wordbook.some((w) => w.character === character);
+  }
+  async function removeWordByCharacter(character) {
+    const wordbook = await getWordbook();
+    const filtered = wordbook.filter((w) => w.character !== character);
+    if (filtered.length === wordbook.length) return false;
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [WORDBOOK_KEY]: filtered }, () => {
+        resolve(true);
+      });
+    });
+  }
+
   // src/content/index.js
   (function() {
     "use strict";
@@ -433,6 +486,7 @@
     document.documentElement.setAttribute("data-jyutping-tts-owner", contentScriptId);
     let dictionary = {};
     let popup = null;
+    let lastPopupShowTime = 0;
     let popupArrow = null;
     let isEnabled = true;
     let displayMode = "jyutping";
@@ -512,7 +566,27 @@
         noPronunciation: "找不到該詞的讀音",
         speak: "發音",
         copy: "複製",
-        cantConnect: "無法連接字典伺服器"
+        cantConnect: "無法連接字典伺服器",
+        wordbookSaved: "已加入生詞本",
+        wordbookExists: "此詞已在生詞本中",
+        wordbookRemoved: "已從生詞本移除",
+        wordbookSaveFailed: "收藏失敗，請重試"
+      },
+      "zh-CN": {
+        translating: "翻译中...",
+        mandarin: "普",
+        english: "英",
+        japanese: "日",
+        korean: "韩",
+        aiExplaining: "AI 释义中...",
+        noPronunciation: "找不到该词的读音",
+        speak: "发音",
+        copy: "复制",
+        cantConnect: "无法连接字典服务器",
+        wordbookSaved: "已加入生词本",
+        wordbookExists: "此词已在生词本中",
+        wordbookRemoved: "已从生词本移除",
+        wordbookSaveFailed: "收藏失败，请重试"
       },
       "en": {
         translating: "Translating...",
@@ -524,7 +598,43 @@
         noPronunciation: "Pronunciation not found",
         speak: "Speak",
         copy: "Copy",
-        cantConnect: "Cannot connect to server"
+        cantConnect: "Cannot connect to server",
+        wordbookSaved: "Saved to Word Book",
+        wordbookExists: "Already in Word Book",
+        wordbookRemoved: "Removed from Word Book",
+        wordbookSaveFailed: "Save failed, please retry"
+      },
+      "ja": {
+        translating: "翻訳中...",
+        mandarin: "普",
+        english: "英",
+        japanese: "日",
+        korean: "韓",
+        aiExplaining: "AI 解説中...",
+        noPronunciation: "発音が見つかりません",
+        speak: "発音",
+        copy: "コピー",
+        cantConnect: "サーバーに接続できません",
+        wordbookSaved: "単語帳に保存しました",
+        wordbookExists: "単語帳に登録済み",
+        wordbookRemoved: "単語帳から削除しました",
+        wordbookSaveFailed: "保存に失敗しました"
+      },
+      "ko": {
+        translating: "번역 중...",
+        mandarin: "普",
+        english: "英",
+        japanese: "日",
+        korean: "韓",
+        aiExplaining: "AI 설명 중...",
+        noPronunciation: "발음을 찾을 수 없습니다",
+        speak: "발음",
+        copy: "복사",
+        cantConnect: "서버에 연결할 수 없습니다",
+        wordbookSaved: "단어장에 저장됨",
+        wordbookExists: "이미 단어장에 있음",
+        wordbookRemoved: "단어장에서 삭제됨",
+        wordbookSaveFailed: "저장 실패, 다시 시도해주세요"
       }
     };
     let currentLang = "zh-HK";
@@ -899,21 +1009,25 @@
 
       /* ========== Toast 提示框 ========== */
       #jyutping-toast-container {
-        position: fixed; top: 20px; right: 20px; z-index: 2147483647;
-        display: flex; flex-direction: column; gap: 10px; pointer-events: none;
+        position: fixed; top: 16px; left: 50%; transform: translateX(-50%);
+        z-index: 2147483647; display: flex; flex-direction: column;
+        align-items: center; gap: 8px; pointer-events: none;
       }
       .jyutping-toast {
-        background: #ffffff; color: #333333; border: 1px solid #d0d0d0;
-        border-left: 4px solid #f44336; border-radius: 8px; padding: 12px 16px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; font-size: 14px;
-        line-height: 1.4; max-width: 300px; word-wrap: break-word; pointer-events: auto;
-        opacity: 0; transform: translateX(100%);
-        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        display: inline-flex; align-items: center; gap: 8px;
+        background: rgba(30, 30, 30, 0.88); color: #f0f0f0;
+        border: none; border-radius: 20px; padding: 8px 18px 8px 14px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+        font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font-size: 13px; font-weight: 500; line-height: 1.4;
+        max-width: 320px; word-wrap: break-word; pointer-events: auto;
+        opacity: 0; transform: translateY(-12px) scale(0.95);
+        transition: opacity 0.25s ease, transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       }
-      .jyutping-toast.show { opacity: 1; transform: translateX(0); }
-      .jyutping-toast-success { border-left-color: #4CAF50 !important; }
-      .jyutping-toast-error { border-left-color: #f44336 !important; }
+      .jyutping-toast.show { opacity: 1; transform: translateY(0) scale(1); }
+      .jyutping-toast-success { background: rgba(120, 30, 30, 0.72) !important; color: #fff !important; backdrop-filter: blur(16px) saturate(180%) !important; -webkit-backdrop-filter: blur(16px) saturate(180%) !important; border: 1px solid rgba(255, 255, 255, 0.15) !important; }
+      .jyutping-toast-error { background: rgba(60, 60, 60, 0.92) !important; color: #f0f0f0 !important; }
 
       /* ========== Translation Highlight ========== */
       ::highlight(jyutping-translate-hl) {
@@ -1069,6 +1183,7 @@
         await loadDictionary();
         console.log("[Content] Auto-restoring Jyutping Full Page Ruby from sessionStorage");
         injectRubyAnnotations(document.body);
+        startRubyObserver();
       }
     }
     let hasUserSelection = false;
@@ -1076,6 +1191,9 @@
       translatePopup = document.createElement("div");
       translatePopup.id = "cantonese-translate-popup";
       translatePopup.style.display = "none";
+      translatePopup.style.position = "absolute";
+      translatePopup.style.left = "-9999px";
+      translatePopup.style.top = "-9999px";
       shadowRoot.appendChild(translatePopup);
       translatePopup.addEventListener("mousedown", (e) => {
         if (e.target.closest(".popup-qa-container")) {
@@ -1096,6 +1214,7 @@
       });
       translatePopup.addEventListener("mouseleave", () => {
         isMouseOverPopup = false;
+        if (Date.now() - lastPopupShowTime < 400) return;
         scheduleHidePopup();
       });
       translatePopup.addEventListener("dblclick", (e) => {
@@ -1145,11 +1264,19 @@
       }
     }
     function getBestRectForRange(range) {
-      if (!range) return null;
+      if (!range) {
+        console.log("[Debug] getBestRectForRange: range is null");
+        return null;
+      }
       const rects = Array.from(range.getClientRects());
+      console.log("[Debug] getBestRectForRange: rects count =", rects.length);
+      if (rects.length > 1) {
+        console.log("[Debug] getBestRectForRange: multiple rects detected", rects);
+      }
       if (rects.length === 0) return null;
       if (rects.length === 1) return rects[0];
       if (currentMouseX === 0 && currentMouseY === 0) {
+        console.log("[Debug] getBestRectForRange: mouse position is 0, returning bounding box", range.getBoundingClientRect());
         return range.getBoundingClientRect();
       }
       let bestRect = rects[0];
@@ -1177,15 +1304,16 @@
           maxY = Math.max(maxY, rect.bottom);
         }
       }
-      const fullRect = range.getBoundingClientRect();
-      return {
+      const finalRect = {
         left: minX,
         right: maxX,
-        top: fullRect.top,
-        bottom: fullRect.bottom,
+        top: minY,
+        bottom: maxY,
         width: maxX - minX,
-        height: fullRect.bottom - fullRect.top
+        height: maxY - minY
       };
+      console.log("[Debug] getBestRectForRange: returning merged finalRect", finalRect);
+      return finalRect;
     }
     function positionTranslatePopup(rect) {
       if (!rect) return;
@@ -1225,6 +1353,7 @@
       }
     }
     function requestTranslation(text) {
+      if (!transLangs || transLangs.length === 0) return;
       const chineseRatio = (text.match(/[\u4e00-\u9fff]/g) || []).length / text.length;
       if (chineseRatio < 0.3) return;
       if (transHoverEngine === "ai" && aiEnabled) {
@@ -1281,6 +1410,7 @@
     }
     function showTranslatePopup(originalText, translations, loading) {
       cancelScheduledHide();
+      lastPopupShowTime = Date.now();
       if (originalText !== null) {
         activeQAContext.word = "";
         activeQAContext.sentence = originalText;
@@ -1360,7 +1490,7 @@
                   chrome.runtime.sendMessage({
                     action: "aiTranslateSentenceLang",
                     text: activeQAContext.sentence,
-                    targetLang: langName,
+                    targetLang: labelName,
                     key
                   });
                 }
@@ -1452,7 +1582,7 @@
             chrome.runtime.sendMessage({
               action: "aiTranslateSentenceLang",
               text: activeQAContext.sentence,
-              targetLang: langName,
+              targetLang: labelName,
               key
             });
           }
@@ -1661,6 +1791,45 @@
         positionTranslatePopup(posRect);
       }
     }
+    async function saveCurrentWordToWordbook(overrideEntry) {
+      const word = currentWord;
+      if (!word) return;
+      const entry = overrideEntry || dictionary && dictionary[word];
+      try {
+        const result = await addWord({
+          character: word,
+          simplified: entry ? entry.simplified : word,
+          jyutping: entry ? entry.jyutping : "",
+          yale: entry ? entry.yale || "" : "",
+          english: entry ? entry.english || [] : [],
+          sourceUrl: window.location.href,
+          sourceTitle: document.title
+        });
+        updateBookmarkBtnState(true);
+        if (result.isNew) {
+          showToast(pt("wordbookSaved"), 1500, "success");
+        } else {
+          showToast(pt("wordbookExists"), 1500, "success");
+        }
+      } catch (e) {
+        console.error("[Wordbook] Save failed:", e);
+        showToast(pt("wordbookSaveFailed"), 1500, "error");
+      }
+    }
+    function updateBookmarkBtnState(isSaved) {
+      if (!popup) return;
+      const btn = popup.querySelector(".popup-bookmark-btn");
+      if (!btn) return;
+      const svg = btn.querySelector("svg");
+      if (!svg) return;
+      if (isSaved) {
+        svg.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#D4AF37" stroke="#D4AF37" stroke-width="1.5"></polygon>';
+        btn.title = pt("wordbookRemoved").replace("已從", "從").replace("移除", "生詞本移除");
+      } else {
+        svg.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" stroke-width="1.5"></polygon>';
+        btn.title = pt("wordbookSaved");
+      }
+    }
     function createPopup() {
       let existingPopup = document.getElementById("cantonese-popup-dict");
       if (existingPopup) {
@@ -1669,6 +1838,9 @@
       popup = document.createElement("div");
       popup.id = "cantonese-popup-dict";
       popup.style.display = "none";
+      popup.style.position = "absolute";
+      popup.style.left = "-9999px";
+      popup.style.top = "-9999px";
       popupArrow = document.createElement("div");
       popupArrow.className = "popup-arrow";
       popup.innerHTML = `
@@ -1682,6 +1854,12 @@
               <line x1="4" y1="22" x2="4" y2="15"></line>
             </svg>
             <span style="transform: translateY(-0.5px)">報告</span>
+          </div>
+          <!-- 生詞本收藏按鈕 -->
+          <div class="popup-bookmark-btn" title="加入生詞本" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; width: 0; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); padding: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" stroke-width="1.5"></polygon>
+            </svg>
           </div>
           <!-- 設定按鈕 -->
           <div class="popup-settings-btn" title="設定" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
@@ -1720,6 +1898,7 @@
       const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
       const settingsBtn = popup.querySelector(".popup-settings-btn");
       const reportBtn = popup.querySelector(".popup-report-btn");
+      const bookmarkBtn = popup.querySelector(".popup-bookmark-btn");
       const popupContainer = popup.querySelector(".popup-container");
       const popupTranslate = popup.querySelector(".popup-translate");
       const reportForm = popup.querySelector(".popup-report-form");
@@ -1731,6 +1910,10 @@
         reportBtn.style.width = "60px";
         reportBtn.style.padding = "0 8px";
         reportBtn.style.marginRight = "4px";
+        bookmarkBtn.style.opacity = "1";
+        bookmarkBtn.style.width = "24px";
+        bookmarkBtn.style.padding = "0 5px";
+        bookmarkBtn.style.marginRight = "4px";
       });
       actionsWrapper.addEventListener("mouseleave", () => {
         settingsBtn.style.opacity = "0.4";
@@ -1740,12 +1923,40 @@
         reportBtn.style.padding = "0";
         reportBtn.style.marginRight = "0";
         reportBtn.style.backgroundColor = "var(--popup-divider)";
+        bookmarkBtn.style.opacity = "0";
+        bookmarkBtn.style.width = "0";
+        bookmarkBtn.style.padding = "0";
+        bookmarkBtn.style.marginRight = "0";
+        bookmarkBtn.style.backgroundColor = "var(--popup-divider)";
       });
       reportBtn.addEventListener("mouseenter", () => {
         reportBtn.style.backgroundColor = "var(--popup-divider-strong)";
       });
       reportBtn.addEventListener("mouseleave", () => {
         reportBtn.style.backgroundColor = "var(--popup-divider)";
+      });
+      bookmarkBtn.addEventListener("mouseenter", () => {
+        bookmarkBtn.style.backgroundColor = "var(--popup-divider-strong)";
+      });
+      bookmarkBtn.addEventListener("mouseleave", () => {
+        bookmarkBtn.style.backgroundColor = "var(--popup-divider)";
+      });
+      bookmarkBtn.addEventListener("click", async (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        bookmarkBtn.style.transition = "transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)";
+        bookmarkBtn.style.transform = "scale(1.3)";
+        setTimeout(() => {
+          bookmarkBtn.style.transform = "scale(1)";
+        }, 200);
+        const saved = await isWordSaved(currentWord);
+        if (saved) {
+          await removeWordByCharacter(currentWord);
+          updateBookmarkBtnState(false);
+          showToast(pt("wordbookRemoved"), 1500, "success");
+        } else {
+          await saveCurrentWordToWordbook();
+        }
       });
       reportBtn.addEventListener("click", (e) => {
         e.preventDefault();
@@ -1834,6 +2045,7 @@ ${userDesc || "未提供具體描述"}`;
       });
       popup.addEventListener("mouseleave", () => {
         isMouseOverPopup = false;
+        if (Date.now() - lastPopupShowTime < 400) return;
         if (justNavigated) {
           return;
         }
@@ -2132,7 +2344,10 @@ ${userDesc || "未提供具體描述"}`;
           };
           audio.onended = stopSpeakerAnimation;
           audio.onerror = stopSpeakerAnimation;
-          audio.play();
+          audio.play().catch((err) => {
+            console.warn("[Content] Cached TTS Playback failed:", err);
+            stopSpeakerAnimation();
+          });
           return;
         }
       }
@@ -2167,6 +2382,11 @@ ${userDesc || "未提供具體描述"}`;
           }
         }
       } catch (error) {
+        if (error && error.message && error.message.includes("Extension context invalidated")) {
+          console.warn("[Jyutping Extension] Extension context invalidated. Please refresh the page.");
+          stopSpeakerAnimation();
+          return;
+        }
         console.error("TTS error:", error);
         stopSpeakerAnimation();
         if (!window.hasShownTtsFallbackToast) {
@@ -2284,7 +2504,9 @@ ${userDesc || "未提供具體描述"}`;
         }
         if (hasUserSelection) {
           const selection = window.getSelection();
-          if (selection.rangeCount > 0 && selection.toString().trim()) {
+          const textToSpeak = selection.toString().trim();
+          if (textToSpeak.length > 1e3) return;
+          if (selection.rangeCount > 0 && textToSpeak) {
             const range = selection.getRangeAt(0);
             const rects = range.getClientRects();
             let clickInSelection = false;
@@ -2297,10 +2519,10 @@ ${userDesc || "未提供具體描述"}`;
             }
             if (clickInSelection) {
               e.preventDefault();
-              const textToSpeak = selection.toString().trim();
+              const textToSpeak2 = selection.toString().trim();
               const rangeRect = getBestRectForRange(range);
-              const btn = showSelectionSpeakerPopup(rangeRect, textToSpeak);
-              speakCantonese(textToSpeak, btn);
+              const btn = showSelectionSpeakerPopup(rangeRect, textToSpeak2);
+              speakCantonese(textToSpeak2, btn);
               let wasSelectionLongPressTriggered = false;
               let isDragging = false;
               const startX = e.clientX;
@@ -2357,7 +2579,7 @@ ${userDesc || "未提供具體描述"}`;
                   }, 100);
                 }
                 if (transTrigger === "click" && !wasSelectionLongPressTriggered && !isDragging) {
-                  requestTranslation(textToSpeak);
+                  requestTranslation(textToSpeak2);
                 }
               };
               document.addEventListener("mouseup", onSelectionClickEnd, { once: true });
@@ -2543,14 +2765,14 @@ ${userDesc || "未提供具體描述"}`;
           window.getSelection().removeAllRanges();
           let word = ruby.dataset.word;
           if (word && dictionary && dictionary[word]) {
-            const rect = ruby.getBoundingClientRect();
             currentWord = word;
             try {
               currentRange = document.createRange();
               currentRange.selectNodeContents(ruby);
             } catch (err) {
             }
-            showPopup({ word, entry: dictionary[word] }, rect, true);
+            const bestRect = currentRange ? getBestRectForRange(currentRange) : null;
+            showPopup({ word, entry: dictionary[word] }, bestRect || ruby.getBoundingClientRect(), true);
           }
           return;
         }
@@ -2666,6 +2888,7 @@ ${userDesc || "未提供具體描述"}`;
         document.addEventListener("mouseup", onUp, true);
       }, true);
       document.addEventListener("keydown", (e) => {
+        console.log("[Debug] keydown triggered:", e.key);
         if (e.key === "Escape") {
           hidePopup();
           hideTranslatePopup();
@@ -2679,6 +2902,7 @@ ${userDesc || "未提供具體描述"}`;
         }
         const keyMap = { "alt": "Alt", "ctrl": "Control", "shift": "Shift", "meta": "Meta" };
         if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+          console.log("[Debug] Trigger key pressed! Key:", e.key, "mouseX:", currentMouseX, "mouseY:", currentMouseY);
           lastX = currentMouseX;
           lastY = currentMouseY;
           handleMouseOver({
@@ -2687,7 +2911,8 @@ ${userDesc || "未提供具體描述"}`;
             altKey: e.altKey || e.key === "Alt",
             ctrlKey: e.ctrlKey || e.key === "Control",
             shiftKey: e.shiftKey || e.key === "Shift",
-            metaKey: e.metaKey || e.key === "Meta"
+            metaKey: e.metaKey || e.key === "Meta",
+            isTriggerKey: true
           });
           if (popupDisplayStyle === "full" && ttsEnabled && currentWord && dictionary[currentWord]) {
             speakCantonese(dictionary[currentWord].traditional || currentWord);
@@ -2701,21 +2926,37 @@ ${userDesc || "未提供具體描述"}`;
       if (targetNode && targetNode.closest && (targetNode.closest("#cantonese-popup-dict") || targetNode.closest("#cantonese-translate-popup"))) {
         return;
       }
-      if (popup && popup.querySelector(".popup-qa-container")) return;
-      if (translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
-      if (translatePopup && translatePopup.style.display !== "none") {
+      if (!e.isTriggerKey && popup && popup.querySelector(".popup-qa-container")) return;
+      if (!e.isTriggerKey && translatePopup && translatePopup.querySelector(".popup-qa-container")) return;
+      if (!e.isTriggerKey && translatePopup && translatePopup.style.display !== "none") {
         if (!isMouseOverPopup) {
           scheduleHidePopup();
         }
         return;
       }
-      if (isMouseOverPopup) return;
-      if (isInExpandGrace()) return;
+      if (!e.isTriggerKey && isMouseOverPopup) return;
+      if (!e.isTriggerKey && isInExpandGrace()) return;
       const modifierPressed = popupDisplayStyle === "compact" || hoverModifier === "none" || hoverModifier === "alt" && e.altKey || hoverModifier === "ctrl" && e.ctrlKey || hoverModifier === "shift" && e.shiftKey || hoverModifier === "meta" && e.metaKey;
       const clientX = e.clientX;
       const clientY = e.clientY;
+      let originalPointerEvents = "";
+      let originalTranslatePointerEvents = "";
+      if (e.isTriggerKey) {
+        if (popup) {
+          originalPointerEvents = popup.style.pointerEvents;
+          popup.style.pointerEvents = "none";
+        }
+        if (translatePopup) {
+          originalTranslatePointerEvents = translatePopup.style.pointerEvents;
+          translatePopup.style.pointerEvents = "none";
+        }
+      }
       const targetElement = document.elementFromPoint(clientX, clientY);
-      if (targetElement && (targetElement.closest("#cantonese-popup-dict") || targetElement.closest("#cantonese-translate-popup"))) {
+      if (e.isTriggerKey) {
+        if (popup) popup.style.pointerEvents = originalPointerEvents;
+        if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+      }
+      if (!e.isTriggerKey && targetElement && (targetElement.closest("#cantonese-popup-dict") || targetElement.closest("#cantonese-translate-popup"))) {
         return;
       }
       const rubyElement = targetElement && targetElement.closest(".jyutping-ruby-injected");
@@ -2735,7 +2976,9 @@ ${userDesc || "未提供具體描述"}`;
           const result2 = { word, entry: dictionary[word] };
           const actualModifierPressed = hoverModifier === "alt" && e.altKey || hoverModifier === "ctrl" && e.ctrlKey || hoverModifier === "shift" && e.shiftKey || hoverModifier === "meta" && e.metaKey;
           if (actualModifierPressed) {
-            showPopup(result2, rubyElement.getBoundingClientRect());
+            const bestRect = currentRange ? getBestRectForRange(currentRange) : null;
+            console.log("[Debug] hover-ruby early block actualModifierPressed. bestRect:", bestRect);
+            showPopup(result2, bestRect || rubyElement.getBoundingClientRect());
           } else {
             scheduleHideIfMouseOutside();
           }
@@ -2745,21 +2988,36 @@ ${userDesc || "未提供具體描述"}`;
         return;
       }
       if (targetElement && (targetElement.classList.contains("jyutping-highlight") || targetElement.closest(".jyutping-hover-ruby"))) {
-        cancelScheduledHide();
-        if (modifierPressed && popup && popup.style.display === "none" && currentWord && dictionary[currentWord]) {
-          const result2 = { word: currentWord, entry: dictionary[currentWord] };
-          showPopup(result2, currentRange ? currentRange.getBoundingClientRect() : {
-            left: clientX,
-            right: clientX,
-            top: clientY,
-            bottom: clientY,
-            width: 0,
-            height: 0
-          });
+        if (!popup || popup.getAttribute("data-current-word") === currentWord) {
+          cancelScheduledHide();
+        }
+        if (modifierPressed && popup && currentWord && dictionary[currentWord]) {
+          console.log("[Debug] highlight early block modifierPressed=true. word:", currentWord);
+          if (popup.style.display === "none" || popup.getAttribute("data-current-word") !== currentWord) {
+            const result2 = { word: currentWord, entry: dictionary[currentWord] };
+            const bestRect = currentRange ? getBestRectForRange(currentRange) : null;
+            console.log("[Debug] highlight early block calling showPopup. bestRect:", bestRect);
+            showPopup(result2, bestRect || (currentRange ? currentRange.getBoundingClientRect() : {
+              left: clientX,
+              right: clientX,
+              top: clientY,
+              bottom: clientY,
+              width: 0,
+              height: 0
+            }));
+          }
         }
         return;
       }
+      if (e.isTriggerKey) {
+        if (popup) popup.style.pointerEvents = "none";
+        if (translatePopup) translatePopup.style.pointerEvents = "none";
+      }
       let range = getCaretRangeFromPointInShadow(clientX, clientY);
+      if (e.isTriggerKey) {
+        if (popup) popup.style.pointerEvents = originalPointerEvents;
+        if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+      }
       if (!range) {
         maybeScheduleHide();
         return;
@@ -2767,7 +3025,15 @@ ${userDesc || "未提供具體描述"}`;
       const previousWord = currentWord;
       if (highlightSpans.length > 0) {
         removeHighlight();
+        if (e.isTriggerKey) {
+          if (popup) popup.style.pointerEvents = "none";
+          if (translatePopup) translatePopup.style.pointerEvents = "none";
+        }
         range = getCaretRangeFromPointInShadow(clientX, clientY);
+        if (e.isTriggerKey) {
+          if (popup) popup.style.pointerEvents = originalPointerEvents;
+          if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+        }
         if (!range) {
           maybeScheduleHide();
           return;
@@ -2798,13 +3064,13 @@ ${userDesc || "未提供具體描述"}`;
         currentWord = result.word;
         if (currentRange) {
           const bestRect = getBestRectForRange(currentRange);
-          if (modifierPressed) {
+          if (modifierPressed || popupDisplayStyle === "ruby" || popupDisplayStyle === "compact") {
             showPopup(result, bestRect || currentRange.getBoundingClientRect());
           } else {
             scheduleHideIfMouseOutside();
           }
         } else {
-          if (modifierPressed) {
+          if (modifierPressed || popupDisplayStyle === "ruby" || popupDisplayStyle === "compact") {
             showPopup(result, {
               left: clientX,
               right: clientX,
@@ -3275,7 +3541,9 @@ ${userDesc || "未提供具體描述"}`;
       }
     }
     function showPopup(result, rect, forceFull = false) {
+      console.log("[Debug] showPopup called. word:", result.word, "rect:", rect, "forceFull:", forceFull);
       cancelScheduledHide();
+      lastPopupShowTime = Date.now();
       if (activePopupRubyElement) {
         activePopupRubyElement.classList.remove("jyutping-popup-active");
         activePopupRubyElement = null;
@@ -3289,6 +3557,7 @@ ${userDesc || "未提供具體描述"}`;
         }
       }
       const entry = result.entry;
+      if (popup) popup.setAttribute("data-current-word", result.word);
       hideTranslatePopup();
       lastPopupResult = result;
       if (rect) lastPopupRect = rect;
@@ -3392,6 +3661,9 @@ ${userDesc || "未提供具體描述"}`;
         html += `<div class="see-also-section">${refLines.join("")}</div>`;
       }
       popupMain.innerHTML = html;
+      isWordSaved(result.word).then((saved) => {
+        updateBookmarkBtnState(saved);
+      });
       const wordSection = popupMain.querySelector(".word-section");
       if (wordSection) {
         wordSection.style.cursor = "pointer";
@@ -3759,59 +4031,37 @@ ${userDesc || "未提供具體描述"}`;
       tempContainer.querySelectorAll("br").forEach((br) => br.replaceWith("\\n"));
       const textContent = tempContainer.textContent.trim();
       if (!html || !hasTextContent) return;
+      const hasComplexMedia = !!block.querySelector('video, iframe, [data-module-type="video"], [class*="video"]');
+      const isReplaceMode = paragraphTransMode === "replace" && !hasComplexMedia;
       const translationEl = createTranslationPlaceholder(block);
       block.setAttribute("data-jyutping-trans-id", String(id));
-      pendingParaTrans.set(id, { block, translationEl });
+      pendingParaTrans.set(id, { block, translationEl, isReplaceMode });
       chrome.runtime.sendMessage({ action: "aiTranslateParagraph", id, html, textContent });
     }
     function createTranslationPlaceholder(block) {
-      let clone;
-      const hasComplexMedia = !!block.querySelector('video, img, iframe, [data-module-type="video"], [class*="video"]');
       const loadingText = paragraphTransEngine === "bing" ? "使用 Bing 翻译" : "使用 AI 翻译";
-      if (paragraphTransMode === "replace" && !hasComplexMedia) {
-        const tag = block.tagName;
-        if (tag === "TD" || tag === "TH" || tag === "LI" || tag === "DT" || tag === "DD") {
-          clone = document.createElement("div");
-        } else {
-          clone = block.cloneNode(false);
+      const clone = document.createElement("span");
+      clone.style.display = "inline-block";
+      clone.style.marginLeft = "8px";
+      clone.style.fontSize = "0.95em";
+      clone.classList.add("jyutping-cantonese-trans", "notranslate", "jyutping-loading-container");
+      clone.setAttribute("translate", "no");
+      clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
+      let insertBeforeNode = null;
+      const childNodes = Array.from(block.childNodes);
+      for (let i = childNodes.length - 1; i >= 0; i--) {
+        const node = childNodes[i];
+        if (node.nodeType === 3 && node.textContent.trim().length > 0) break;
+        if (node.nodeType === 1) {
+          const tag = node.tagName.toLowerCase();
+          if (["span", "a", "sup", "sub", "strong", "em", "b", "i", "font"].includes(tag)) break;
         }
-        clone.classList.add("jyutping-cantonese-trans", "notranslate", "jyutping-cantonese-trans-replace");
-        clone.setAttribute("translate", "no");
-        clone.removeAttribute("id");
-        clone.removeAttribute("data-jyutping-trans-id");
-        block.setAttribute("data-jyutping-original-display", block.style.display || "");
-        block.style.display = "none";
-        clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
-        if (block.nextSibling) {
-          block.parentNode.insertBefore(clone, block.nextSibling);
-        } else {
-          block.parentNode.appendChild(clone);
-        }
+        insertBeforeNode = node;
+      }
+      if (insertBeforeNode) {
+        block.insertBefore(clone, insertBeforeNode);
       } else {
-        clone = document.createElement("span");
-        clone.style.display = "block";
-        clone.style.marginTop = "6px";
-        clone.style.paddingTop = "6px";
-        clone.style.fontSize = "0.95em";
-        clone.classList.add("jyutping-cantonese-trans", "notranslate");
-        clone.setAttribute("translate", "no");
-        clone.innerHTML = `<span class="jyutping-cantonese-trans-loading"><span class="jyutping-loading-spinner"></span>${loadingText}</span>`;
-        let insertBeforeNode = null;
-        const childNodes = Array.from(block.childNodes);
-        for (let i = childNodes.length - 1; i >= 0; i--) {
-          const node = childNodes[i];
-          if (node.nodeType === 3 && node.textContent.trim().length > 0) break;
-          if (node.nodeType === 1) {
-            const tag = node.tagName.toLowerCase();
-            if (["span", "a", "sup", "sub", "strong", "em", "b", "i", "font"].includes(tag)) break;
-          }
-          insertBeforeNode = node;
-        }
-        if (insertBeforeNode) {
-          block.insertBefore(clone, insertBeforeNode);
-        } else {
-          block.appendChild(clone);
-        }
+        block.appendChild(clone);
       }
       return clone;
     }
@@ -3838,17 +4088,47 @@ ${userDesc || "未提供具體描述"}`;
       const entry = pendingParaTrans.get(id);
       if (!entry) return;
       pendingParaTrans.delete(id);
-      const { block, translationEl } = entry;
+      const { block, translationEl, isReplaceMode } = entry;
       if (!translationEl || !translationEl.parentNode) {
         if (block) block.removeAttribute("data-jyutping-trans-id");
         return;
       }
       if (success && payloadHtml) {
-        if (isPlainText) {
-          translationEl.textContent = payloadHtml;
-          translationEl.style.whiteSpace = "pre-wrap";
+        let finalTargetEl = translationEl;
+        if (isReplaceMode) {
+          const tag = block.tagName;
+          let replaceClone;
+          if (tag === "TD" || tag === "TH" || tag === "LI" || tag === "DT" || tag === "DD") {
+            replaceClone = document.createElement("div");
+          } else {
+            replaceClone = block.cloneNode(false);
+          }
+          replaceClone.classList.add("jyutping-cantonese-trans", "notranslate", "jyutping-cantonese-trans-replace");
+          replaceClone.setAttribute("translate", "no");
+          replaceClone.removeAttribute("id");
+          replaceClone.removeAttribute("data-jyutping-trans-id");
+          block.setAttribute("data-jyutping-original-display", block.style.display || "");
+          block.style.display = "none";
+          if (block.nextSibling) {
+            block.parentNode.insertBefore(replaceClone, block.nextSibling);
+          } else {
+            block.parentNode.appendChild(replaceClone);
+          }
+          translationEl.remove();
+          finalTargetEl = replaceClone;
         } else {
-          translationEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
+          finalTargetEl.classList.remove("jyutping-loading-container");
+          finalTargetEl.innerHTML = "";
+          finalTargetEl.style.display = "block";
+          finalTargetEl.style.marginTop = "6px";
+          finalTargetEl.style.paddingTop = "6px";
+          finalTargetEl.style.marginLeft = "0";
+        }
+        if (isPlainText) {
+          finalTargetEl.textContent = payloadHtml;
+          finalTargetEl.style.whiteSpace = "pre-wrap";
+        } else {
+          finalTargetEl.innerHTML = sanitizeTranslatedHtml(payloadHtml);
         }
         const speakerIcon = document.createElement("button");
         speakerIcon.className = "jyutping-speaker-btn";
@@ -3863,10 +4143,10 @@ ${userDesc || "未提供具體描述"}`;
         speakerIcon.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
-          const textToSpeak = translationEl.textContent.trim();
+          const textToSpeak = finalTargetEl.textContent.trim();
           speakCantonese(textToSpeak, speakerIcon);
         });
-        translationEl.appendChild(speakerIcon);
+        finalTargetEl.appendChild(speakerIcon);
       } else {
         translationEl.remove();
         if (block) block.removeAttribute("data-jyutping-trans-id");
@@ -3995,6 +4275,28 @@ ${userDesc || "未提供具體描述"}`;
       } else if (request.action === "toggleRuby") {
         console.log("[Content] Received toggleRuby message from background");
         toggleRubyAnnotations();
+      } else if (request.action === "addToWordbook") {
+        const text = (request.text || "").trim();
+        if (text) {
+          const entry = dictionary && dictionary[text];
+          addWord({
+            character: text,
+            simplified: entry ? entry.simplified : text,
+            jyutping: entry ? entry.jyutping : "",
+            yale: entry ? entry.yale || "" : "",
+            english: entry ? entry.english || [] : [],
+            sourceUrl: window.location.href,
+            sourceTitle: document.title
+          }).then((result) => {
+            if (result.isNew) {
+              showToast(pt("wordbookSaved"), 1500, "success");
+            } else {
+              showToast(pt("wordbookExists"), 1500, "success");
+            }
+          }).catch(() => {
+            showToast(pt("wordbookSaveFailed"), 1500, "error");
+          });
+        }
       } else if (request.action === "ttsEnded") {
         stopSpeakerAnimation();
       } else if (request.action === "aiTranslateParagraphResult") {
@@ -4084,6 +4386,14 @@ ${userDesc || "未提供具體描述"}`;
           toggleRubyAnnotations();
         }
       }
+      if (e.key === "s" && !e.ctrlKey && !e.metaKey && !e.altKey && !e.shiftKey) {
+        if (!currentWord) return;
+        if (isEditableElement(document.activeElement) || hasEditableFocus()) return;
+        if (!popup || popup.style.display === "none") return;
+        e.preventDefault();
+        e.stopPropagation();
+        saveCurrentWordToWordbook();
+      }
     });
     async function toggleRubyAnnotations() {
       console.log("[Content] toggleRubyAnnotations called. isEnabled:", isEnabled, "isFullPageRubyActive:", isFullPageRubyActive);
@@ -4100,12 +4410,70 @@ ${userDesc || "未提供具體描述"}`;
       if (isFullPageRubyActive) {
         console.log("[Content] Jyutping Full Page Ruby: ON");
         injectRubyAnnotations(document.body);
+        startRubyObserver();
         showToast(tt("toastRubyEnabled"), 2e3, "success");
       } else {
         console.log("Jyutping Full Page Ruby: OFF");
+        stopRubyObserver();
         removeRubyAnnotations(document.body);
         showToast(tt("toastRubyDisabled"), 2e3, "error");
       }
+    }
+    let rubyMutationTimer = null;
+    let rubyMutationObserver = null;
+    function startRubyObserver() {
+      if (rubyMutationObserver) return;
+      rubyMutationObserver = new MutationObserver((mutations) => {
+        if (!isFullPageRubyActive) return;
+        let shouldTrigger = false;
+        for (const m of mutations) {
+          if (m.type === "childList") {
+            for (const node of m.addedNodes) {
+              if (node.nodeType === Node.ELEMENT_NODE) {
+                if (node.tagName === "RUBY" && node.classList.contains("jyutping-ruby-injected")) continue;
+                if (node.tagName === "RT") continue;
+                if (node.id === "jyutping-toast-container" || node.id === "jyutping-popup") continue;
+                if (["script", "style", "noscript"].includes(node.tagName.toLowerCase())) continue;
+                shouldTrigger = true;
+                break;
+              } else if (node.nodeType === Node.TEXT_NODE) {
+                if (/[\\u4e00-\\u9fff]/.test(node.textContent)) {
+                  if (node.parentElement && node.parentElement.closest("ruby.jyutping-ruby-injected")) continue;
+                  shouldTrigger = true;
+                  break;
+                }
+              }
+            }
+          } else if (m.type === "characterData") {
+            if (/[\\u4e00-\\u9fff]/.test(m.target.textContent)) {
+              if (m.target.parentElement && m.target.parentElement.closest("ruby.jyutping-ruby-injected")) continue;
+              shouldTrigger = true;
+              break;
+            }
+          }
+          if (shouldTrigger) break;
+        }
+        if (shouldTrigger) {
+          clearTimeout(rubyMutationTimer);
+          rubyMutationTimer = setTimeout(() => {
+            if (isFullPageRubyActive) {
+              injectRubyAnnotations(document.body);
+            }
+          }, 500);
+        }
+      });
+      rubyMutationObserver.observe(document.body, {
+        childList: true,
+        subtree: true,
+        characterData: true
+      });
+    }
+    function stopRubyObserver() {
+      if (rubyMutationObserver) {
+        rubyMutationObserver.disconnect();
+        rubyMutationObserver = null;
+      }
+      clearTimeout(rubyMutationTimer);
     }
     function removeRubyAnnotations(rootElement) {
       const rubies = rootElement.querySelectorAll("ruby.jyutping-ruby-injected");
@@ -4173,7 +4541,8 @@ ${userDesc || "未提供具體描述"}`;
       if (currentToastRemoveTimeout) clearTimeout(currentToastRemoveTimeout);
       const toast = document.createElement("div");
       toast.className = "jyutping-toast" + (type ? " jyutping-toast-" + type : "");
-      toast.innerHTML = message;
+      const iconSvg = type === "success" ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><polyline points="20 6 9 17 4 12"></polyline></svg>' : type === "error" ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink:0;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>' : "";
+      toast.innerHTML = iconSvg + "<span>" + message + "</span>";
       container.appendChild(toast);
       toast.offsetHeight;
       toast.classList.add("show");

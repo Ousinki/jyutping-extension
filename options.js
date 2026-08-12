@@ -17,6 +17,7 @@ function applyUITheme(theme) {
 }
 
 chrome.storage.sync.get(['uiTheme'], (res) => {
+  localStorage.setItem('jyutping_ui_theme', res.uiTheme || 'auto');
   applyUITheme(res.uiTheme || 'auto');
 });
 
@@ -250,6 +251,7 @@ async function applyI18n(lang) {
         btn.addEventListener('click', () => {
           updateThemeToggleUI(theme);
           chrome.storage.sync.set({ uiTheme: theme });
+          localStorage.setItem('jyutping_ui_theme', theme);
           applyUITheme(theme);
           notifyContentScripts({ action: 'changeUITheme', theme });
         });
@@ -1715,6 +1717,19 @@ async function applyI18n(lang) {
     });
   }
 
+  // === Wordbook Count Badge ===
+  const wordbookBadge = document.getElementById('wordbookCountBadge');
+  if (wordbookBadge) {
+    chrome.storage.local.get(['wordbook'], (result) => {
+      wordbookBadge.textContent = (result.wordbook || []).length;
+    });
+    chrome.storage.onChanged.addListener((changes) => {
+      if (changes.wordbook) {
+        wordbookBadge.textContent = (changes.wordbook.newValue || []).length;
+      }
+    });
+  }
+
   // 更新動態快捷鍵提示資訊
   function updateShortcutDesc(lang) {
     const descEl = document.getElementById('inspectShortcutDesc');
@@ -1882,8 +1897,12 @@ async function applyI18n(lang) {
   // Smooth scroll
   tocLinks.forEach(link => {
     link.addEventListener('click', (e) => {
+      const href = link.getAttribute('href');
+      // 非錨點連結（如 wordbook.html）直接跳轉，不攔截
+      if (!href || !href.startsWith('#')) return;
+
       e.preventDefault();
-      const targetId = link.getAttribute('href').substring(1);
+      const targetId = href.substring(1);
       const targetSection = document.getElementById(targetId);
       if (targetSection) {
         window.scrollTo({

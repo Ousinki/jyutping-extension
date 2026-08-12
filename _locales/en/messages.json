@@ -3,6 +3,26 @@
     "message": "This update brings the following improvements:",
     "description": "Changelog description"
   },
+  "clItem10": {
+    "message": "<b>Context Menu Save</b>: Select any Chinese text and right-click to quickly add it to your wordbook without opening the hover popup."
+  },
+  "clItem5": {
+    "message": "🎨 <b>New Ruby Background Styles</b>: Ruby annotation mode now supports 'Solid' and 'Fade' background options, ensuring clear readability on any webpage background.",
+    "description": "Changelog item 5"
+  },
+  "clItem6": {
+    "message": "🐛 <b>Fixed Floating Popup Styles</b>: Fixed layout distortion and inaccurate mask height issues for the floating popup on certain webpages.",
+    "description": "Changelog item 6"
+  },
+  "clItem7": {
+    "message": "✨ <b>New Paragraph Translation</b>: Hold the shortcut key (default Shift ⇧) and hover over a paragraph to trigger AI for accurate Cantonese translation!"
+  },
+  "clItem8": {
+    "message": "<b>New \"Wordbook\" Feature</b>: Added a ⭐ save button to the hover popup. You can also press <kbd>S</kbd> to quickly save the current Cantonese vocabulary to your local wordbook."
+  },
+  "clItem9": {
+    "message": "<b>Wordbook Management</b>: Supports searching, sorting, and batch management. Provides 4 export formats (JSON, CSV, Markdown, TXT) and supports importing backups."
+  },
   "clTitle": {
     "message": "🚀 What's New",
     "description": "Changelog title"
@@ -42,6 +62,13 @@
     "message": "OpenAI-compatible API endpoint",
     "description": "optAIBaseUrlDesc"
   },
+  "optAIDblClickHint": {
+    "message": "Double-click the AI explanation or API translation popup to start an AI follow-up conversation",
+    "description": "optAIDblClickHint"
+  },
+  "optAIDefaultPrompt": {
+    "message": "You are a Cantonese language expert. The user selected a word while reading a Cantonese article. Please briefly explain the specific meaning of this word in the sentence (1-2 sentences) in {targetLang} based on the context. Only reply with the explanation itself, without any formatting markup.\n\n[Word] {word}\n[Sentence] {sentence}"
+  },
   "optAIEnable": {
     "message": "Enable AI Translation",
     "description": "optAIEnable"
@@ -69,6 +96,12 @@
   "optAIModelLabel": {
     "message": "AI Model",
     "description": "optAIModelLabel"
+  },
+  "optAIPrompt": {
+    "message": "Custom Prompt (System Prompt)"
+  },
+  "optAIPromptDesc": {
+    "message": "Set the prompt template sent to the AI. Supports variables {word} (selected word) and {sentence} (context sentence). Leave empty to use the default."
   },
   "optAIPromptLabel": {
     "message": "System Prompt",
@@ -194,6 +227,9 @@
     "message": "Bert-VITS2 (Cantonese Neural TTS)",
     "description": "optEngineBert"
   },
+  "optFail": {
+    "message": "❌ Connection Failed: "
+  },
   "optFeedback": {
     "message": "About & Feedback",
     "description": "optFeedback"
@@ -278,17 +314,14 @@
     "message": "Require holding a key to show popup",
     "description": "optHoverModifierDesc"
   },
-  "optParaTransKey": {
-    "message": "Paragraph Cantonese translation key",
-    "description": "optParaTransKey"
+  "optHoverTransEngineDesc": {
+    "message": "Choose the default engine for the hover translation popup."
   },
-  "optParaTransKeyDesc": {
-    "message": "Hover over a paragraph and press this key to AI-translate the whole paragraph into Cantonese below the original; press again to remove (requires AI translation configured)",
-    "description": "optParaTransKeyDesc"
+  "optHoverTransEngineTitle": {
+    "message": "Default Translation Engine"
   },
-  "optParaTransKeyLongPress": {
-    "message": "Long-press left mouse button",
-    "description": "optParaTransKeyLongPress"
+  "optInspectDemoText": {
+    "message": "Full-text Ruby Demo"
   },
   "optInspectDictColorDesc": {
     "message": "Adjust the phonetic symbol color depth in dictionary style."
@@ -358,6 +391,9 @@
     "message": "None (Direct Hover)",
     "description": "optKeyNone"
   },
+  "optKeyOff": {
+    "message": "None (Off)"
+  },
   "optKeyShift": {
     "message": "Shift (⇧)",
     "description": "optKeyShift"
@@ -378,6 +414,9 @@
     "message": "How should we call you?",
     "description": "optNamePlaceholder"
   },
+  "optNoReply": {
+    "message": "(No reply)"
+  },
   "optOpacity100": {
     "message": "100% (Fully opaque)"
   },
@@ -390,9 +429,64 @@
   "optOpacity85": {
     "message": "85% (Slightly transparent)"
   },
+  "optOpenWordbook": {
+    "message": "Open Wordbook"
+  },
   "optOptional": {
     "message": "(Optional)",
     "description": "optOptional"
+  },
+  "optParaTransDemoText": {
+    "message": "This is a paragraph used to demonstrate the translation feature."
+  },
+  "optParaTransDemoTranslated": {
+    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
+  },
+  "optParaTransEngine": {
+    "message": "Paragraph Translation Engine"
+  },
+  "optParaTransEngineAI": {
+    "message": "AI"
+  },
+  "optParaTransEngineBing": {
+    "message": "Bing"
+  },
+  "optParaTransEngineDesc": {
+    "message": "Bing Translator is fast, while AI is more accurate but takes a few seconds."
+  },
+  "optParaTransKey": {
+    "message": "Paragraph Cantonese translation key",
+    "description": "optParaTransKey"
+  },
+  "optParaTransKeyDesc": {
+    "message": "Hover over a paragraph and press this key to AI-translate the whole paragraph into Cantonese below the original; press again to remove (requires AI translation configured)",
+    "description": "optParaTransKeyDesc"
+  },
+  "optParaTransKeyLongPress": {
+    "message": "Long-press left mouse button",
+    "description": "optParaTransKeyLongPress"
+  },
+  "optParaTransMode": {
+    "message": "Translation Display Mode",
+    "description": "optParaTransMode"
+  },
+  "optParaTransModeBelow": {
+    "message": "Below original text",
+    "description": "optParaTransModeBelow"
+  },
+  "optParaTransModeDesc": {
+    "message": "Choose whether to place the translation below the original text or replace it.",
+    "description": "optParaTransModeDesc"
+  },
+  "optParaTransModeReplace": {
+    "message": "Replace original text",
+    "description": "optParaTransModeReplace"
+  },
+  "optParaTransTitle": {
+    "message": "Paragraph Translation"
+  },
+  "optPlaying": {
+    "message": "Playing..."
   },
   "optPopupStyle": {
     "message": "Popup Style",
@@ -422,6 +516,26 @@
   },
   "optPopupStyleSystem": {
     "message": "System Default (System UI)"
+  },
+  "optRubyBgFade": {
+    "message": "Fade"
+  },
+  "optRubyBgNone": {
+    "message": "None"
+  },
+  "optRubyBgSolid": {
+    "message": "Solid"
+  },
+  "optRubyHoverStyle": {
+    "message": "Hover Font Style",
+    "description": "optRubyHoverStyle"
+  },
+  "optRubyHoverStyleDesc": {
+    "message": "Choose the text color effect when hovering in Ruby mode",
+    "description": "optRubyHoverStyleDesc"
+  },
+  "optRubyRtBgToggle": {
+    "message": "Ruby Annotation Background"
   },
   "optSend": {
     "message": "Send Feedback",
@@ -461,6 +575,12 @@
     "message": "Extension Settings",
     "description": "optSubtitle"
   },
+  "optSuccess": {
+    "message": "✅ Connection Successful!\nModel replied: "
+  },
+  "optTOC": {
+    "message": "Table of Contents"
+  },
   "optTTSEngine": {
     "message": "TTS Engine",
     "description": "optTTSEngine"
@@ -481,9 +601,16 @@
     "message": "Test Pronunciation",
     "description": "optTestTTS"
   },
+  "optTestingAI": {
+    "message": "Testing..."
+  },
   "optTheme": {
     "message": "Theme",
     "description": "optTheme"
+  },
+  "optThemeAuto": {
+    "message": "Auto",
+    "description": "optThemeAuto"
   },
   "optThemeClassic": {
     "message": "Classic",
@@ -508,6 +635,10 @@
   "optThemeInk": {
     "message": "Ink Paint",
     "description": "optThemeInk"
+  },
+  "optThemeLight": {
+    "message": "Light",
+    "description": "optThemeLight"
   },
   "optThemeMint": {
     "message": "Mint Green",
@@ -621,123 +752,11 @@
     "message": "Full-page Cantonese Ruby enabled.<br>If layouts overlap, refresh page (F5) to adjust height.",
     "description": "Toast shown when full page ruby is enabled"
   },
-  "optPlaying": {
-    "message": "Playing..."
+  "wordbookDetailMode": {
+    "message": "Dictionary Mode",
+    "description": "Wordbook: toggle detail mode"
   },
-  "optTestingAI": {
-    "message": "Testing..."
-  },
-  "optSuccess": {
-    "message": "✅ Connection Successful!\nModel replied: "
-  },
-  "optFail": {
-    "message": "❌ Connection Failed: "
-  },
-  "optNoReply": {
-    "message": "(No reply)"
-  },
-  "optAIPrompt": {
-    "message": "Custom Prompt (System Prompt)"
-  },
-  "optAIPromptDesc": {
-    "message": "Set the prompt template sent to the AI. Supports variables {word} (selected word) and {sentence} (context sentence). Leave empty to use the default."
-  },
-  "optAIDefaultPrompt": {
-    "message": "You are a Cantonese language expert. The user selected a word while reading a Cantonese article. Please briefly explain the specific meaning of this word in the sentence (1-2 sentences) in {targetLang} based on the context. Only reply with the explanation itself, without any formatting markup.\n\n[Word] {word}\n[Sentence] {sentence}"
-  },
-  "optRubyHoverStyle": {
-    "message": "Hover Font Style",
-    "description": "optRubyHoverStyle"
-  },
-  "optRubyHoverStyleDesc": {
-    "message": "Choose the text color effect when hovering in Ruby mode",
-    "description": "optRubyHoverStyleDesc"
-  },
-  "optThemeAuto": {
-    "message": "Auto",
-    "description": "optThemeAuto"
-  },
-  "optThemeLight": {
-    "message": "Light",
-    "description": "optThemeLight"
-  },
-  "optAIDblClickHint": {
-    "message": "Double-click the AI explanation or API translation popup to start an AI follow-up conversation",
-    "description": "optAIDblClickHint"
-  },
-  "clItem5": {
-    "message": "🎨 <b>New Ruby Background Styles</b>: Ruby annotation mode now supports 'Solid' and 'Fade' background options, ensuring clear readability on any webpage background.",
-    "description": "Changelog item 5"
-  },
-  "clItem6": {
-    "message": "🐛 <b>Fixed Floating Popup Styles</b>: Fixed layout distortion and inaccurate mask height issues for the floating popup on certain webpages.",
-    "description": "Changelog item 6"
-  },
-  "optRubyRtBgToggle": {
-    "message": "Ruby Annotation Background"
-  },
-  "optRubyBgNone": {
-    "message": "None"
-  },
-  "optRubyBgFade": {
-    "message": "Fade"
-  },
-  "optRubyBgSolid": {
-    "message": "Solid"
-  },
-  "optParaTransTitle": {
-    "message": "Paragraph Translation"
-  },
-  "optParaTransDemoText": {
-    "message": "This is a paragraph used to demonstrate the translation feature."
-  },
-  "optParaTransDemoTranslated": {
-    "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
-  },
-  "optKeyOff": {
-    "message": "None (Off)"
-  },
-  "optParaTransMode": {
-    "message": "Translation Display Mode",
-    "description": "optParaTransMode"
-  },
-  "optParaTransModeDesc": {
-    "message": "Choose whether to place the translation below the original text or replace it.",
-    "description": "optParaTransModeDesc"
-  },
-  "optParaTransModeBelow": {
-    "message": "Below original text",
-    "description": "optParaTransModeBelow"
-  },
-  "optParaTransModeReplace": {
-    "message": "Replace original text",
-    "description": "optParaTransModeReplace"
-  },
-  "optTOC": {
-    "message": "Table of Contents"
-  },
-  "clItem7": {
-    "message": "✨ <b>New Paragraph Translation</b>: Hold the shortcut key (default Shift ⇧) and hover over a paragraph to trigger AI for accurate Cantonese translation!"
-  },
-  "optInspectDemoText": {
-    "message": "Full-text Ruby Demo"
-  },
-  "optParaTransEngine": {
-    "message": "Paragraph Translation Engine"
-  },
-  "optParaTransEngineDesc": {
-    "message": "Bing Translator is fast, while AI is more accurate but takes a few seconds."
-  },
-  "optParaTransEngineBing": {
-    "message": "Bing"
-  },
-  "optParaTransEngineAI": {
-    "message": "AI"
-  },
-  "optHoverTransEngineTitle": {
-    "message": "Default Translation Engine"
-  },
-  "optHoverTransEngineDesc": {
-    "message": "Choose the default engine for the hover translation popup."
+  "wordbookEmptyDetail": {
+    "message": "Click a word on the left<br>to view dictionary details"
   }
 }
