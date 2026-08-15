@@ -1138,5 +1138,29 @@
   },
   "wordbookRestored": {
     "message": "Restored"
+  },
+  "wordbookTabContextMenu": {
+    "message": "Right-click Search"
+  },
+  "wordbookContextMenuDesc": {
+    "message": "Customize third-party dictionaries and search engines for right-clicking words in the word book. Use {word} as placeholder."
+  },
+  "wordbookAddSearchEngine": {
+    "message": "Add New Search Engine"
+  },
+  "wordbookRestoreSearchEngines": {
+    "message": "Restore Default Engines"
+  },
+  "wordbookEngineNamePlaceholder": {
+    "message": "Engine Name (e.g. Wiki Cantonese)"
+  },
+  "wordbookEngineUrlPlaceholder": {
+    "message": "Search URL Template (e.g. https://.../{word})"
+  },
+  "wordbookSearchSettings": {
+    "message": "Manage Search Engines..."
+  },
+  "wordbookSearchPrefix": {
+    "message": "Search"
   }
 }

@@ -1138,5 +1138,29 @@
   },
   "wordbookRestored": {
     "message": "已还原"
+  },
+  "wordbookTabContextMenu": {
+    "message": "右键搜索"
+  },
+  "wordbookContextMenuDesc": {
+    "message": "自定义在生词本中右键点击单词时弹出的第三方词典与搜索引擎，支持使用 {word} 作为单词占位符。"
+  },
+  "wordbookAddSearchEngine": {
+    "message": "添加新搜索源"
+  },
+  "wordbookRestoreSearchEngines": {
+    "message": "恢复默认搜索源"
+  },
+  "wordbookEngineNamePlaceholder": {
+    "message": "搜索源名称 (如: Wiki 粤语词典)"
+  },
+  "wordbookEngineUrlPlaceholder": {
+    "message": "搜索 URL 模板 (如: https://.../{word})"
+  },
+  "wordbookSearchSettings": {
+    "message": "管理搜索源..."
+  },
+  "wordbookSearchPrefix": {
+    "message": "搜索"
   }
 }

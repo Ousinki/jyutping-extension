@@ -1089,5 +1089,29 @@
   },
   "wordbookRestored": {
     "message": "복원되었습니다"
+  },
+  "wordbookTabContextMenu": {
+    "message": "우클릭 검색"
+  },
+  "wordbookContextMenuDesc": {
+    "message": "단어를 우클릭할 때 팝업되는 외부 사전 및 검색 엔진을 설정합니다. {word} 플레이스홀더 지원."
+  },
+  "wordbookAddSearchEngine": {
+    "message": "새 검색 엔진 추가"
+  },
+  "wordbookRestoreSearchEngines": {
+    "message": "기본값 복원"
+  },
+  "wordbookEngineNamePlaceholder": {
+    "message": "엔진 이름 (예: 위키 광둥어 사전)"
+  },
+  "wordbookEngineUrlPlaceholder": {
+    "message": "검색 URL 템플릿 (예: https://.../{word})"
+  },
+  "wordbookSearchSettings": {
+    "message": "검색 엔진 관리..."
+  },
+  "wordbookSearchPrefix": {
+    "message": "검색"
   }
 }

@@ -1135,5 +1135,29 @@
   },
   "wordbookRestored": {
     "message": "復元しました"
+  },
+  "wordbookTabContextMenu": {
+    "message": "右クリック検索"
+  },
+  "wordbookContextMenuDesc": {
+    "message": "単語を右クリックしたときにポップアップする外部辞書や検索エンジンをカスタマイズします。{word} プレースホルダーに対応。"
+  },
+  "wordbookAddSearchEngine": {
+    "message": "新しい検索エンジンを追加"
+  },
+  "wordbookRestoreSearchEngines": {
+    "message": "デフォルトに戻す"
+  },
+  "wordbookEngineNamePlaceholder": {
+    "message": "エンジン名 (例: Wiki 広東語辞書)"
+  },
+  "wordbookEngineUrlPlaceholder": {
+    "message": "検索 URL テンプレート (例: https://.../{word})"
+  },
+  "wordbookSearchSettings": {
+    "message": "検索エンジンを管理..."
+  },
+  "wordbookSearchPrefix": {
+    "message": "検索"
   }
 }

@@ -1138,5 +1138,29 @@
   },
   "wordbookRestored": {
     "message": "已還原"
+  },
+  "wordbookTabContextMenu": {
+    "message": "右鍵搜尋"
+  },
+  "wordbookContextMenuDesc": {
+    "message": "自訂在生詞本中右鍵點擊單詞時彈出的第三方詞典與搜尋引擎，支援使用 {word} 作為單詞佔位符。"
+  },
+  "wordbookAddSearchEngine": {
+    "message": "添加新搜尋源"
+  },
+  "wordbookRestoreSearchEngines": {
+    "message": "恢復預設搜尋源"
+  },
+  "wordbookEngineNamePlaceholder": {
+    "message": "搜尋源名稱 (如: Wiki 粵語詞典)"
+  },
+  "wordbookEngineUrlPlaceholder": {
+    "message": "搜尋 URL 範本 (如: https://.../{word})"
+  },
+  "wordbookSearchSettings": {
+    "message": "管理搜尋源..."
+  },
+  "wordbookSearchPrefix": {
+    "message": "搜尋"
   }
 }

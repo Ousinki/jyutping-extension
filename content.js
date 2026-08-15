@@ -150,39 +150,98 @@
   }
 
   // src/content/colors.js
+  function parseRgba(str) {
+    if (!str) return null;
+    const match = str.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)(?:,\s*([\d.]+))?\)/);
+    if (!match) return null;
+    return {
+      r: parseInt(match[1], 10),
+      g: parseInt(match[2], 10),
+      b: parseInt(match[3], 10),
+      a: match[4] !== void 0 ? parseFloat(match[4]) : 1
+    };
+  }
+  function calculateLuminance(r, g, b) {
+    return (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+  }
+  function isElementOnDarkBackground(element) {
+    if (!element) return false;
+    try {
+      const style = window.getComputedStyle(element);
+      const textColor = parseRgba(style.color);
+      if (textColor && textColor.a > 0.3) {
+        const textLum = calculateLuminance(textColor.r, textColor.g, textColor.b);
+        if (textLum < 0.45) {
+          return false;
+        }
+        if (textLum > 0.55) {
+          return true;
+        }
+      }
+    } catch (e) {
+    }
+    return checkIsDarkColor(getElementBackgroundColor(element));
+  }
   function getElementBackgroundColor(element) {
     try {
       let el = element;
+      const isDark = function() {
+        try {
+          const style = window.getComputedStyle(element);
+          const textColor = parseRgba(style.color);
+          if (textColor && textColor.a > 0.3) {
+            return calculateLuminance(textColor.r, textColor.g, textColor.b) > 0.55;
+          }
+        } catch (e) {
+        }
+        return false;
+      }();
+      const baseRgb = isDark ? { r: 24, g: 24, b: 27 } : { r: 255, g: 255, b: 255 };
       while (el && el !== document.documentElement) {
         const style = window.getComputedStyle(el);
-        const bg = style.backgroundColor;
-        if (bg && bg !== "rgba(0, 0, 0, 0)" && bg !== "transparent") {
-          return bg;
+        const bg = parseRgba(style.backgroundColor);
+        if (bg && bg.a > 0.05) {
+          if (bg.a >= 0.85) {
+            return `rgb(${bg.r}, ${bg.g}, ${bg.b})`;
+          }
+          const r = Math.round(bg.r * bg.a + baseRgb.r * (1 - bg.a));
+          const g = Math.round(bg.g * bg.a + baseRgb.g * (1 - bg.a));
+          const b = Math.round(bg.b * bg.a + baseRgb.b * (1 - bg.a));
+          return `rgb(${r}, ${g}, ${b})`;
         }
         el = el.parentElement;
       }
-      const bodyBg = window.getComputedStyle(document.body).backgroundColor;
-      if (bodyBg && bodyBg !== "rgba(0, 0, 0, 0)" && bodyBg !== "transparent") {
-        return bodyBg;
+      if (document.body) {
+        const bodyBg = parseRgba(window.getComputedStyle(document.body).backgroundColor);
+        if (bodyBg && bodyBg.a > 0.05) {
+          if (bodyBg.a >= 0.85) {
+            return `rgb(${bodyBg.r}, ${bodyBg.g}, ${bodyBg.b})`;
+          }
+          const r = Math.round(bodyBg.r * bodyBg.a + baseRgb.r * (1 - bodyBg.a));
+          const g = Math.round(bodyBg.g * bodyBg.a + baseRgb.g * (1 - bodyBg.a));
+          const b = Math.round(bodyBg.b * bodyBg.a + baseRgb.b * (1 - bodyBg.a));
+          return `rgb(${r}, ${g}, ${b})`;
+        }
       }
+      if (document.documentElement) {
+        const htmlBg = parseRgba(window.getComputedStyle(document.documentElement).backgroundColor);
+        if (htmlBg && htmlBg.a > 0.05) {
+          return `rgb(${htmlBg.r}, ${htmlBg.g}, ${htmlBg.b})`;
+        }
+      }
+      return isDark ? "rgb(24, 24, 27)" : "rgb(255, 255, 255)";
     } catch (e) {
     }
     return "rgb(255, 255, 255)";
   }
   function checkIsDarkColor(bgColorStr) {
     if (!bgColorStr) return false;
-    const match = bgColorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
-    if (match) {
-      const r = parseInt(match[1]);
-      const g = parseInt(match[2]);
-      const b = parseInt(match[3]);
-      const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    const parsed = parseRgba(bgColorStr);
+    if (parsed) {
+      const luminance = calculateLuminance(parsed.r, parsed.g, parsed.b);
       return luminance < 0.5;
     }
     return false;
-  }
-  function isElementOnDarkBackground(element) {
-    return checkIsDarkColor(getElementBackgroundColor(element));
   }
 
   // src/content/text-utils.js
@@ -3461,8 +3520,8 @@ ${userDesc || "未提供具體描述"}`;
         const detectedColor = getElementBackgroundColor(parent);
         if (detectedColor) {
           bgColor = detectedColor;
-          isDark = checkIsDarkColor(detectedColor);
         }
+        isDark = isElementOnDarkBackground(parent);
       }
       if (isDark) {
         popup.classList.add("dark-bg");

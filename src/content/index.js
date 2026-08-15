@@ -4,7 +4,7 @@
  */
 
 import { renderMarkdown } from './markdown.js';
-import { getElementBackgroundColor, checkIsDarkColor, isElementOnDarkBackground } from './colors.js';
+import { getElementBackgroundColor, isElementOnDarkBackground } from './colors.js';
 import { convertToSuperscriptTone } from './text-utils.js';
 import { isEditableElement, hasEditableFocus, getCaretRangeFromPointInShadow, getAccurateOffset } from './dom.js';
 import { createBlobUrlFromDataUri } from './tts.js';
@@ -3509,8 +3509,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const detectedColor = getElementBackgroundColor(parent);
       if (detectedColor) {
         bgColor = detectedColor;
-        isDark = checkIsDarkColor(detectedColor);
       }
+      isDark = isElementOnDarkBackground(parent);
     }
     
     if (isDark) {

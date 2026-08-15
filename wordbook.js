@@ -262,7 +262,15 @@
       wordbookTrashEmptyTitle: '廢紙簍為空',
       wordbookTrashEmptyDesc: '沒有已刪除的生詞',
       wordbookMovedToTrash: '已移至廢紙簍',
-      wordbookRestored: '已還原'
+      wordbookRestored: '已還原',
+      wordbookTabContextMenu: '右鍵搜尋',
+      wordbookContextMenuDesc: '自訂在生詞本中右鍵點擊單詞時彈出的第三方詞典與搜尋引擎，支援使用 {word} 作為單詞佔位符。',
+      wordbookAddSearchEngine: '添加新搜尋源',
+      wordbookRestoreSearchEngines: '恢復預設搜尋源',
+      wordbookEngineNamePlaceholder: '搜尋源名稱 (如: Wiki 粵語詞典)',
+      wordbookEngineUrlPlaceholder: '搜尋 URL 範本 (如: https://.../{word})',
+      wordbookSearchSettings: '管理搜尋源...',
+      wordbookSearchPrefix: '搜尋'
     },
     'zh-CN': {
       wordbookAiSettingsTitle: 'AI 设置',
@@ -370,7 +378,15 @@
       wordbookTrashEmptyTitle: '废纸篓为空',
       wordbookTrashEmptyDesc: '没有已删除的生词',
       wordbookMovedToTrash: '已移至废纸篓',
-      wordbookRestored: '已还原'
+      wordbookRestored: '已还原',
+      wordbookTabContextMenu: '右键搜索',
+      wordbookContextMenuDesc: '自定义在生词本中右键点击单词时弹出的第三方词典与搜索引擎，支持使用 {word} 作为单词占位符。',
+      wordbookAddSearchEngine: '添加新搜索源',
+      wordbookRestoreSearchEngines: '恢复默认搜索源',
+      wordbookEngineNamePlaceholder: '搜索源名称 (如: Wiki 粤语词典)',
+      wordbookEngineUrlPlaceholder: '搜索 URL 模板 (如: https://.../{word})',
+      wordbookSearchSettings: '管理搜索源...',
+      wordbookSearchPrefix: '搜索'
     },
     'en': {
       wordbookAiSettingsTitle: 'AI Settings',
@@ -478,7 +494,15 @@
       wordbookTrashEmptyTitle: 'Trash is Empty',
       wordbookTrashEmptyDesc: 'No deleted words found',
       wordbookMovedToTrash: 'Moved to Trash',
-      wordbookRestored: 'Restored'
+      wordbookRestored: 'Restored',
+      wordbookTabContextMenu: 'Right-click Search',
+      wordbookContextMenuDesc: 'Customize third-party dictionaries and search engines for right-clicking words in the word book. Use {word} as placeholder.',
+      wordbookAddSearchEngine: 'Add New Search Engine',
+      wordbookRestoreSearchEngines: 'Restore Default Engines',
+      wordbookEngineNamePlaceholder: 'Engine Name (e.g. Wiki Cantonese)',
+      wordbookEngineUrlPlaceholder: 'Search URL Template (e.g. https://.../{word})',
+      wordbookSearchSettings: 'Manage Search Engines...',
+      wordbookSearchPrefix: 'Search'
     },
     'ja': {
       wordbookAiSettingsTitle: 'AI 設定',
@@ -586,7 +610,15 @@
       wordbookTrashEmptyTitle: 'ゴミ箱は空です',
       wordbookTrashEmptyDesc: '削除された単語はありません',
       wordbookMovedToTrash: 'ゴミ箱に移動しました',
-      wordbookRestored: '復元しました'
+      wordbookRestored: '復元しました',
+      wordbookTabContextMenu: '右クリック検索',
+      wordbookContextMenuDesc: '単語を右クリックしたときにポップアップする外部辞書や検索エンジンをカスタマイズします。{word} プレースホルダーに対応。',
+      wordbookAddSearchEngine: '新しい検索エンジンを追加',
+      wordbookRestoreSearchEngines: 'デフォルトに戻す',
+      wordbookEngineNamePlaceholder: 'エンジン名 (例: Wiki 広東語辞書)',
+      wordbookEngineUrlPlaceholder: '検索 URL テンプレート (例: https://.../{word})',
+      wordbookSearchSettings: '検索エンジンを管理...',
+      wordbookSearchPrefix: '検索'
     },
     'ko': {
       wordbookAiSettingsTitle: 'AI 설정',
@@ -693,7 +725,15 @@
       wordbookTrashEmptyTitle: '휴지통이 비어 있습니다',
       wordbookTrashEmptyDesc: '삭제된 단어가 없습니다',
       wordbookMovedToTrash: '휴지통으로 이동되었습니다',
-      wordbookRestored: '복원되었습니다'
+      wordbookRestored: '복원되었습니다',
+      wordbookTabContextMenu: '우클릭 검색',
+      wordbookContextMenuDesc: '단어를 우클릭할 때 팝업되는 외부 사전 및 검색 엔진을 설정합니다. {word} 플레이스홀더 지원.',
+      wordbookAddSearchEngine: '새 검색 엔진 추가',
+      wordbookRestoreSearchEngines: '기본값 복원',
+      wordbookEngineNamePlaceholder: '엔진 이름 (예: 위키 광둥어 사전)',
+      wordbookEngineUrlPlaceholder: '검색 URL 템플릿 (예: https://.../{word})',
+      wordbookSearchSettings: '검색 엔진 관리...',
+      wordbookSearchPrefix: '검색'
     }
   };
 
@@ -717,12 +757,31 @@
     { id: 'default4', isDefault: true, labelKey: 'wordbookAiAction4', promptKey: 'wordbookAiQuery4', active: true }
   ];
 
-  chrome.storage.local.get(['enableAiQuickActions', 'aiQuickActions', 'aiCustomSystemPrompt'], (result) => {
+  const DEFAULT_CONTEXT_MENU_ENGINES = [
+    { id: 'wiki', name: 'Wiki 粵語詞典', url: 'https://zh.wiktionary.org/wiki/{word}', active: true, icon: 'wiki' },
+    { id: 'wordshk', name: 'Words.hk 粵典', url: 'https://words.hk/zidian/v2/search?q={word}', active: true, icon: 'book' },
+    { id: 'sheik', name: '羊羊粵語詞典', url: 'https://shyyp.net/search?q={word}', active: true, icon: 'sheep' },
+    { id: 'twitter', name: 'X (Twitter) 搜尋', url: 'https://x.com/search?q="{word}"', active: true, icon: 'x' },
+    { id: 'google', name: 'Google 粵語搜尋', url: 'https://www.google.com/search?q={word}+粵語', active: false, icon: 'globe' }
+  ];
+
+  let globalContextMenuEngines = JSON.parse(JSON.stringify(DEFAULT_CONTEXT_MENU_ENGINES));
+
+  chrome.storage.local.get(['enableAiQuickActions', 'aiQuickActions', 'aiCustomSystemPrompt', 'customContextMenuEngines'], (result) => {
     if (result.enableAiQuickActions !== undefined) {
       globalEnableAiQuickActions = result.enableAiQuickActions;
     }
     if (result.aiQuickActions) {
       globalAiQuickActions = result.aiQuickActions;
+    }
+    if (result.customContextMenuEngines && Array.isArray(result.customContextMenuEngines) && result.customContextMenuEngines.length > 0) {
+      globalContextMenuEngines = result.customContextMenuEngines.map(e => {
+        if (e.id === 'twitter' && e.url === 'https://x.com/search?q={word}') {
+          return { ...e, url: 'https://x.com/search?q="{word}"' };
+        }
+        return e;
+      });
+      chrome.storage.local.set({ customContextMenuEngines: globalContextMenuEngines });
     }
     if (result.aiCustomSystemPrompt !== undefined) {
       let promptVal = result.aiCustomSystemPrompt || '';
@@ -740,6 +799,9 @@
     }
     if (changes.aiQuickActions) {
       globalAiQuickActions = changes.aiQuickActions.newValue;
+    }
+    if (changes.customContextMenuEngines) {
+      globalContextMenuEngines = changes.customContextMenuEngines.newValue || DEFAULT_CONTEXT_MENU_ENGINES;
     }
     if (changes.aiCustomSystemPrompt) {
       let newPromptVal = changes.aiCustomSystemPrompt.newValue || '';
@@ -3735,65 +3797,75 @@
   const aiQuickActionsListModal = document.getElementById('aiQuickActionsListModal');
   const addAiQuickActionBtnModal = document.getElementById('addAiQuickActionBtnModal');
   const restoreAiQuickActionsBtnModal = document.getElementById('restoreAiQuickActionsBtnModal');
+  const contextMenuEnginesListModal = document.getElementById('contextMenuEnginesListModal');
+  const addContextMenuEngineBtnModal = document.getElementById('addContextMenuEngineBtnModal');
+  const restoreContextMenuEnginesBtnModal = document.getElementById('restoreContextMenuEnginesBtnModal');
   const aiModalTabs = document.getElementById('aiModalTabs');
   const aiCustomPromptInputModal = document.getElementById('aiCustomPromptInputModal');
-const restoreAiPromptBtnModal = document.getElementById('restoreAiPromptBtnModal');
-const aiPromptSavedHint = document.getElementById('aiPromptSavedHint');
+  const restoreAiPromptBtnModal = document.getElementById('restoreAiPromptBtnModal');
+  const aiPromptSavedHint = document.getElementById('aiPromptSavedHint');
 
-let modalAiQuickActions = [];
+  let modalAiQuickActions = [];
+  let modalContextMenuEngines = [];
 
-function openAiSettingsModal() {
-  if (!aiSettingsModal) return;
-  
-  // Clone the global quick actions state for editing
-  modalAiQuickActions = JSON.parse(JSON.stringify(globalAiQuickActions));
-  
-  // Populate prompt textarea
-  if (aiCustomPromptInputModal) {
-    aiCustomPromptInputModal.value = globalAiCustomSystemPrompt || '';
-    if (!aiCustomPromptInputModal.value) {
-      aiCustomPromptInputModal.placeholder = DEFAULT_AI_SYSTEM_PROMPT;
+  function openAiSettingsModal(initialTab) {
+    if (!aiSettingsModal) return;
+    
+    // Clone states for editing
+    modalAiQuickActions = JSON.parse(JSON.stringify(globalAiQuickActions));
+    modalContextMenuEngines = JSON.parse(JSON.stringify(globalContextMenuEngines));
+    
+    // Populate prompt textarea
+    if (aiCustomPromptInputModal) {
+      aiCustomPromptInputModal.value = globalAiCustomSystemPrompt || '';
+      if (!aiCustomPromptInputModal.value) {
+        aiCustomPromptInputModal.placeholder = DEFAULT_AI_SYSTEM_PROMPT;
+      }
     }
+
+    const activeTabName = (typeof initialTab === 'string' && initialTab) ? initialTab : 'quick-actions';
+    if (aiModalTabs) {
+      aiModalTabs.querySelectorAll('.ai-modal-tab-btn').forEach((b) => {
+        b.classList.toggle('active', b.dataset.tab === activeTabName);
+      });
+      const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
+      const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
+      const tabPaneInteraction = document.getElementById('tabPaneInteraction');
+      const tabPaneContextMenu = document.getElementById('tabPaneContextMenu');
+      if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', activeTabName === 'quick-actions');
+      if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', activeTabName === 'custom-prompt');
+      if (tabPaneInteraction) tabPaneInteraction.classList.toggle('active', activeTabName === 'interaction');
+      if (tabPaneContextMenu) tabPaneContextMenu.classList.toggle('active', activeTabName === 'context-menu');
+    }
+
+    const aiHoverPronunciationToggle = document.getElementById('aiHoverPronunciationToggle');
+    if (aiHoverPronunciationToggle) {
+      aiHoverPronunciationToggle.checked = aiHoverPronunciationEnabled;
+    }
+
+    renderAiSettingsList();
+    renderContextMenuEnginesListModal();
+    aiSettingsModal.classList.add('show');
+    document.body.classList.add('modal-open');
   }
 
-  // Reset to default tab (quick-actions)
-  if (aiModalTabs) {
-    aiModalTabs.querySelectorAll('.ai-modal-tab-btn').forEach((b, idx) => {
-      b.classList.toggle('active', idx === 0);
+  function closeAiSettingsModal() {
+    if (!aiSettingsModal) return;
+    aiSettingsModal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    
+    globalAiQuickActions = modalAiQuickActions;
+    globalContextMenuEngines = modalContextMenuEngines;
+    
+    if (aiCustomPromptInputModal) {
+      globalAiCustomSystemPrompt = aiCustomPromptInputModal.value.trim();
+    }
+
+    chrome.storage.local.set({ 
+      aiQuickActions: globalAiQuickActions,
+      aiCustomSystemPrompt: globalAiCustomSystemPrompt,
+      customContextMenuEngines: globalContextMenuEngines
     });
-    const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
-    const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
-    const tabPaneInteraction = document.getElementById('tabPaneInteraction');
-    if (tabPaneQuickActions) tabPaneQuickActions.classList.add('active');
-    if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.remove('active');
-    if (tabPaneInteraction) tabPaneInteraction.classList.remove('active');
-  }
-
-  const aiHoverPronunciationToggle = document.getElementById('aiHoverPronunciationToggle');
-  if (aiHoverPronunciationToggle) {
-    aiHoverPronunciationToggle.checked = aiHoverPronunciationEnabled;
-  }
-
-  renderAiSettingsList();
-  aiSettingsModal.classList.add('show');
-  document.body.classList.add('modal-open');
-}
-
-function closeAiSettingsModal() {
-  if (!aiSettingsModal) return;
-  aiSettingsModal.classList.remove('show');
-  document.body.classList.remove('modal-open');
-  
-  globalAiQuickActions = modalAiQuickActions;
-  
-  if (aiCustomPromptInputModal) {
-    globalAiCustomSystemPrompt = aiCustomPromptInputModal.value.trim();
-  }
-
-  chrome.storage.local.set({ 
-    aiQuickActions: globalAiQuickActions,
-    aiCustomSystemPrompt: globalAiCustomSystemPrompt
-  });
   
   // Re-render the quick actions bar if we are on a word detail view
   const detailPane = document.getElementById('detailPane');
@@ -3973,6 +4045,22 @@ if (aiFeedbackForm) {
   });
 }
 
+// Helper to locate scrollable element within modal
+function findModalScrollableParent(el, rootModal) {
+  let current = el;
+  while (current && current !== rootModal && current !== document.body) {
+    if (current.id === 'aiQuickActionsListModal' || current.id === 'contextMenuEnginesListModal' || current.classList.contains('ai-prompt-textarea')) {
+      return current;
+    }
+    const style = window.getComputedStyle(current);
+    if ((style.overflowY === 'auto' || style.overflowY === 'scroll') && current.scrollHeight > current.clientHeight) {
+      return current;
+    }
+    current = current.parentElement;
+  }
+  return null;
+}
+
 // Prevent wheel scrolling inside modal from bubbling / chaining to the background page
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('wheel', (e) => {
@@ -3982,7 +4070,7 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
       e.preventDefault();
       return;
     }
-    const scrollable = e.target.closest('#aiQuickActionsListModal, .ai-prompt-textarea, .modal');
+    const scrollable = findModalScrollableParent(e.target, modal);
     if (scrollable) {
       const { scrollTop, scrollHeight, clientHeight } = scrollable;
       const atTop = scrollTop <= 0 && e.deltaY < 0;
@@ -4007,9 +4095,11 @@ if (aiModalTabs) {
     const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
     const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
     const tabPaneInteraction = document.getElementById('tabPaneInteraction');
+    const tabPaneContextMenu = document.getElementById('tabPaneContextMenu');
     if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', targetTab === 'quick-actions');
     if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', targetTab === 'custom-prompt');
     if (tabPaneInteraction) tabPaneInteraction.classList.toggle('active', targetTab === 'interaction');
+    if (tabPaneContextMenu) tabPaneContextMenu.classList.toggle('active', targetTab === 'context-menu');
   });
 }
 
@@ -4168,6 +4258,248 @@ if (restoreAiQuickActionsBtnModal) {
       ];
       modalAiQuickActions = JSON.parse(JSON.stringify(defaultAiQuickActions));
       renderAiSettingsList();
+    }
+  });
+}
+
+function renderContextMenuEnginesListModal() {
+  if (!contextMenuEnginesListModal) return;
+  contextMenuEnginesListModal.innerHTML = '';
+
+  modalContextMenuEngines.forEach((engine, index) => {
+    const cardDiv = document.createElement('div');
+    cardDiv.className = 'cm-engine-card';
+
+    const topRow = document.createElement('div');
+    topRow.className = 'cm-engine-row-top';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = !!engine.active;
+    checkbox.className = 'ai-action-checkbox';
+    checkbox.title = '啟用/停用此搜尋源';
+    checkbox.addEventListener('change', () => {
+      engine.active = checkbox.checked;
+    });
+
+    const nameInput = document.createElement('input');
+    nameInput.type = 'text';
+    nameInput.value = engine.name || '';
+    nameInput.className = 'cm-engine-input cm-engine-input-name';
+    nameInput.placeholder = t('wordbookEngineNamePlaceholder') || '搜尋源名稱 (如: Wiki 粵語詞典)';
+    nameInput.addEventListener('change', () => {
+      engine.name = nameInput.value.trim();
+    });
+
+    const delBtn = document.createElement('button');
+    delBtn.className = 'ai-action-del-btn';
+    delBtn.title = '刪除此搜尋源';
+    delBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+    delBtn.addEventListener('click', () => {
+      modalContextMenuEngines.splice(index, 1);
+      renderContextMenuEnginesListModal();
+    });
+
+    topRow.appendChild(checkbox);
+    topRow.appendChild(nameInput);
+    topRow.appendChild(delBtn);
+
+    const bottomRow = document.createElement('div');
+    const urlInput = document.createElement('input');
+    urlInput.type = 'text';
+    urlInput.value = engine.url || '';
+    urlInput.className = 'cm-engine-input cm-engine-input-url';
+    urlInput.placeholder = t('wordbookEngineUrlPlaceholder') || '搜尋 URL 範本 (如: https://.../{word})';
+    urlInput.addEventListener('change', () => {
+      engine.url = urlInput.value.trim();
+    });
+    bottomRow.appendChild(urlInput);
+
+    cardDiv.appendChild(topRow);
+    cardDiv.appendChild(bottomRow);
+
+    contextMenuEnginesListModal.appendChild(cardDiv);
+  });
+}
+
+if (addContextMenuEngineBtnModal) {
+  addContextMenuEngineBtnModal.addEventListener('click', () => {
+    modalContextMenuEngines.push({
+      id: 'custom_' + Date.now(),
+      name: '',
+      url: 'https://',
+      active: true,
+      icon: 'globe'
+    });
+    renderContextMenuEnginesListModal();
+    if (contextMenuEnginesListModal) {
+      setTimeout(() => {
+        contextMenuEnginesListModal.scrollTo({
+          top: contextMenuEnginesListModal.scrollHeight,
+          behavior: 'smooth'
+        });
+        const lastCard = contextMenuEnginesListModal.lastElementChild;
+        if (lastCard) {
+          const nameInput = lastCard.querySelector('.cm-engine-input-name');
+          if (nameInput) nameInput.focus();
+        }
+      }, 30);
+    }
+  });
+}
+
+if (restoreContextMenuEnginesBtnModal) {
+  restoreContextMenuEnginesBtnModal.addEventListener('click', () => {
+    if (confirm((t('wordbookRestoreSearchEngines') || '恢復預設搜尋源') + '？')) {
+      modalContextMenuEngines = JSON.parse(JSON.stringify(DEFAULT_CONTEXT_MENU_ENGINES));
+      renderContextMenuEnginesListModal();
+    }
+  });
+}
+
+// ==================== Custom Right-Click Context Menu Logic ====================
+const customContextMenu = document.getElementById('customContextMenu');
+const contextMenuWordDisplay = document.getElementById('contextMenuWordDisplay');
+const contextMenuList = document.getElementById('contextMenuList');
+const contextMenuSettingsBtn = document.getElementById('contextMenuSettingsBtn');
+
+let currentContextMenuWord = '';
+
+function getEngineIconSVG(iconType) {
+  switch (iconType) {
+    case 'wiki':
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+    case 'book':
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>`;
+    case 'sheep':
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon><path d="M15.54 8.46a5 5 0 0 1 0 7.07"></path><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path></svg>`;
+    case 'x':
+      return `<svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>`;
+    default:
+      return `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>`;
+  }
+}
+
+function showCustomContextMenu(x, y, wordStr) {
+  if (!customContextMenu || !wordStr) return;
+  currentContextMenuWord = wordStr.trim();
+  if (!currentContextMenuWord) return;
+
+  if (contextMenuWordDisplay) {
+    contextMenuWordDisplay.textContent = `${t('wordbookSearchPrefix') || '搜尋'}「${currentContextMenuWord}」`;
+  }
+
+  const activeEngines = (globalContextMenuEngines || DEFAULT_CONTEXT_MENU_ENGINES).filter(e => e.active);
+  if (contextMenuList) {
+    if (activeEngines.length === 0) {
+      contextMenuList.innerHTML = `<div style="padding: 8px 12px; font-size: 12px; color: var(--text-muted); text-align: center;">尚未啟用搜尋源</div>`;
+    } else {
+      contextMenuList.innerHTML = activeEngines.map((engine) => {
+        const iconHtml = getEngineIconSVG(engine.icon || 'globe');
+        return `
+          <button class="context-menu-item" data-id="${engine.id}">
+            <div class="context-menu-item-left">
+              <span class="context-menu-item-icon">${iconHtml}</span>
+              <span class="context-menu-item-name">${escapeHtml(engine.name || '搜尋')}</span>
+            </div>
+            <svg class="context-menu-item-arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="7" y1="17" x2="17" y2="7"></line><polyline points="7 7 17 7 17 17"></polyline></svg>
+          </button>
+        `;
+      }).join('');
+
+      contextMenuList.querySelectorAll('.context-menu-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const engineId = btn.dataset.id;
+          const engine = activeEngines.find(e => e.id === engineId);
+          if (engine && engine.url) {
+            const searchUrl = engine.url.replace(/\{word\}/gi, encodeURIComponent(currentContextMenuWord));
+            window.open(searchUrl, '_blank');
+          }
+          hideCustomContextMenu();
+        });
+      });
+    }
+  }
+
+  customContextMenu.style.display = 'flex';
+  customContextMenu.style.visibility = 'hidden';
+  customContextMenu.style.left = '0px';
+  customContextMenu.style.top = '0px';
+
+  requestAnimationFrame(() => {
+    const menuRect = customContextMenu.getBoundingClientRect();
+    const winW = window.innerWidth;
+    const winH = window.innerHeight;
+
+    let posX = x;
+    let posY = y;
+
+    if (posX + menuRect.width > winW - 12) {
+      posX = Math.max(12, winW - menuRect.width - 12);
+    }
+    if (posY + menuRect.height > winH - 12) {
+      posY = Math.max(12, posY - menuRect.height);
+    }
+
+    customContextMenu.style.left = `${posX}px`;
+    customContextMenu.style.top = `${posY}px`;
+    customContextMenu.style.visibility = 'visible';
+  });
+}
+
+function hideCustomContextMenu() {
+  if (customContextMenu) {
+    customContextMenu.style.display = 'none';
+  }
+}
+
+document.addEventListener('click', (e) => {
+  if (customContextMenu && customContextMenu.style.display !== 'none') {
+    if (!customContextMenu.contains(e.target)) {
+      hideCustomContextMenu();
+    }
+  }
+});
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    hideCustomContextMenu();
+  }
+});
+
+if (contextMenuSettingsBtn) {
+  contextMenuSettingsBtn.addEventListener('click', () => {
+    hideCustomContextMenu();
+    openAiSettingsModal('context-menu');
+  });
+}
+
+// Right-click listener on word rows in table
+if (wordListEl) {
+  wordListEl.addEventListener('contextmenu', (e) => {
+    const row = e.target.closest('.table-row.word-card');
+    if (!row) return;
+    const wordId = row.dataset.id;
+    const targetWord = wordbook.find(w => w.id === wordId);
+    const wordText = targetWord ? targetWord.character : (row.querySelector('.col-char .word-text')?.textContent || '');
+    if (wordText) {
+      e.preventDefault();
+      showCustomContextMenu(e.clientX, e.clientY, wordText);
+    }
+  });
+}
+
+// Right-click listener on detail pane title if opened
+const detailPaneElement = document.getElementById('detailPane');
+if (detailPaneElement) {
+  detailPaneElement.addEventListener('contextmenu', (e) => {
+    const wordHeader = e.target.closest('.word-section, .dict-character-title, .dict-jyutping-title');
+    if (wordHeader) {
+      const activeWord = detailPaneElement.dataset.activeWord;
+      if (activeWord) {
+        e.preventDefault();
+        showCustomContextMenu(e.clientX, e.clientY, activeWord);
+      }
     }
   });
 }

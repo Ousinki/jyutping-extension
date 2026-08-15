@@ -1832,6 +1832,197 @@
         cursor: pointer;
       }
 
+      /* ========== Custom Right-Click Context Menu ========== */
+      .custom-context-menu {
+        position: fixed;
+        z-index: 10000;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: 0 12px 36px -4px rgba(0, 0, 0, 0.18), 0 0 0 1px rgba(0, 0, 0, 0.04);
+        padding: 6px;
+        min-width: 220px;
+        max-width: 280px;
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        user-select: none;
+      }
+
+      .custom-context-menu-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 8px 4px 8px;
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .context-menu-word-tag {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        color: var(--primary);
+        line-height: 1.2;
+      }
+
+      .context-menu-word-text {
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text-primary);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .custom-context-menu-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 4px 2px;
+        opacity: 0.7;
+      }
+
+      .custom-context-menu-list {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+
+      .context-menu-item {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        padding: 7px 10px;
+        border-radius: 8px;
+        font-size: 13px;
+        color: var(--text-primary);
+        cursor: pointer;
+        text-decoration: none;
+        transition: background 0.15s ease, color 0.15s ease, transform 0.1s ease;
+        border: none;
+        background: transparent;
+        width: 100%;
+        text-align: left;
+        box-sizing: border-box;
+      }
+
+      .context-menu-item:hover {
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        color: var(--primary);
+      }
+
+      .context-menu-item-left {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        overflow: hidden;
+      }
+
+      .context-menu-item-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+        opacity: 0.85;
+      }
+
+      .context-menu-item-name {
+        font-weight: 500;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .context-menu-item-arrow {
+        font-size: 11px;
+        opacity: 0.45;
+        flex-shrink: 0;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+
+      .context-menu-item:hover .context-menu-item-arrow {
+        opacity: 0.9;
+        transform: translate(2px, -2px);
+      }
+
+      .custom-context-menu-footer {
+        padding: 2px 0 0 0;
+      }
+
+      .context-menu-footer-btn {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        width: 100%;
+        padding: 6px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        color: var(--text-muted);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-sizing: border-box;
+      }
+
+      .context-menu-footer-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+
+      .cm-engine-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .cm-engine-card:hover {
+        border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+      }
+
+      .cm-engine-row-top {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .cm-engine-input {
+        flex: 1;
+        height: 32px;
+        padding: 0 10px;
+        font-size: 13px;
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        background: var(--bg-input);
+        color: var(--text-primary);
+        outline: none;
+        transition: border-color 0.15s ease;
+      }
+
+      .cm-engine-input:focus {
+        border-color: var(--primary);
+      }
+
+      .cm-engine-input-url {
+        font-family: monospace;
+        font-size: 12px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+
       .table-row .col-char,
       .table-row .col-jyutping,
       .table-row .col-yale {
@@ -2184,7 +2375,8 @@
         overscroll-behavior: contain;
       }
 
-      #aiQuickActionsListModal {
+      #aiQuickActionsListModal,
+      #contextMenuEnginesListModal {
         overscroll-behavior: contain;
       }
 
@@ -3074,6 +3266,7 @@
           <button class="ai-modal-tab-btn active" data-tab="quick-actions" data-i18n="wordbookAiTabQuickActions">快捷指令</button>
           <button class="ai-modal-tab-btn" data-tab="custom-prompt" data-i18n="wordbookAiTabCustomPrompt">全域 Prompt</button>
           <button class="ai-modal-tab-btn" data-tab="interaction" data-i18n="wordbookAiTabInteraction">交互設定</button>
+          <button class="ai-modal-tab-btn" data-tab="context-menu" data-i18n="wordbookTabContextMenu">右鍵搜尋</button>
         </div>
 
         <!-- Tab 1: Quick Actions -->
@@ -3134,6 +3327,27 @@
               <input type="checkbox" id="aiHoverPronunciationToggle" checked>
               <span class="toggle-slider"></span>
             </label>
+          </div>
+        </div>
+
+        <!-- Tab 4: Context Menu Search Engines -->
+        <div class="ai-modal-tab-pane" id="tabPaneContextMenu">
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;" data-i18n="wordbookContextMenuDesc">
+            自訂在生詞本中右鍵點擊單詞時彈出的第三方詞典與搜尋引擎，支援使用 {word} 作為單詞佔位符。
+          </p>
+
+          <div id="contextMenuEnginesListModal" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding-right: 4px;">
+            <!-- Dynamically populated by wordbook.js -->
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: auto; flex-shrink: 0;">
+            <button id="addContextMenuEngineBtnModal" class="wordbook-btn" style="flex: 1; justify-content: center; background: transparent; color: var(--text-primary); border: 1px dashed var(--border);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span data-i18n="wordbookAddSearchEngine">添加新搜尋源</span>
+            </button>
+            <button id="restoreContextMenuEnginesBtnModal" class="wordbook-btn" style="padding: 0 12px; background: transparent; color: var(--text-muted); border: 1px solid transparent;" title="恢復預設搜尋源">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </button>
           </div>
         </div>
       </div>
@@ -3257,6 +3471,28 @@
           <path d="M3 3v5h5"></path>
         </svg>
         <span>重置為默認列寬及順序</span>
+      </div>
+    </div>
+
+    <!-- Custom Context Menu for Word Character Search -->
+    <div class="custom-context-menu" id="customContextMenu" style="display: none;">
+      <div class="custom-context-menu-header">
+        <span class="context-menu-word-tag">詞</span>
+        <span class="context-menu-word-text" id="contextMenuWordDisplay"></span>
+      </div>
+      <div class="custom-context-menu-divider"></div>
+      <div class="custom-context-menu-list" id="contextMenuList">
+        <!-- Rendered dynamically by wordbook.js -->
+      </div>
+      <div class="custom-context-menu-divider"></div>
+      <div class="custom-context-menu-footer">
+        <button class="context-menu-footer-btn" id="contextMenuSettingsBtn">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <span data-i18n="wordbookSearchSettings">管理搜尋源...</span>
+        </button>
       </div>
     </div>
 
