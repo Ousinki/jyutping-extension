@@ -737,5 +737,137 @@
   },
   "wordbookEmptyDetail": {
     "message": "左側の単語をクリックして<br>辞書の詳細を表示します"
+  },
+  "wordbookModeWord": {
+    "message": "単語"
+  },
+  "wordbookModeDict": {
+    "message": "辞書"
+  },
+  "wordbookExportJson": {
+    "message": "JSON (完全バックアップ)"
+  },
+  "wordbookExportCsv": {
+    "message": "CSV (Excel 互換)"
+  },
+  "wordbookExportMd": {
+    "message": "Markdown"
+  },
+  "wordbookExportTxt": {
+    "message": "プレーンテキスト"
+  },
+  "wordbookExportImport": {
+    "message": "インポート..."
+  },
+  "dictSearchFallback": {
+    "message": "📖 辞書検索"
+  },
+  "dictSearchEmpty": {
+    "message": "辞書に一致する結果が見つかりませんでした"
+  },
+  "dictSearchNoDetail": {
+    "message": "辞書に <strong>$1</strong> の詳細な定義が見つかりません。"
+  },
+  "wordbookAiChat": {
+    "message": "❇️ AI Q&A"
+  },
+  "wordbookAiAction1": {
+    "message": "例文"
+  },
+  "wordbookAiAction2": {
+    "message": "語源"
+  },
+  "wordbookAiAction3": {
+    "message": "日常の用法"
+  },
+  "wordbookAiAction4": {
+    "message": "類義/対義"
+  },
+  "wordbookAiInputPlaceholder": {
+    "message": "「$1」について質問する..."
+  },
+  "wordbookAiInputPlaceholderGeneric": {
+    "message": "広東語について質問する..."
+  },
+  "wordbookEmptyDetail1": {
+    "message": "左の単語をクリックして詳細を表示"
+  },
+  "wordbookEmptyDetail2": {
+    "message": "または直接下で質問する"
+  },
+  "wordbookAiSettingsTitle": {
+    "message": "AI 設定"
+  },
+  "optAutoTranslateYueDefs": {
+    "message": "広東語の解説を自動翻訳"
+  },
+  "optAutoTranslateYueDefsDesc": {
+    "message": "ポップアップや単語帳の [粵] 口語解説を自動で翻訳します"
+  },
+  "optAutoTranslateYueDefsTarget": {
+    "message": "広東語解説の翻訳先言語"
+  },
+  "optAutoTranslateYueDefsEngine": {
+    "message": "広東語解説の翻訳エンジン"
+  },
+  "badgeClickToTranslate": {
+    "message": "クリックしてこの解説を翻訳"
+  },
+  "badgeTranslating": {
+    "message": "翻訳中..."
+  },
+  "optYueDefDisplayMode": {
+    "message": "広東語解説の翻訳表示モード"
+  },
+  "optYueDefDisplayModeDesc": {
+    "message": "翻訳結果を原文の下に展開するか、直接元の位置で置き換えるかを選択します"
+  },
+  "optYueDefDisplayModeExpand": {
+    "message": "下に展開"
+  },
+  "optYueDefDisplayModeReplace": {
+    "message": "その場で置換"
+  },
+  "badgeClickToRestore": {
+    "message": "クリックして広東語の原文に戻す"
+  },
+  "optYueDefSectionTitle": {
+    "message": "広東語口語釈義の翻訳"
+  },
+  "optYueDefSectionDesc": {
+    "message": "[粵] タグが付いた口語の定義は、バッジをクリックして即時翻訳するか、自動翻訳を有効にできます"
+  },
+  "optAutoTranslateYueDefsTargetDesc": {
+    "message": "口語定義のデフォルト翻訳言語を選択します"
+  },
+  "optAutoTranslateYueDefsEngineDesc": {
+    "message": "口語定義の翻訳に使用するエンジンを選択します"
+  },
+  "optRoadmapTitle": {
+    "message": "学習ロードマップ"
+  },
+  "optRoadmapSectionTitle": {
+    "message": "広東語学習ロードマップと厳選リソース"
+  },
+  "optRoadmapSectionDesc": {
+    "message": "標準発音チュートリアル、権威ある辞書、入力方式、リスニング素材を厳選"
+  },
+  "optRoadmapFilterAll": {
+    "message": "すべて"
+  },
+  "optRoadmapFilterPhonetics": {
+    "message": "発音入門"
+  },
+  "optRoadmapFilterDict": {
+    "message": "権威辞書"
+  },
+  "optRoadmapFilterTool": {
+    "message": "実用ツール"
+  },
+  "optRoadmapFilterInput": {
+    "message": "入力方式"
+  },
+  "optRoadmapFilterReading": {
+    "message": "読解・音声"
   }
 }

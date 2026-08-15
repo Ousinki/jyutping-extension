@@ -758,5 +758,137 @@
   },
   "wordbookEmptyDetail": {
     "message": "点击左侧单词<br>查看详细词典释义"
+  },
+  "wordbookModeWord": {
+    "message": "生词"
+  },
+  "wordbookModeDict": {
+    "message": "词典"
+  },
+  "wordbookExportJson": {
+    "message": "JSON (完整备份)"
+  },
+  "wordbookExportCsv": {
+    "message": "CSV (Excel 兼容)"
+  },
+  "wordbookExportMd": {
+    "message": "Markdown"
+  },
+  "wordbookExportTxt": {
+    "message": "纯文本 TXT"
+  },
+  "wordbookExportImport": {
+    "message": "导入..."
+  },
+  "dictSearchFallback": {
+    "message": "📖 词典搜索"
+  },
+  "dictSearchEmpty": {
+    "message": "未在词典中找到匹配结果"
+  },
+  "dictSearchNoDetail": {
+    "message": "词典中未找到 <strong>$1</strong> 的详细释义。"
+  },
+  "wordbookAiChat": {
+    "message": "❇️ AI 问答"
+  },
+  "wordbookAiAction1": {
+    "message": "造句"
+  },
+  "wordbookAiAction2": {
+    "message": "语源"
+  },
+  "wordbookAiAction3": {
+    "message": "日常用法"
+  },
+  "wordbookAiAction4": {
+    "message": "近义反义"
+  },
+  "wordbookAiInputPlaceholder": {
+    "message": "问关于“$1”的问题..."
+  },
+  "wordbookAiInputPlaceholderGeneric": {
+    "message": "问任何关于粤语的问题..."
+  },
+  "wordbookEmptyDetail1": {
+    "message": "点击左侧单词查看详情"
+  },
+  "wordbookEmptyDetail2": {
+    "message": "或直接在下方提问"
+  },
+  "wordbookAiSettingsTitle": {
+    "message": "AI 设置"
+  },
+  "optAutoTranslateYueDefs": {
+    "message": "自动翻译粤语口语释义"
+  },
+  "optAutoTranslateYueDefsDesc": {
+    "message": "在悬浮窗与生词本中自动将 [粤] 口语释义翻译为目标语言"
+  },
+  "optAutoTranslateYueDefsTarget": {
+    "message": "粤语释义目标语言"
+  },
+  "optAutoTranslateYueDefsEngine": {
+    "message": "粤语释义翻译引擎"
+  },
+  "badgeClickToTranslate": {
+    "message": "点击翻译此释义"
+  },
+  "badgeTranslating": {
+    "message": "翻译中..."
+  },
+  "optYueDefDisplayMode": {
+    "message": "粤语释义翻译显示方式"
+  },
+  "optYueDefDisplayModeDesc": {
+    "message": "选择翻译结果是展开于下方还是直接原位覆盖原文"
+  },
+  "optYueDefDisplayModeExpand": {
+    "message": "下方展开"
+  },
+  "optYueDefDisplayModeReplace": {
+    "message": "原位替换"
+  },
+  "badgeClickToRestore": {
+    "message": "点击切换回粤语原文"
+  },
+  "optYueDefSectionTitle": {
+    "message": "粤语口语释义翻译"
+  },
+  "optYueDefSectionDesc": {
+    "message": "词典中带有 [粤] 标签的口语词条，可点击徽章即时翻译或开启自动翻译"
+  },
+  "optAutoTranslateYueDefsTargetDesc": {
+    "message": "选择口语释义默认翻译成的语言"
+  },
+  "optAutoTranslateYueDefsEngineDesc": {
+    "message": "选择用于翻译口语释义的引擎"
+  },
+  "optRoadmapTitle": {
+    "message": "学习导航"
+  },
+  "optRoadmapSectionTitle": {
+    "message": "粤语学习导航"
+  },
+  "optRoadmapSectionDesc": {
+    "message": "精选权威拼音教程、查词辞书、输入法与听力语料，助你系统掌握地道粤语"
+  },
+  "optRoadmapFilterAll": {
+    "message": "全部"
+  },
+  "optRoadmapFilterPhonetics": {
+    "message": "拼音入门"
+  },
+  "optRoadmapFilterDict": {
+    "message": "权威辞书"
+  },
+  "optRoadmapFilterTool": {
+    "message": "实用工具"
+  },
+  "optRoadmapFilterInput": {
+    "message": "输入法"
+  },
+  "optRoadmapFilterReading": {
+    "message": "听读进阶"
   }
 }

@@ -22,6 +22,7 @@
         --bg-page: #f8fafc;
         --bg-card: #ffffff;
         --bg-input: #f1f5f9;
+        --bg-hover: #f1f5f9;
         --text-primary: #1e293b;
         --text-secondary: #64748b;
         --text-muted: #94a3b8;
@@ -40,6 +41,7 @@
         --bg-page: #0f172a;
         --bg-card: #1e293b;
         --bg-input: #334155;
+        --bg-hover: #243044;
         --text-primary: #f8fafc;
         --text-secondary: #cbd5e1;
         --text-muted: #94a3b8;
@@ -307,6 +309,257 @@
       }
       .ai-response-bubble em {
         font-style: italic;
+      }
+
+      /* AI Rich Structured Response (Word Capsules & Sentence Speakers) */
+      .ai-word-capsule {
+        display: inline-flex;
+        align-items: baseline;
+        gap: 4px;
+        margin: 0 3px;
+        padding: 1px 7px;
+        background: color-mix(in srgb, var(--primary) 10%, var(--bg-card));
+        border: 1px solid color-mix(in srgb, var(--primary) 25%, transparent);
+        border-radius: 6px;
+        font-size: 13px;
+        color: var(--text-primary);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.15s ease;
+        vertical-align: middle;
+      }
+      .ai-word-capsule:hover {
+        background: color-mix(in srgb, var(--primary) 18%, var(--bg-card));
+        border-color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+      }
+      .ai-word-capsule .capsule-word {
+        font-weight: 600;
+        color: var(--primary);
+      }
+      .ai-word-capsule .capsule-jyutping {
+        font-size: 11px;
+        font-family: monospace;
+        color: var(--text-muted);
+      }
+      :root[data-theme="dark"] .ai-word-capsule {
+        background: color-mix(in srgb, var(--primary) 18%, var(--bg-card));
+        border-color: color-mix(in srgb, var(--primary) 35%, transparent);
+      }
+      :root[data-theme="dark"] .ai-word-capsule .capsule-word {
+        color: #f87171;
+      }
+
+      .ai-sentence-tts-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        margin-left: 6px;
+        padding: 2px 4px;
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 4px;
+        vertical-align: middle;
+        transition: all 0.15s ease;
+      }
+      .ai-sentence-tts-btn:hover {
+        color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+        transform: scale(1.1);
+      }
+      :root[data-theme="dark"] .ai-sentence-tts-btn:hover {
+        color: #f87171;
+      }
+      .ai-sentence-translation {
+        color: var(--text-secondary);
+        font-size: 12px;
+        margin-left: 4px;
+      }
+
+      /* AI 回答框與消息區選中文本主題樣式 (Themed Text Selection) */
+      .ai-response-bubble ::selection,
+      .ai-response-content ::selection,
+      #aiResponseArea ::selection,
+      #wordDetailAiResponseArea ::selection {
+        background: color-mix(in srgb, var(--primary) 22%, transparent);
+        color: var(--text-primary);
+        text-shadow: none;
+      }
+      :root[data-theme="dark"] .ai-response-bubble ::selection,
+      :root[data-theme="dark"] .ai-response-content ::selection,
+      :root[data-theme="dark"] #aiResponseArea ::selection,
+      :root[data-theme="dark"] #wordDetailAiResponseArea ::selection {
+        background: color-mix(in srgb, #f87171 32%, transparent);
+        color: #ffffff;
+        text-shadow: none;
+      }
+
+      /* AI 劃詞懸浮發音工具條 (Floating Selection TTS Toolbar) - Unified Single Pill */
+      .ai-selection-toolbar {
+        --tb-bg: rgba(255, 255, 255, 0.95);
+        --tb-border: rgba(203, 213, 225, 0.9);
+        --tb-color: var(--primary);
+        --tb-hover-bg: color-mix(in srgb, var(--primary) 8%, #ffffff);
+        --tb-hover-border: color-mix(in srgb, var(--primary) 30%, transparent);
+
+        position: fixed;
+        z-index: 10000;
+        display: none;
+        align-items: center;
+        background: var(--tb-bg);
+        border: 1px solid var(--tb-border);
+        border-radius: 9999px;
+        padding: 4px 10px 4px 8px;
+        box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
+        backdrop-filter: blur(16px) saturate(180%);
+        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        transform: translate(-50%, -100%);
+        margin-top: -8px;
+        user-select: none;
+        pointer-events: auto;
+        opacity: 0;
+        cursor: pointer;
+        transition: opacity 0.15s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease, border-color 0.15s ease;
+      }
+      .ai-selection-toolbar.is-visible {
+        display: flex;
+        opacity: 1;
+        transform: translate(-50%, -100%) scale(1);
+        animation: aiToolbarSpring 0.22s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      /* 底部指向小箭頭 (Caret Arrow - 放置在底层 z-index: -1，绝不遮挡按钮正面) */
+      .ai-selection-toolbar::after {
+        content: '';
+        position: absolute;
+        bottom: -4px;
+        left: 50%;
+        transform: translateX(-50%) rotate(45deg);
+        width: 8px;
+        height: 8px;
+        background: var(--tb-bg);
+        border-right: 1px solid var(--tb-border);
+        border-bottom: 1px solid var(--tb-border);
+        z-index: -1;
+        pointer-events: none;
+        transition: background 0.15s ease, border-color 0.15s ease;
+      }
+      .ai-selection-toolbar.is-flipped {
+        transform: translate(-50%, 0);
+        margin-top: 8px;
+      }
+      .ai-selection-toolbar.is-flipped::after {
+        bottom: auto;
+        top: -4px;
+        border-right: none;
+        border-bottom: none;
+        border-left: 1px solid var(--tb-border);
+        border-top: 1px solid var(--tb-border);
+      }
+
+      /* Hover 状态联动小箭头 */
+      .ai-selection-toolbar:hover {
+        background: var(--tb-hover-bg);
+        border-color: var(--tb-hover-border);
+        transform: translate(-50%, -100%) translateY(-1px);
+        box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.16), 0 4px 12px -2px color-mix(in srgb, var(--primary) 15%, transparent);
+      }
+      .ai-selection-toolbar:hover::after {
+        background: var(--tb-hover-bg);
+        border-color: var(--tb-hover-border);
+      }
+
+      .ai-selection-toolbar:active {
+        transform: translate(-50%, -100%) scale(0.96);
+      }
+
+      @keyframes aiToolbarSpring {
+        0% {
+          opacity: 0;
+          transform: translate(-50%, -80%) scale(0.88);
+        }
+        100% {
+          opacity: 1;
+          transform: translate(-50%, -100%) scale(1);
+        }
+      }
+
+      .ai-selection-tts-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: transparent;
+        border: none;
+        color: var(--tb-color);
+        font-size: 11.5px;
+        font-weight: 600;
+        letter-spacing: 0.2px;
+        padding: 0;
+        margin: 0;
+        cursor: pointer;
+        line-height: 1;
+        font-family: inherit;
+      }
+      .ai-selection-tts-btn svg {
+        width: 13px;
+        height: 13px;
+        display: block;
+        flex-shrink: 0;
+        transition: transform 0.15s ease;
+      }
+      .ai-selection-toolbar:hover .ai-selection-tts-btn svg {
+        transform: scale(1.1);
+      }
+
+      .ai-selection-tts-btn .tts-wave {
+        opacity: 0.35;
+        transition: opacity 0.2s ease;
+      }
+      .ai-selection-toolbar:hover .tts-wave {
+        opacity: 0.75;
+      }
+
+      /* 播放中温润声学状态 (Speaking state) */
+      .ai-selection-toolbar.speaking {
+        --tb-bg: color-mix(in srgb, var(--primary) 12%, #ffffff);
+        --tb-border: color-mix(in srgb, var(--primary) 35%, transparent);
+        box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--primary) 25%, transparent);
+      }
+      .ai-selection-toolbar.speaking .ai-selection-tts-btn {
+        color: var(--primary);
+      }
+      .ai-selection-toolbar.speaking .tts-wave-1 {
+        animation: ttsWaveRadiate 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+      .ai-selection-toolbar.speaking .tts-wave-2 {
+        animation: ttsWaveRadiate 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.28s;
+      }
+
+      @keyframes ttsWaveRadiate {
+        0%, 100% {
+          opacity: 0.25;
+        }
+        50% {
+          opacity: 1;
+        }
+      }
+
+      /* 暗色模式配色与小箭头完全同源，绝不出现白框 */
+      :root[data-theme="dark"] .ai-selection-toolbar {
+        --tb-bg: rgba(30, 41, 59, 0.94);
+        --tb-border: rgba(71, 85, 105, 0.85);
+        --tb-color: #f87171;
+        --tb-hover-bg: rgba(40, 53, 72, 0.98);
+        --tb-hover-border: rgba(248, 113, 113, 0.45);
+        box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+      }
+      :root[data-theme="dark"] .ai-selection-toolbar.speaking {
+        --tb-bg: rgba(45, 26, 30, 0.95);
+        --tb-border: rgba(248, 113, 113, 0.55);
+        box-shadow: 0 8px 24px -4px rgba(248, 113, 113, 0.28);
       }
 
       .ai-typing-indicator {
@@ -669,7 +922,7 @@
 
       .search-box input {
         width: 100%;
-        padding: 10px 70px 10px 36px;
+        padding: 10px 96px 10px 38px;
         border: 1px solid var(--border);
         border-radius: 8px;
         font-size: 14px;
@@ -686,7 +939,7 @@
 
       .search-box svg {
         position: absolute;
-        left: 10px;
+        left: 12px;
         top: 50%;
         transform: translateY(-50%);
         color: var(--text-muted);
@@ -696,7 +949,7 @@
       /* Search Mode Toggle */
       .search-mode-toggle {
         position: absolute;
-        right: 4px;
+        right: 8px;
         top: 50%;
         transform: translateY(-50%);
         display: flex;
@@ -947,7 +1200,7 @@
         padding: 12px 16px;
         border-bottom: 1px solid var(--border);
         transition: background-color var(--transition);
-        cursor: pointer;
+        cursor: default;
       }
       
       .table-row.active-row {
@@ -958,7 +1211,6 @@
 
       .table-header {
         display: grid;
-        grid-template-columns: 32px 100px 150px 1fr 85px;
         column-gap: 16px;
         align-items: center;
         padding: 12px 16px;
@@ -967,28 +1219,70 @@
         font-size: 13px;
         font-weight: 700;
         color: var(--text-muted);
+        border-top-left-radius: var(--radius);
+        border-top-right-radius: var(--radius);
       }
       .table-header > div {
         text-align: center;
         position: relative;
+        display: flex;
+        align-items: center;
+        justify-content: center;
       }
-      .table-header > div:not(:last-child)::after {
-        content: '';
+
+      /* Draggable column divider resizer - Full header height & high contrast */
+      .col-resizer {
         position: absolute;
-        top: 50%;
+        top: -12px;
+        bottom: -12px;
         right: -8px;
-        transform: translateY(-50%);
+        width: 16px;
+        cursor: col-resize;
+        user-select: none;
+        z-index: 20;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .col-resizer::after {
+        content: '';
         width: 1px;
-        height: 14px;
-        background-color: var(--border);
+        height: 100%;
+        background-color: #cbd5e1;
+        transition: background-color 0.15s ease, width 0.15s ease, box-shadow 0.15s ease;
+      }
+
+      :root[data-theme="dark"] .col-resizer::after {
+        background-color: #475569;
+      }
+
+      .col-resizer:hover::after,
+      .col-resizer.is-resizing::after {
+        background-color: var(--primary);
+        width: 2px;
+        box-shadow: 0 0 6px rgba(138, 28, 28, 0.4);
+      }
+
+      :root[data-theme="dark"] .col-resizer.is-resizing::after {
+        box-shadow: 0 0 6px rgba(239, 68, 68, 0.6);
+      }
+
+      body.is-col-resizing,
+      body.is-col-resizing * {
+        cursor: col-resize !important;
+        user-select: none !important;
       }
 
       .table-row:last-child {
         border-bottom: none;
+        border-bottom-left-radius: var(--radius);
+        border-bottom-right-radius: var(--radius);
       }
 
       .table-row:hover {
         background: var(--bg-hover);
+        z-index: 10;
       }
 
       /* Compact card layout for long words */
@@ -1091,7 +1385,7 @@
         border-radius: 8px;
         box-shadow: 0 8px 24px rgba(0,0,0,0.15);
         padding: 4px 0;
-        min-width: 140px;
+        min-width: 170px;
         display: none;
       }
       .sort-context-menu.show {
@@ -1134,44 +1428,88 @@
         background: var(--border);
         margin: 4px 0;
       }
+
+      /* Context Menu Column Toggles with Drag & Drop */
+      .col-drag-handle {
+        cursor: grab;
+        display: flex;
+        align-items: center;
+        color: var(--text-muted);
+        padding-right: 4px;
+      }
+      .col-drag-handle:active {
+        cursor: grabbing;
+      }
       .sort-context-menu-toggle {
         display: flex;
         align-items: center;
-        gap: 8px;
-        padding: 7px 14px;
-        font-size: 13px;
-        color: var(--text-primary);
+        gap: 6px;
+        padding: 6px 12px;
         cursor: pointer;
-        transition: background 0.15s;
+        user-select: none;
+        position: relative;
+        transition: background 0.15s ease;
       }
       .sort-context-menu-toggle:hover {
         background: var(--bg-input);
       }
-      .sort-context-menu-toggle input[type="checkbox"] {
+      .sort-context-menu-toggle.is-dragging {
+        opacity: 0.4;
+      }
+      .sort-context-menu-toggle.drag-over-above::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 8px;
+        right: 8px;
+        height: 2px;
+        background: var(--primary);
+      }
+      .sort-context-menu-toggle.drag-over-below::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 8px;
+        right: 8px;
+        height: 2px;
+        background: var(--primary);
+      }
+      .toggle-checkbox-label {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        cursor: pointer;
+        flex: 1;
+        font-size: 13px;
+        color: var(--text-primary);
+      }
+      .toggle-checkbox-label input[type="checkbox"] {
         accent-color: var(--primary);
         width: 14px;
         height: 14px;
         cursor: pointer;
       }
 
+      .table-row .col-char,
+      .table-row .col-jyutping,
+      .table-row .col-yale {
+        position: relative;
+        min-width: 0;
+        cursor: default;
+      }
+
       .table-row .col-char {
         font-size: 15px;
       }
-      .word-character {
-        font-weight: 600;
-        color: var(--text);
-        cursor: pointer;
-        display: inline-block;
-      }
-      .word-character:hover { color: var(--primary); }
 
-      .table-row .col-jyutping {
+      .table-row .col-jyutping,
+      .table-row .col-yale {
         display: flex;
         align-items: center;
         gap: 6px;
         font-family: monospace;
         font-size: 14px;
-        color: var(--text);
+        color: var(--text-primary);
       }
 
       .table-row .col-meaning {
@@ -1181,33 +1519,126 @@
         overflow: hidden;
         text-overflow: ellipsis;
         padding-right: 12px;
+        cursor: text;
+        user-select: text;
       }
 
       .table-row .col-date {
         font-size: 12px;
         color: var(--text-muted);
+        cursor: text;
+        user-select: text;
       }
 
+      /* Excel-like Seamless Cell Expansion (only for overflowing cells) */
+      .excel-cell {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        min-width: 0;
+        max-width: 100%;
+        width: fit-content;
+        cursor: default;
+      }
 
+      .excel-cell:hover {
+        z-index: 100;
+      }
+
+      .excel-cell-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        display: inline-block;
+        max-width: 100%;
+        width: auto;
+        cursor: pointer;
+      }
+
+      .excel-cell-floating {
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: max-content;
+        max-width: 650px;
+        padding: 0 16px 0 0;
+        background: var(--bg-hover);
+        border: none;
+        border-radius: 0;
+        box-shadow: none;
+        z-index: 100;
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.1s ease, visibility 0.1s;
+        white-space: nowrap;
+        cursor: pointer;
+        user-select: none;
+      }
+
+      /* Match hovered or active row background seamlessly */
+      .table-row:hover .excel-cell-floating {
+        background: var(--bg-hover);
+      }
+      .table-row.active-row .excel-cell-floating {
+        background: var(--bg-hover);
+      }
+
+      /* Only show when .is-overflowing AND hovered */
+      .excel-cell.is-overflowing .excel-cell-floating {
+        display: block;
+      }
+      .excel-cell.is-overflowing:hover .excel-cell-floating {
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+      }
+
+      .word-character {
+        font-weight: 600;
+        color: var(--text-primary);
+        cursor: pointer;
+        display: inline-block;
+        transition: color var(--transition);
+      }
+      .word-character:hover,
+      .excel-cell-floating.word-character:hover {
+        color: #B42929;
+      }
+      :root[data-theme="dark"] .word-character:hover,
+      :root[data-theme="dark"] .excel-cell-floating.word-character:hover {
+        color: #f87171;
+      }
+      .word-character:active,
+      .excel-cell-floating.word-character:active {
+        color: #781515 !important;
+      }
+      :root[data-theme="dark"] .word-character:active,
+      :root[data-theme="dark"] .excel-cell-floating.word-character:active {
+        color: #dc2626 !important;
+      }
 
       .jyutping-text {
         cursor: pointer;
         transition: color var(--transition);
         display: inline-block;
       }
-      
-      .jyutping-text:hover {
-        color: var(--primary);
+      .jyutping-text:hover,
+      .excel-cell-floating.jyutping-text:hover {
+        color: #B42929;
       }
-
-      .speaking {
-        color: var(--primary) !important;
-        animation: textPulse 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite alternate;
+      :root[data-theme="dark"] .jyutping-text:hover,
+      :root[data-theme="dark"] .excel-cell-floating.jyutping-text:hover {
+        color: #f87171;
       }
-
-      @keyframes textPulse {
-        0% { opacity: 0.5; }
-        100% { opacity: 1; }
+      .jyutping-text:active,
+      .excel-cell-floating.jyutping-text:active {
+        color: #781515 !important;
+      }
+      :root[data-theme="dark"] .jyutping-text:active,
+      :root[data-theme="dark"] .excel-cell-floating.jyutping-text:active {
+        color: #dc2626 !important;
       }
 
       /* ========== Bulk Actions ========== */
@@ -1298,16 +1729,28 @@
         transition: width 0.3s ease;
       }
 
-      /* ========== Import Modal ========== */
+      /* ========== Import Modal & Scroll Containment ========== */
+      body:has(.modal-overlay.show),
+      body.modal-open {
+        overflow: hidden !important;
+      }
+      body:has(.modal-overlay.show) .table-container,
+      body:has(.modal-overlay.show) .word-detail-panel,
+      body.modal-open .table-container,
+      body.modal-open .word-detail-panel {
+        overflow: hidden !important;
+      }
+
       .modal-overlay {
         position: fixed;
         inset: 0;
         background: rgba(0,0,0,0.4);
-        display: flex;
+        display: none;
         align-items: center;
         justify-content: center;
         z-index: 100;
-        display: none;
+        overscroll-behavior: contain;
+        touch-action: none;
       }
 
       .modal-overlay.show { display: flex; }
@@ -1319,6 +1762,7 @@
         max-width: 400px;
         width: 100%;
         box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        overscroll-behavior: contain;
       }
 
       .modal h3 {
@@ -1336,6 +1780,299 @@
         display: flex;
         justify-content: flex-end;
         gap: 8px;
+      }
+
+      /* ========== AI Settings Modal Refined Theme ========== */
+      #aiSettingsModal.modal-overlay {
+        backdrop-filter: blur(6px);
+        -webkit-backdrop-filter: blur(6px);
+        background: rgba(0, 0, 0, 0.45);
+        overscroll-behavior: contain;
+      }
+
+      #aiSettingsModal .modal {
+        max-width: 580px;
+        width: 92%;
+        height: 540px;
+        max-height: 88vh;
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.06);
+        animation: aiModalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        overscroll-behavior: contain;
+      }
+
+      #aiQuickActionsListModal {
+        overscroll-behavior: contain;
+      }
+
+      @keyframes aiModalZoomIn {
+        from {
+          opacity: 0;
+          transform: scale(0.96) translateY(8px);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1) translateY(0);
+        }
+      }
+
+      .ai-modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 16px;
+        flex-shrink: 0;
+      }
+
+      .ai-modal-header h3 {
+        margin: 0;
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+        letter-spacing: 0.3px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .ai-modal-close-btn {
+        background: transparent;
+        border: none;
+        width: 28px;
+        height: 28px;
+        border-radius: 6px;
+        color: var(--text-muted);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s ease;
+      }
+      .ai-modal-close-btn:hover {
+        background: var(--bg-input);
+        color: var(--text-primary);
+      }
+
+      /* Classic Underline Tabs */
+      .ai-modal-tabs {
+        display: flex;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 16px;
+        flex-shrink: 0;
+        gap: 24px;
+        padding: 0 4px;
+      }
+
+      .ai-modal-tab-btn {
+        position: relative;
+        background: transparent;
+        border: none;
+        padding: 6px 2px 10px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: color 0.15s ease;
+        text-align: center;
+        user-select: none;
+        font-family: inherit;
+      }
+
+      .ai-modal-tab-btn:hover {
+        color: var(--text-primary);
+      }
+
+      .ai-modal-tab-btn.active {
+        color: var(--primary);
+        font-weight: 600;
+      }
+
+      .ai-modal-tab-btn::after {
+        content: '';
+        position: absolute;
+        bottom: -1px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: transparent;
+        border-radius: 2px;
+        transition: background-color 0.18s ease;
+      }
+
+      .ai-modal-tab-btn.active::after {
+        background: var(--primary);
+      }
+
+      :root[data-theme="dark"] .ai-modal-tab-btn.active {
+        color: #f87171;
+      }
+      :root[data-theme="dark"] .ai-modal-tab-btn.active::after {
+        background: #f87171;
+      }
+
+      .ai-modal-tab-pane {
+        display: none;
+        flex: 1;
+        flex-direction: column;
+        min-height: 0;
+      }
+
+      .ai-modal-tab-pane.active {
+        display: flex;
+      }
+
+      /* Quick Action Item Cards */
+      .ai-action-card {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: var(--bg-card);
+        padding: 10px 12px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .ai-action-card:hover {
+        border-color: rgba(138, 28, 28, 0.25);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+      }
+
+      .ai-action-checkbox {
+        width: 16px;
+        height: 16px;
+        cursor: pointer;
+        accent-color: var(--primary);
+        flex-shrink: 0;
+      }
+
+      .ai-action-fields {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        min-width: 0;
+      }
+
+      .ai-action-input {
+        width: 100%;
+        box-sizing: border-box;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text-primary);
+        font-family: inherit;
+        transition: border-color 0.15s, box-shadow 0.15s;
+        outline: none;
+      }
+
+      .ai-action-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px rgba(138, 28, 28, 0.12);
+      }
+
+      .ai-action-input-name {
+        font-size: 13px;
+        font-weight: 600;
+        padding: 5px 9px;
+      }
+
+      .ai-action-input-prompt {
+        font-size: 12px;
+        color: var(--text-secondary);
+        padding: 5px 9px;
+      }
+
+      .ai-action-del-btn {
+        background: transparent;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 6px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.15s;
+        flex-shrink: 0;
+      }
+
+      .ai-action-del-btn:hover {
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+      }
+
+      /* Custom System Prompt Textarea */
+      .ai-prompt-textarea {
+        width: 100%;
+        flex: 1;
+        min-height: 250px;
+        padding: 12px 14px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text-primary);
+        font-size: 13px;
+        font-family: inherit;
+        line-height: 1.6;
+        resize: vertical;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s, box-shadow 0.2s;
+      }
+
+      .ai-prompt-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(138, 28, 28, 0.1);
+      }
+
+      .ai-prompt-tags {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 6px;
+        margin-top: 10px;
+        margin-bottom: 12px;
+        flex-shrink: 0;
+      }
+
+      .ai-prompt-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        padding: 4px 10px;
+        background: rgba(138, 28, 28, 0.06);
+        border: 1px solid rgba(138, 28, 28, 0.18);
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        color: var(--primary);
+        cursor: pointer;
+        user-select: none;
+        transition: all 0.15s ease;
+      }
+
+      .ai-prompt-tag:hover {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: 0 2px 6px rgba(138, 28, 28, 0.25);
+      }
+
+      :root[data-theme="dark"] .ai-prompt-tag {
+        background: rgba(239, 68, 68, 0.12);
+        border-color: rgba(239, 68, 68, 0.3);
+        color: #fca5a5;
+      }
+      :root[data-theme="dark"] .ai-prompt-tag:hover {
+        background: #ef4444;
+        color: #fff;
       }
 
       .drop-zone {
@@ -1606,6 +2343,70 @@
       </div>
     </div>
 
+    <!-- AI Settings Modal -->
+    <div class="modal-overlay" id="aiSettingsModal">
+      <div class="modal">
+        <div class="ai-modal-header">
+          <h3 data-i18n="wordbookAiSettingsTitle">AI 設定</h3>
+          <button class="ai-modal-close-btn" id="closeAiSettingsBtn" title="關閉" aria-label="關閉">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Tabs Header -->
+        <div class="ai-modal-tabs" id="aiModalTabs">
+          <button class="ai-modal-tab-btn active" data-tab="quick-actions" data-i18n="wordbookAiTabQuickActions">快捷指令</button>
+          <button class="ai-modal-tab-btn" data-tab="custom-prompt" data-i18n="wordbookAiTabCustomPrompt">全域 Prompt</button>
+        </div>
+
+        <!-- Tab 1: Quick Actions -->
+        <div class="ai-modal-tab-pane active" id="tabPaneQuickActions">
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;" data-i18n="wordbookAiSettingsDesc">
+            自訂詞典面板底部的快捷提問按鈕，點擊即可快速發送預設對話指令。
+          </p>
+
+          <div id="aiQuickActionsListModal" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px; padding-right: 4px;">
+            <!-- Dynamically populated by wordbook.js -->
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: auto; flex-shrink: 0;">
+            <button id="addAiQuickActionBtnModal" class="wordbook-btn" style="flex: 1; justify-content: center; background: transparent; color: var(--text-primary); border: 1px dashed var(--border);">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+              <span data-i18n="wordbookAddQuickAction">添加新指令</span>
+            </button>
+            <button id="restoreAiQuickActionsBtnModal" class="wordbook-btn" style="padding: 0 12px; background: transparent; color: var(--text-muted); border: 1px solid transparent;" title="恢復預設指令">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Tab 2: Custom System Prompt -->
+        <div class="ai-modal-tab-pane" id="tabPaneCustomPrompt">
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;">
+            自訂 AI 隨身問答的系統提示詞（System Prompt），此 Prompt 會引導 AI 在解答所有問題時的人設與回答風格。
+          </p>
+
+          <textarea id="aiCustomPromptInputModal" class="ai-prompt-textarea" placeholder="輸入自訂全域系統提示詞..."></textarea>
+
+          <div class="ai-prompt-tags">
+            <span style="font-size: 11px; color: var(--text-muted);">插入變量：</span>
+            <span class="ai-prompt-tag" data-tag="{targetLang}" title="點擊插入">{targetLang} (目標語言)</span>
+            <span class="ai-prompt-tag" data-tag="{word}" title="點擊插入">{word} (選中詞)</span>
+          </div>
+
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; flex-shrink: 0;">
+            <button id="restoreAiPromptBtnModal" class="wordbook-btn" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border); font-size: 12px; padding: 6px 12px;">
+              恢復預設 Prompt
+            </button>
+            <span id="aiPromptSavedHint" style="font-size: 12px; color: var(--success); opacity: 0; transition: opacity 0.2s;">✓ 已保存</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Import Modal -->
     <div class="modal-overlay" id="importModal">
       <div class="modal">
@@ -1639,25 +2440,19 @@
         <span>ID 正序（最早優先）</span>
       </div>
       <div class="sort-context-menu-divider"></div>
-      <div class="sort-context-menu-section">顯示欄位</div>
-      <label class="sort-context-menu-toggle" data-col="col-char">
-        <input type="checkbox" checked />
-        <span>Character</span>
-      </label>
-      <label class="sort-context-menu-toggle" data-col="col-jyutping">
-        <input type="checkbox" checked />
-        <span>Jyutping</span>
-      </label>
-      <label class="sort-context-menu-toggle" data-col="col-meaning">
-        <input type="checkbox" checked />
-        <span>Meaning</span>
-      </label>
-      <label class="sort-context-menu-toggle" data-col="col-date">
-        <input type="checkbox" checked />
-        <span>Date</span>
-      </label>
+      <div class="sort-context-menu-section">顯示欄位（按住拖動可排序）</div>
+      <div id="menuTogglesContainer"></div>
+      <div class="sort-context-menu-divider"></div>
+      <div class="sort-context-menu-item" id="resetColWidthsBtn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
+          <path d="M3 3v5h5"></path>
+        </svg>
+        <span>重置為默認列寬及順序</span>
+      </div>
     </div>
 
+    <script src="marked.min.js"></script>
     <script src="wordbook.js"></script>
   </body>
 </html>

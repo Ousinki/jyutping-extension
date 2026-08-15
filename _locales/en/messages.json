@@ -758,5 +758,137 @@
   },
   "wordbookEmptyDetail": {
     "message": "Click a word on the left<br>to view dictionary details"
+  },
+  "wordbookModeWord": {
+    "message": "Words"
+  },
+  "wordbookModeDict": {
+    "message": "Dict"
+  },
+  "wordbookExportJson": {
+    "message": "JSON (Full Backup)"
+  },
+  "wordbookExportCsv": {
+    "message": "CSV (Excel Compatible)"
+  },
+  "wordbookExportMd": {
+    "message": "Markdown"
+  },
+  "wordbookExportTxt": {
+    "message": "Plain Text"
+  },
+  "wordbookExportImport": {
+    "message": "Import..."
+  },
+  "dictSearchFallback": {
+    "message": "📖 Dictionary Search"
+  },
+  "dictSearchEmpty": {
+    "message": "No matching results found in dictionary"
+  },
+  "dictSearchNoDetail": {
+    "message": "Detailed definition for <strong>$1</strong> not found in dictionary."
+  },
+  "wordbookAiChat": {
+    "message": "❇️ AI Q&A"
+  },
+  "wordbookAiAction1": {
+    "message": "Sentence"
+  },
+  "wordbookAiAction2": {
+    "message": "Etymology"
+  },
+  "wordbookAiAction3": {
+    "message": "Daily Usage"
+  },
+  "wordbookAiAction4": {
+    "message": "Synonyms/Antonyms"
+  },
+  "wordbookAiInputPlaceholder": {
+    "message": "Ask a question about '$1'..."
+  },
+  "wordbookAiInputPlaceholderGeneric": {
+    "message": "Ask any question about Cantonese..."
+  },
+  "wordbookEmptyDetail1": {
+    "message": "Click left word for details"
+  },
+  "wordbookEmptyDetail2": {
+    "message": "Or ask directly below"
+  },
+  "wordbookAiSettingsTitle": {
+    "message": "AI Settings"
+  },
+  "optAutoTranslateYueDefs": {
+    "message": "Auto-translate Cantonese Definitions"
+  },
+  "optAutoTranslateYueDefsDesc": {
+    "message": "Automatically translate [粵] colloquial definitions to your target language"
+  },
+  "optAutoTranslateYueDefsTarget": {
+    "message": "Definition Target Language"
+  },
+  "optAutoTranslateYueDefsEngine": {
+    "message": "Definition Translation Engine"
+  },
+  "badgeClickToTranslate": {
+    "message": "Click to translate definition"
+  },
+  "badgeTranslating": {
+    "message": "Translating..."
+  },
+  "optYueDefDisplayMode": {
+    "message": "Definition Translation Display Mode"
+  },
+  "optYueDefDisplayModeDesc": {
+    "message": "Choose whether translations expand below or replace the original text directly"
+  },
+  "optYueDefDisplayModeExpand": {
+    "message": "Expand Below"
+  },
+  "optYueDefDisplayModeReplace": {
+    "message": "In-place Replace"
+  },
+  "badgeClickToRestore": {
+    "message": "Click to restore original Cantonese"
+  },
+  "optYueDefSectionTitle": {
+    "message": "Cantonese Colloquial Definition Translation"
+  },
+  "optYueDefSectionDesc": {
+    "message": "For dictionary definitions tagged with [粵], click the badge to translate or enable auto-translation"
+  },
+  "optAutoTranslateYueDefsTargetDesc": {
+    "message": "Select target language for colloquial definition translation"
+  },
+  "optAutoTranslateYueDefsEngineDesc": {
+    "message": "Select translation engine for colloquial definitions"
+  },
+  "optRoadmapTitle": {
+    "message": "Learning Roadmap"
+  },
+  "optRoadmapSectionTitle": {
+    "message": "Cantonese Learning Roadmap"
+  },
+  "optRoadmapSectionDesc": {
+    "message": "Curated authoritative phonetics tutorials, dictionaries, input methods, and listening materials to help you master authentic Cantonese"
+  },
+  "optRoadmapFilterAll": {
+    "message": "All"
+  },
+  "optRoadmapFilterPhonetics": {
+    "message": "Phonetics"
+  },
+  "optRoadmapFilterDict": {
+    "message": "Dictionaries"
+  },
+  "optRoadmapFilterTool": {
+    "message": "Tools"
+  },
+  "optRoadmapFilterInput": {
+    "message": "Input Methods"
+  },
+  "optRoadmapFilterReading": {
+    "message": "Reading & Audio"
   }
 }

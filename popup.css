@@ -188,17 +188,27 @@
   cursor: pointer;
   position: relative;
 }
-.has-examples:hover {
+.has-examples:hover .def-main-row {
   text-decoration: underline;
   text-decoration-color: var(--popup-text-label);
 }
 
-.has-examples::after {
-  content: " ▷";
+.example-arrow-icon {
   color: var(--popup-text-label);
   font-size: 10px;
   vertical-align: middle;
   margin-left: 4px;
+  display: inline-block;
+  user-select: none;
+  transition: transform 0.2s ease;
+}
+
+.has-examples.active .example-arrow-icon {
+  transform: rotate(90deg);
+}
+
+.def-main-row {
+  display: block;
 }
 
 /* 詞彙區塊 */
@@ -339,6 +349,144 @@
 
 #cantonese-popup-dict .def-yue {
   color: var(--popup-def-yue);
+}
+
+/* 粵語口語標籤徽章及點擊翻譯微組件 */
+#cantonese-popup-dict .badge-yue {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: rgba(184, 134, 11, 0.12);
+  color: var(--popup-def-yue);
+  border: 1px solid rgba(184, 134, 11, 0.28);
+  border-radius: 4px;
+  padding: 0 4px;
+  font-size: 11px;
+  font-weight: 600;
+  line-height: 16px;
+  margin-right: 5px;
+  cursor: pointer;
+  pointer-events: auto;
+  user-select: none;
+  transition: all 0.18s ease;
+  vertical-align: 1px;
+}
+
+#cantonese-popup-dict .badge-yue:hover {
+  background: var(--popup-def-yue);
+  color: #ffffff;
+  border-color: var(--popup-def-yue);
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(184, 134, 11, 0.2);
+}
+
+#cantonese-popup-dict .badge-yue:active {
+  transform: translateY(0);
+}
+
+#cantonese-popup-dict .badge-yue svg {
+  width: 10px !important;
+  height: 10px !important;
+  max-width: 10px !important;
+  max-height: 10px !important;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+#cantonese-popup-dict .badge-yue:hover svg {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+#cantonese-popup-dict .yue-def-translation svg,
+#cantonese-popup-dict .trans-icon {
+  width: 11px !important;
+  height: 11px !important;
+  max-width: 11px !important;
+  max-height: 11px !important;
+  display: inline-block !important;
+  flex-shrink: 0 !important;
+}
+
+/* 翻譯展開容器 */
+#cantonese-popup-dict .yue-def-translation {
+  margin-top: 4px;
+  margin-bottom: 3px;
+  padding: 3px 8px;
+  background: rgba(128, 128, 128, 0.08);
+  border-left: 2px solid var(--popup-def-yue);
+  border-radius: 0 4px 4px 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--popup-text-body);
+  display: flex;
+  align-items: flex-start;
+  gap: 5px;
+  animation: yueDefFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+#cantonese-popup-dict .badge-trans-lang {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(37, 99, 235, 0.12);
+  color: #2563eb;
+  border: 1px solid rgba(37, 99, 235, 0.28);
+  border-radius: 3px;
+  padding: 0 3px;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 14px;
+  margin-top: 1px;
+  flex-shrink: 0;
+  user-select: none;
+}
+
+#cantonese-popup-dict .badge-trans-lang.badge-clickable {
+  cursor: pointer;
+  gap: 3px;
+  margin-right: 6px;
+  vertical-align: 1px;
+  transition: all 0.18s ease;
+}
+
+#cantonese-popup-dict .badge-trans-lang.badge-clickable:hover {
+  background: #2563eb;
+  color: #ffffff;
+  border-color: #2563eb;
+  transform: translateY(-0.5px);
+  box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+:root[data-theme="dark"] #cantonese-popup-dict .badge-trans-lang.badge-clickable:hover {
+  background: #60a5fa;
+  color: #1e293b;
+  border-color: #60a5fa;
+}
+
+#cantonese-popup-dict .badge-trans-lang .trans-toggle-icon {
+  width: 9px;
+  height: 9px;
+  opacity: 0.85;
+  transition: transform 0.2s ease;
+}
+
+#cantonese-popup-dict .badge-trans-lang.badge-clickable:hover .trans-toggle-icon {
+  opacity: 1;
+  transform: rotate(180deg);
+}
+
+@keyframes yueDefFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* 參觀區塊 */

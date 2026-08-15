@@ -1,0 +1,1095 @@
+<!doctype html>
+<html lang="zh-HK">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>粵語學習導航 - 粵語懸浮詞典</title>
+    <script src="theme-init.js"></script>
+    <link rel="icon" type="image/svg+xml" href="icon_favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      :root {
+        --primary: #8A1C1C;
+        --primary-light: #B42929;
+        --primary-dark: #382424;
+        --accent: #22c55e;
+        --bg-page: #f8fafc;
+        --bg-card: #ffffff;
+        --bg-input: #f1f5f9;
+        --bg-hover: #e2e8f0;
+        --text-primary: #1e293b;
+        --text-secondary: #64748b;
+        --text-muted: #94a3b8;
+        --border: #e2e8f0;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.08), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
+        --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.05);
+        --radius: 12px;
+        --transition: 200ms ease;
+      }
+
+      :root[data-theme="dark"] {
+        --primary: #ef4444;
+        --primary-light: #f87171;
+        --primary-dark: #b91c1c;
+        --accent: #22c55e;
+        --bg-page: #0f172a;
+        --bg-card: #1e293b;
+        --bg-input: #334155;
+        --bg-hover: #263345;
+        --text-primary: #f8fafc;
+        --text-secondary: #cbd5e1;
+        --text-muted: #94a3b8;
+        --border: #334155;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.4), 0 2px 4px -2px rgba(0, 0, 0, 0.3);
+        --shadow-lg: 0 10px 25px -3px rgba(0, 0, 0, 0.6), 0 4px 6px -4px rgba(0, 0, 0, 0.4);
+      }
+
+      * {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      body {
+        font-family: 'Noto Sans TC', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+        background: var(--bg-page);
+        color: var(--text-primary);
+        line-height: 1.6;
+        min-height: 100vh;
+        padding: 24px 20px 60px;
+        transition: background-color var(--transition), color var(--transition);
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+
+      /* ========== Top Navigation Bar ========== */
+      .top-navbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 24px;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .nav-links-group {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .nav-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        transition: all var(--transition);
+        text-decoration: none;
+      }
+
+      .nav-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: var(--shadow);
+      }
+
+      .theme-toggle {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 36px;
+        height: 36px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-muted);
+        transition: all var(--transition);
+      }
+
+      .theme-toggle:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      /* ========== Hero Header ========== */
+      .hero-header {
+        text-align: center;
+        margin-bottom: 36px;
+      }
+
+      .hero-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--primary);
+        letter-spacing: -0.5px;
+        margin-bottom: 8px;
+      }
+
+      .hero-subtitle {
+        font-size: 15px;
+        color: var(--text-secondary);
+        max-width: 680px;
+        margin: 0 auto 24px;
+      }
+
+      /* Search Container */
+      .search-container {
+        max-width: 540px;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      .search-input-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .search-icon {
+        position: absolute;
+        left: 14px;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .search-input {
+        width: 100%;
+        padding: 12px 42px 12px 42px;
+        border-radius: 30px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: inherit;
+        outline: none;
+        box-shadow: var(--shadow);
+        transition: all var(--transition);
+      }
+
+      .search-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(138, 28, 28, 0.12), var(--shadow);
+      }
+
+      :root[data-theme="dark"] .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2), var(--shadow);
+      }
+
+      .search-clear-btn {
+        position: absolute;
+        right: 12px;
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 4px;
+        border-radius: 50%;
+        display: none;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .search-clear-btn:hover {
+        color: var(--text-primary);
+      }
+
+      /* ========== Category Filter Bar ========== */
+      .filter-bar-wrapper {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .filter-pills {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .filter-pill {
+        padding: 7px 16px;
+        font-size: 13px;
+        font-weight: 500;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all var(--transition);
+        font-family: inherit;
+      }
+
+      .filter-pill:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .filter-pill.active {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 2px 8px rgba(138, 28, 28, 0.25);
+      }
+
+      :root[data-theme="dark"] .filter-pill.active {
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.35);
+      }
+
+      .resources-count {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      /* ========== Resources Bento Grid ========== */
+      .resources-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 18px;
+      }
+
+      .resource-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        box-shadow: var(--shadow);
+      }
+
+      .resource-card:hover {
+        transform: translateY(-3px);
+        border-color: var(--primary);
+        box-shadow: var(--shadow-lg);
+      }
+
+      :root[data-theme="dark"] .resource-card:hover {
+        border-color: var(--primary-light);
+      }
+
+      .card-header {
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .card-icon-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .card-icon-box {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        background: var(--bg-input);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        overflow: hidden;
+      }
+
+      .card-icon-box img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+      }
+
+      .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.3;
+      }
+
+      .card-badge {
+        font-size: 11px;
+        font-weight: 600;
+        padding: 3px 8px;
+        border-radius: 6px;
+        letter-spacing: 0.3px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .badge-phonetics { background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.25); }
+      .badge-dictionary { background: rgba(184, 134, 11, 0.12); color: #b8860b; border: 1px solid rgba(184, 134, 11, 0.25); }
+      .badge-tool { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); }
+      .badge-input { background: rgba(139, 92, 246, 0.12); color: #7c3aed; border: 1px solid rgba(139, 92, 246, 0.25); }
+      .badge-reading { background: rgba(236, 72, 153, 0.12); color: #db2777; border: 1px solid rgba(236, 72, 153, 0.25); }
+      .badge-media { background: rgba(245, 158, 11, 0.12); color: #d97706; border: 1px solid rgba(245, 158, 11, 0.25); }
+
+      :root[data-theme="dark"] .badge-phonetics { color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); }
+      :root[data-theme="dark"] .badge-dictionary { color: #e8b84e; border-color: rgba(232, 184, 78, 0.3); }
+      :root[data-theme="dark"] .badge-tool { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+      :root[data-theme="dark"] .badge-input { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+      :root[data-theme="dark"] .badge-reading { color: #f472b6; border-color: rgba(244, 114, 182, 0.3); }
+      :root[data-theme="dark"] .badge-media { color: #fbbf24; border-color: rgba(251, 191, 36, 0.3); }
+
+      .card-desc {
+        font-size: 13px;
+        line-height: 1.55;
+        color: var(--text-secondary);
+        margin-bottom: 16px;
+        flex: 1;
+      }
+
+      .card-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding-top: 12px;
+        border-top: 1px solid var(--border);
+        font-size: 12px;
+      }
+
+      .card-domain {
+        color: var(--text-muted);
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+
+      .card-action {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        color: var(--primary);
+        font-weight: 600;
+        transition: transform 0.2s ease;
+      }
+
+      .resource-card:hover .card-action {
+        transform: translateX(3px);
+      }
+
+      /* ========== Empty State ========== */
+      .empty-state {
+        display: none;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 60px 20px;
+        text-align: center;
+        background: var(--bg-card);
+        border: 1px dashed var(--border);
+        border-radius: var(--radius);
+        grid-column: 1 / -1;
+      }
+
+      .empty-state-icon {
+        margin-bottom: 12px;
+        color: var(--text-muted);
+      }
+
+      .empty-state-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 4px;
+      }
+
+      .empty-state-desc {
+        font-size: 13px;
+        color: var(--text-muted);
+      }
+
+      /* Responsive */
+      @media (max-width: 768px) {
+        body { padding: 16px 12px 40px; }
+        .hero-title { font-size: 26px; }
+        .resources-grid { grid-template-columns: 1fr; }
+      .timeline-steps { grid-template-columns: 1fr; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+
+      <!-- Top Navigation Bar -->
+      <nav class="top-navbar">
+        <div class="nav-links-group">
+          <a href="options.html" class="nav-btn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span data-i18n="wordbookBackToSettings">返回設定</span>
+          </a>
+        </div>
+
+        <button class="theme-toggle" id="themeToggle" title="切換主題">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"></circle>
+            <line x1="12" y1="1" x2="12" y2="3"></line>
+            <line x1="12" y1="21" x2="12" y2="23"></line>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+            <line x1="1" y1="12" x2="3" y2="12"></line>
+            <line x1="21" y1="12" x2="23" y2="12"></line>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+          </svg>
+        </button>
+      </nav>
+
+      <!-- Hero Header -->
+      <header class="hero-header">
+        <h1 class="hero-title" data-i18n="optRoadmapSectionTitle">粵語學習導航</h1>
+        <p class="hero-subtitle" data-i18n="optRoadmapSectionDesc">精選權威拼音教程、查詞辭書、輸入法與聽力語料，助你系統掌握地道粵語</p>
+
+        <!-- Search Bar -->
+        <div class="search-container">
+          <div class="search-input-wrapper">
+            <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+            <input type="text" id="searchInput" class="search-input" placeholder="搜尋資源名稱、關鍵字、網站域名..." />
+            <button id="searchClearBtn" class="search-clear-btn" title="清除">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <!-- Category Filter & Count Bar -->
+      <div class="filter-bar-wrapper">
+        <div class="filter-pills" id="filterPills">
+          <button class="filter-pill active" data-filter="all">全部</button>
+          <button class="filter-pill" data-filter="phonetics">拼音入門</button>
+          <button class="filter-pill" data-filter="dictionary">權威辭書</button>
+          <button class="filter-pill" data-filter="tool">實用工具</button>
+          <button class="filter-pill" data-filter="input">粵拼輸入</button>
+          <button class="filter-pill" data-filter="reading">聽讀進階</button>
+          <button class="filter-pill" data-filter="media">影視文化</button>
+        </div>
+        <div class="resources-count" id="resourcesCount">共 32 個精選資源</div>
+      </div>
+
+      <!-- Bento Grid of Resources -->
+      <main class="resources-grid" id="resourcesGrid">
+
+        <!-- 1. CUHK ILC -->
+        <a href="https://www.ilc.cuhk.edu.hk/workshop/Chinese/Cantonese/Romanization/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="phonetics" data-keywords="香港中文大学 中大 粤拼 教程 发音 声母 韵母 声调 cuhk ilc romanization">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=cuhk.edu.hk&sz=128" alt="CUHK" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">中大粵拼自學工作坊</div>
+            </div>
+            <span class="card-badge badge-phonetics">拼音入門</span>
+          </div>
+          <div class="card-desc">香港中文大學語言自學中心官方出品，涵蓋標準九聲六調、聲母韻母全套教程與交互式發音比對練習。</div>
+          <div class="card-footer">
+            <span class="card-domain">ilc.cuhk.edu.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 2. Jyutping.org -->
+        <a href="https://www.jyutping.org/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="phonetics" data-keywords="粤拼 官方 lshk 拼音表 音节 教程 jyutping org 香港语言学学会">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=jyutping.org&sz=128" alt="Jyutping.org" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵拼官方中心 (Jyutping.org)</div>
+            </div>
+            <span class="card-badge badge-phonetics">拼音入門</span>
+          </div>
+          <div class="card-desc">香港語言學學會 (LSHK) 粵拼標準中心，包含權威發音表、音節矩陣表、方案說明與新手打字指引。</div>
+          <div class="card-footer">
+            <span class="card-domain">jyutping.org</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 3. CityU Jyutping -->
+        <a href="https://www.cityu.edu.hk/lt/jyutping/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="phonetics" data-keywords="城大 香港城市大学 拼音 教程 发音 听音 测验 cityu lt">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=cityu.edu.hk&sz=128" alt="CityU" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">城大粵語拼音資源站</div>
+            </div>
+            <span class="card-badge badge-phonetics">拼音入門</span>
+          </div>
+          <div class="card-desc">香港城市大學翻譯及語言學系出品，系統語音教材、聽音辨調自測、音節發音與口型解析。</div>
+          <div class="card-footer">
+            <span class="card-domain">cityu.edu.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 4. LearnDuck -->
+        <a href="https://chaaklau.github.io/LearnDuck/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="phonetics" data-keywords="learnduck 学得 粤拼 香港教育大学 eduhk 闯关 互动 学习 发音 声调 听音">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=github.io&sz=128" alt="LearnDuck" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">LearnDuck (學得粵拼)</div>
+            </div>
+            <span class="card-badge badge-phonetics">拼音入門</span>
+          </div>
+          <div class="card-desc">香港教育大學研發的交互式粵拼自學平台，以遊戲化闖關、發音比對與聽音辨調引導新手輕鬆掌握九聲六調。</div>
+          <div class="card-footer">
+            <span class="card-domain">chaaklau.github.io/LearnDuck</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 5. 52 Minutes Learn Jyutping -->
+        <a href="https://www.youtube.com/watch?v=MOsf0BcLzlc" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="phonetics" data-keywords="52分钟学识粤拼 52 分鐘學識粵拼 视频 教程 发音 声母 韵母 声调 粤拼官方 youtube">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=128" alt="YouTube" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">52 分鐘學識粵拼</div>
+            </div>
+            <span class="card-badge badge-phonetics">拼音入門</span>
+          </div>
+          <div class="card-desc">粵拼官方出品的超高人氣經典教學影片，52 分鐘由淺入深拆解聲母、韻母、九聲六調與拼讀規律。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 4. Words.hk -->
+        <a href="https://words.hk/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="dictionary" data-keywords="粤典 wordshk 词典 字典 口语 俚语 例句 发音 香港本土">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=words.hk&sz=128" alt="Words.hk" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵典 (Words.hk)</div>
+            </div>
+            <span class="card-badge badge-dictionary">權威辭書</span>
+          </div>
+          <div class="card-desc">香港本土最地道、最活躍的開源粵語詞典，收錄海量口語俚語、中英雙語詳細解釋與真實生活例句。</div>
+          <div class="card-footer">
+            <span class="card-domain">words.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 5. SheepCantonese (羊羊粵語) -->
+        <a href="https://shyyp.net/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="dictionary" data-keywords="羊羊粤语 羊羊 粤语 词典 shyyp ykyi sheepcantonese 发音 国际音标 耶鲁拼音 查字">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=shyyp.net&sz=128" alt="SheepCantonese" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">羊羊粵語 (SheepCantonese)</div>
+            </div>
+            <span class="card-badge badge-dictionary">權威辭書</span>
+          </div>
+          <div class="card-desc">老牌粵語在線發音字詞典（前身 ykyi.net），支援漢字、粵拼、國際音標（IPA）與耶魯拼音等多種方案快速檢索與真人語音示範。</div>
+          <div class="card-footer">
+            <span class="card-domain">shyyp.net</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 6. CUHK Humanum -->
+        <a href="https://humanum.arts.cuhk.edu.hk/Lexis/lexi-can/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="dictionary" data-keywords="中大 审音配词 汉字 正音 异读音 字库 humanum cuhk">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=cuhk.edu.hk&sz=128" alt="CUHK Humanum" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">中大粵語審音配詞字庫</div>
+            </div>
+            <span class="card-badge badge-dictionary">權威辭書</span>
+          </div>
+          <div class="card-desc">學術權威字庫，查單字正音、多音字辨析、古今音韻演變、異讀音與地名配詞首選工具。</div>
+          <div class="card-footer">
+            <span class="card-domain">humanum.arts.cuhk.edu.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 7. Jyut.net -->
+        <a href="https://jyut.net/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="dictionary" data-keywords="粤音资料集丛 字典 交叉审音 韵书 正音字典 jyut net">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=jyut.net&sz=128" alt="Jyut.net" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵音資料集叢 (Jyut.net)</div>
+            </div>
+            <span class="card-badge badge-dictionary">權威辭書</span>
+          </div>
+          <div class="card-desc">彙整《廣州話正音字典》《常用字廣州話讀音表》等多部傳世經典粵音文獻，支持多字典精密比對。</div>
+          <div class="card-footer">
+            <span class="card-domain">jyut.net</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 8. CantoDict -->
+        <a href="http://www.cantonese.sheik.co.uk/dictionary/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="dictionary" data-keywords="cantodict 粤英词典 双解 sheik 社区 词汇">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=sheik.co.uk&sz=128" alt="CantoDict" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">CantoDict 粵英詞典</div>
+            </div>
+            <span class="card-badge badge-dictionary">權威辭書</span>
+          </div>
+          <div class="card-desc">歷史悠久、深受全球粵語學習者喜愛的在線粵英雙解詞典與例句交流社區。</div>
+          <div class="card-footer">
+            <span class="card-domain">cantonese.sheik.co.uk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 9. 粵語辭叢 (Jyutjyu) -->
+        <a href="https://jyutjyu.com/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="dictionary" data-keywords="粤语辞丛 jyutjyu 字典 词典 查字 聚合 审音 释义 开源">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=jyutjyu.com&sz=128" alt="Jyutjyu" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵語辭叢 (Jyutjyu)</div>
+            </div>
+            <span class="card-badge badge-dictionary">權威辭書</span>
+          </div>
+          <div class="card-desc">現代開源粵語字詞聚合檢索平台，整合多部權威字典文獻與網絡常用詞彙，支援即時多源對比查詞。</div>
+          <div class="card-footer">
+            <span class="card-domain">jyutjyu.com</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 10. HongKongVision Converter -->
+        <a href="https://hongkongvision.com/tool/cc_py_conv_zh" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="tool" data-keywords="香港视觉 转换 汉字转拼音 注音 批量 格式 工具 hongkongvision">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=hongkongvision.com&sz=128" alt="HongKongVision" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">香港視覺·漢字轉粵拼工具</div>
+            </div>
+            <span class="card-badge badge-tool">實用工具</span>
+          </div>
+          <div class="card-desc">支持大段漢字批量轉換為粵拼注音，提供上標、括號、純拼音等多種排版輸出格式。</div>
+          <div class="card-footer">
+            <span class="card-domain">hongkongvision.com</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 11. Google Translate -->
+        <a href="https://translate.google.com/?sl=auto&tl=yue" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="tool" data-keywords="谷歌翻译 粤语 google translate 翻译 转换 白话文 发音 互译">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=translate.google.com&sz=128" alt="Google Translate" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">Google 翻譯（粵語）</div>
+            </div>
+            <span class="card-badge badge-tool">實用工具</span>
+          </div>
+          <div class="card-desc">Google 官方翻譯引擎已全面支援粵語，支援多國語言與地道粵語白話文互相翻譯、長文本語音朗讀與實時對照。</div>
+          <div class="card-footer">
+            <span class="card-domain">translate.google.com</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 12. Visual Fonts -->
+        <a href="https://canto.hk/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="tool" data-keywords="粤拼字体 visual fonts 字体 拼音注音 排版 教学 汉字注音 矢量 canto hk">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=canto.hk&sz=128" alt="Visual Fonts" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵拼字體 (Visual Fonts)</div>
+            </div>
+            <span class="card-badge badge-tool">實用工具</span>
+          </div>
+          <div class="card-desc">香港視覺出品的注音字體庫，鍵入漢字時上方自動渲染標準粵拼，特別適合製作教學課件與學習卡片。</div>
+          <div class="card-footer">
+            <span class="card-domain">canto.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 13. Wing Font -->
+        <a href="https://wing-font.chunlaw.io/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="tool" data-keywords="wing font 昭源宋体 粤拼 字体 开源 思源宋体 注音 字符集 印刷">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=chunlaw.io&sz=128" alt="Wing Font" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">昭源宋體粵拼 (Wing Font)</div>
+            </div>
+            <span class="card-badge badge-tool">實用工具</span>
+          </div>
+          <div class="card-desc">基於思源宋體深度定制的開源粵拼注音字庫，完整覆蓋九聲六調符號與地道粵語常用字表。</div>
+          <div class="card-footer">
+            <span class="card-domain">wing-font.chunlaw.io</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 14. TypeDuck -->
+        <a href="https://www.typeduck.hk/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="input" data-keywords="typeduck 打得 粤拼 输入法 香港教育大学 eduhk input method 拼音输入 提示 反查">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=typeduck.hk&sz=128" alt="TypeDuck" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">TypeDuck (打得輸入法)</div>
+            </div>
+            <span class="card-badge badge-input">粵拼輸入</span>
+          </div>
+          <div class="card-desc">香港教育大學研發，首創融入多語言釋義提示（英語、烏爾都語等）的粵拼輸入法，支援全平台（Windows, macOS, iOS, Android, Web）與反查功能。</div>
+          <div class="card-footer">
+            <span class="card-domain">typeduck.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 15. Cantoboard -->
+        <a href="https://apps.apple.com/app/id6752963850" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="input" data-keywords="cantoboard 粤拼 键盘 输入法 ios ipad app store 仓颉 九宫格 开源">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=apple.com&sz=128" alt="Cantoboard" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">Cantoboard 粵語鍵盤</div>
+            </div>
+            <span class="card-badge badge-input">粵拼輸入</span>
+          </div>
+          <div class="card-desc">專為 iOS / iPadOS 打造的知名開源粵拼鍵盤，支援九宮格與全鍵盤、拼音反查、智能聯想與完全離線隱私保護。</div>
+          <div class="card-footer">
+            <span class="card-domain">apps.apple.com</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 16. Jyutping App -->
+        <a href="https://jyutping.app/cmn-Hans/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="input" data-keywords="粤拼输入法 jyutping app ios macos windows 开源 极简 反查 打字">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=jyutping.app&sz=128" alt="Jyutping App" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵拼輸入法 (Jyutping App)</div>
+            </div>
+            <span class="card-badge badge-input">粵拼輸入</span>
+          </div>
+          <div class="card-desc">現代極簡、高顏值的開源跨平台粵拼輸入法（支持 iOS / macOS / Windows），支持拼音反查。</div>
+          <div class="card-footer">
+            <span class="card-domain">jyutping.app</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 17. Rime Cantonese -->
+        <a href="https://github.com/rime/rime-cantonese" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="input" data-keywords="rime 中州韵 鼠须管 小狼毫 词库 方案 cantonese github">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=github.com&sz=128" alt="GitHub" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">Rime 粵語拼音方案</div>
+            </div>
+            <span class="card-badge badge-input">粵拼輸入</span>
+          </div>
+          <div class="card-desc">跨平台最強大的開源粵拼詞庫與輸入引擎方案，支持混合輸入、智能糾錯與專業高頻詞庫。</div>
+          <div class="card-footer">
+            <span class="card-domain">github.com/rime</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 18. Jyutping.io Typing Practice -->
+        <a href="https://jyutping.io/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="input" data-keywords="jyutping io 粤拼打字 练习 测验 打字练习 键盘 盲打 速度 测试">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=jyutping.io&sz=128" alt="Jyutping.io" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵拼打字練習 (Jyutping.io)</div>
+            </div>
+            <span class="card-badge badge-input">粵拼輸入</span>
+          </div>
+          <div class="card-desc">網頁端在線粵拼打字跟打與測速練習工具，免安裝即開即練，提供即時指法回饋與打字錯誤分析。</div>
+          <div class="card-footer">
+            <span class="card-domain">jyutping.io</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 16. Hambaanglaang -->
+        <a href="https://hambaanglaang.hk/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="reading" data-keywords="冚唪唥 粤文 分级 绘本 故事 听力 有声 儿童 hambaanglaang">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=hambaanglaang.hk&sz=128" alt="Hambaanglaang" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">冚唪唥粵文分級讀物</div>
+            </div>
+            <span class="card-badge badge-reading">聽讀進階</span>
+          </div>
+          <div class="card-desc">專為粵語學習者創作的分級有聲繪本與故事，附帶純正香港真人配音、粵拼與生詞註解。</div>
+          <div class="card-footer">
+            <span class="card-domain">hambaanglaang.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 17. PolyU Flipped Cantonese -->
+        <a href="https://www.polyu.edu.hk/clc/cantonese/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="reading" data-keywords="香港理工大学 理大 polyu 翻转粤语教室 课程 会话 听力 日常生活 学习">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=polyu.edu.hk&sz=128" alt="PolyU" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">翻轉粵語教室 (PolyU)</div>
+            </div>
+            <span class="card-badge badge-reading">聽讀進階</span>
+          </div>
+          <div class="card-desc">香港理工大學中國語文教學中心出品的在線自學平台，涵蓋生活日常溝通情境、實用高頻句型與多媒體聽力跟讀材料。</div>
+          <div class="card-footer">
+            <span class="card-domain">polyu.edu.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 14. Wikipedia zh-yue -->
+        <a href="https://zh-yue.wikipedia.org/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="reading" data-keywords="粤文 维基百科 百科 纯粤语 白话文 语料 阅读 wikipedia">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=wikipedia.org&sz=128" alt="Wikipedia" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵文維基百科</div>
+            </div>
+            <span class="card-badge badge-reading">聽讀進階</span>
+          </div>
+          <div class="card-desc">完全以純正粵語白話文書寫的自由百科全書，沉浸式閱讀地道書面粵文語法的語料寶庫。</div>
+          <div class="card-footer">
+            <span class="card-domain">zh-yue.wikipedia.org</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 15. RTHK Podcast -->
+        <a href="https://podcast.rthk.hk/" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="reading" data-keywords="香港电台 播客 听力 原声 电台 节目 rthk podcast">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=rthk.hk&sz=128" alt="RTHK" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">香港電台 PodCast One</div>
+            </div>
+            <span class="card-badge badge-reading">聽讀進階</span>
+          </div>
+          <div class="card-desc">香港電台官方節目頻道，涵蓋文化、歷史、故事、時事等純正地道的原生粵語聽力素材。</div>
+          <div class="card-footer">
+            <span class="card-domain">podcast.rthk.hk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 16. TVB News Official -->
+        <a href="https://www.youtube.com/@tvbnewsofficial" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="tvb 无线新闻 news 香港 电视台 直播 粤语新闻 听力 视频 影视 youtube">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=tvb.com&sz=128" alt="TVB News" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">TVB NEWS 無綫新聞</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">香港最大電視台官方新聞頻道，每日提供標準粵語新聞播報、時事專題與全天候粵語直播，是練習標準粵語聽力的經典素材。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@tvbnewsofficial</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 17. RTHK YouTube -->
+        <a href="https://www.youtube.com/@RTHK" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="rthk 香港电台 铿锵集 纪录片 听力 文化 粤语纪录片 视频 影视 youtube">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=rthk.hk&sz=128" alt="RTHK YouTube" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">RTHK 香港電台官方頻道</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">香港公共廣播官方頻道，包含《鏗鏘集》《香港故事》等高水準粵語紀錄片、深度專題與生活文化節目。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@RTHK</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 18. ViuTV Official -->
+        <a href="https://www.youtube.com/@ViuTV" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="viutv 电视 港剧 综艺 访谈 流行口语 潮流 影视 视频 youtube">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=viu.tv&sz=128" alt="ViuTV" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">ViuTV 官方頻道</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">香港人氣潮流電視台，涵蓋地道流行真人秀、原創港劇、音樂訪談與最新潮的年輕人粵語口語表達。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@ViuTV</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 19. Dope Chinese with Gloria -->
+        <a href="https://www.youtube.com/@DopeCantonese" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="dope chinese gloria 粤语教程 口语 俚语 生活会话 youtuber 学习 视频 影视 youtube">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=128" alt="YouTube" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">Dope Chinese with Gloria</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">人氣粵語 YouTuber，專注於香港日常生活地道口語表達、俚語俗語解析、發音細節與情境會話教學。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@DopeCantonese</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 20. The Do Show -->
+        <a href="https://www.youtube.com/@TheDoShow0909" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="the do show 郑裕玲 do姐 访谈 对话 巨星 明星 优雅 口语 听力 youtube 视频 影视">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=128" alt="The Do Show" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">The Do Show (Do姐訪談)</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">香港殿堂級主持人鄭裕玲（Do姐）官方訪談頻道，與梁朝偉、周潤發等一線巨星深度對談，發音高雅得體、談吐幽默，高階聽力必備。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@TheDoShow0909</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 21. Mill MILK -->
+        <a href="https://www.youtube.com/@mm.millmilk" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="mill milk 纪录片 香港 市井 文化 美食 职人 探店 生活 听力 youtube 视频 影视">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=128" alt="Mill MILK" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">Mill MILK 紀錄片</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">香港超人氣市井文化與職人紀錄片媒體，以 700 萬種生活視角走訪香港老店與百態，生動記錄最地道純粹的日常粵語。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@mm.millmilk</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 22. Trial & Error -->
+        <a href="https://www.youtube.com/@trialanderror924" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="试当真 trial error 游学修 许贤 剧场 短剧 喜剧 流行语 潮语 搞笑 youtube 视频 影视">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=youtube.com&sz=128" alt="Trial & Error" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">試當真 Trial & Error</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">香港年輕一代最具代表性的創意喜劇與短劇團隊，幽默詼諧、節奏明快，是學習香港現代流行口語與潮語文化的窗口。</div>
+          <div class="card-footer">
+            <span class="card-domain">youtube.com/@trialanderror924</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- 23. 粵知一二 -->
+        <a href="https://space.bilibili.com/95515699" target="_blank" rel="noopener noreferrer" class="resource-card" data-category="media" data-keywords="粤知一二 郭嘉峰 脱口秀 吐槽 搞笑 俚语 广府 广东话 bilibili 哔哩哔哩 视频 影视">
+          <div class="card-header">
+            <div class="card-icon-title">
+              <div class="card-icon-box">
+                <img src="https://www.google.com/s2/favicons?domain=bilibili.com&sz=128" alt="Bilibili" loading="lazy" onerror="this.onerror=null;this.src='icon_favicon.svg'" />
+              </div>
+              <div class="card-title">粵知一二 (郭嘉峰)</div>
+            </div>
+            <span class="card-badge badge-media">影視文化</span>
+          </div>
+          <div class="card-desc">Bilibili 頂流廣府粵語脫口秀與搞笑短片頻道，金句頻出、俚語豐富、語速自然，極具廣府粵語幽默感與實用生活表達。</div>
+          <div class="card-footer">
+            <span class="card-domain">space.bilibili.com/95515699</span>
+            <span class="card-action">立即訪問 ↗</span>
+          </div>
+        </a>
+
+        <!-- Empty State (hidden by default) -->
+        <div class="empty-state" id="emptyState">
+          <div class="empty-state-icon">
+            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"></circle>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+            </svg>
+          </div>
+          <div class="empty-state-title">未找到匹配的學習資源</div>
+          <div class="empty-state-desc">請嘗試使用其他關鍵字或切換分類篩選標籤</div>
+        </div>
+
+      </main>
+
+    </div>
+
+    <script src="roadmap.js"></script>
+  </body>
+</html>

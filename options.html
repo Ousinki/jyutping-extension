@@ -743,6 +743,194 @@
       .select-wrapper {
         position: relative;
       }
+
+      /* Segmented Control Component */
+      .segmented-control {
+        display: flex;
+        background: var(--bg-input);
+        border-radius: 8px;
+        padding: 3px;
+        position: relative;
+        border: 1px solid var(--border);
+        width: 200px;
+        box-sizing: border-box;
+      }
+      :root[data-theme="dark"] .segmented-control {
+        background: rgba(15, 23, 42, 0.45);
+        border-color: rgba(255, 255, 255, 0.08);
+      }
+      .segmented-control label {
+        flex: 1;
+        text-align: center;
+        font-size: 13px;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 5px 0;
+        margin: 0;
+        position: relative;
+        z-index: 2;
+        transition: all 0.2s ease;
+        user-select: none;
+        font-weight: 500;
+      }
+      :root[data-theme="dark"] .segmented-control label {
+        color: #94a3b8;
+      }
+      .segmented-slider {
+        position: absolute;
+        top: 3px;
+        bottom: 3px;
+        left: 3px;
+        width: calc(50% - 3px);
+        background: #ffffff;
+        border-radius: 5px;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+        transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        z-index: 1;
+      }
+      :root[data-theme="dark"] .segmented-slider {
+        background: #334155 !important;
+        border: 1px solid rgba(255, 255, 255, 0.15) !important;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+      }
+      .segmented-control input[type="radio"]:checked + label {
+        color: var(--text-primary) !important;
+        font-weight: 600 !important;
+      }
+      :root[data-theme="dark"] .segmented-control input[type="radio"]:checked + label {
+        color: #ffffff !important;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      }
+
+      /* Roadmap Filter Bar */
+      .roadmap-filter-bar {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+        margin-top: 14px;
+        margin-bottom: 16px;
+      }
+      .roadmap-filter-btn {
+        padding: 5px 12px;
+        font-size: 12px;
+        font-weight: 500;
+        border-radius: 20px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+        line-height: 1.4;
+      }
+      .roadmap-filter-btn:hover {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        border-color: var(--text-muted);
+      }
+      .roadmap-filter-btn.active {
+        background: var(--primary);
+        color: #ffffff;
+        border-color: var(--primary);
+        box-shadow: 0 2px 6px rgba(138, 28, 28, 0.25);
+      }
+      :root[data-theme="dark"] .roadmap-filter-btn.active {
+        background: var(--primary);
+        color: #ffffff;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+      }
+
+      /* Roadmap Grid Layout */
+      .roadmap-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+        margin-top: 8px;
+      }
+      .roadmap-card {
+        display: flex;
+        flex-direction: column;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        padding: 14px 16px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+      }
+      .roadmap-card:hover {
+        transform: translateY(-2px);
+        background: var(--bg-card);
+        border-color: var(--primary);
+        box-shadow: var(--shadow);
+      }
+      :root[data-theme="dark"] .roadmap-card {
+        background: rgba(15, 23, 42, 0.35);
+      }
+      :root[data-theme="dark"] .roadmap-card:hover {
+        background: var(--bg-card);
+        border-color: var(--primary-light);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+      }
+      .roadmap-card-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 8px;
+      }
+      .roadmap-card-badge {
+        font-size: 10px;
+        font-weight: 600;
+        padding: 2px 6px;
+        border-radius: 4px;
+        letter-spacing: 0.3px;
+      }
+      .badge-cat-phonetics { background: rgba(59, 130, 246, 0.12); color: #2563eb; border: 1px solid rgba(59, 130, 246, 0.25); }
+      .badge-cat-dictionary { background: rgba(184, 134, 11, 0.12); color: #b8860b; border: 1px solid rgba(184, 134, 11, 0.25); }
+      .badge-cat-tool { background: rgba(16, 185, 129, 0.12); color: #059669; border: 1px solid rgba(16, 185, 129, 0.25); }
+      .badge-cat-input { background: rgba(139, 92, 246, 0.12); color: #7c3aed; border: 1px solid rgba(139, 92, 246, 0.25); }
+      .badge-cat-reading { background: rgba(236, 72, 153, 0.12); color: #db2777; border: 1px solid rgba(236, 72, 153, 0.25); }
+      
+      :root[data-theme="dark"] .badge-cat-phonetics { color: #60a5fa; border-color: rgba(96, 165, 250, 0.3); }
+      :root[data-theme="dark"] .badge-cat-dictionary { color: #e8b84e; border-color: rgba(232, 184, 78, 0.3); }
+      :root[data-theme="dark"] .badge-cat-tool { color: #34d399; border-color: rgba(52, 211, 153, 0.3); }
+      :root[data-theme="dark"] .badge-cat-input { color: #a78bfa; border-color: rgba(167, 139, 250, 0.3); }
+      :root[data-theme="dark"] .badge-cat-reading { color: #f472b6; border-color: rgba(244, 114, 182, 0.3); }
+
+      .roadmap-card-link-icon {
+        color: var(--text-muted);
+        transition: transform 0.2s ease, color 0.2s ease;
+      }
+      .roadmap-card:hover .roadmap-card-link-icon {
+        color: var(--primary);
+        transform: translate(2px, -2px);
+      }
+      :root[data-theme="dark"] .roadmap-card:hover .roadmap-card-link-icon {
+        color: var(--primary-light);
+      }
+      .roadmap-card-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 2px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+      .roadmap-card-domain {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-bottom: 6px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+      }
+      .roadmap-card-desc {
+        font-size: 12px;
+        line-height: 1.45;
+        color: var(--text-secondary);
+        flex: 1;
+      }
     </style>
   </head>
   <body>
@@ -777,6 +965,10 @@
               border: 1px solid var(--border);
               gap: 2px;
             }
+            :root[data-theme="dark"] .theme-toggle-group {
+              background: rgba(15, 23, 42, 0.45);
+              border-color: rgba(255, 255, 255, 0.08);
+            }
             .theme-toggle-btn {
               background: none;
               border: none;
@@ -795,7 +987,11 @@
             .theme-toggle-btn.active {
               background: var(--bg-card);
               color: var(--primary);
-              box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+              box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            }
+            :root[data-theme="dark"] .theme-toggle-btn.active {
+              background: var(--primary);
+              color: #ffffff;
             }
           </style>
           <button id="themeLight" class="theme-toggle-btn" title="淺色 (Light)" aria-label="Light">
@@ -829,14 +1025,24 @@
         </div>
         <h1 data-i18n="optTitle">粵語懸浮詞典</h1>
         <p data-i18n="optSubtitle">Jyutping Hover Dictionary</p>
-        <a href="wordbook.html" id="wordbookEntryBtn" style="display: inline-flex; align-items: center; gap: 8px; margin-top: 16px; padding: 10px 20px; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 200ms ease; background: transparent;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-          </svg>
-          <span data-i18n="optOpenWordbook">打開生詞本</span>
-          <span id="wordbookCountBadge" style="background: var(--primary); color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 600; min-width: 20px; text-align: center;">0</span>
-        </a>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 16px;">
+          <a href="wordbook.html" id="wordbookEntryBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1px solid var(--primary); border-radius: 8px; color: var(--primary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 200ms ease; background: transparent;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+            </svg>
+            <span data-i18n="optOpenWordbook">打開生詞本</span>
+            <span id="wordbookCountBadge" style="background: var(--primary); color: #fff; font-size: 11px; padding: 1px 7px; border-radius: 10px; font-weight: 600; min-width: 20px; text-align: center;">0</span>
+          </a>
+          <a href="roadmap.html" id="roadmapEntryBtn" target="_blank" style="display: inline-flex; align-items: center; gap: 8px; padding: 10px 18px; border: 1px solid var(--border); border-radius: 8px; color: var(--text-primary); text-decoration: none; font-size: 14px; font-weight: 500; transition: all 200ms ease; background: var(--bg-input);">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>
+            </svg>
+            <span data-i18n="optRoadmapTitle">學習導航</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+          </a>
+        </div>
       </div>
 
       <!-- General Settings -->
@@ -1383,16 +1589,15 @@
             <style>
               input[name="paragraphTransEngineRadio"]:nth-child(1):checked ~ .segmented-slider { transform: translateX(0); }
               input[name="paragraphTransEngineRadio"]:nth-child(3):checked ~ .segmented-slider { transform: translateX(100%); }
-              input[name="paragraphTransEngineRadio"]:checked + label { color: var(--text-primary) !important; font-weight: 500; }
             </style>
-            <div class="segmented-control" style="display: flex; background: var(--bg-input); border-radius: 6px; padding: 3px; position: relative; border: 1px solid var(--border); width: 200px;">
+            <div class="segmented-control">
               <input type="radio" name="paragraphTransEngineRadio" id="paraEngineBing" value="bing" style="display: none;" checked>
-              <label for="paraEngineBing" style="flex: 1; text-align: center; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 5px 0; margin: 0; position: relative; z-index: 2; transition: color 0.2s; user-select: none;" data-i18n="optParaTransEngineBing">Bing 翻譯</label>
+              <label for="paraEngineBing" data-i18n="optParaTransEngineBing">Bing 翻譯</label>
               
               <input type="radio" name="paragraphTransEngineRadio" id="paraEngineAi" value="ai" style="display: none;">
-              <label for="paraEngineAi" style="flex: 1; text-align: center; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 5px 0; margin: 0; position: relative; z-index: 2; transition: color 0.2s; user-select: none;" data-i18n="optParaTransEngineAI">自定義 AI</label>
+              <label for="paraEngineAi" data-i18n="optParaTransEngineAI">自定義 AI</label>
               
-              <div class="segmented-slider" style="position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); background: #ffffff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 1;"></div>
+              <div class="segmented-slider"></div>
             </div>
           </div>
 
@@ -1737,24 +1942,15 @@
               input[name="transHoverEngineRadio"]:nth-child(3):checked ~ .segmented-slider {
                 transform: translateX(100%);
               }
-              input[name="transHoverEngineRadio"]:checked + label {
-                color: var(--text-primary) !important;
-                font-weight: 500;
-              }
-              /* For dark mode slider background */
-              html[data-theme="dark"] .segmented-slider {
-                background: #333 !important;
-                box-shadow: 0 1px 3px rgba(0,0,0,0.5) !important;
-              }
             </style>
-            <div class="segmented-control" style="display: flex; background: var(--bg-input); border-radius: 6px; padding: 3px; position: relative; border: 1px solid var(--border); width: 200px;">
+            <div class="segmented-control">
               <input type="radio" name="transHoverEngineRadio" id="engineBing" value="bing" style="display: none;" checked>
-              <label for="engineBing" style="flex: 1; text-align: center; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 5px 0; margin: 0; position: relative; z-index: 2; transition: color 0.2s; user-select: none;" data-i18n="optParaTransEngineBing">Bing 翻譯</label>
+              <label for="engineBing" data-i18n="optParaTransEngineBing">Bing 翻譯</label>
               
               <input type="radio" name="transHoverEngineRadio" id="engineAi" value="ai" style="display: none;">
-              <label for="engineAi" style="flex: 1; text-align: center; font-size: 13px; color: var(--text-secondary); cursor: pointer; padding: 5px 0; margin: 0; position: relative; z-index: 2; transition: color 0.2s; user-select: none;" data-i18n="optParaTransEngineAI">自定義 AI</label>
+              <label for="engineAi" data-i18n="optParaTransEngineAI">自定義 AI</label>
               
-              <div class="segmented-slider" style="position: absolute; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 3px); background: #ffffff; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.25s cubic-bezier(0.25, 0.46, 0.45, 0.94); z-index: 1;"></div>
+              <div class="segmented-slider"></div>
             </div>
           </div>
 
@@ -2008,6 +2204,462 @@
                 83%, 100% { opacity: 0; transform: translate(-50%, -10px); }
               }
             </style>
+          </div>
+
+          <!-- Cantonese [粵] Definitions Translation Sub-Section -->
+          <div style="border-top: 1px dashed var(--border); padding-top: 24px; margin-top: 24px;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+              <div style="font-size: 15px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+                <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: rgba(184, 134, 11, 0.15); color: #b8860b; font-size: 11px; font-weight: 700;">粵</span>
+                <span data-i18n="optYueDefSectionTitle">粵語口語釋義翻譯</span>
+              </div>
+            </div>
+            <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 16px 0; line-height: 1.5;" data-i18n="optYueDefSectionDesc">
+              詞典中帶有 [粵] 標籤的口語詞條，可點擊徽章即時翻譯或開啟自動翻譯
+            </p>
+
+            <div class="setting-item">
+              <div class="setting-info">
+                <span class="setting-label" data-i18n="optAutoTranslateYueDefs">自動翻譯粵語口語釋義</span>
+                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsDesc">在懸浮窗與生詞本中自動將 [粵] 口語釋義翻譯為目標語言</span>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="enableAutoTranslateYueDefs">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <div class="setting-item" id="yueDefsTargetLangRow">
+              <div class="setting-info">
+                <span class="setting-label" data-i18n="optAutoTranslateYueDefsTarget">粵語釋義目標語言</span>
+                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsTargetDesc">選擇口語釋義預設翻譯成的語言</span>
+              </div>
+              <select id="autoTranslateYueDefsTargetLang" class="setting-select">
+                <option value="zh-Hans">简体中文 (Simplified Chinese)</option>
+                <option value="en">English (英文)</option>
+                <option value="ja">日本語 (Japanese)</option>
+                <option value="ko">한국어 (Korean)</option>
+                <option value="zh-Hant">繁體中文 (Traditional Chinese)</option>
+              </select>
+            </div>
+
+            <div class="setting-item" id="yueDefsEngineRow">
+              <div class="setting-info">
+                <span class="setting-label" data-i18n="optAutoTranslateYueDefsEngine">粵語釋義翻譯引擎</span>
+                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsEngineDesc">選擇用於翻譯口語釋義的引擎</span>
+              </div>
+              <select id="autoTranslateYueDefsEngine" class="setting-select">
+                <option value="google">Google 翻譯 (免配置 / 速度快)</option>
+                <option value="bing">Bing 翻譯 (原生支持粵語)</option>
+                <option value="ai">自定義 AI (需配置 API Key)</option>
+              </select>
+            </div>
+
+            <div class="setting-item" id="yueDefDisplayModeRow">
+              <div class="setting-info">
+                <span class="setting-label" data-i18n="optYueDefDisplayMode">粵語釋義翻譯顯示方式</span>
+                <span class="setting-desc" data-i18n="optYueDefDisplayModeDesc">選擇翻譯結果是展開於下方還是直接原位覆蓋原文</span>
+              </div>
+              <select id="yueDefDisplayMode" class="setting-select">
+                <option value="expand" data-i18n="optYueDefDisplayModeExpand">下方展開</option>
+                <option value="replace" data-i18n="optYueDefDisplayModeReplace">原位替換</option>
+              </select>
+            </div>
+
+            <!-- Cantonese Definition Translation Animation Demo -->
+            <div id="yueDefDemoContainer" class="yue-def-demo-card demo-mode-expand" style="margin-top: 20px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 25px 20px; position: relative; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 230px; min-height: 230px; box-sizing: border-box; overflow: hidden; user-select: none;">
+              <!-- Simulated Dictionary Popup -->
+              <div class="demo-dict-box" style="background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; width: 340px; box-shadow: var(--shadow); padding: 14px 16px; position: relative; z-index: 1; text-align: left; pointer-events: none;">
+                
+                <!-- Word Header -->
+                <div style="display: flex; align-items: baseline; gap: 8px; margin-bottom: 2px;">
+                  <span style="font-size: 20px; font-weight: 700; color: var(--text-primary); line-height: 1.2;">於</span>
+                  <span style="font-size: 13.5px; color: var(--primary, #2563eb); font-weight: 600;">jyu1</span>
+                  <button class="tts-speaker-btn" title="播放發音" aria-label="播放發音" style="background: none; border: none; padding: 0 2px; display: inline-flex; align-items: center; color: var(--text-secondary); opacity: 0.8; margin-left: 2px; vertical-align: middle;">
+                    <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                      <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                      <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                    </svg>
+                  </button>
+                </div>
+
+                <!-- English Definition -->
+                <div style="font-size: 12.5px; color: var(--text-secondary); margin-bottom: 8px; line-height: 1.4;">
+                  (literary) in; at; on
+                </div>
+                
+                <!-- Cantonese Definition Section -->
+                <div class="demo-yue-def-group" style="border-top: 1px solid var(--border); padding-top: 8px; position: relative;">
+                  <!-- Definition Main Line -->
+                  <div class="demo-yue-orig-row" style="font-size: 13px; line-height: 1.5; color: var(--text-primary); display: flex; align-items: flex-start; gap: 6px;">
+                    
+                    <!-- Badge Stack (Original vs Replaced) -->
+                    <div class="demo-badge-stack" style="position: relative; display: inline-flex; flex-shrink: 0; margin-top: 2px; height: 16px;">
+                      <span class="demo-badge-yue" id="demoBadgeYue">
+                        粵<svg viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                      </span>
+                      <span class="demo-badge-replaced" id="demoBadgeReplaced">
+                        <span id="demoReplacedLang">普</span><svg class="trans-toggle-icon" viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-left: 2px;"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>
+                      </span>
+                    </div>
+
+                    <!-- Text Stack (Original vs Loading vs Replaced Translation) -->
+                    <div class="demo-text-stack" style="position: relative; flex: 1; min-height: 20px;">
+                      <span class="demo-text-orig">標明事物或者動作所在嘅時空</span>
+                      <span class="demo-text-loading" style="color: var(--text-muted); opacity: 0.8; font-style: italic;">翻譯中...</span>
+                      <span class="demo-text-trans" id="demoReplacedText">标明事物或动作所在的时空</span>
+                    </div>
+                  </div>
+
+                  <!-- Mode A: Expand Subline (Underneath) -->
+                  <div class="demo-yue-expand-subline" id="demoYueExpandSubline">
+                    <span class="demo-badge-trans-sub" id="demoExpandLangBadge">普</span>
+                    <div class="demo-expand-text-wrap" style="position: relative; flex: 1; min-height: 18px;">
+                      <span class="demo-expand-loading-text" style="color: var(--text-muted); opacity: 0.8; font-style: italic;">翻譯中...</span>
+                      <span class="demo-expand-done-text" id="demoExpandTransText">标明事物或动作所在的时空</span>
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Simulated Cursor Positioned Relative to Dictionary Card -->
+                <div class="demo-def-cursor">
+                  <!-- Arrow Pointer SVG -->
+                  <svg class="cursor-svg-arrow" viewBox="0 0 24 24" fill="#1e293b" stroke="white" stroke-width="1.5" style="position: absolute; top: 0; left: 0; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); width: 100%; height: 100%;">
+                    <path d="M4 4l5.5 16.5L12 15l4.5 4.5 1.5-1.5L13.5 13.5 19.5 11z"/>
+                  </svg>
+                  <!-- Hand Pointer SVG (👆 Standard Pointer Cursor) -->
+                  <svg class="cursor-svg-hand" viewBox="0 0 16 16" fill="#1e293b" stroke="white" stroke-width="0.75" stroke-linejoin="round" style="position: absolute; top: -3px; left: -2px; filter: drop-shadow(0 2px 5px rgba(0,0,0,0.3)); width: 22px; height: 22px; opacity: 0;">
+                    <path d="M8.5 1.75v2.716l.047-.002c.312-.012.742-.016 1.051.046.28.056.543.18.738.288.273.152.456.385.56.642l.132-.012c.312-.024.794-.038 1.158.108.37.148.689.487.88.716q.113.137.195.248h.582a2 2 0 0 1 1.99 2.199l-.272 2.715a3.5 3.5 0 0 1-.444 1.389l-1.395 2.441A1.5 1.5 0 0 1 12.42 16H6.118a1.5 1.5 0 0 1-1.342-.83l-1.215-2.43L1.07 8.589a1.517 1.517 0 0 1 2.373-1.852L5 8.293V1.75a1.75 1.75 0 0 1 3.5 0"/>
+                  </svg>
+                  <div class="demo-def-ripple"></div>
+                </div>
+              </div>
+
+              <style>
+                .demo-badge-yue {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: rgba(184, 134, 11, 0.12);
+                  color: #b8860b;
+                  border: 1px solid rgba(184, 134, 11, 0.3);
+                  border-radius: 3px;
+                  padding: 0 4px;
+                  font-size: 10px;
+                  font-weight: 600;
+                  line-height: 14px;
+                  height: 16px;
+                  box-sizing: border-box;
+                  transition: all 0.2s ease;
+                }
+
+                .demo-badge-replaced {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: rgba(37, 99, 235, 0.12);
+                  color: #2563eb;
+                  border: 1px solid rgba(37, 99, 235, 0.28);
+                  border-radius: 3px;
+                  padding: 0 4px;
+                  font-size: 10px;
+                  font-weight: 600;
+                  line-height: 14px;
+                  height: 16px;
+                  box-sizing: border-box;
+                  opacity: 0;
+                  pointer-events: none;
+                  transition: all 0.2s ease;
+                }
+
+                .demo-badge-trans-sub {
+                  display: inline-flex;
+                  align-items: center;
+                  justify-content: center;
+                  background: rgba(37, 99, 235, 0.12);
+                  color: #2563eb;
+                  border: 1px solid rgba(37, 99, 235, 0.28);
+                  border-radius: 3px;
+                  padding: 0 3px;
+                  font-size: 10px;
+                  font-weight: 600;
+                  line-height: 14px;
+                  height: 15px;
+                  flex-shrink: 0;
+                  margin-top: 1px;
+                }
+
+                .demo-text-orig {
+                  display: block;
+                  opacity: 1;
+                }
+
+                .demo-text-loading {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  display: block;
+                  opacity: 0;
+                }
+
+                .demo-text-trans {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  display: block;
+                  opacity: 0;
+                }
+
+                .demo-yue-expand-subline {
+                  margin-top: 6px;
+                  padding: 5px 8px;
+                  background: rgba(128, 128, 128, 0.08);
+                  border-left: 2px solid #b8860b;
+                  border-radius: 0 4px 4px 0;
+                  font-size: 12px;
+                  line-height: 1.4;
+                  color: var(--text-secondary);
+                  display: flex;
+                  align-items: flex-start;
+                  gap: 6px;
+                  transform-origin: top;
+                  overflow: hidden;
+                  min-height: 24px;
+                  box-sizing: border-box;
+                  transition: all 0.25s ease;
+                }
+
+                .demo-expand-loading-text {
+                  position: absolute;
+                  top: 0;
+                  left: 0;
+                  display: block;
+                  opacity: 0;
+                  line-height: 1.4;
+                }
+
+                .demo-expand-done-text {
+                  display: block;
+                  opacity: 0;
+                  line-height: 1.4;
+                  word-break: break-word;
+                }
+
+                .demo-def-cursor {
+                  position: absolute;
+                  width: 24px;
+                  height: 24px;
+                  z-index: 10;
+                  pointer-events: none;
+                  transform-origin: top left;
+                }
+
+                .demo-def-ripple {
+                  position: absolute;
+                  top: -2px; left: -7px;
+                  width: 22px; height: 22px;
+                  border-radius: 50%;
+                  background: rgba(184, 134, 11, 0.5);
+                  opacity: 0;
+                }
+
+                /* =========================================
+                   CURSOR ARROW <-> HAND TRANSITION
+                   ========================================= */
+                .demo-mode-expand .cursor-svg-arrow,
+                .demo-mode-replace .cursor-svg-arrow {
+                  animation: cursorSvgArrowAnim 8s infinite;
+                }
+                .demo-mode-expand .cursor-svg-hand,
+                .demo-mode-replace .cursor-svg-hand {
+                  animation: cursorSvgHandAnim 8s infinite;
+                }
+
+                @keyframes cursorSvgArrowAnim {
+                  0%, 18% { opacity: 1; }
+                  20%, 31% { opacity: 0; }
+                  35%, 68% { opacity: 1; }
+                  70%, 80% { opacity: 0; }
+                  83%, 100% { opacity: 1; }
+                }
+
+                @keyframes cursorSvgHandAnim {
+                  0%, 18% { opacity: 0; }
+                  20%, 31% { opacity: 1; }
+                  35%, 68% { opacity: 0; }
+                  70%, 80% { opacity: 1; }
+                  83%, 100% { opacity: 0; }
+                }
+
+                /* =========================================
+                   MODE A: EXPAND (下方展開)
+                   ========================================= */
+                .demo-mode-expand .demo-def-cursor {
+                  animation: moveCursorExpand 8s ease-in-out infinite;
+                }
+                .demo-mode-expand .demo-def-ripple {
+                  animation: rippleExpand 8s infinite;
+                }
+                .demo-mode-expand .demo-badge-yue {
+                  animation: badgeClickExpand 8s infinite;
+                }
+                .demo-mode-expand .demo-yue-expand-subline {
+                  animation: sublineAnimExpand 8s cubic-bezier(0.16, 1, 0.3, 1) infinite;
+                }
+                .demo-mode-expand .demo-expand-loading-text {
+                  animation: expandLoadingTextAnim 8s infinite;
+                }
+                .demo-mode-expand .demo-expand-done-text {
+                  animation: expandDoneTextAnim 8s infinite;
+                }
+                .demo-mode-expand .demo-text-orig {
+                  opacity: 1 !important;
+                }
+                .demo-mode-expand .demo-text-loading,
+                .demo-mode-expand .demo-text-trans,
+                .demo-mode-expand .demo-badge-replaced {
+                  opacity: 0 !important;
+                }
+
+                @keyframes moveCursorExpand {
+                  0%, 5% { top: 125px; left: 240px; opacity: 0; }
+                  10% { opacity: 1; }
+                  22% { top: 84px; left: 24px; transform: scale(1); } /* Centered directly over [粵] badge */
+                  25% { top: 84px; left: 24px; transform: scale(0.85); } /* Click 1 down */
+                  27% { top: 84px; left: 24px; transform: scale(1); } /* Click 1 up */
+                  38% { top: 130px; left: 75px; } /* Move away to read */
+                  62% { top: 130px; left: 75px; }
+                  72% { top: 84px; left: 24px; transform: scale(1); } /* Move back to [粵] badge */
+                  75% { top: 84px; left: 24px; transform: scale(0.85); } /* Click 2 down */
+                  77% { top: 84px; left: 24px; transform: scale(1); } /* Click 2 up */
+                  86% { top: 125px; left: 240px; opacity: 1; }
+                  92%, 100% { top: 125px; left: 240px; opacity: 0; }
+                }
+
+                @keyframes rippleExpand {
+                  0%, 24.9% { opacity: 0; transform: scale(0.5); }
+                  25% { opacity: 0.85; transform: scale(0.5); }
+                  27% { opacity: 0; transform: scale(2.2); }
+                  27.1%, 74.9% { opacity: 0; }
+                  75% { opacity: 0.85; transform: scale(0.5); }
+                  77% { opacity: 0; transform: scale(2.2); }
+                  77.1%, 100% { opacity: 0; }
+                }
+
+                @keyframes badgeClickExpand {
+                  0%, 24% { transform: scale(1); background: rgba(184, 134, 11, 0.12); }
+                  25%, 27% { transform: scale(0.9); }
+                  28%, 74% { transform: scale(1); background: rgba(184, 134, 11, 0.25); }
+                  75%, 77% { transform: scale(0.9); }
+                  78%, 100% { transform: scale(1); background: rgba(184, 134, 11, 0.12); }
+                }
+
+                @keyframes sublineAnimExpand {
+                  0%, 26% { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; transform: translateY(-4px); }
+                  28%, 75% { opacity: 1; max-height: 100px; padding-top: 5px; padding-bottom: 5px; margin-top: 6px; transform: translateY(0); }
+                  78%, 100% { opacity: 0; max-height: 0; padding-top: 0; padding-bottom: 0; margin-top: 0; transform: translateY(-4px); }
+                }
+
+                @keyframes expandLoadingTextAnim {
+                  0%, 26% { opacity: 0; }
+                  28%, 38% { opacity: 0.8; }
+                  41%, 100% { opacity: 0; }
+                }
+
+                @keyframes expandDoneTextAnim {
+                  0%, 38% { opacity: 0; transform: translateY(2px); }
+                  42%, 75% { opacity: 1; transform: translateY(0); }
+                  76%, 100% { opacity: 0; transform: translateY(-2px); }
+                }
+
+                /* =========================================
+                   MODE B: REPLACE (原位替換)
+                   ========================================= */
+                .demo-mode-replace .demo-def-cursor {
+                  animation: moveCursorReplace 8s ease-in-out infinite;
+                }
+                .demo-mode-replace .demo-def-ripple {
+                  animation: rippleReplace 8s infinite;
+                }
+                .demo-mode-replace .demo-yue-expand-subline {
+                  display: none !important;
+                }
+                .demo-mode-replace .demo-badge-yue {
+                  animation: badgeYueAnimReplace 8s infinite;
+                }
+                .demo-mode-replace .demo-badge-replaced {
+                  animation: badgeReplacedAnimReplace 8s infinite;
+                }
+                .demo-mode-replace .demo-text-orig {
+                  animation: textOrigAnimReplace 8s infinite;
+                }
+                .demo-mode-replace .demo-text-loading {
+                  animation: textLoadingAnimReplace 8s infinite;
+                }
+                .demo-mode-replace .demo-text-trans {
+                  animation: textTransAnimReplace 8s infinite;
+                }
+
+                @keyframes moveCursorReplace {
+                  0%, 5% { top: 125px; left: 240px; opacity: 0; }
+                  10% { opacity: 1; }
+                  22% { top: 84px; left: 24px; transform: scale(1); } /* Centered directly over [粵] badge */
+                  25% { top: 84px; left: 24px; transform: scale(0.85); } /* Click 1 down */
+                  27% { top: 84px; left: 24px; transform: scale(1); } /* Click 1 up */
+                  38% { top: 118px; left: 75px; } /* Move away to read */
+                  62% { top: 118px; left: 75px; }
+                  72% { top: 84px; left: 24px; transform: scale(1); } /* Move back to [普] badge */
+                  75% { top: 84px; left: 24px; transform: scale(0.85); } /* Click 2 down to restore */
+                  77% { top: 84px; left: 24px; transform: scale(1); } /* Click 2 up */
+                  86% { top: 125px; left: 240px; opacity: 1; }
+                  92%, 100% { top: 125px; left: 240px; opacity: 0; }
+                }
+
+                @keyframes rippleReplace {
+                  0%, 24.9% { opacity: 0; transform: scale(0.5); }
+                  25% { opacity: 0.85; transform: scale(0.5); }
+                  27% { opacity: 0; transform: scale(2.2); }
+                  27.1%, 74.9% { opacity: 0; }
+                  75% { opacity: 0.85; transform: scale(0.5); background: rgba(37, 99, 235, 0.5); }
+                  77% { opacity: 0; transform: scale(2.2); }
+                  77.1%, 100% { opacity: 0; }
+                }
+
+                @keyframes badgeYueAnimReplace {
+                  0%, 25% { opacity: 1; transform: scale(1); }
+                  26%, 76% { opacity: 0; transform: scale(0.8); }
+                  77%, 100% { opacity: 1; transform: scale(1); }
+                }
+
+                @keyframes badgeReplacedAnimReplace {
+                  0%, 39% { opacity: 0; transform: scale(0.8); }
+                  42%, 75% { opacity: 1; transform: scale(1); }
+                  76%, 100% { opacity: 0; transform: scale(0.8); }
+                }
+
+                @keyframes textOrigAnimReplace {
+                  0%, 25% { opacity: 1; transform: translateY(0); }
+                  26%, 76% { opacity: 0; transform: translateY(-2px); }
+                  77%, 100% { opacity: 1; transform: translateY(0); }
+                }
+
+                @keyframes textLoadingAnimReplace {
+                  0%, 25% { opacity: 0; transform: translateY(2px); }
+                  27%, 38% { opacity: 0.8; transform: translateY(0); }
+                  41%, 100% { opacity: 0; transform: translateY(-2px); }
+                }
+
+                @keyframes textTransAnimReplace {
+                  0%, 39% { opacity: 0; transform: translateY(2px); }
+                  42%, 75% { opacity: 1; transform: translateY(0); }
+                  76%, 100% { opacity: 0; transform: translateY(-2px); }
+                }
+              </style>
+            </div>
           </div>
         </div>
       </div>
@@ -2302,6 +2954,7 @@
               </div>
               <div class="select-wrapper">
                 <select id="aiLanguage">
+                  <option value="auto" data-i18n="optAILangAuto">跟隨介面語言 (Auto)</option>
                   <option value="繁體中文" data-i18n="optAILangTW">繁體中文</option>
                   <option value="簡體中文" data-i18n="optAILangCN">簡體中文</option>
                   <option value="英文" data-i18n="optAILangEN">英文 (English)</option>
@@ -2333,6 +2986,8 @@
               </button>
             </div>
           </div>
+        </div>
+        
         </div>
       </div>
 
@@ -2603,6 +3258,7 @@
           </div>
         </div>
       </div>
+
       <!-- Feedback Card -->
       <div class="settings-card" id="sec-feedback">
         <div class="settings-section">
@@ -2785,6 +3441,75 @@
           <li data-i18n="clItem9"><b>生詞本管理頁面</b>：支持搜索、排序、批量管理，並提供 JSON / CSV / Markdown / TXT 四種格式導出，亦可導入備份。</li>
           <li data-i18n="clItem10"><b>右鍵菜單收藏</b>：選中任意中文文字，右鍵即可快速加入生詞本，無需打開懸浮窗。</li>
         </ul>
+      </div>
+    </div>
+
+    <!-- Feedback Widget -->
+    <div id="feedbackWidget" style="display: none; position: fixed; bottom: 24px; right: 24px; width: 340px; background: var(--bg-card); border: 1px solid var(--border); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,0.08), 0 2px 8px rgba(0,0,0,0.04); z-index: 9999; overflow: hidden; font-family: system-ui, -apple-system, sans-serif;">
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg-input);">
+        <div style="font-weight: 600; font-size: 14px; color: var(--text-primary);">助力插件做得更好 🚀</div>
+        <button id="closeFeedbackBtn" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; display: flex;">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+      
+      <div id="feedbackWizard" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
+        <!-- Step 1 -->
+        <div class="feedback-step" data-step="0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">1. 您使用本插件的主要目的是什麼？</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;">
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="learn">學習粵語（我是粵語學習者）</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="read">日常網頁閱讀輔助（查生僻字）</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="translate">翻譯輔助（轉為書面語等）</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="entertainment">娛樂/社交（如 YouTube 字幕等）</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="other">其他：<input type="text" id="fb_purpose_other" style="flex: 1; min-width: 0; border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--text-primary); outline: none; font-size: 13px; padding-left: 4px;"></label>
+          </div>
+        </div>
+        <!-- Step 2 -->
+        <div class="feedback-step" data-step="1" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">2. 您希望未來優先增加哪項核心功能？(可多選)</div>
+          <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;">
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="sync">☁️ 生詞本多設備雲端同步</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="translate">🌐 網頁劃詞 / 整句智能翻譯</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="dicts">📚 接入更多詞典源數據</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="mobile">📱 推出手機端瀏覽器支持</label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="other">其他：<input type="text" id="fb_feature_other" style="flex: 1; min-width: 0; border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--text-primary); outline: none; font-size: 13px; padding-left: 4px;"></label>
+          </div>
+        </div>
+        <!-- Step 3 -->
+        <div class="feedback-step" data-step="2" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">3. 您對當前插件的整體評價如何？</div>
+          <div style="display: flex; justify-content: center; align-items: center; flex: 1;">
+            <div id="fb_stars" style="display: flex; gap: 8px; cursor: pointer;">
+              <!-- 5 stars -->
+              <svg class="fb-star" data-rating="1" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--border); transition: 0.2s;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg class="fb-star" data-rating="2" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--border); transition: 0.2s;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg class="fb-star" data-rating="3" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--border); transition: 0.2s;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg class="fb-star" data-rating="4" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--border); transition: 0.2s;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+              <svg class="fb-star" data-rating="5" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color: var(--border); transition: 0.2s;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></svg>
+            </div>
+          </div>
+        </div>
+        <!-- Step 4 -->
+        <div class="feedback-step" data-step="3" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;">4. 您的建議、反饋或遇到的 Bug？(選填)</div>
+          <textarea id="fb_comments" placeholder="請告訴我們您的想法..." style="flex: 1; resize: none; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); font-size: 13px; outline: none; margin-bottom: 8px;"></textarea>
+          <label style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 6px; cursor: pointer;">
+            <input type="checkbox" id="fb_include_sys" checked style="margin-top: 2px;">
+            <span>允許附加基本環境資訊 (介面語言與作業系統) 以協助我們更好地優化體驗。</span>
+          </label>
+        </div>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg-card);">
+        <div style="font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums;" id="fb_progress">1 / 4</div>
+        <div style="display: flex; gap: 8px;">
+          <button id="fb_prevBtn" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-primary); cursor: pointer; font-size: 13px; opacity: 0.5; pointer-events: none; transition: 0.2s;">上一步</button>
+          <button id="fb_nextBtn" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--primary); color: white; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s;">下一步</button>
+        </div>
       </div>
     </div>
 

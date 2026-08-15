@@ -691,5 +691,137 @@
   },
   "wordbookEmptyDetail": {
     "message": "왼쪽 단어를 클릭하여<br>사전 세부 정보를 봅니다"
+  },
+  "wordbookModeWord": {
+    "message": "단어"
+  },
+  "wordbookModeDict": {
+    "message": "사전"
+  },
+  "wordbookExportJson": {
+    "message": "JSON (전체 백업)"
+  },
+  "wordbookExportCsv": {
+    "message": "CSV (Excel 호환)"
+  },
+  "wordbookExportMd": {
+    "message": "Markdown"
+  },
+  "wordbookExportTxt": {
+    "message": "일반 텍스트"
+  },
+  "wordbookExportImport": {
+    "message": "가져오기..."
+  },
+  "dictSearchFallback": {
+    "message": "📖 사전 검색"
+  },
+  "dictSearchEmpty": {
+    "message": "사전에서 일치하는 결과를 찾을 수 없습니다"
+  },
+  "dictSearchNoDetail": {
+    "message": "사전에서 <strong>$1</strong>의 자세한 정의를 찾을 수 없습니다."
+  },
+  "wordbookAiChat": {
+    "message": "❇️ AI Q&A"
+  },
+  "wordbookAiAction1": {
+    "message": "문장"
+  },
+  "wordbookAiAction2": {
+    "message": "어원"
+  },
+  "wordbookAiAction3": {
+    "message": "일상 용법"
+  },
+  "wordbookAiAction4": {
+    "message": "유의/반의"
+  },
+  "wordbookAiInputPlaceholder": {
+    "message": "'$1'에 대해 질문하기..."
+  },
+  "wordbookAiInputPlaceholderGeneric": {
+    "message": "광둥어에 대해 무엇이든 물어보세요..."
+  },
+  "wordbookEmptyDetail1": {
+    "message": "세부 정보를 보려면 왼쪽 단어를 클릭하세요"
+  },
+  "wordbookEmptyDetail2": {
+    "message": "또는 아래에 직접 질문하세요"
+  },
+  "wordbookAiSettingsTitle": {
+    "message": "AI 설정"
+  },
+  "optAutoTranslateYueDefs": {
+    "message": "광둥어 설명 자동 번역"
+  },
+  "optAutoTranslateYueDefsDesc": {
+    "message": "팝업 및 단어장의 [粵] 구어체 설명을 목표 언어로 자동 번역합니다"
+  },
+  "optAutoTranslateYueDefsTarget": {
+    "message": "광둥어 설명 번역 대상 언어"
+  },
+  "optAutoTranslateYueDefsEngine": {
+    "message": "광둥어 설명 번역 엔진"
+  },
+  "badgeClickToTranslate": {
+    "message": "클릭하여 이 설명 번역"
+  },
+  "badgeTranslating": {
+    "message": "번역 중..."
+  },
+  "optYueDefDisplayMode": {
+    "message": "광둥어 설명 번역 표시 모드"
+  },
+  "optYueDefDisplayModeDesc": {
+    "message": "번역 결과를 원문 아래에 펼칠지 또는 직접 대체할지 선택합니다"
+  },
+  "optYueDefDisplayModeExpand": {
+    "message": "아래로 확장"
+  },
+  "optYueDefDisplayModeReplace": {
+    "message": "제자리 대체"
+  },
+  "badgeClickToRestore": {
+    "message": "클릭하여 광둥어 원문으로 전환"
+  },
+  "optYueDefSectionTitle": {
+    "message": "광둥어 구어 풀이 번역"
+  },
+  "optYueDefSectionDesc": {
+    "message": "[粵] 태그가 달린 구어 풀이는 배지를 클릭하여 즉시 번역하거나 자동 번역을 활성화할 수 있습니다"
+  },
+  "optAutoTranslateYueDefsTargetDesc": {
+    "message": "구어 풀이의 기본 번역 대상 언어를 선택합니다"
+  },
+  "optAutoTranslateYueDefsEngineDesc": {
+    "message": "구어 풀이 번역에 사용할 엔진을 선택합니다"
+  },
+  "optRoadmapTitle": {
+    "message": "학습 로드맵"
+  },
+  "optRoadmapSectionTitle": {
+    "message": "광둥어 학습 로드맵 및 엄선된 리소스"
+  },
+  "optRoadmapSectionDesc": {
+    "message": "표준 발음 튜토리얼, 권위 있는 사전, 입력기 및 듣기 자료를 엄선하여 제공합니다"
+  },
+  "optRoadmapFilterAll": {
+    "message": "전체"
+  },
+  "optRoadmapFilterPhonetics": {
+    "message": "발음 입문"
+  },
+  "optRoadmapFilterDict": {
+    "message": "권위 사전"
+  },
+  "optRoadmapFilterTool": {
+    "message": "실용 도구"
+  },
+  "optRoadmapFilterInput": {
+    "message": "입력기"
+  },
+  "optRoadmapFilterReading": {
+    "message": "읽기 및 듣기"
   }
 }

@@ -1867,14 +1867,20 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let rubyTextFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   let rubyTextStyle = 'default';
   let rubyDictionaryColor = '#999999';
+  let enableAutoTranslateYueDefs = false;
+  let autoTranslateYueDefsTargetLang = 'zh-Hans';
+  let autoTranslateYueDefsEngine = 'google';
+  let yueDefDisplayMode = 'expand'; // 'expand' or 'replace'
+  const yueDefTranslationCache = new Map();
 
   function loadSettings() {
     chrome.storage.sync.get([
       'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
+      yueDefDisplayMode = result.yueDefDisplayMode || 'expand';
 
       displayMode = result.displayMode || 'jyutping';
       toneStyle = result.toneStyle || 'superscript';
@@ -1885,8 +1891,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       hoverModifier = result.hoverModifier || 'none';
       paragraphTransKey = result.paragraphTransKey || 'shift';
       paragraphTransMode = result.paragraphTransMode || 'below';
-      paragraphTransEngine = result.paragraphTransEngine || 'bing';
-      paragraphTransEngine = result.paragraphTransEngine || 'bing';
       paragraphTransEngine = result.paragraphTransEngine || 'bing';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
       popupTheme = result.popupTheme || 'classic';
@@ -1910,6 +1914,9 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       rubyTextFont = result.rubyTextFont || "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       rubyTextStyle = result.rubyTextStyle || 'default';
       rubyDictionaryColor = result.rubyDictionaryColor || '#999999';
+      enableAutoTranslateYueDefs = result.enableAutoTranslateYueDefs === true;
+      autoTranslateYueDefsTargetLang = result.autoTranslateYueDefsTargetLang || 'zh-Hans';
+      autoTranslateYueDefsEngine = result.autoTranslateYueDefsEngine || 'google';
       let tls = result.transLangs;
       if (!tls && result.transLang) {
         if (result.transLang === 'both') tls = ['zh-Hans', 'en'];
@@ -1919,7 +1926,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       if (!tls) tls = ['zh-Hans', 'en'];
       transLangs = tls;
       transTrigger = result.transTrigger || 'dblclick';
-      transHoverEngine = result.transHoverEngine || 'bing';
       transHoverEngine = result.transHoverEngine || 'bing';
       
       // 初始化 CSS 變數
@@ -2011,6 +2017,14 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         transTrigger = changes.transTrigger.newValue;
       } else if (changes.transHoverEngine) {
         transHoverEngine = changes.transHoverEngine.newValue;
+      } else if (changes.enableAutoTranslateYueDefs) {
+        enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
+      } else if (changes.autoTranslateYueDefsTargetLang) {
+        autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
+      } else if (changes.autoTranslateYueDefsEngine) {
+        autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
+      } else if (changes.yueDefDisplayMode) {
+        yueDefDisplayMode = changes.yueDefDisplayMode.newValue || 'expand';
       }
     } else if (area === 'local') {
       if (changes.aiEnabled) {
@@ -3655,6 +3669,201 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
   }
 
+  async function requestYueDefTranslation(text, targetLang, engine) {
+    // 1. 優先嘗試發送給後台 Service Worker（帶 4 秒超時保障）
+    try {
+      const bgPromise = new Promise((resolve, reject) => {
+        const timer = setTimeout(() => reject(new Error('Background timeout')), 4000);
+        chrome.runtime.sendMessage({
+          action: 'translateYueDef',
+          text: text,
+          targetLang: targetLang,
+          engine: engine
+        }, (resp) => {
+          clearTimeout(timer);
+          if (chrome.runtime.lastError) {
+            reject(chrome.runtime.lastError);
+          } else {
+            resolve(resp);
+          }
+        });
+      });
+      const bgResp = await bgPromise;
+      if (bgResp && bgResp.success && bgResp.translation) {
+        return bgResp.translation;
+      }
+    } catch (bgErr) {
+      console.warn('[Popup] Background translation failed/timed out, trying direct client fetch:', bgErr);
+    }
+
+    // 2. 前端直連 Google GTX 免費翻譯通道
+    try {
+      let googleTo = 'zh-CN';
+      if (targetLang === 'en') googleTo = 'en';
+      else if (targetLang === 'ja') googleTo = 'ja';
+      else if (targetLang === 'ko') googleTo = 'ko';
+      else if (targetLang === 'zh-Hant' || targetLang === 'zh-TW' || targetLang === 'zh-HK') googleTo = 'zh-TW';
+
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(text)}`;
+      const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data[0] && Array.isArray(data[0])) {
+          const directRes = data[0].map(item => item[0]).filter(Boolean).join('');
+          if (directRes) return directRes;
+        }
+      }
+    } catch (directErr) {
+      console.warn('[Popup] Direct Google GTX failed:', directErr);
+    }
+
+    // 3. 前端直連 MyMemory 免費翻譯通道
+    try {
+      let target = targetLang || 'zh-CN';
+      if (target === 'zh-Hans') target = 'zh-CN';
+      else if (target === 'zh-Hant' || target === 'zh-HK') target = 'zh-TW';
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh-HK|${target}`;
+      const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+      if (resp.ok) {
+        const data = await resp.json();
+        if (data && data.responseData && data.responseData.translatedText) return data.responseData.translatedText;
+      }
+    } catch (myMemErr) {
+      console.warn('[Popup] Direct MyMemory failed:', myMemErr);
+    }
+
+    throw new Error('All translation channels failed');
+  }
+
+  // 獲取翻譯目標語言對應的標籤文字（如：普、書、英、日、韓）
+  function getTargetLangLabel(targetLang) {
+    switch (targetLang) {
+      case 'zh-Hans':
+      case 'zh-CN':
+        return '普';
+      case 'zh-Hant':
+      case 'zh-TW':
+      case 'zh-HK':
+        return '書';
+      case 'en':
+        return '英';
+      case 'ja':
+        return '日';
+      case 'ko':
+        return '韓';
+      default:
+        return '譯';
+    }
+  }
+
+  // 粵語釋義點擊即翻 / 自動翻譯處理函數
+  async function translateBadgeElement(badgeEl, defItemEl) {
+    const text = badgeEl.dataset.text;
+    if (!text) return;
+
+    const targetLang = autoTranslateYueDefsTargetLang || 'zh-Hans';
+    const engine = autoTranslateYueDefsEngine || 'google';
+    const mode = yueDefDisplayMode || 'expand';
+    const cacheKey = `${engine}_${targetLang}_${text}`;
+    const cached = yueDefTranslationCache.get(cacheKey);
+    const langLabel = getTargetLangLabel(targetLang);
+
+    const yueIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+    const toggleIconSvg = `<svg class="trans-toggle-icon" viewBox="0 0 24 24" width="9" height="9" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>`;
+
+    if (mode === 'replace') {
+      // Mode B: 原位替換
+      const textSpan = defItemEl.querySelector('.def-content-text');
+      if (!textSpan) return;
+
+      // 如果目前已經是替換後的譯文狀態，再次點擊則切換回粵語原文
+      if (defItemEl.dataset.isReplaced === 'true') {
+        defItemEl.dataset.isReplaced = 'false';
+        badgeEl.className = 'badge-yue';
+        badgeEl.innerHTML = `粵${yueIconSvg}`;
+        badgeEl.title = chrome.i18n.getMessage('badgeClickToTranslate') || '點擊翻譯此釋義';
+        textSpan.textContent = text;
+        return;
+      }
+
+      // 切換為譯文狀態
+      if (cached) {
+        defItemEl.dataset.isReplaced = 'true';
+        badgeEl.className = 'badge-trans-lang badge-clickable';
+        badgeEl.innerHTML = `${langLabel}${toggleIconSvg}`;
+        badgeEl.title = chrome.i18n.getMessage('badgeClickToRestore') || '點擊切換回粵語原文';
+        textSpan.textContent = cached;
+        return;
+      }
+
+      // 異步請求翻譯
+      const originalBadgeHtml = badgeEl.innerHTML;
+      const originalBadgeClass = badgeEl.className;
+      badgeEl.classList.add('loading');
+      textSpan.textContent = chrome.i18n.getMessage('badgeTranslating') || '翻譯中...';
+
+      try {
+        const translation = await requestYueDefTranslation(text, targetLang, engine);
+        badgeEl.classList.remove('loading');
+        if (translation) {
+          yueDefTranslationCache.set(cacheKey, translation);
+          defItemEl.dataset.isReplaced = 'true';
+          badgeEl.className = 'badge-trans-lang badge-clickable';
+          badgeEl.innerHTML = `${langLabel}${toggleIconSvg}`;
+          badgeEl.title = chrome.i18n.getMessage('badgeClickToRestore') || '點擊切換回粵語原文';
+          textSpan.textContent = translation;
+        } else {
+          badgeEl.className = originalBadgeClass;
+          badgeEl.innerHTML = originalBadgeHtml;
+          textSpan.textContent = text;
+        }
+      } catch (e) {
+        badgeEl.classList.remove('loading');
+        badgeEl.className = originalBadgeClass;
+        badgeEl.innerHTML = originalBadgeHtml;
+        textSpan.textContent = text;
+      }
+    } else {
+      // Mode A: 下方展開
+      let transEl = defItemEl.querySelector('.yue-def-translation');
+      if (transEl) {
+        // 切換顯示/隱藏
+        transEl.style.display = (transEl.style.display === 'none') ? 'flex' : 'none';
+        return;
+      }
+
+      const langBadgeHtml = `<span class="badge-trans-lang">${langLabel}</span>`;
+
+      transEl = document.createElement('div');
+      transEl.className = 'yue-def-translation';
+      transEl.addEventListener('click', (e) => e.stopPropagation());
+      defItemEl.appendChild(transEl);
+
+      if (cached) {
+        transEl.innerHTML = `${langBadgeHtml}<span>${cached}</span>`;
+        return;
+      }
+
+      const translatingText = chrome.i18n.getMessage('badgeTranslating') || '翻譯中...';
+      transEl.classList.add('loading');
+      transEl.innerHTML = `${langBadgeHtml}<span>${translatingText}</span>`;
+
+      try {
+        const translation = await requestYueDefTranslation(text, targetLang, engine);
+        transEl.classList.remove('loading');
+        if (translation) {
+          yueDefTranslationCache.set(cacheKey, translation);
+          transEl.innerHTML = `${langBadgeHtml}<span>${translation}</span>`;
+        } else {
+          transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--popup-text-muted); opacity: 0.7;">${chrome.i18n.getMessage('badgeTranslationError') || '翻譯失敗'}</span>`;
+        }
+      } catch (e) {
+        transEl.classList.remove('loading');
+        transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--popup-text-muted); opacity: 0.7;">${chrome.i18n.getMessage('badgeTranslationError') || '翻譯失敗'}</span>`;
+      }
+    }
+  }
+
   // 顯示彈窗
   // rect: { left, right, top, bottom, width, height }
   function showPopup(result, rect, forceFull = false) {
@@ -3775,6 +3984,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     // 正确。
 
     if (entry.english && entry.english.length > 0) {
+      const badgeTitle = chrome.i18n.getMessage('badgeClickToTranslate') || '點擊翻譯此釋義';
       const defItems = entry.english.slice(0, 5).map((def, index) => {
         let className = 'def-item';
         let hasExamples = false;
@@ -3784,11 +3994,17 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           hasExamples = true;
         }
 
+        let innerHtml = '';
         if (def.startsWith('[粵]')) {
           className += ' def-yue';
+          const rawText = def.slice(3).trim();
+          innerHtml = `<span class="badge-yue" data-text="${rawText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span><span class="def-content-text">${rawText}</span>`;
+        } else {
+          innerHtml = `<span class="def-content-text">${def}</span>`;
         }
         
-        return `<div class="${className}" ${hasExamples ? `data-example-index="${index}"` : ''}>${def}</div>`;
+        const arrowHtml = hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : '';
+        return `<div class="${className}" ${hasExamples ? `data-example-index="${index}"` : ''}><div class="def-main-row">${innerHtml}${arrowHtml}</div></div>`;
       }).join('');
       
       html += `
@@ -3857,6 +4073,26 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
     if (speakerBtn) {
       speakerBtn.addEventListener('click', triggerTTS);
+    }
+
+    popupMain.querySelectorAll('.badge-yue').forEach(badge => {
+      badge.addEventListener('click', (e) => {
+        e.stopPropagation(); // 阻止冒泡觸發父層例句展開
+        const defItem = badge.closest('.def-item');
+        if (defItem) {
+          translateBadgeElement(badge, defItem);
+        }
+      });
+    });
+
+    // 若開啟了自動翻譯粵語口語釋義，自動並行翻譯
+    if (enableAutoTranslateYueDefs) {
+      popupMain.querySelectorAll('.badge-yue').forEach(badge => {
+        const defItem = badge.closest('.def-item');
+        if (defItem) {
+          translateBadgeElement(badge, defItem);
+        }
+      });
     }
 
     // 綁定例句點擊事件
@@ -4536,6 +4772,14 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       transTrigger = request.transTrigger;
     } else if (request.action === 'changeTransHoverEngine') {
       transHoverEngine = request.transHoverEngine;
+    } else if (request.action === 'changeEnableAutoTranslateYueDefs') {
+      enableAutoTranslateYueDefs = request.enableAutoTranslateYueDefs === true;
+    } else if (request.action === 'changeAutoTranslateYueDefsTargetLang') {
+      autoTranslateYueDefsTargetLang = request.autoTranslateYueDefsTargetLang;
+    } else if (request.action === 'changeAutoTranslateYueDefsEngine') {
+      autoTranslateYueDefsEngine = request.autoTranslateYueDefsEngine;
+    } else if (request.action === 'changeYueDefDisplayMode') {
+      yueDefDisplayMode = request.yueDefDisplayMode || 'expand';
     } else if (request.action === 'playAudio') {
       // 防止舊 content script 重複播放（擴展重載後舊腳本仍在監聽）
       const myId = document.documentElement.getAttribute('data-jyutping-tts-owner');

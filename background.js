@@ -56,8 +56,9 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleAiTranslateParagraph(request, sender.tab.id);
   } else if (request.action === 'aiTranslateSentenceLang') {
     handleAiTranslateSentenceLang(request, sender.tab.id);
-  } else if (request.action === 'bingTranslateSentenceLang') {
-    handleBingTranslateSentenceLang(request, sender.tab.id);
+  } else if (request.action === 'translateYueDef') {
+    handleTranslateYueDef(request, sendResponse);
+    return true; // Keep channel open for async response
   } else if (request.action === 'aiChatQuery') {
     handleAiChatQuery(request, sendResponse);
     return true; // Keep channel open
@@ -66,7 +67,6 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'openWordbook') {
     chrome.tabs.create({ url: chrome.runtime.getURL('wordbook.html') });
   }
-  return true;
 });
 
 // Edge TTS 請求處理
@@ -470,6 +470,154 @@ async function translateWithBing(text, from, to, retryCount = 0) {
   throw new Error(`Bing Translate 返回空結果: ${JSON.stringify(data)}`);
 }
 
+// ==================== 粵語釋義多引擎高可用翻譯 ====================
+
+async function translateWithGoogleGtx(text, to) {
+  let googleTo = to || 'zh-CN';
+  if (to === 'zh-Hans' || to === 'zh-CN') googleTo = 'zh-CN';
+  else if (to === 'zh-Hant' || to === 'zh-TW' || to === 'zh-HK') googleTo = 'zh-TW';
+
+  const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(text)}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+  if (!resp.ok) throw new Error(`Google GTX HTTP ${resp.status}`);
+  const data = await resp.json();
+  if (data && data[0] && Array.isArray(data[0])) {
+    const res = data[0].map(item => item[0]).filter(Boolean).join('');
+    if (res) return res;
+  }
+  throw new Error('Google GTX empty');
+}
+
+async function translateWithGoogleDict(text, to) {
+  let googleTo = to || 'zh-CN';
+  if (to === 'zh-Hans' || to === 'zh-CN') googleTo = 'zh-CN';
+  else if (to === 'zh-Hant' || to === 'zh-TW' || to === 'zh-HK') googleTo = 'zh-TW';
+
+  const url = `https://clients5.google.com/translate_a/t?client=dict-chrome-ex&sl=auto&tl=${googleTo}&q=${encodeURIComponent(text)}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+  if (!resp.ok) throw new Error(`Google Dict HTTP ${resp.status}`);
+  const data = await resp.json();
+  if (Array.isArray(data) && data[0]) {
+    const res = Array.isArray(data[0]) ? data[0][0] : data[0];
+    if (res && typeof res === 'string') return res;
+  }
+  throw new Error('Google Dict empty');
+}
+
+async function translateWithMyMemory(text, to) {
+  let target = to || 'zh-CN';
+  if (target === 'zh-Hans') target = 'zh-CN';
+  else if (target === 'zh-Hant' || target === 'zh-HK') target = 'zh-TW';
+  const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh-HK|${target}`;
+  const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+  if (!resp.ok) throw new Error(`MyMemory HTTP ${resp.status}`);
+  const data = await resp.json();
+  if (data && data.responseData && data.responseData.translatedText) {
+    return data.responseData.translatedText;
+  }
+  throw new Error('MyMemory empty');
+}
+
+async function translateWithWebEngines(text, targetLang) {
+  // 優先 1: Google GTX
+  try {
+    return await translateWithGoogleGtx(text, targetLang);
+  } catch (e1) {
+    console.warn('[Translate] Google GTX failed:', e1.message);
+  }
+  // 優先 2: Google Dict API
+  try {
+    return await translateWithGoogleDict(text, targetLang);
+  } catch (e2) {
+    console.warn('[Translate] Google Dict failed:', e2.message);
+  }
+  // 優先 3: MyMemory
+  try {
+    return await translateWithMyMemory(text, targetLang);
+  } catch (e3) {
+    console.warn('[Translate] MyMemory failed:', e3.message);
+  }
+  // 優先 4: Bing
+  try {
+    return await translateWithBing(text, 'yue', targetLang);
+  } catch (e4) {
+    console.warn('[Translate] Bing failed:', e4.message);
+  }
+  throw new Error('所有翻譯引擎均未返回有效結果');
+}
+
+// 處理粵語 [粵] 釋義翻譯
+async function handleTranslateYueDef(request, sendResponse) {
+  try {
+    const text = request.text;
+    const targetLang = request.targetLang || 'zh-Hans';
+    const engine = request.engine || 'google'; // 'google', 'bing', 'ai'
+    
+    if (!text || !text.trim()) {
+      sendResponse({ success: false, error: 'Empty text' });
+      return;
+    }
+    
+    let result = '';
+    
+    if (engine === 'ai') {
+      try {
+        const settings = await new Promise(resolve => {
+          chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel'], resolve);
+        });
+        if (settings.aiBaseUrl && settings.aiApiKey && settings.aiModel) {
+          const langNameMap = {
+            'zh-Hans': '简体中文',
+            'zh-CN': '简体中文',
+            'zh-Hant': '繁體中文書面語',
+            'zh-TW': '繁體中文書面語',
+            'zh-HK': '繁體中文書面語',
+            'en': 'English',
+            'ja': '日本語',
+            'ko': '한국어'
+          };
+          const langName = langNameMap[targetLang] || targetLang;
+          const prompt = `Translate the following Cantonese definition accurately and naturally into ${langName}. Return ONLY the direct translation without extra quotes, explanation, or prefix:\n\n${text}`;
+          
+          const aiUrl = settings.aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
+          const aiResp = await fetch(aiUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${settings.aiApiKey}`
+            },
+            body: JSON.stringify({
+              model: settings.aiModel,
+              messages: [
+                { role: 'system', content: 'You are an expert translator specializing in Cantonese.' },
+                { role: 'user', content: prompt }
+              ],
+              temperature: 0.3
+            }),
+            signal: AbortSignal.timeout(6000)
+          });
+          if (aiResp.ok) {
+            const aiData = await aiResp.json();
+            result = aiData.choices?.[0]?.message?.content?.trim();
+          }
+        }
+      } catch (aiErr) {
+        console.warn('AI translation failed for Yue def, fallback to Web translation:', aiErr);
+      }
+    }
+    
+    // Fallback or default to multi-engine web translation
+    if (!result) {
+      result = await translateWithWebEngines(text, targetLang);
+    }
+    
+    sendResponse({ success: true, translation: result });
+  } catch (err) {
+    console.error('handleTranslateYueDef error:', err);
+    sendResponse({ success: false, error: err.message || String(err) });
+  }
+}
+
 // ==================== AI 語境翻譯 ====================
 
 const localeFolders = {
@@ -504,7 +652,11 @@ async function handleAiTranslate(request, tabId) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
     
-    const targetLang = aiLanguage || '繁體中文';
+    let targetLang = aiLanguage || 'auto';
+    if (targetLang === 'auto') {
+      const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
+      targetLang = langMap[uiLang] || '繁體中文';
+    }
     let promptTemplate = aiPrompt ? aiPrompt.trim() : '';
     if (!promptTemplate) {
       const dynamicDefault = await getDefaultPrompt(uiLang);
@@ -997,25 +1149,41 @@ function updateActionBadge(isEnabled) {
 // ==================== AI 隨身問答 ====================
 
 async function handleAiChatQuery(request, sendResponse) {
-  const { word, sentence, originalTranslation, question, history } = request;
+  const { word, sentence, originalTranslation, question, history, systemPrompt } = request;
 
   try {
-    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage']);
-    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage } = settings;
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'uiLang', 'aiCustomSystemPrompt']);
+    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage, uiLang, aiCustomSystemPrompt } = settings;
 
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
-    const targetLang = aiLanguage || '繁體中文';
+    let targetLang = aiLanguage || 'auto';
+    if (targetLang === 'auto') {
+      const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
+      targetLang = langMap[uiLang] || '繁體中文';
+    }
 
     const messages = [];
 
-    // System instruction
-    messages.push({
-      role: 'system',
-      content: `你是一個粵語語言專家。請用${targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。`
-    });
+    // System instruction (Custom Prompt if configured, else default)
+    let effectivePrompt = (systemPrompt || aiCustomSystemPrompt || '').trim();
+    if (effectivePrompt && (effectivePrompt.includes('"answer"') || effectivePrompt.includes('JSON 格式') || effectivePrompt.includes('"terms"'))) {
+      effectivePrompt = '';
+    }
+
+    if (effectivePrompt) {
+      messages.push({
+        role: 'system',
+        content: effectivePrompt.replace(/\{targetLang\}/g, targetLang).replace(/\{word\}/g, word || '')
+      });
+    } else {
+      messages.push({
+        role: 'system',
+        content: `你是一個粵語語言專家。請用${targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。請直接使用自然流暢的 Markdown 格式（可使用粗體、列表等排版），不要輸出 JSON 代碼。`
+      });
+    }
 
     // Conversation history
     if (history && Array.isArray(history)) {
@@ -1055,7 +1223,7 @@ async function handleAiChatQuery(request, sendResponse) {
       body: JSON.stringify({
         model: aiModel,
         messages: messages,
-        max_tokens: 800,
+        max_tokens: 2500,
         temperature: 0.5
       })
     });

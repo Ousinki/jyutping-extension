@@ -12,6 +12,9 @@
   }
 
   function renderSimpleMarkdown(text) {
+    if (typeof marked !== 'undefined') {
+      return marked.parse(text);
+    }
     // Escape HTML first for safety
     let html = escapeHtml(text);
 
@@ -33,8 +36,10 @@
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i];
-      const olMatch = line.match(/^(\d+)\.\s+(.*)/);
-      const ulMatch = line.match(/^[-*]\s+(.*)/);
+      const olMatch = line.match(/^\s*(\d+)\.\s+(.*)/);
+      const ulMatch = line.match(/^\s*[-*]\s+(.*)/);
+      const hMatch = line.match(/^\s*(#{1,6})\s+(.*)/);
+      const hrMatch = line.match(/^\s*---\s*$/);
 
       if (olMatch) {
         if (!inOl) { if (inUl) { result.push('</ul>'); inUl = false; } result.push('<ol>'); inOl = true; }
@@ -42,6 +47,15 @@
       } else if (ulMatch) {
         if (!inUl) { if (inOl) { result.push('</ol>'); inOl = false; } result.push('<ul>'); inUl = true; }
         result.push('<li>' + ulMatch[1] + '</li>');
+      } else if (hMatch) {
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        const level = hMatch[1].length;
+        result.push(`<h${level}>` + hMatch[2] + `</h${level}>`);
+      } else if (hrMatch) {
+        if (inOl) { result.push('</ol>'); inOl = false; }
+        if (inUl) { result.push('</ul>'); inUl = false; }
+        result.push('<hr style="border: 0; border-top: 1px dashed var(--border); margin: 16px 0;">');
       } else {
         if (inOl) { result.push('</ol>'); inOl = false; }
         if (inUl) { result.push('</ul>'); inUl = false; }
@@ -56,6 +70,37 @@
     if (inUl) result.push('</ul>');
 
     return result.join('\n');
+  }
+
+  function renderMarkdown(text) {
+    if (!text) return '';
+    let cleanText = text.trim();
+
+    // Strip markdown code fences if wrapped in ```json ... ``` or ```markdown ... ```
+    if (cleanText.startsWith('```')) {
+      cleanText = cleanText.replace(/^```(?:json|markdown)?\s*/i, '').replace(/\s*```$/i, '').trim();
+    }
+
+    // Auto-unwrap structured JSON if returned by model
+    if (cleanText.startsWith('{') && cleanText.endsWith('}')) {
+      try {
+        const data = JSON.parse(cleanText);
+        if (data && (data.answer || data.reply)) {
+          let md = data.answer || data.reply || '';
+          if (Array.isArray(data.examples) && data.examples.length > 0) {
+            md += '\n\n**例句：**\n' + data.examples.map((ex, i) => `${i + 1}. ${ex.yue || ex.sentence || ''}${ex.trans ? '（' + ex.trans + '）' : ''}`).join('\n');
+          }
+          cleanText = md;
+        }
+      } catch (e) {}
+    }
+
+    try {
+      if (typeof marked !== 'undefined' && typeof marked.parse === 'function') {
+        return marked.parse(cleanText);
+      }
+    } catch(e) {}
+    return renderSimpleMarkdown(cleanText);
   }
 
   const WORDBOOK_KEY = 'wordbook';
@@ -91,6 +136,16 @@
 
   const i18nStrings = {
     'zh-HK': {
+      wordbookAiSettingsTitle: 'AI 設定',
+      wordbookAiSettingsDesc: '自訂詞典面板底部的快捷提問按鈕，點擊即可快速發送預設對話指令。',
+      wordbookAiTabQuickActions: '快捷指令',
+      wordbookAiTabCustomPrompt: '全域 Prompt',
+      wordbookEnableAiQuickActions: '顯示快捷指令欄',
+      wordbookAddQuickAction: '添加新指令',
+      wordbookAiQuery1: '用呢個詞造一個粵語例句，並附上書面語翻譯',
+      wordbookAiQuery2: '呢個詞嘅粵語語源係咩？',
+      wordbookAiQuery3: '呢個詞喺日常粵語入面點用？請提供例句並附上書面語翻譯',
+      wordbookAiQuery4: '呢個詞有咩近義詞同反義詞？',
       wordbookTitle: '我的生詞本',
       wordbookSubtitle: 'My Cantonese Word Book',
       wordbookBackToSettings: '返回設定',
@@ -118,9 +173,45 @@
       wordbookImportSuccess: '成功導入 {added} 個新詞（跳過 {skipped} 個重複）',
       wordbookExported: '已導出 {format} 文件',
       wordbookDetailMode: '詞典模式',
-      wordbookEmptyDetail: '點擊左側單字<br>查看詳細詞典釋義'
+      wordbookEmptyDetail: '點擊左側單字<br>查看詳細詞典釋義',
+      wordbookModeWord: '生詞',
+      wordbookModeDict: '詞典',
+      wordbookExportJson: 'JSON (完整備份)',
+      wordbookExportCsv: 'CSV (Excel 兼容)',
+      wordbookExportMd: 'Markdown',
+      wordbookExportTxt: '純文本 TXT',
+      wordbookExportImport: '導入...',
+      dictSearchFallback: '📖 詞典搜索',
+      dictSearchEmpty: '未在詞典中找到匹配結果',
+      dictSearchNoDetail: '詞典中未找到 <strong>$1</strong> 的詳細釋義。',
+      wordbookAiChat: 'AI 問答',
+      wordbookAiAction1: '造句',
+      wordbookAiAction2: '語源',
+      wordbookAiAction3: '日常用法',
+      wordbookAiAction4: '近義反義',
+      wordbookAiInputPlaceholder: '問關於「$1」的問題...',
+      wordbookAiInputPlaceholderGeneric: '問任何關於粵語的問題...',
+      wordbookEmptyDetail1: '點擊左側單詞查看詳情',
+      wordbookEmptyDetail2: '或直接在下方提問',
+      wordbookAiActionNamePlaceholder: '指令名稱 (如: 造句)',
+      wordbookAiActionPromptPlaceholder: 'AI 提示詞 (如: 用這個詞造句...)',
+      wordbookConfirmRestorePrompt: '確定要恢復預設 Prompt 嗎？這將會清除您自訂的系統提示詞。',
+      badgeClickToTranslate: '點擊翻譯此釋義',
+      badgeTranslating: '翻譯中...',
+      badgeTranslationError: '翻譯失敗',
+      badgeClickToRestore: '點擊切換回粵語原文'
     },
     'zh-CN': {
+      wordbookAiSettingsTitle: 'AI 设置',
+      wordbookAiSettingsDesc: '自定义词典面板底部的快捷提问按钮，点击即可快速发送预设对话指令。',
+      wordbookAiTabQuickActions: '快捷指令',
+      wordbookAiTabCustomPrompt: '全局 Prompt',
+      wordbookEnableAiQuickActions: '显示快捷指令栏',
+      wordbookAddQuickAction: '添加新指令',
+      wordbookAiQuery1: '用这个词造一个粤语例句，并附上书面语翻译',
+      wordbookAiQuery2: '这个词的粤语语源是什么？',
+      wordbookAiQuery3: '这个词在日常粤语里怎么用？请提供例句并附上书面语翻译',
+      wordbookAiQuery4: '这个词有什么近义词和反义词？',
       wordbookTitle: '我的生词本',
       wordbookSubtitle: 'My Cantonese Word Book',
       wordbookBackToSettings: '返回设定',
@@ -148,9 +239,45 @@
       wordbookImportSuccess: '成功导入 {added} 个新词（跳过 {skipped} 个重复）',
       wordbookExported: '已导出 {format} 文件',
       wordbookDetailMode: '词典模式',
-      wordbookEmptyDetail: '点击左侧单词<br>查看详细词典释义'
+      wordbookEmptyDetail: '点击左侧单词<br>查看详细词典释义',
+      wordbookModeWord: '生词',
+      wordbookModeDict: '词典',
+      wordbookExportJson: 'JSON (完整备份)',
+      wordbookExportCsv: 'CSV (Excel 兼容)',
+      wordbookExportMd: 'Markdown',
+      wordbookExportTxt: '纯文本 TXT',
+      wordbookExportImport: '导入...',
+      dictSearchFallback: '📖 词典搜索',
+      dictSearchEmpty: '未在词典中找到匹配结果',
+      dictSearchNoDetail: '词典中未找到 <strong>$1</strong> 的详细释义。',
+      wordbookAiChat: 'AI 问答',
+      wordbookAiAction1: '造句',
+      wordbookAiAction2: '语源',
+      wordbookAiAction3: '日常用法',
+      wordbookAiAction4: '近义反义',
+      wordbookAiInputPlaceholder: '问关于“$1”的问题...',
+      wordbookAiInputPlaceholderGeneric: '问任何关于粤语的问题...',
+      wordbookEmptyDetail1: '点击左侧单词查看详情',
+      wordbookEmptyDetail2: '或直接在下方提问',
+      wordbookAiActionNamePlaceholder: '指令名称 (如: 造句)',
+      wordbookAiActionPromptPlaceholder: 'AI 提示词 (如: 用这个词造句...)',
+      wordbookConfirmRestorePrompt: '确定要恢复默认 Prompt 吗？这将会清除您自定义的系统提示词。',
+      badgeClickToTranslate: '点击翻译此释义',
+      badgeTranslating: '翻译中...',
+      badgeTranslationError: '翻译失败',
+      badgeClickToRestore: '点击切换回粤语原文'
     },
     'en': {
+      wordbookAiSettingsTitle: 'AI Settings',
+      wordbookAiSettingsDesc: 'Customize the shortcut buttons below the dictionary panel to quickly send predefined prompts to AI.',
+      wordbookAiTabQuickActions: 'Quick Actions',
+      wordbookAiTabCustomPrompt: 'Global Prompt',
+      wordbookEnableAiQuickActions: 'Show Quick Actions Bar',
+      wordbookAddQuickAction: 'Add Action',
+      wordbookAiQuery1: 'Make a Cantonese example sentence using this word, and provide an English translation.',
+      wordbookAiQuery2: 'What is the etymology of this word?',
+      wordbookAiQuery3: 'How is this word used in daily Cantonese? Provide examples with English translations.',
+      wordbookAiQuery4: 'What are the synonyms and antonyms of this word?',
       wordbookTitle: 'My Word Book',
       wordbookSubtitle: 'Cantonese Vocabulary',
       wordbookBackToSettings: 'Back to Settings',
@@ -178,9 +305,45 @@
       wordbookImportSuccess: 'Imported {added} new words (skipped {skipped} duplicates)',
       wordbookExported: 'Exported {format} file',
       wordbookDetailMode: 'Dictionary Mode',
-      wordbookEmptyDetail: 'Click a word on the left<br>to view dictionary details'
+      wordbookEmptyDetail: 'Click a word on the left<br>to view dictionary details',
+      wordbookModeWord: 'Words',
+      wordbookModeDict: 'Dict',
+      wordbookExportJson: 'JSON (Full Backup)',
+      wordbookExportCsv: 'CSV (Excel Compatible)',
+      wordbookExportMd: 'Markdown',
+      wordbookExportTxt: 'Plain Text',
+      wordbookExportImport: 'Import...',
+      dictSearchFallback: '📖 Dictionary Search',
+      dictSearchEmpty: 'No matching results found in dictionary',
+      dictSearchNoDetail: 'Detailed definition for <strong>$1</strong> not found in dictionary.',
+      wordbookAiChat: 'Ask AI',
+      wordbookAiAction1: 'Sentence',
+      wordbookAiAction2: 'Etymology',
+      wordbookAiAction3: 'Daily Usage',
+      wordbookAiAction4: 'Synonyms/Antonyms',
+      wordbookAiInputPlaceholder: 'Ask a question about \'$1\'...',
+      wordbookAiInputPlaceholderGeneric: 'Ask any question about Cantonese...',
+      wordbookEmptyDetail1: 'Click left word for details',
+      wordbookEmptyDetail2: 'Or ask directly below',
+      wordbookAiActionNamePlaceholder: 'Action Name (e.g. Sentence)',
+      wordbookAiActionPromptPlaceholder: 'AI Prompt (e.g. Make a sentence with...)',
+      wordbookConfirmRestorePrompt: 'Are you sure you want to restore the default Prompt? This will clear your custom system prompt.',
+      badgeClickToTranslate: 'Click to translate definition',
+      badgeTranslating: 'Translating...',
+      badgeTranslationError: 'Translation failed',
+      badgeClickToRestore: 'Click to switch back to Cantonese'
     },
     'ja': {
+      wordbookAiSettingsTitle: 'AI 設定',
+      wordbookAiSettingsDesc: '辞書パネルの下にあるショートカットボタンをカスタマイズして、定義済みのプロンプトをAIにすばやく送信します。',
+      wordbookAiTabQuickActions: 'クイックアクション',
+      wordbookAiTabCustomPrompt: 'グローバルプロンプト',
+      wordbookEnableAiQuickActions: 'クイックアクションバーを表示',
+      wordbookAddQuickAction: 'アクションを追加',
+      wordbookAiQuery1: 'この言葉を使って広東語の例文を作り、日本語の翻訳を付けてください',
+      wordbookAiQuery2: 'この言葉の語源は何ですか？',
+      wordbookAiQuery3: 'この言葉は日常広東語でどのように使われますか？例文と日本語の翻訳を付けてください',
+      wordbookAiQuery4: 'この言葉の類義語と対義語は何ですか？',
       wordbookTitle: '単語帳',
       wordbookSubtitle: '広東語ボキャブラリー',
       wordbookBackToSettings: '設定に戻る',
@@ -208,9 +371,45 @@
       wordbookImportSuccess: '{added} 個の新しい単語をインポートしました（{skipped} 個の重複をスキップ）',
       wordbookExported: '{format} ファイルをエクスポートしました',
       wordbookDetailMode: '辞書モード',
-      wordbookEmptyDetail: '左側の単語をクリックして<br>辞書の詳細を表示します'
+      wordbookEmptyDetail: '左側の単語をクリックして<br>辞書の詳細を表示します',
+      wordbookModeWord: '単語',
+      wordbookModeDict: '辞書',
+      wordbookExportJson: 'JSON (完全バックアップ)',
+      wordbookExportCsv: 'CSV (Excel 互換)',
+      wordbookExportMd: 'Markdown',
+      wordbookExportTxt: 'プレーンテキスト',
+      wordbookExportImport: 'インポート...',
+      dictSearchFallback: '📖 辞書検索',
+      dictSearchEmpty: '辞書に一致する結果が見つかりませんでした',
+      dictSearchNoDetail: '辞書に <strong>$1</strong> の詳細な定義が見つかりません。',
+      wordbookAiChat: 'AI アシスタント',
+      wordbookAiAction1: '例文',
+      wordbookAiAction2: '語源',
+      wordbookAiAction3: '日常の用法',
+      wordbookAiAction4: '類義/対義',
+      wordbookAiInputPlaceholder: '「$1」について質問する...',
+      wordbookAiInputPlaceholderGeneric: '広東語について質問する...',
+      wordbookEmptyDetail1: '左の単語をクリックして詳細を表示',
+      wordbookEmptyDetail2: 'または直接下で質問する',
+      wordbookAiActionNamePlaceholder: 'アクション名 (例: 例文)',
+      wordbookAiActionPromptPlaceholder: 'AI プロンプト (例: この言葉を使って...)',
+      wordbookConfirmRestorePrompt: 'デフォルトの Prompt に戻してもよろしいですか？カスタムシステムプロンプトは消去されます。',
+      badgeClickToTranslate: 'クリックしてこの解説を翻訳',
+      badgeTranslating: '翻訳中...',
+      badgeTranslationError: '翻訳失敗',
+      badgeClickToRestore: 'クリックして広東語の原文に戻す'
     },
     'ko': {
+      wordbookAiSettingsTitle: 'AI 설정',
+      wordbookAiSettingsDesc: '사전 패널 아래의 단축 버튼을 사용자 정의하여 AI에 미리 정의된 프롬프트를 빠르게 보냅니다.',
+      wordbookAiTabQuickActions: '빠른 작업',
+      wordbookAiTabCustomPrompt: '글로벌 프롬프트',
+      wordbookEnableAiQuickActions: '빠른 작업 표시줄 표시',
+      wordbookAddQuickAction: '작업 추가',
+      wordbookAiQuery1: '이 단어를 사용하여 광둥어 예문을 만들고 한국어 번역을 제공해 주세요',
+      wordbookAiQuery2: '이 단어의 어원은 무엇인가요?',
+      wordbookAiQuery3: '이 단어는 일상 광둥어에서 어떻게 사용되나요? 예문과 한국어 번역을 제공해 주세요',
+      wordbookAiQuery4: '이 단어의 유의어와 반의어는 무엇인가요?',
       wordbookTitle: '단어장',
       wordbookSubtitle: '광둥어 어휘',
       wordbookBackToSettings: '설정으로 돌아가기',
@@ -238,14 +437,93 @@
       wordbookImportSuccess: '{added}개의 새 단어 가져오기 완료 ({skipped}개의 중복 항목 건너뜀)',
       wordbookExported: '{format} 파일이 내보내졌습니다',
       wordbookDetailMode: '사전 모드',
-      wordbookEmptyDetail: '왼쪽 단어를 클릭하여<br>사전 세부 정보를 봅니다'
+      wordbookEmptyDetail: '왼쪽 단어를 클릭하여<br>사전 세부 정보를 봅니다',
+      wordbookModeWord: '단어',
+      wordbookModeDict: '사전',
+      wordbookExportJson: 'JSON (전체 백업)',
+      wordbookExportCsv: 'CSV (Excel 호환)',
+      wordbookExportMd: 'Markdown',
+      wordbookExportTxt: '일반 텍스트',
+      wordbookExportImport: '가져오기...',
+      dictSearchFallback: '📖 사전 검색',
+      dictSearchEmpty: '사전에서 일치하는 결과를 찾을 수 없습니다',
+      dictSearchNoDetail: '사전에서 <strong>$1</strong>의 자세한 정의를 찾을 수 없습니다.',
+      wordbookAiChat: 'AI 도우미',
+      wordbookAiAction1: '문장',
+      wordbookAiAction2: '어원',
+      wordbookAiAction3: '일상 용법',
+      wordbookAiAction4: '유의/반의',
+      wordbookAiInputPlaceholder: "'$1'에 대해 질문하기...",
+      wordbookAiInputPlaceholderGeneric: '광둥어에 대해 무엇이든 물어보세요...',
+      wordbookEmptyDetail1: '세부 정보를 보려면 왼쪽 단어를 클릭하세요',
+      wordbookEmptyDetail2: '또는 아래에 직접 질문하세요',
+      wordbookAiActionNamePlaceholder: '작업 이름 (예: 예문)',
+      wordbookAiActionPromptPlaceholder: 'AI 프롬프트 (예: 이 단어를 사용하여...)',
+      wordbookConfirmRestorePrompt: '기본 Prompt로 복원하시겠습니까? 사용자 지정 시스템 프롬프트가 삭제됩니다.',
+      badgeClickToTranslate: '클릭하여 이 설명 번역',
+      badgeTranslating: '번역 중...',
+      badgeTranslationError: '번역 실패',
+      badgeClickToRestore: '클릭하여 광둥어 원문으로 전환'
     }
   };
 
   let currentLang = 'zh-HK';
 
+  const DEFAULT_AI_SYSTEM_PROMPT = '你是一個粵語語言專家。請用{targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。';
+
+  const AI_PROMPT_PRESETS = {
+    expert: '你是一個粵語語言專家。請用{targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。',
+    examples: '你是一個熱情耐心的粵語老師。請用{targetLang}深入解答，並針對日常口語生活場景提供 2-3 個道地的粵語對話例句和繁體字解釋。',
+    etymology: '你是一個語言學家。請從粵語語法結構、九聲六調、中古漢語詞源演變等學術維度進行深入剖析，並用{targetLang}清晰解答。',
+    concise: '請以極簡扼要的方式回答，直接給出最核心的粵語發音、用法要點，不要冗長客套。'
+  };
+
+  let globalEnableAiQuickActions = true;
+  let globalAiCustomSystemPrompt = '';
+  let globalAiQuickActions = [
+    { id: 'default1', isDefault: true, labelKey: 'wordbookAiAction1', promptKey: 'wordbookAiQuery1', active: true },
+    { id: 'default2', isDefault: true, labelKey: 'wordbookAiAction2', promptKey: 'wordbookAiQuery2', active: true },
+    { id: 'default3', isDefault: true, labelKey: 'wordbookAiAction3', promptKey: 'wordbookAiQuery3', active: true },
+    { id: 'default4', isDefault: true, labelKey: 'wordbookAiAction4', promptKey: 'wordbookAiQuery4', active: true }
+  ];
+
+  chrome.storage.local.get(['enableAiQuickActions', 'aiQuickActions', 'aiCustomSystemPrompt'], (result) => {
+    if (result.enableAiQuickActions !== undefined) {
+      globalEnableAiQuickActions = result.enableAiQuickActions;
+    }
+    if (result.aiQuickActions) {
+      globalAiQuickActions = result.aiQuickActions;
+    }
+    if (result.aiCustomSystemPrompt !== undefined) {
+      let promptVal = result.aiCustomSystemPrompt || '';
+      if (promptVal.includes('"answer"') || promptVal.includes('JSON 格式') || promptVal.includes('"terms"')) {
+        promptVal = '';
+        chrome.storage.local.set({ aiCustomSystemPrompt: '' });
+      }
+      globalAiCustomSystemPrompt = promptVal;
+    }
+  });
+
+  chrome.storage.onChanged.addListener((changes) => {
+    if (changes.enableAiQuickActions) {
+      globalEnableAiQuickActions = changes.enableAiQuickActions.newValue;
+    }
+    if (changes.aiQuickActions) {
+      globalAiQuickActions = changes.aiQuickActions.newValue;
+    }
+    if (changes.aiCustomSystemPrompt) {
+      let newPromptVal = changes.aiCustomSystemPrompt.newValue || '';
+      if (newPromptVal.includes('"answer"') || newPromptVal.includes('JSON 格式') || newPromptVal.includes('"terms"')) {
+        newPromptVal = '';
+      }
+      globalAiCustomSystemPrompt = newPromptVal;
+    }
+  });
+
   function t(key) {
-    return (i18nStrings[currentLang] || i18nStrings['zh-HK'])[key] || key;
+    const localString = (i18nStrings[currentLang] || i18nStrings['zh-HK'])[key];
+    if (localString) return localString;
+    return chrome.i18n.getMessage(key) || key;
   }
 
   function applyI18n() {
@@ -255,6 +533,7 @@
       if (val) el.innerHTML = val;
     });
     document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+      if (el.id === 'searchInput') return; // Managed dynamically based on searchMode
       const key = el.getAttribute('data-i18n-placeholder');
       const val = t(key);
       if (val) el.placeholder = val;
@@ -266,6 +545,9 @@
         const key = opt.getAttribute('data-i18n');
         if (key) opt.textContent = t(key);
       });
+    }
+    if (typeof updateSearchModeUI === 'function') {
+      updateSearchModeUI();
     }
   }
 
@@ -301,6 +583,22 @@
 
   // ==================== Theme ====================
 
+  let enableAutoTranslateYueDefs = false;
+  let autoTranslateYueDefsTargetLang = 'zh-Hans';
+  let autoTranslateYueDefsEngine = 'google';
+  let yueDefDisplayMode = 'expand'; // 'expand' or 'replace'
+  const yueDefTranslationCache = new Map();
+
+  function initTranslationSettings() {
+    chrome.storage.sync.get(['enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'], (res) => {
+      enableAutoTranslateYueDefs = res.enableAutoTranslateYueDefs === true;
+      autoTranslateYueDefsTargetLang = res.autoTranslateYueDefsTargetLang || 'zh-Hans';
+      autoTranslateYueDefsEngine = res.autoTranslateYueDefsEngine || 'google';
+      yueDefDisplayMode = res.yueDefDisplayMode || 'expand';
+    });
+  }
+  initTranslationSettings();
+
   function initTheme() {
     chrome.storage.sync.get(['uiTheme'], (res) => {
       const theme = res.uiTheme || 'auto';
@@ -314,13 +612,27 @@
     });
 
     chrome.storage.onChanged.addListener((changes, namespace) => {
-      if (namespace === 'sync' && changes.uiTheme) {
-        const theme = changes.uiTheme.newValue || 'auto';
-        const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-        if (isDark) {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        } else {
-          document.documentElement.removeAttribute('data-theme');
+      if (namespace === 'sync') {
+        if (changes.uiTheme) {
+          const theme = changes.uiTheme.newValue || 'auto';
+          const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+          if (isDark) {
+            document.documentElement.setAttribute('data-theme', 'dark');
+          } else {
+            document.documentElement.removeAttribute('data-theme');
+          }
+        }
+        if (changes.enableAutoTranslateYueDefs) {
+          enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
+        }
+        if (changes.autoTranslateYueDefsTargetLang) {
+          autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
+        }
+        if (changes.autoTranslateYueDefsEngine) {
+          autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
+        }
+        if (changes.yueDefDisplayMode) {
+          yueDefDisplayMode = changes.yueDefDisplayMode.newValue || 'expand';
         }
       }
     });
@@ -335,16 +647,68 @@
 
   // ==================== Rendering ====================
 
+  function matchWord(w, rawQ, qNoTones, qCompact, tokens) {
+    if (!rawQ) return true;
+
+    const char = (w.character || '').toLowerCase();
+    const simp = (w.simplified || '').toLowerCase();
+    const jp = (w.jyutping || '').toLowerCase();
+    const yale = (w.yale || '').toLowerCase();
+    const py = (w.pinyin || '').toLowerCase();
+    const eng = (Array.isArray(w.english) ? w.english.join(' ') : (w.english || '')).toLowerCase();
+    const exp = (w.explanation || '').toLowerCase();
+    const notes = (w.notes || '').toLowerCase();
+
+    // 1. Direct substring match (exact characters, exact jyutping with tones, English, notes)
+    if (char.includes(rawQ) || simp.includes(rawQ) || jp.includes(rawQ) ||
+        yale.includes(rawQ) || py.includes(rawQ) || eng.includes(rawQ) ||
+        exp.includes(rawQ) || notes.includes(rawQ)) {
+      return true;
+    }
+
+    // 2. Toneless phonetic match (e.g. "hoeng gong" matches "hoeng1 gong2")
+    const jpNoTones = jp.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
+    const yaleNoTones = yale.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
+    const pyNoTones = py.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
+
+    if (qNoTones && (jpNoTones.includes(qNoTones) || yaleNoTones.includes(qNoTones) || pyNoTones.includes(qNoTones))) {
+      return true;
+    }
+
+    // 3. Compact toneless match (e.g. "hoenggong" matches "hoeng1 gong2")
+    if (qCompact) {
+      const jpCompact = jp.replace(/[\s\d]/g, '');
+      const yaleCompact = yale.replace(/[\s\d]/g, '');
+      const pyCompact = py.replace(/[\s\d]/g, '');
+
+      if (jpCompact.includes(qCompact) || yaleCompact.includes(qCompact) || pyCompact.includes(qCompact)) {
+        return true;
+      }
+    }
+
+    // 4. Multi-token match (all whitespace-separated terms must match somewhere in the word's fields)
+    if (tokens.length > 1) {
+      const allTokensMatch = tokens.every(token => {
+        const tokenNoTone = token.replace(/[0-9]/g, '');
+        return char.includes(token) || simp.includes(token) ||
+               jp.includes(token) || jpNoTones.includes(tokenNoTone) ||
+               yale.includes(token) || yaleNoTones.includes(tokenNoTone) ||
+               py.includes(token) || pyNoTones.includes(tokenNoTone) ||
+               eng.includes(token) || exp.includes(token) || notes.includes(token);
+      });
+      if (allTokensMatch) return true;
+    }
+
+    return false;
+  }
+
   function filterAndSort() {
-    const q = searchQuery.toLowerCase();
-    filteredWords = wordbook.filter(w => {
-      if (!q) return true;
-      return (w.character || '').toLowerCase().includes(q)
-        || (w.simplified || '').toLowerCase().includes(q)
-        || (w.jyutping || '').toLowerCase().includes(q)
-        || (w.yale || '').toLowerCase().includes(q)
-        || (w.pinyin || '').toLowerCase().includes(q);
-    });
+    const rawQ = searchQuery.trim().toLowerCase();
+    const qNoTones = rawQ.replace(/[0-9]/g, '').replace(/\s+/g, ' ').trim();
+    const qCompact = rawQ.replace(/[\s\d]/g, '');
+    const tokens = rawQ.split(/\s+/).filter(Boolean);
+
+    filteredWords = wordbook.filter(w => matchWord(w, rawQ, qNoTones, qCompact, tokens));
 
     switch (currentSort) {
       case 'oldest':
@@ -392,18 +756,26 @@
 
     bulkActions.style.display = 'flex';
 
+    // Build permanent chronological ID mapping (1 = earliest created, N = newest)
+    const chronologicalOrder = [...wordbook].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    const idSeqMap = new Map();
+    chronologicalOrder.forEach((w, i) => {
+      idSeqMap.set(w.id, i + 1);
+    });
+
+    const headerColsHTML = colOrder.map(c => HEADER_COL_TEMPLATES[c] || '').join('');
     const headerHTML = `
       <div class="table-header">
-        <div class="col-selection col-header-sortable" id="colHeaderId">
-          <span>ID</span>
-          <svg class="sort-indicator" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="${currentSort === 'oldest' ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}"></polyline>
-          </svg>
+        <div class="col-selection">
+          <div class="col-header-sortable" id="colHeaderId" title="點擊切換升序/降序">
+            <span>ID</span>
+            <svg class="sort-indicator" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="${currentSort === 'oldest' ? '18 15 12 9 6 15' : '6 9 12 15 18 9'}"></polyline>
+            </svg>
+          </div>
+          <div class="col-resizer" data-col="col-selection" title="雙擊恢復默認寬度"></div>
         </div>
-        <div class="col-char">Character</div>
-        <div class="col-jyutping">Jyutping</div>
-        <div class="col-meaning">Meaning</div>
-        <div class="col-date">Date</div>
+        ${headerColsHTML}
       </div>
     `;
 
@@ -411,27 +783,9 @@
       const date = new Date(word.timestamp).toLocaleDateString();
       const englishText = (word.english || []).join('; ') || '—';
       const isChecked = selectedIds.has(word.id) ? 'checked' : '';
-      const displayId = filteredWords.length - index;
-      const isLong = word.character.length > 4;
+      const displayId = idSeqMap.get(word.id) || (index + 1);
 
-      if (isLong) {
-        return `
-          <div class="table-row word-card row-compact" data-id="${word.id}">
-            <div class="col-selection">
-              <label class="selection-label">
-                <input type="checkbox" class="word-card-checkbox" data-id="${word.id}" ${isChecked} />
-                <span class="selection-text">${displayId}</span>
-              </label>
-            </div>
-            <div class="col-char-jyutping-merged">
-              <span class="word-character" data-word="${word.character}" title="點擊發音">${word.character}</span>
-              <span class="jyutping-text merged-jyutping" data-word="${word.character}" title="點擊發音">${word.jyutping || ''}</span>
-            </div>
-            <div class="col-meaning"></div>
-            <div class="col-date">${date}</div>
-          </div>
-        `;
-      }
+      const colsHTML = colOrder.map(c => getRowColHTML(c, word, date, englishText)).join('');
 
       return `
         <div class="table-row word-card" data-id="${word.id}">
@@ -441,12 +795,7 @@
               <span class="selection-text">${displayId}</span>
             </label>
           </div>
-          <div class="col-char word-character" data-word="${word.character}" title="點擊發音">${word.character}</div>
-          <div class="col-jyutping word-jyutping">
-            <span class="jyutping-text" data-word="${word.character}" title="點擊發音">${word.jyutping || ''}</span>
-          </div>
-          <div class="col-meaning"></div>
-          <div class="col-date">${date}</div>
+          ${colsHTML}
         </div>
       `;
     }).join('');
@@ -454,8 +803,7 @@
     wordListEl.innerHTML = headerHTML + rowsHTML;
 
     updateSelectionUI();
-    // Re-apply column visibility after re-render
-    if (typeof applyColumnVisibility === 'function') applyColumnVisibility();
+    applyColumnVisibility();
   }
 
   function updateStats() {
@@ -511,15 +859,239 @@
     });
   }
 
-  // Unified table header context menu (sort + column visibility)
+  // Unified table header context menu (sort + column visibility + reorder)
   const tableHeaderMenu = document.getElementById('tableHeaderMenu');
-  // Column visibility state
-  const defaultCols = { 'col-char': true, 'col-jyutping': true, 'col-meaning': true, 'col-date': true };
+
+  // Column order state
+  const DEFAULT_COL_ORDER = ['col-char', 'col-jyutping', 'col-yale', 'col-meaning', 'col-date'];
+  let colOrder = [...DEFAULT_COL_ORDER];
+  try {
+    const savedOrder = JSON.parse(localStorage.getItem('jyutping_col_order'));
+    if (Array.isArray(savedOrder)) {
+      if (!savedOrder.includes('col-yale')) {
+        const jpIdx = savedOrder.indexOf('col-jyutping');
+        if (jpIdx !== -1) {
+          savedOrder.splice(jpIdx + 1, 0, 'col-yale');
+        } else {
+          savedOrder.push('col-yale');
+        }
+      }
+      if (DEFAULT_COL_ORDER.every(c => savedOrder.includes(c))) {
+        colOrder = savedOrder;
+      }
+    }
+  } catch(e) {}
+
+  // Column templates for header and row rendering
+  const HEADER_COL_TEMPLATES = {
+    'col-char': `<div class="col-char"><span>Character</span><div class="col-resizer" data-col="col-char" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`,
+    'col-jyutping': `<div class="col-jyutping"><span>Jyutping</span><div class="col-resizer" data-col="col-jyutping" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`,
+    'col-yale': `<div class="col-yale"><span>Yale</span><div class="col-resizer" data-col="col-yale" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`,
+    'col-meaning': `<div class="col-meaning"><span>Meaning</span><div class="col-resizer" data-col="col-meaning" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`,
+    'col-date': `<div class="col-date"><span>Date</span><div class="col-resizer" data-col="col-date" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`
+  };
+
+  function getRowColHTML(colKey, word, date, englishText) {
+    switch (colKey) {
+      case 'col-char':
+        return `
+          <div class="col-char">
+            <div class="excel-cell">
+              <span class="word-character excel-cell-text" data-word="${escapeHtml(word.character)}">${escapeHtml(word.character)}</span>
+              <span class="word-character excel-cell-floating" data-word="${escapeHtml(word.character)}">${escapeHtml(word.character)}</span>
+            </div>
+          </div>
+        `;
+      case 'col-jyutping':
+        return `
+          <div class="col-jyutping word-jyutping">
+            <div class="excel-cell">
+              <span class="jyutping-text excel-cell-text" data-word="${escapeHtml(word.character)}">${escapeHtml(word.jyutping || '')}</span>
+              <span class="jyutping-text excel-cell-floating" data-word="${escapeHtml(word.character)}">${escapeHtml(word.jyutping || '')}</span>
+            </div>
+          </div>
+        `;
+      case 'col-yale':
+        const yaleText = word.yale || word.jyutping || '';
+        return `
+          <div class="col-yale word-jyutping">
+            <div class="excel-cell">
+              <span class="jyutping-text excel-cell-text" data-word="${escapeHtml(word.character)}">${escapeHtml(yaleText)}</span>
+              <span class="jyutping-text excel-cell-floating" data-word="${escapeHtml(word.character)}">${escapeHtml(yaleText)}</span>
+            </div>
+          </div>
+        `;
+      case 'col-meaning':
+        return `<div class="col-meaning"></div>`;
+      case 'col-date':
+        return `<div class="col-date">${date}</div>`;
+      default:
+        return '';
+    }
+  }
+
+  // Column visibility state (Yale is hidden by default)
+  const defaultCols = { 'col-char': true, 'col-jyutping': true, 'col-yale': false, 'col-meaning': true, 'col-date': true };
   let visibleCols = { ...defaultCols };
   try {
     const saved = JSON.parse(localStorage.getItem('jyutping_visible_cols'));
-    if (saved) visibleCols = { ...defaultCols, ...saved };
+    if (saved) {
+      visibleCols = { ...defaultCols, ...saved };
+      if (visibleCols['col-yale'] === undefined) {
+        visibleCols['col-yale'] = false;
+      }
+    }
   } catch(e) {}
+
+  // Default and custom column sizes (in px)
+  const DEFAULT_COL_SIZES = {
+    'col-selection': 56,
+    'col-char': 120,
+    'col-jyutping': 160,
+    'col-yale': 160,
+    'col-date': 75
+  };
+  let customColSizes = { ...DEFAULT_COL_SIZES };
+  try {
+    const savedSizes = JSON.parse(localStorage.getItem('jyutping_col_sizes'));
+    if (savedSizes) {
+      customColSizes = { ...DEFAULT_COL_SIZES, ...savedSizes };
+      // Sanitize stored widths against corruption
+      customColSizes['col-selection'] = Math.max(56, customColSizes['col-selection'] || 56);
+      customColSizes['col-char'] = Math.min(400, Math.max(70, customColSizes['col-char'] || 120));
+      customColSizes['col-jyutping'] = Math.min(450, Math.max(90, customColSizes['col-jyutping'] || 160));
+      customColSizes['col-yale'] = Math.min(450, Math.max(90, customColSizes['col-yale'] || 160));
+      customColSizes['col-date'] = Math.min(250, Math.max(55, customColSizes['col-date'] || 75));
+    }
+  } catch(e) {}
+
+  const COL_NAMES = {
+    'col-char': 'Character',
+    'col-jyutping': 'Jyutping',
+    'col-yale': 'Yale',
+    'col-meaning': 'Meaning',
+    'col-date': 'Date'
+  };
+
+  function updateMenuToggles() {
+    const container = document.getElementById('menuTogglesContainer');
+    if (!container) return;
+
+    container.innerHTML = colOrder.map(colKey => {
+      const isChecked = visibleCols[colKey] !== false ? 'checked' : '';
+      const name = COL_NAMES[colKey] || colKey;
+      return `
+        <div class="sort-context-menu-toggle" data-col="${colKey}" draggable="true">
+          <span class="col-drag-handle" title="按住拖動調整欄位順序">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="9" cy="5" r="1.5"></circle>
+              <circle cx="9" cy="12" r="1.5"></circle>
+              <circle cx="9" cy="19" r="1.5"></circle>
+              <circle cx="15" cy="5" r="1.5"></circle>
+              <circle cx="15" cy="12" r="1.5"></circle>
+              <circle cx="15" cy="19" r="1.5"></circle>
+            </svg>
+          </span>
+          <label class="toggle-checkbox-label">
+            <input type="checkbox" ${isChecked} />
+            <span>${name}</span>
+          </label>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function setupMenuDragAndDrop() {
+    const container = document.getElementById('menuTogglesContainer');
+    if (!container) return;
+
+    let draggedItem = null;
+
+    container.addEventListener('dragstart', (e) => {
+      const toggle = e.target.closest('.sort-context-menu-toggle');
+      if (!toggle) return;
+      draggedItem = toggle;
+      toggle.classList.add('is-dragging');
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', toggle.dataset.col);
+    });
+
+    container.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      const targetToggle = e.target.closest('.sort-context-menu-toggle');
+      if (!targetToggle || targetToggle === draggedItem) return;
+
+      const rect = targetToggle.getBoundingClientRect();
+      const next = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+
+      container.querySelectorAll('.sort-context-menu-toggle').forEach(el => {
+        el.classList.remove('drag-over-above', 'drag-over-below');
+      });
+
+      if (next) {
+        targetToggle.classList.add('drag-over-below');
+      } else {
+        targetToggle.classList.add('drag-over-above');
+      }
+    });
+
+    container.addEventListener('dragleave', (e) => {
+      const targetToggle = e.target.closest('.sort-context-menu-toggle');
+      if (targetToggle) {
+        targetToggle.classList.remove('drag-over-above', 'drag-over-below');
+      }
+    });
+
+    container.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const targetToggle = e.target.closest('.sort-context-menu-toggle');
+      if (!targetToggle || !draggedItem || targetToggle === draggedItem) return;
+
+      const srcCol = draggedItem.dataset.col;
+      const targetCol = targetToggle.dataset.col;
+
+      const rect = targetToggle.getBoundingClientRect();
+      const isAfter = (e.clientY - rect.top) / (rect.bottom - rect.top) > 0.5;
+
+      const srcIdx = colOrder.indexOf(srcCol);
+      if (srcIdx > -1) colOrder.splice(srcIdx, 1);
+
+      let targetIdx = colOrder.indexOf(targetCol);
+      if (isAfter) targetIdx += 1;
+      colOrder.splice(targetIdx, 0, srcCol);
+
+      try {
+        localStorage.setItem('jyutping_col_order', JSON.stringify(colOrder));
+      } catch(err) {}
+
+      renderList();
+      applyColumnVisibility();
+    });
+
+    container.addEventListener('dragend', () => {
+      if (draggedItem) draggedItem.classList.remove('is-dragging');
+      draggedItem = null;
+      container.querySelectorAll('.sort-context-menu-toggle').forEach(el => {
+        el.classList.remove('drag-over-above', 'drag-over-below', 'is-dragging');
+      });
+    });
+
+    // Checkbox toggle inside menuTogglesContainer
+    container.addEventListener('change', (e) => {
+      const toggle = e.target.closest('.sort-context-menu-toggle');
+      if (!toggle) return;
+      const col = toggle.dataset.col;
+      const checkbox = toggle.querySelector('input[type="checkbox"]');
+      if (checkbox) {
+        visibleCols[col] = checkbox.checked;
+        try {
+          localStorage.setItem('jyutping_visible_cols', JSON.stringify(visibleCols));
+        } catch(err) {}
+        applyColumnVisibility();
+      }
+    });
+  }
 
   function applyColumnVisibility() {
     Object.entries(visibleCols).forEach(([col, visible]) => {
@@ -528,34 +1100,135 @@
       });
     });
 
-    // Rebuild grid-template-columns based on visible columns
-    // Order: col-selection(ID) | col-char | col-jyutping | col-meaning | col-date
-    const colDefs = [
-      { col: null,            size: '32px'  }, // ID — always visible
-      { col: 'col-char',      size: '100px' },
-      { col: 'col-jyutping',  size: '150px' },
-      { col: 'col-meaning',   size: '1fr'   }, // takes all remaining space
-      { col: 'col-date',      size: '85px'  },
+    // Hide divider resizer on the rightmost visible column so no line leaks at table right edge
+    const headerCols = Array.from(document.querySelectorAll('.table-header > div'));
+    const visibleHeaderCells = headerCols.filter(el => el.style.display !== 'none');
+    document.querySelectorAll('.table-header .col-resizer').forEach(r => { r.style.display = ''; });
+    if (visibleHeaderCells.length > 0) {
+      const lastCell = visibleHeaderCells[visibleHeaderCells.length - 1];
+      const lastResizer = lastCell.querySelector('.col-resizer');
+      if (lastResizer) lastResizer.style.display = 'none';
+    }
+
+    // Rebuild grid-template-columns dynamically based on colOrder & visibleCols
+    const colSizeMap = {
+      'col-char': (customColSizes['col-char'] || 120) + 'px',
+      'col-jyutping': (customColSizes['col-jyutping'] || 160) + 'px',
+      'col-yale': (customColSizes['col-yale'] || 160) + 'px',
+      'col-meaning': 'minmax(0, 1fr)',
+      'col-date': (customColSizes['col-date'] || 75) + 'px',
+    };
+
+    const activeCols = [
+      Math.max(56, customColSizes['col-selection'] || 56) + 'px',
+      ...colOrder.filter(c => visibleCols[c] !== false).map(c => colSizeMap[c] || '1fr')
     ];
-    const gridCols = colDefs
-      .filter(c => c.col === null || visibleCols[c.col] !== false)
-      .map(c => c.size)
-      .join(' ');
+
+    const gridCols = activeCols.join(' ');
     document.querySelectorAll('.table-header, .table-row').forEach(el => {
       el.style.gridTemplateColumns = gridCols;
     });
 
-    // Update checkboxes in menu
-    if (tableHeaderMenu) {
-      tableHeaderMenu.querySelectorAll('.sort-context-menu-toggle').forEach(toggle => {
-        const cb = toggle.querySelector('input');
-        if (cb) cb.checked = visibleCols[toggle.dataset.col] !== false;
-      });
-    }
+    updateMenuToggles();
   }
 
-  // Apply on initial render
-  setTimeout(applyColumnVisibility, 0);
+  // Column drag resizing interaction
+  const MIN_COL_SIZES = {
+    'col-selection': 56,
+    'col-char': 70,
+    'col-jyutping': 90,
+    'col-yale': 90,
+    'col-meaning': 90,
+    'col-date': 55
+  };
+
+  let isResizingCol = false;
+  let currentResizer = null;
+  let startX = 0;
+  let startWidth = 0;
+  let startDateWidth = 0;
+  let targetCol = '';
+
+  document.addEventListener('mousedown', (e) => {
+    const resizer = e.target.closest('.col-resizer');
+    if (!resizer) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    targetCol = resizer.dataset.col;
+    if (!targetCol) return;
+
+    const headerCell = resizer.closest('.' + targetCol);
+    if (!headerCell) return;
+
+    isResizingCol = true;
+    currentResizer = resizer;
+    startX = e.clientX;
+    startWidth = headerCell.getBoundingClientRect().width;
+    const dateCell = document.querySelector('.table-header .col-date');
+    startDateWidth = dateCell ? dateCell.getBoundingClientRect().width : (customColSizes['col-date'] || 75);
+
+    resizer.classList.add('is-resizing');
+    document.body.classList.add('is-col-resizing');
+  });
+
+  document.addEventListener('mousemove', (e) => {
+    if (!isResizingCol || !currentResizer || !targetCol) return;
+
+    const deltaX = e.clientX - startX;
+    let newWidth = Math.round(startWidth + deltaX);
+    const minW = MIN_COL_SIZES[targetCol] || 60;
+    if (newWidth < minW) newWidth = minW;
+
+    if (targetCol === 'col-meaning') {
+      // Dragging meaning's right resizer adjusts date column smoothly
+      let newDateWidth = Math.round(startDateWidth - deltaX);
+      const minDateW = MIN_COL_SIZES['col-date'] || 55;
+      if (newDateWidth < minDateW) newDateWidth = minDateW;
+      if (newDateWidth > 250) newDateWidth = 250;
+      customColSizes['col-date'] = newDateWidth;
+    } else if (DEFAULT_COL_SIZES[targetCol] !== undefined) {
+      customColSizes[targetCol] = newWidth;
+    }
+    applyColumnVisibility();
+  });
+
+  document.addEventListener('mouseup', () => {
+    if (!isResizingCol) return;
+    isResizingCol = false;
+    if (currentResizer) {
+      currentResizer.classList.remove('is-resizing');
+      currentResizer = null;
+    }
+    document.body.classList.remove('is-col-resizing');
+    try {
+      localStorage.setItem('jyutping_col_sizes', JSON.stringify(customColSizes));
+    } catch(e) {}
+  });
+
+  // Double-click on resizer -> reset column width to default
+  document.addEventListener('dblclick', (e) => {
+    const resizer = e.target.closest('.col-resizer');
+    if (resizer && resizer.dataset.col) {
+      const col = resizer.dataset.col;
+      if (col === 'col-meaning') {
+        customColSizes['col-date'] = DEFAULT_COL_SIZES['col-date'];
+      } else if (DEFAULT_COL_SIZES[col] !== undefined) {
+        customColSizes[col] = DEFAULT_COL_SIZES[col];
+      }
+      try {
+        localStorage.setItem('jyutping_col_sizes', JSON.stringify(customColSizes));
+      } catch(err) {}
+      applyColumnVisibility();
+    }
+  });
+
+  // Apply on initial render & setup menu DND
+  setTimeout(() => {
+    applyColumnVisibility();
+    setupMenuDragAndDrop();
+  }, 0);
 
   if (tableHeaderMenu) {
     // Right-click on any table header column
@@ -569,11 +1242,7 @@
         tableHeaderMenu.querySelectorAll('.sort-context-menu-item').forEach(item => {
           item.classList.toggle('active', item.dataset.sort === currentSort);
         });
-        // Update checkbox state
-        tableHeaderMenu.querySelectorAll('.sort-context-menu-toggle').forEach(toggle => {
-          const cb = toggle.querySelector('input');
-          if (cb) cb.checked = visibleCols[toggle.dataset.col] !== false;
-        });
+        updateMenuToggles();
         tableHeaderMenu.classList.add('show');
       }
     });
@@ -592,10 +1261,26 @@
       }
     });
 
-    // Sort selection
+    // Sort selection & Reset button
     tableHeaderMenu.addEventListener('click', (e) => {
+      const resetBtn = e.target.closest('#resetColWidthsBtn');
+      if (resetBtn) {
+        customColSizes = { ...DEFAULT_COL_SIZES };
+        colOrder = [...DEFAULT_COL_ORDER];
+        visibleCols = { ...defaultCols };
+        try {
+          localStorage.removeItem('jyutping_col_sizes');
+          localStorage.removeItem('jyutping_col_order');
+          localStorage.removeItem('jyutping_visible_cols');
+        } catch(err) {}
+        renderList();
+        applyColumnVisibility();
+        tableHeaderMenu.classList.remove('show');
+        return;
+      }
+
       const sortItem = e.target.closest('.sort-context-menu-item');
-      if (sortItem) {
+      if (sortItem && sortItem.dataset.sort) {
         currentSort = sortItem.dataset.sort;
         renderList();
         applyColumnVisibility();
@@ -621,29 +1306,51 @@
   let dictActiveIndex = -1;
   let dictResults = [];
   let searchMode = 'wordbook'; // 'wordbook' or 'dict'
+  try {
+    const savedMode = localStorage.getItem('jyutping_search_mode');
+    if (savedMode === 'dict' || savedMode === 'wordbook') {
+      searchMode = savedMode;
+    }
+  } catch(e) {}
+
+  function updateSearchModeUI() {
+    if (searchModeToggle) {
+      searchModeToggle.querySelectorAll('.search-mode-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.mode === searchMode);
+      });
+    }
+    if (searchInput) {
+      if (searchMode === 'wordbook') {
+        searchInput.placeholder = t('wordbookSearchPlaceholder') || '搜索生詞...';
+      } else {
+        const dictMap = {
+          'zh-HK': '搜索詞典...',
+          'zh-TW': '搜索詞典...',
+          'zh-CN': '搜索词典...',
+          'en': 'Search dictionary...',
+          'ja': '辞書を検索...',
+          'ko': '사전 검색...'
+        };
+        searchInput.placeholder = dictMap[currentLang] || t('dictSearchFallback') || '搜索詞典...';
+      }
+    }
+  }
 
   // Search mode toggle
   const searchModeToggle = document.getElementById('searchModeToggle');
   if (searchModeToggle) {
+    updateSearchModeUI();
+
     searchModeToggle.addEventListener('click', (e) => {
       const btn = e.target.closest('.search-mode-btn');
       if (!btn || btn.classList.contains('active')) return;
 
-      // Switch mode
-      searchModeToggle.querySelectorAll('.search-mode-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
+      // Switch mode & persist
       searchMode = btn.dataset.mode;
-
-      // Update placeholder
-      if (searchMode === 'dict') {
-        searchInput.placeholder = currentLang === 'en' ? 'Search dictionary…'
-          : currentLang === 'ja' ? '辞書検索…'
-          : currentLang === 'ko' ? '사전 검색…'
-          : currentLang === 'zh-CN' ? '词典查词…'
-          : '詞典查詞…';
-      } else {
-        searchInput.placeholder = t('wordbookSearchPlaceholder');
-      }
+      try {
+        localStorage.setItem('jyutping_search_mode', searchMode);
+      } catch(err) {}
+      updateSearchModeUI();
 
       // Clear and re-trigger search with current query
       const query = searchInput.value.trim();
@@ -796,7 +1503,8 @@
   function renderDictDropdown(results, query) {
     if (!results || results.length === 0) {
       if (query && query.length >= 1) {
-        dictSearchDropdown.innerHTML = `<div class="dict-dropdown-empty">未在詞典中找到匹配結果</div>`;
+        const emptyMsg = t('dictSearchEmpty') || '未在詞典中找到匹配結果';
+        dictSearchDropdown.innerHTML = `<div class="dict-dropdown-empty">${emptyMsg}</div>`;
         dictSearchDropdown.classList.add('show');
       } else {
         dictSearchDropdown.classList.remove('show');
@@ -810,7 +1518,7 @@
     dictActiveIndex = -1;
 
     let html = `<div class="dict-dropdown-header">
-      <span>📖 詞典搜索</span>
+      <span>${t('dictSearchFallback') || '📖 詞典搜索'}</span>
       <span class="dict-count">${results.length} 個結果</span>
     </div>`;
 
@@ -985,55 +1693,89 @@
   let speakingBtn = null;
   let speakingTimer = null;
   let currentAudio = null;
+  let currentTtsRequestId = 0;
 
   function startSpeaking(btn) {
-    if (speakingBtn) speakingBtn.classList.remove('speaking');
+    if (speakingBtn) {
+      speakingBtn.classList.remove('speaking');
+      const parentCell = speakingBtn.closest('.excel-cell');
+      if (parentCell) parentCell.querySelectorAll('.word-character, .jyutping-text').forEach(el => el.classList.remove('speaking'));
+      const parentToolbar = speakingBtn.closest('.ai-selection-toolbar');
+      if (parentToolbar) parentToolbar.classList.remove('speaking');
+    }
     if (speakingTimer) clearTimeout(speakingTimer);
     speakingBtn = btn;
-    if (btn) btn.classList.add('speaking');
-    // Fallback timeout: stop animation after 8s max
+    if (btn) {
+      btn.classList.add('speaking');
+      const parentCell = btn.closest('.excel-cell');
+      if (parentCell) parentCell.querySelectorAll('.word-character, .jyutping-text').forEach(el => el.classList.add('speaking'));
+      const parentToolbar = btn.closest('.ai-selection-toolbar');
+      if (parentToolbar) parentToolbar.classList.add('speaking');
+    }
     speakingTimer = setTimeout(stopSpeaking, 8000);
   }
 
   function stopSpeaking() {
-    if (speakingBtn) speakingBtn.classList.remove('speaking');
+    if (speakingBtn) {
+      speakingBtn.classList.remove('speaking');
+      const parentCell = speakingBtn.closest('.excel-cell');
+      if (parentCell) parentCell.querySelectorAll('.word-character, .jyutping-text').forEach(el => el.classList.remove('speaking'));
+      const parentToolbar = speakingBtn.closest('.ai-selection-toolbar');
+      if (parentToolbar) parentToolbar.classList.remove('speaking');
+    }
     speakingBtn = null;
     if (speakingTimer) { clearTimeout(speakingTimer); speakingTimer = null; }
   }
 
   function playTts(text, ttsBtn) {
     if (!text) return;
-    // Stop any currently playing audio
-    speechSynthesis.cancel();
-    if (chrome.tts) chrome.tts.stop();
-    if (currentAudio) {
-      currentAudio.pause();
-      currentAudio.src = '';
-      currentAudio = null;
-    }
+    const reqId = ++currentTtsRequestId;
+
+    // Immediately stop any currently playing speech or audio
+    try {
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      if (chrome.tts && typeof chrome.tts.stop === 'function') chrome.tts.stop();
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+        currentAudio = null;
+      }
+    } catch(e) {}
+
     startSpeaking(ttsBtn);
+
     chrome.storage.sync.get([
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], async (result) => {
+      if (reqId !== currentTtsRequestId) return; // Superseded by a newer request
+
       const engine = result.ttsEngine || 'edgeTts';
       const rate = result.ttsRate || 0.9;
 
       if (engine === 'webSpeech') {
+        if (reqId !== currentTtsRequestId) return;
         speechSynthesis.cancel();
         const utterance = new SpeechSynthesisUtterance(text);
         utterance.lang = 'zh-HK';
         utterance.rate = rate;
-        utterance.onend = stopSpeaking;
-        utterance.onerror = stopSpeaking;
+        utterance.onend = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+        utterance.onerror = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
         const cantoneseVoice = speechSynthesis.getVoices().find(v => v.lang.startsWith('zh-HK'));
         if (cantoneseVoice) utterance.voice = cantoneseVoice;
         speechSynthesis.speak(utterance);
       } else if (engine === 'chromeTts') {
+        if (reqId !== currentTtsRequestId) return;
         if (chrome.tts) {
           chrome.tts.speak(text, {
             lang: 'zh-HK', rate: rate,
-            onEvent: (e) => { if (e.type === 'end' || e.type === 'error') stopSpeaking(); }
+            onEvent: (e) => {
+              if (reqId === currentTtsRequestId && (e.type === 'end' || e.type === 'error')) {
+                stopSpeaking();
+              }
+            }
           });
+        } else {
+          stopSpeaking();
         }
       } else if (engine === 'edgeTts') {
         try {
@@ -1043,17 +1785,49 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ input: text, voice: 'zh-HK-HiuMaanNeural', model: 'tts-1', speed: rate })
           });
+          if (reqId !== currentTtsRequestId) return; // Discard if new click happened while fetching
           if (!resp.ok) throw new Error('Edge TTS error: ' + resp.status);
           const blob = await resp.blob();
+          if (reqId !== currentTtsRequestId) return;
+
           const audio = new Audio(URL.createObjectURL(blob));
           currentAudio = audio;
-          audio.onended = () => { URL.revokeObjectURL(audio.src); currentAudio = null; stopSpeaking(); };
-          audio.onerror = () => { currentAudio = null; stopSpeaking(); };
+          audio.onended = () => {
+            if (reqId === currentTtsRequestId) {
+              URL.revokeObjectURL(audio.src);
+              currentAudio = null;
+              stopSpeaking();
+            }
+          };
+          audio.onerror = () => {
+            if (reqId === currentTtsRequestId) {
+              currentAudio = null;
+              stopSpeaking();
+            }
+          };
           audio.play();
         } catch (e) {
-          console.warn('[Wordbook] Edge TTS failed, falling back to Chrome TTS:', e);
-          if (chrome.tts) chrome.tts.speak(text, { lang: 'zh-HK', rate: rate });
-          stopSpeaking();
+          if (reqId !== currentTtsRequestId) return;
+          console.warn('[Wordbook] Edge TTS failed, falling back to Chrome TTS / WebSpeech:', e);
+          if (chrome.tts) {
+            chrome.tts.speak(text, {
+              lang: 'zh-HK', rate: rate,
+              onEvent: (e) => {
+                if (reqId === currentTtsRequestId && (e.type === 'end' || e.type === 'error')) stopSpeaking();
+              }
+            });
+          } else if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-HK';
+            utterance.rate = rate;
+            utterance.onend = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+            utterance.onerror = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+            const cantoneseVoice = speechSynthesis.getVoices().find(v => v.lang.startsWith('zh-HK'));
+            if (cantoneseVoice) utterance.voice = cantoneseVoice;
+            speechSynthesis.speak(utterance);
+          } else {
+            stopSpeaking();
+          }
         }
       } else if (engine === 'bertVits2') {
         try {
@@ -1062,17 +1836,47 @@
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ text: text, speed: rate })
           });
+          if (reqId !== currentTtsRequestId) return;
           if (!resp.ok) throw new Error('BertVits2 error: ' + resp.status);
           const blob = await resp.blob();
+          if (reqId !== currentTtsRequestId) return;
+
           const audio = new Audio(URL.createObjectURL(blob));
           currentAudio = audio;
-          audio.onended = () => { URL.revokeObjectURL(audio.src); currentAudio = null; stopSpeaking(); };
-          audio.onerror = () => { currentAudio = null; stopSpeaking(); };
+          audio.onended = () => {
+            if (reqId === currentTtsRequestId) {
+              URL.revokeObjectURL(audio.src);
+              currentAudio = null;
+              stopSpeaking();
+            }
+          };
+          audio.onerror = () => {
+            if (reqId === currentTtsRequestId) {
+              currentAudio = null;
+              stopSpeaking();
+            }
+          };
           audio.play();
         } catch (e) {
-          console.warn('[Wordbook] BertVits2 failed, falling back to Chrome TTS:', e);
-          if (chrome.tts) chrome.tts.speak(text, { lang: 'zh-HK', rate: rate });
-          stopSpeaking();
+          if (reqId !== currentTtsRequestId) return;
+          console.warn('[Wordbook] BertVits2 failed, falling back to Chrome TTS / WebSpeech:', e);
+          if (chrome.tts) {
+            chrome.tts.speak(text, {
+              lang: 'zh-HK', rate: rate,
+              onEvent: (e) => {
+                if (reqId === currentTtsRequestId && (e.type === 'end' || e.type === 'error')) stopSpeaking();
+              }
+            });
+          } else if ('speechSynthesis' in window) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'zh-HK';
+            utterance.rate = rate;
+            utterance.onend = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+            utterance.onerror = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+            speechSynthesis.speak(utterance);
+          } else {
+            stopSpeaking();
+          }
         }
       } else if (engine === 'azureTts') {
         const action = result.azureTtsMode === 'custom' ? 'azureTtsSpeak' : 'azureTtsProxySpeak';
@@ -1082,15 +1886,36 @@
           msg.azureRegion = result.azureTtsRegion;
         }
         chrome.runtime.sendMessage(msg, (response) => {
+          if (reqId !== currentTtsRequestId) return;
           if (response && response.audioData) {
             const audio = new Audio(response.audioData);
             currentAudio = audio;
-            audio.onended = () => { currentAudio = null; stopSpeaking(); };
-            audio.onerror = () => { currentAudio = null; stopSpeaking(); };
-            audio.play().catch(() => stopSpeaking());
+            audio.onended = () => {
+              if (reqId === currentTtsRequestId) {
+                currentAudio = null;
+                stopSpeaking();
+              }
+            };
+            audio.onerror = () => {
+              if (reqId === currentTtsRequestId) {
+                currentAudio = null;
+                stopSpeaking();
+              }
+            };
+            audio.play().catch(() => {
+              if (reqId === currentTtsRequestId) stopSpeaking();
+            });
           } else {
-            if (chrome.tts) chrome.tts.speak(text, { lang: 'zh-HK', rate: rate });
-            stopSpeaking();
+            if (chrome.tts) {
+              chrome.tts.speak(text, {
+                lang: 'zh-HK', rate: rate,
+                onEvent: (e) => {
+                  if (reqId === currentTtsRequestId && (e.type === 'end' || e.type === 'error')) stopSpeaking();
+                }
+              });
+            } else {
+              stopSpeaking();
+            }
           }
         });
       }
@@ -1127,8 +1952,6 @@
       return;
     }
 
-
-
     // Checkbox
     const checkbox = e.target.closest('.word-card-checkbox');
     if (checkbox && checkbox.dataset.id) {
@@ -1140,6 +1963,19 @@
       }
       updateSelectionUI();
       return;
+    }
+  });
+
+  // Detect truncated / overflowing text on hover for Excel-like expansion (only for overflowing cells)
+  wordListEl.addEventListener('mouseover', (e) => {
+    const cell = e.target.closest('.excel-cell');
+    if (cell) {
+      const textEl = cell.querySelector('.excel-cell-text');
+      if (textEl && textEl.scrollWidth > textEl.clientWidth + 1) {
+        cell.classList.add('is-overflowing');
+      } else {
+        cell.classList.remove('is-overflowing');
+      }
     }
   });
 
@@ -1231,18 +2067,21 @@
 
   importBtn.addEventListener('click', () => {
     importModal.classList.add('show');
+    document.body.classList.add('modal-open');
     exportMenu.classList.remove('show');
     resetImportUI();
   });
 
   importCancelBtn.addEventListener('click', () => {
     importModal.classList.remove('show');
+    document.body.classList.remove('modal-open');
     resetImportUI();
   });
 
   importModal.addEventListener('click', (e) => {
     if (e.target === importModal) {
       importModal.classList.remove('show');
+      document.body.classList.remove('modal-open');
       resetImportUI();
     }
   });
@@ -1402,8 +2241,8 @@
         <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4; margin-bottom: 8px;">
           <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
         </svg>
-        <p style="font-size: 13px; margin: 0;">點擊左側單詞查看詳情</p>
-        <p style="font-size: 11px; margin: 4px 0 0; opacity: 0.6;">或直接在下方提問</p>
+        <p style="font-size: 13px; margin: 0;">${t('wordbookEmptyDetail1') || '點擊左側單詞查看詳情'}</p>
+        <p style="font-size: 11px; margin: 4px 0 0; opacity: 0.6;">${t('wordbookEmptyDetail2') || '或直接在下方提問'}</p>
       </div>
       <div class="ai-response-area" id="aiResponseArea"></div>
       <div class="ai-chat-section" id="aiChatSection">
@@ -1411,10 +2250,17 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
           </svg>
-          AI 問答
+          ${t('wordbookAiChat') || 'AI 問答'}
+
+          <button class="ai-settings-btn" id="openAiSettingsBtn" title="${t('wordbookAiSettingsTitle') || 'AI 設定'}" style="margin-left: auto; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; opacity: 0.6; transition: opacity 0.2s;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
         <div class="ai-input-row">
-          <input class="ai-input" id="aiChatInput" type="text" placeholder="問任何關於粵語的問題..." />
+          <input class="ai-input" id="aiChatInput" type="text" placeholder="${t('wordbookAiInputPlaceholderGeneric') || '問任何關於粵語的問題...'}" />
           <button class="ai-send-btn" id="aiSendBtn" title="發送">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -1423,6 +2269,12 @@
     `;
 
     // Bind generic AI chat
+    
+    const aiSettingsBtn = document.getElementById('openAiSettingsBtn');
+    if (aiSettingsBtn) {
+      aiSettingsBtn.addEventListener('click', openAiSettingsModal);
+    }
+
     const aiChatSection = document.getElementById('aiChatSection');
     const aiChatInput = document.getElementById('aiChatInput');
     const aiSendBtn = document.getElementById('aiSendBtn');
@@ -1465,7 +2317,8 @@
         sentence: '',
         originalTranslation: '',
         question: question,
-        history: aiChatHistory
+        history: aiChatHistory,
+        systemPrompt: globalAiCustomSystemPrompt
       }, (response) => {
         aiIsLoading = false;
         aiSendBtn.disabled = false;
@@ -1476,7 +2329,7 @@
         if (response && response.success) {
           aiChatHistory.push({ role: 'user', content: question });
           aiChatHistory.push({ role: 'assistant', content: response.reply });
-          aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">思考了 ${elapsed}s</span></div><div class="ai-response-content">${renderSimpleMarkdown(response.reply)}</div></div>`;
+          aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">思考了 ${elapsed}s</span></div><div class="ai-response-content">${renderMarkdown(response.reply)}</div></div>`;
         } else {
           const errMsg = response?.error || '請求失敗';
           aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">${elapsed}s</span></div><div class="ai-response-content" style="color: var(--text-muted);">${escapeHtml(errMsg)}</div></div>`;
@@ -1507,8 +2360,8 @@
 
     if (!dictionary || !dictionary[character]) {
       detailPane.innerHTML = `
-        <div class="detail-empty-state">
-          <p>詞典中未找到 <strong>${character}</strong> 的詳細釋義。</p>
+        <div class="dict-not-found">
+          <p>${(t('dictSearchNoDetail') || '詞典中未找到 <strong>$1</strong> 的詳細釋義。').replace('$1', character)}</p>
         </div>
       `;
       return;
@@ -1564,10 +2417,17 @@
 
     // Definitions
     if (entry.english && entry.english.length > 0) {
+      const badgeTitle = t('badgeClickToTranslate') || '點擊翻譯此釋義';
       const defItems = entry.english.slice(0, 10).map((def, idx) => {
         let className = 'def-item';
+        let innerHtml = '';
+
         if (def.startsWith('[粵]')) {
           className += ' def-yue';
+          const rawDefText = def.slice(3).trim();
+          innerHtml = `<span class="badge-yue" data-text="${rawDefText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span><span class="def-content-text">${rawDefText}</span>`;
+        } else {
+          innerHtml = `<span>${def}</span>`;
         }
         
         let exampleHtml = '';
@@ -1598,7 +2458,7 @@
           return `
             <div class="${className} has-inline-examples" style="position: relative;">
               <div class="def-text" style="display: flex; align-items: center; justify-content: space-between; cursor: pointer;">
-                <span>${def}</span>
+                <div>${innerHtml}</div>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4; flex-shrink: 0; margin-left: 8px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
               </div>
               ${exampleHtml}
@@ -1606,7 +2466,7 @@
           `;
         }
         
-        return `<div class="${className}">${def}</div>`;
+        return `<div class="${className}" style="display: flex; flex-direction: column;"><div>${innerHtml}</div></div>`;
       }).join('');
       
       html += `
@@ -1669,16 +2529,24 @@
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
           </svg>
-          AI 問答
+          ${t('wordbookAiChat') || 'AI 問答'}
+
+          <button class="ai-settings-btn" id="openAiSettingsBtn" title="${t('wordbookAiSettingsTitle') || 'AI 設定'}" style="margin-left: auto; background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; border-radius: 4px; opacity: 0.6; transition: opacity 0.2s;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
         </div>
-        <div class="ai-quick-questions" id="aiQuickQuestions">
-          <button class="ai-quick-btn" data-q="用呢個詞造一個粵語例句">造句</button>
-          <button class="ai-quick-btn" data-q="呢個詞嘅粵語語源係咩？">語源</button>
-          <button class="ai-quick-btn" data-q="呢個詞喺日常粵語入面點用？">日常用法</button>
-          <button class="ai-quick-btn" data-q="呢個詞有咩近義詞同反義詞？">近義反義</button>
+        <div class="ai-quick-questions" id="aiQuickQuestions" ${globalAiQuickActions.some(a => a.active) ? '' : 'style="display: none;"'}>
+          ${globalAiQuickActions.filter(a => a.active).map(a => {
+            const label = a.isDefault ? t(a.labelKey) : a.label;
+            const prompt = a.isDefault ? t(a.promptKey) : a.prompt;
+            return `<button class="ai-quick-btn" data-q="${prompt}">${label}</button>`;
+          }).join('')}
         </div>
         <div class="ai-input-row">
-          <input class="ai-input" id="aiChatInput" type="text" placeholder="問關於「${character}」的問題..." data-word="${character}" />
+          <input class="ai-input" id="aiChatInput" type="text" placeholder="${(t('wordbookAiInputPlaceholder') || '問關於「$1」的問題...').replace('$1', character)}" data-word="${character}" />
           <button class="ai-send-btn" id="aiSendBtn" title="發送">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
           </button>
@@ -1687,6 +2555,11 @@
     `;
 
     detailPane.innerHTML = html;
+
+    const aiSettingsBtn = document.getElementById('openAiSettingsBtn');
+    if (aiSettingsBtn) {
+      aiSettingsBtn.addEventListener('click', openAiSettingsModal);
+    }
 
     // Bind TTS
     const triggerTTS = () => playTts(entry.traditional, document.getElementById('detailSpeakerBtn'));
@@ -1701,7 +2574,9 @@
     // Bind Example Toggles
     detailPane.querySelectorAll('.has-inline-examples .def-text').forEach(defText => {
       defText.addEventListener('click', (e) => {
-        const examplesDiv = e.currentTarget.nextElementSibling;
+        const parent = e.currentTarget.closest('.has-inline-examples');
+        const examplesDiv = parent ? parent.querySelector('.def-examples') : null;
+        if (!examplesDiv) return;
         const icon = e.currentTarget.querySelector('svg');
         if (examplesDiv.style.display === 'none') {
           examplesDiv.style.display = 'block';
@@ -1712,6 +2587,223 @@
         }
       });
     });
+
+    // 高可用釋義翻譯請求函數（Background + Client Direct Fallback）
+    async function requestYueDefTranslation(text, targetLang, engine) {
+      // 1. 優先嘗試發送給後台 Service Worker（帶 4 秒超時保障）
+      try {
+        const bgPromise = new Promise((resolve, reject) => {
+          const timer = setTimeout(() => reject(new Error('Background timeout')), 4000);
+          chrome.runtime.sendMessage({
+            action: 'translateYueDef',
+            text: text,
+            targetLang: targetLang,
+            engine: engine
+          }, (resp) => {
+            clearTimeout(timer);
+            if (chrome.runtime.lastError) {
+              reject(chrome.runtime.lastError);
+            } else {
+              resolve(resp);
+            }
+          });
+        });
+        const bgResp = await bgPromise;
+        if (bgResp && bgResp.success && bgResp.translation) {
+          return bgResp.translation;
+        }
+      } catch (bgErr) {
+        console.warn('[Wordbook] Background translation failed/timed out, trying direct client fetch:', bgErr);
+      }
+
+      // 2. 前端直連 Google GTX 免費翻譯通道
+      try {
+        let googleTo = 'zh-CN';
+        if (targetLang === 'en') googleTo = 'en';
+        else if (targetLang === 'ja') googleTo = 'ja';
+        else if (targetLang === 'ko') googleTo = 'ko';
+        else if (targetLang === 'zh-Hant' || targetLang === 'zh-TW' || targetLang === 'zh-HK') googleTo = 'zh-TW';
+
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(text)}`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data[0] && Array.isArray(data[0])) {
+            const directRes = data[0].map(item => item[0]).filter(Boolean).join('');
+            if (directRes) return directRes;
+          }
+        }
+      } catch (directErr) {
+        console.warn('[Wordbook] Direct Google GTX failed:', directErr);
+      }
+
+      // 3. 前端直連 MyMemory 免費翻譯通道
+      try {
+        let target = targetLang || 'zh-CN';
+        if (target === 'zh-Hans') target = 'zh-CN';
+        else if (target === 'zh-Hant' || target === 'zh-HK') target = 'zh-TW';
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh-HK|${target}`;
+        const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.responseData && data.responseData.translatedText) return data.responseData.translatedText;
+        }
+      } catch (myMemErr) {
+        console.warn('[Wordbook] Direct MyMemory failed:', myMemErr);
+      }
+
+      throw new Error('All translation channels failed');
+    }
+
+    // 獲取翻譯目標語言對應的標籤文字（如：普、書、英、日、韓）
+    function getTargetLangLabel(targetLang) {
+      switch (targetLang) {
+        case 'zh-Hans':
+        case 'zh-CN':
+          return '普';
+        case 'zh-Hant':
+        case 'zh-TW':
+        case 'zh-HK':
+          return '書';
+        case 'en':
+          return '英';
+        case 'ja':
+          return '日';
+        case 'ko':
+          return '韓';
+        default:
+          return '譯';
+      }
+    }
+
+    // Bind [粵] Badge Click-to-Translate
+    async function translateWordbookBadge(badgeEl, containerEl) {
+      const text = badgeEl.dataset.text;
+      if (!text) return;
+
+      const targetLang = autoTranslateYueDefsTargetLang || 'zh-Hans';
+      const engine = autoTranslateYueDefsEngine || 'google';
+      const mode = yueDefDisplayMode || 'expand';
+      const cacheKey = `${engine}_${targetLang}_${text}`;
+      const cached = yueDefTranslationCache.get(cacheKey);
+      const langLabel = getTargetLangLabel(targetLang);
+
+      const yueIconSvg = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>`;
+      const toggleIconSvg = `<svg class="trans-toggle-icon" viewBox="0 0 24 24" width="10" height="10" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="1 4 1 10 7 10"></polyline><polyline points="23 20 23 14 17 14"></polyline><path d="M20.49 9A9 9 0 0 0 5.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 0 1 3.51 15"></path></svg>`;
+
+      if (mode === 'replace') {
+        // Mode B: 原位替換
+        const textSpan = containerEl.querySelector('.def-content-text');
+        if (!textSpan) return;
+
+        // 如果目前已經是替換後的譯文狀態，再次點擊則切換回粵語原文
+        if (containerEl.dataset.isReplaced === 'true') {
+          containerEl.dataset.isReplaced = 'false';
+          badgeEl.className = 'badge-yue';
+          badgeEl.innerHTML = `粵${yueIconSvg}`;
+          badgeEl.title = t('badgeClickToTranslate') || '點擊翻譯此釋義';
+          textSpan.textContent = text;
+          return;
+        }
+
+        // 切換為譯文狀態
+        if (cached) {
+          containerEl.dataset.isReplaced = 'true';
+          badgeEl.className = 'badge-trans-lang badge-clickable';
+          badgeEl.innerHTML = `${langLabel}${toggleIconSvg}`;
+          badgeEl.title = t('badgeClickToRestore') || '點擊切換回粵語原文';
+          textSpan.textContent = cached;
+          return;
+        }
+
+        // 異步請求翻譯
+        const originalBadgeHtml = badgeEl.innerHTML;
+        const originalBadgeClass = badgeEl.className;
+        badgeEl.classList.add('loading');
+        textSpan.textContent = t('badgeTranslating') || '翻譯中...';
+
+        try {
+          const translation = await requestYueDefTranslation(text, targetLang, engine);
+          badgeEl.classList.remove('loading');
+          if (translation) {
+            yueDefTranslationCache.set(cacheKey, translation);
+            containerEl.dataset.isReplaced = 'true';
+            badgeEl.className = 'badge-trans-lang badge-clickable';
+            badgeEl.innerHTML = `${langLabel}${toggleIconSvg}`;
+            badgeEl.title = t('badgeClickToRestore') || '點擊切換回粵語原文';
+            textSpan.textContent = translation;
+          } else {
+            badgeEl.className = originalBadgeClass;
+            badgeEl.innerHTML = originalBadgeHtml;
+            textSpan.textContent = text;
+          }
+        } catch (e) {
+          badgeEl.classList.remove('loading');
+          badgeEl.className = originalBadgeClass;
+          badgeEl.innerHTML = originalBadgeHtml;
+          textSpan.textContent = text;
+        }
+      } else {
+        // Mode A: 下方展開
+        let transEl = containerEl.querySelector('.yue-def-translation');
+        if (transEl) {
+          transEl.style.display = (transEl.style.display === 'none') ? 'flex' : 'none';
+          return;
+        }
+
+        const langBadgeHtml = `<span class="badge-trans-lang">${langLabel}</span>`;
+        transEl = document.createElement('div');
+        transEl.className = 'yue-def-translation';
+        const defTextEl = containerEl.querySelector('.def-text');
+        if (defTextEl) {
+          defTextEl.insertAdjacentElement('afterend', transEl);
+        } else {
+          containerEl.appendChild(transEl);
+        }
+
+        if (cached) {
+          transEl.innerHTML = `${langBadgeHtml}<span>${cached}</span>`;
+          return;
+        }
+
+        const translatingText = t('badgeTranslating') || '翻譯中...';
+        transEl.classList.add('loading');
+        transEl.innerHTML = `${langBadgeHtml}<span>${translatingText}</span>`;
+
+        try {
+          const translation = await requestYueDefTranslation(text, targetLang, engine);
+          transEl.classList.remove('loading');
+          if (translation) {
+            yueDefTranslationCache.set(cacheKey, translation);
+            transEl.innerHTML = `${langBadgeHtml}<span>${translation}</span>`;
+          } else {
+            transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--text-muted); opacity: 0.7;">${t('badgeTranslationError') || '翻譯失敗'}</span>`;
+          }
+        } catch (e) {
+          transEl.classList.remove('loading');
+          transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--text-muted); opacity: 0.7;">${t('badgeTranslationError') || '翻譯失敗'}</span>`;
+        }
+      }
+    }
+
+    detailPane.querySelectorAll('.badge-yue').forEach(badge => {
+      badge.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const parentDef = badge.closest('.def-item');
+        if (parentDef) {
+          translateWordbookBadge(badge, parentDef);
+        }
+      });
+    });
+
+    if (enableAutoTranslateYueDefs) {
+      detailPane.querySelectorAll('.badge-yue').forEach(badge => {
+        const parentDef = badge.closest('.def-item');
+        if (parentDef) {
+          translateWordbookBadge(badge, parentDef);
+        }
+      });
+    }
 
     // Bind Example TTS
     detailPane.querySelectorAll('.example-tts-btn').forEach(btn => {
@@ -1927,7 +3019,8 @@
           sentence: `${character}（${pronunciation}）：${definitions}`,
           originalTranslation: definitions,
           question: question,
-          history: aiChatHistory
+          history: aiChatHistory,
+          systemPrompt: globalAiCustomSystemPrompt
         }, (response) => {
           aiIsLoading = false;
           aiSendBtn.disabled = false;
@@ -1941,7 +3034,7 @@
             aiChatHistory.push({ role: 'user', content: question });
             aiChatHistory.push({ role: 'assistant', content: response.reply });
 
-            aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">思考了 ${elapsed}s</span></div><div class="ai-response-content">${renderSimpleMarkdown(response.reply)}</div></div>`;
+            aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">思考了 ${elapsed}s</span></div><div class="ai-response-content">${renderMarkdown(response.reply)}</div></div>`;
           } else {
             const errMsg = response?.error || '請求失敗';
             aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">${elapsed}s</span></div><div class="ai-response-content" style="color: var(--text-muted);">${escapeHtml(errMsg)}</div></div>`;
@@ -2058,4 +3151,427 @@
   }
 
   init();
+
+
+
+
+// ==================== AI Settings Modal Logic ====================
+const aiSettingsModal = document.getElementById('aiSettingsModal');
+const closeAiSettingsBtn = document.getElementById('closeAiSettingsBtn');
+const aiQuickActionsListModal = document.getElementById('aiQuickActionsListModal');
+const addAiQuickActionBtnModal = document.getElementById('addAiQuickActionBtnModal');
+const restoreAiQuickActionsBtnModal = document.getElementById('restoreAiQuickActionsBtnModal');
+const aiModalTabs = document.getElementById('aiModalTabs');
+const aiCustomPromptInputModal = document.getElementById('aiCustomPromptInputModal');
+const restoreAiPromptBtnModal = document.getElementById('restoreAiPromptBtnModal');
+const aiPromptSavedHint = document.getElementById('aiPromptSavedHint');
+
+let modalAiQuickActions = [];
+
+function openAiSettingsModal() {
+  if (!aiSettingsModal) return;
+  
+  // Clone the global quick actions state for editing
+  modalAiQuickActions = JSON.parse(JSON.stringify(globalAiQuickActions));
+  
+  // Populate prompt textarea
+  if (aiCustomPromptInputModal) {
+    aiCustomPromptInputModal.value = globalAiCustomSystemPrompt || '';
+    if (!aiCustomPromptInputModal.value) {
+      aiCustomPromptInputModal.placeholder = DEFAULT_AI_SYSTEM_PROMPT;
+    }
+  }
+
+  // Reset to default tab (quick-actions)
+  if (aiModalTabs) {
+    aiModalTabs.querySelectorAll('.ai-modal-tab-btn').forEach((b, idx) => {
+      b.classList.toggle('active', idx === 0);
+    });
+    const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
+    const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
+    if (tabPaneQuickActions) tabPaneQuickActions.classList.add('active');
+    if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.remove('active');
+  }
+
+  renderAiSettingsList();
+  aiSettingsModal.classList.add('show');
+  document.body.classList.add('modal-open');
+}
+
+function closeAiSettingsModal() {
+  if (!aiSettingsModal) return;
+  aiSettingsModal.classList.remove('show');
+  document.body.classList.remove('modal-open');
+  
+  globalAiQuickActions = modalAiQuickActions;
+  
+  if (aiCustomPromptInputModal) {
+    globalAiCustomSystemPrompt = aiCustomPromptInputModal.value.trim();
+  }
+
+  chrome.storage.local.set({ 
+    aiQuickActions: globalAiQuickActions,
+    aiCustomSystemPrompt: globalAiCustomSystemPrompt
+  });
+  
+  // Re-render the quick actions bar if we are on a word detail view
+  const detailPane = document.getElementById('detailPane');
+  if (detailPane && detailPane.dataset.activeWord) {
+    const aiQuickQuestions = document.getElementById('aiQuickQuestions');
+    if (aiQuickQuestions) {
+      const activeActions = globalAiQuickActions.filter(a => a.active);
+      if (activeActions.length === 0) {
+        aiQuickQuestions.style.display = 'none';
+      } else {
+        aiQuickQuestions.style.display = 'flex';
+        aiQuickQuestions.innerHTML = activeActions.map(a => {
+          const label = a.isDefault ? t(a.labelKey) : a.label;
+          const prompt = a.isDefault ? t(a.promptKey) : a.prompt;
+          return `<button class="ai-quick-btn" data-q="${prompt}">${label}</button>`;
+        }).join('');
+        
+        // Re-bind listeners for the new buttons
+        aiQuickQuestions.querySelectorAll('.ai-quick-btn').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const query = btn.getAttribute('data-q');
+            const aiChatInput = document.getElementById('aiChatInput');
+            if (aiChatInput) {
+              aiChatInput.value = query;
+              const aiSendBtn = document.getElementById('aiSendBtn');
+              if (aiSendBtn) aiSendBtn.click();
+            }
+          });
+        });
+      }
+    }
+  }
+}
+
+if (closeAiSettingsBtn) {
+  closeAiSettingsBtn.addEventListener('click', closeAiSettingsModal);
+}
+if (aiSettingsModal) {
+  aiSettingsModal.addEventListener('click', (e) => {
+    if (e.target === aiSettingsModal) closeAiSettingsModal();
+  });
+}
+
+// Prevent wheel scrolling inside modal from bubbling / chaining to the background page
+document.querySelectorAll('.modal-overlay').forEach(overlay => {
+  overlay.addEventListener('wheel', (e) => {
+    const modal = overlay.querySelector('.modal');
+    if (!modal) return;
+    if (e.target === overlay) {
+      e.preventDefault();
+      return;
+    }
+    const scrollable = e.target.closest('#aiQuickActionsListModal, .ai-prompt-textarea, .modal');
+    if (scrollable) {
+      const { scrollTop, scrollHeight, clientHeight } = scrollable;
+      const atTop = scrollTop <= 0 && e.deltaY < 0;
+      const atBottom = scrollTop + clientHeight >= scrollHeight - 1 && e.deltaY > 0;
+      if (atTop || atBottom) {
+        e.preventDefault();
+      }
+    } else {
+      e.preventDefault();
+    }
+  }, { passive: false });
+});
+
+// Tab Switching
+if (aiModalTabs) {
+  aiModalTabs.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('.ai-modal-tab-btn');
+    if (!tabBtn) return;
+    const targetTab = tabBtn.dataset.tab;
+    aiModalTabs.querySelectorAll('.ai-modal-tab-btn').forEach(b => b.classList.toggle('active', b === tabBtn));
+    
+    const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
+    const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
+    if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', targetTab === 'quick-actions');
+    if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', targetTab === 'custom-prompt');
+  });
+}
+
+// Save prompt helper
+function savePromptState(val) {
+  globalAiCustomSystemPrompt = val.trim();
+  chrome.storage.local.set({ aiCustomSystemPrompt: globalAiCustomSystemPrompt });
+  if (aiPromptSavedHint) {
+    aiPromptSavedHint.style.opacity = '1';
+    clearTimeout(aiPromptSavedHint._timer);
+    aiPromptSavedHint._timer = setTimeout(() => {
+      aiPromptSavedHint.style.opacity = '0';
+    }, 1500);
+  }
+}
+
+// Prompt Textarea input auto-save
+if (aiCustomPromptInputModal) {
+  aiCustomPromptInputModal.addEventListener('input', () => {
+    savePromptState(aiCustomPromptInputModal.value);
+  });
+}
+
+// Variable Tags Insertion
+document.querySelectorAll('.ai-prompt-tag').forEach(tag => {
+  tag.addEventListener('click', () => {
+    const varText = tag.dataset.tag;
+    if (aiCustomPromptInputModal && varText) {
+      const start = aiCustomPromptInputModal.selectionStart || 0;
+      const end = aiCustomPromptInputModal.selectionEnd || 0;
+      const val = aiCustomPromptInputModal.value;
+      aiCustomPromptInputModal.value = val.substring(0, start) + varText + val.substring(end);
+      aiCustomPromptInputModal.focus();
+      aiCustomPromptInputModal.selectionStart = aiCustomPromptInputModal.selectionEnd = start + varText.length;
+      savePromptState(aiCustomPromptInputModal.value);
+    }
+  });
+});
+
+// Restore Default Prompt
+if (restoreAiPromptBtnModal) {
+  restoreAiPromptBtnModal.addEventListener('click', () => {
+    const confirmMsg = t('wordbookConfirmRestorePrompt') || '確定要恢復預設 Prompt 嗎？這將會清除您自訂的系統提示詞。';
+    if (confirm(confirmMsg)) {
+      if (aiCustomPromptInputModal) {
+        aiCustomPromptInputModal.value = DEFAULT_AI_SYSTEM_PROMPT;
+        savePromptState(DEFAULT_AI_SYSTEM_PROMPT);
+      }
+    }
+  });
+}
+
+function renderAiSettingsList() {
+  if (!aiQuickActionsListModal) return;
+  aiQuickActionsListModal.innerHTML = '';
+  
+  modalAiQuickActions.forEach((action, index) => {
+    const itemDiv = document.createElement('div');
+    itemDiv.className = 'ai-action-card';
+
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.checked = action.active;
+    checkbox.className = 'ai-action-checkbox';
+    checkbox.title = '啟用/停用此指令';
+    checkbox.addEventListener('change', () => {
+      action.active = checkbox.checked;
+    });
+
+    const contentDiv = document.createElement('div');
+    contentDiv.className = 'ai-action-fields';
+
+    let labelText = action.isDefault ? (t(action.labelKey) || action.labelKey) : (action.label || '');
+    let promptText = action.isDefault ? (t(action.promptKey) || action.promptKey) : (action.prompt || '');
+
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.value = labelText;
+    labelInput.className = 'ai-action-input ai-action-input-name';
+    labelInput.placeholder = t('wordbookAiActionNamePlaceholder') || '指令名稱 (如: 造句)';
+
+    const promptInput = document.createElement('input');
+    promptInput.type = 'text';
+    promptInput.value = promptText;
+    promptInput.className = 'ai-action-input ai-action-input-prompt';
+    promptInput.placeholder = t('wordbookAiActionPromptPlaceholder') || 'AI 提示詞 (如: 用這個詞造句...)';
+
+    labelInput.addEventListener('change', () => {
+      action.label = labelInput.value;
+      action.isDefault = false;
+      delete action.labelKey;
+      delete action.promptKey;
+    });
+    promptInput.addEventListener('change', () => {
+      action.prompt = promptInput.value;
+      action.isDefault = false;
+      delete action.labelKey;
+      delete action.promptKey;
+    });
+
+    contentDiv.appendChild(labelInput);
+    contentDiv.appendChild(promptInput);
+
+    itemDiv.appendChild(checkbox);
+    itemDiv.appendChild(contentDiv);
+
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'ai-action-del-btn';
+    deleteBtn.title = '刪除此指令';
+    deleteBtn.innerHTML = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>';
+    deleteBtn.addEventListener('click', () => {
+      modalAiQuickActions.splice(index, 1);
+      renderAiSettingsList();
+    });
+    itemDiv.appendChild(deleteBtn);
+
+    aiQuickActionsListModal.appendChild(itemDiv);
+  });
+}
+
+if (addAiQuickActionBtnModal) {
+  addAiQuickActionBtnModal.addEventListener('click', () => {
+    modalAiQuickActions.push({
+      id: 'custom_' + Date.now(),
+      isDefault: false,
+      label: '',
+      prompt: '',
+      active: true
+    });
+    renderAiSettingsList();
+
+    if (aiQuickActionsListModal) {
+      setTimeout(() => {
+        aiQuickActionsListModal.scrollTo({
+          top: aiQuickActionsListModal.scrollHeight,
+          behavior: 'smooth'
+        });
+        const lastCard = aiQuickActionsListModal.lastElementChild;
+        if (lastCard) {
+          const nameInput = lastCard.querySelector('.ai-action-input-name');
+          if (nameInput) nameInput.focus();
+        }
+      }, 30);
+    }
+  });
+}
+
+if (restoreAiQuickActionsBtnModal) {
+  restoreAiQuickActionsBtnModal.addEventListener('click', () => {
+    if (confirm(chrome.i18n.getMessage('optConfirmRestore') || '確定要恢復預設指令嗎？這將會清除您添加的自訂指令。')) {
+      const defaultAiQuickActions = [
+        { id: 'default1', isDefault: true, labelKey: 'wordbookAiAction1', promptKey: 'wordbookAiQuery1', active: true },
+        { id: 'default2', isDefault: true, labelKey: 'wordbookAiAction2', promptKey: 'wordbookAiQuery2', active: true },
+        { id: 'default3', isDefault: true, labelKey: 'wordbookAiAction3', promptKey: 'wordbookAiQuery3', active: true },
+        { id: 'default4', isDefault: true, labelKey: 'wordbookAiAction4', promptKey: 'wordbookAiQuery4', active: true }
+      ];
+      modalAiQuickActions = JSON.parse(JSON.stringify(defaultAiQuickActions));
+      renderAiSettingsList();
+    }
+  });
+}
+
+  // ==================== AI 劃詞懸浮發音工具條 ====================
+
+  function initAiSelectionToolbar() {
+    let toolbarEl = document.getElementById('aiSelectionToolbar');
+    if (!toolbarEl) {
+      toolbarEl = document.createElement('div');
+      toolbarEl.id = 'aiSelectionToolbar';
+      toolbarEl.className = 'ai-selection-toolbar';
+      toolbarEl.innerHTML = `
+        <button class="ai-selection-tts-btn" title="朗讀選中文本" aria-label="朗讀選中文本">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <span>朗讀</span>
+        </button>
+      `;
+      document.body.appendChild(toolbarEl);
+    }
+
+    const ttsBtn = toolbarEl.querySelector('.ai-selection-tts-btn');
+    let currentSelectedText = '';
+
+    function hideToolbar() {
+      toolbarEl.classList.remove('is-visible');
+      currentSelectedText = '';
+    }
+
+    ttsBtn.addEventListener('mousedown', (e) => {
+      // Prevent clearing selection on click
+      e.preventDefault();
+      e.stopPropagation();
+    });
+
+    ttsBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (currentSelectedText) {
+        playTts(currentSelectedText, ttsBtn);
+      }
+    });
+
+    function handleSelection() {
+      const selection = window.getSelection();
+      if (!selection || selection.isCollapsed) {
+        hideToolbar();
+        return;
+      }
+
+      const selectedText = selection.toString().trim();
+      if (!selectedText || !/[\u4e00-\u9fa5a-zA-Z0-9]/.test(selectedText)) {
+        hideToolbar();
+        return;
+      }
+
+      // Check if selection is within AI response container
+      const anchorNode = selection.anchorNode;
+      const focusNode = selection.focusNode;
+      const anchorEl = anchorNode?.nodeType === Node.ELEMENT_NODE ? anchorNode : anchorNode?.parentElement;
+      const focusEl = focusNode?.nodeType === Node.ELEMENT_NODE ? focusNode : focusNode?.parentElement;
+
+      const insideAiArea = (anchorEl && (anchorEl.closest('.ai-response-bubble') || anchorEl.closest('#aiResponseArea') || anchorEl.closest('#wordDetailAiResponseArea'))) &&
+                           (focusEl && (focusEl.closest('.ai-response-bubble') || focusEl.closest('#aiResponseArea') || focusEl.closest('#wordDetailAiResponseArea')));
+
+      if (!insideAiArea) {
+        hideToolbar();
+        return;
+      }
+
+      currentSelectedText = selectedText;
+      const range = selection.getRangeAt(0);
+      const clientRects = Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
+      if (clientRects.length === 0) {
+        hideToolbar();
+        return;
+      }
+
+      // For cross-line / multi-line selection, anchor to the last selected fragment (where cursor stops)
+      // For single-line selection, this is the entire word
+      const targetRect = clientRects[clientRects.length - 1];
+
+      // Position centered directly above the active target fragment
+      let top = Math.max(10, targetRect.top);
+      let left = Math.max(50, Math.min(window.innerWidth - 50, targetRect.left + targetRect.width / 2));
+
+      let isFlipped = false;
+      // If too close to viewport top, flip cleanly below the selection
+      if (top < 45) {
+        top = targetRect.bottom;
+        isFlipped = true;
+      }
+
+      toolbarEl.classList.toggle('is-flipped', isFlipped);
+      toolbarEl.style.top = `${top}px`;
+      toolbarEl.style.left = `${left}px`;
+      toolbarEl.classList.add('is-visible');
+    }
+
+    document.addEventListener('mouseup', () => {
+      setTimeout(handleSelection, 15);
+    });
+
+    document.addEventListener('keyup', (e) => {
+      if (e.key === 'Shift' || e.key.startsWith('Arrow')) {
+        setTimeout(handleSelection, 15);
+      }
+    });
+
+    document.addEventListener('mousedown', (e) => {
+      if (!toolbarEl.contains(e.target)) {
+        hideToolbar();
+      }
+    });
+
+    document.addEventListener('scroll', hideToolbar, true);
+  }
+
+  // Initialize AI selection floating toolbar
+  initAiSelectionToolbar();
+
 })();

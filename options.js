@@ -190,11 +190,10 @@ async function applyI18n(lang) {
     }
   }
 
-  // 載入已保存的設定
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'transHoverEngine', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'transHoverEngine', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -255,6 +254,16 @@ async function applyI18n(lang) {
           applyUITheme(theme);
           notifyContentScripts({ action: 'changeUITheme', theme });
         });
+      }
+    });
+
+    // 跨頁面主題即時同步 (Roadmap / Wordbook <-> Options)
+    chrome.storage.onChanged.addListener((changes, namespace) => {
+      if (namespace === 'sync' && changes.uiTheme) {
+        const newTheme = changes.uiTheme.newValue || 'auto';
+        localStorage.setItem('jyutping_ui_theme', newTheme);
+        updateThemeToggleUI(newTheme);
+        applyUITheme(newTheme);
       }
     });
 
@@ -319,6 +328,25 @@ async function applyI18n(lang) {
         updateDemoTransHoverEngine(val);
       }
     }
+
+    const enableAutoTranslateYueDefsToggle = document.getElementById('enableAutoTranslateYueDefs');
+    const autoTranslateYueDefsTargetLangSelect = document.getElementById('autoTranslateYueDefsTargetLang');
+    const autoTranslateYueDefsEngineSelect = document.getElementById('autoTranslateYueDefsEngine');
+    const yueDefDisplayModeSelect = document.getElementById('yueDefDisplayMode');
+
+    if (enableAutoTranslateYueDefsToggle) {
+      enableAutoTranslateYueDefsToggle.checked = result.enableAutoTranslateYueDefs === true;
+    }
+    if (autoTranslateYueDefsTargetLangSelect) {
+      autoTranslateYueDefsTargetLangSelect.value = result.autoTranslateYueDefsTargetLang || 'zh-Hans';
+    }
+    if (autoTranslateYueDefsEngineSelect) {
+      autoTranslateYueDefsEngineSelect.value = result.autoTranslateYueDefsEngine || 'google';
+    }
+    if (yueDefDisplayModeSelect) {
+      yueDefDisplayModeSelect.value = result.yueDefDisplayMode || 'expand';
+    }
+    updateYueDefDemo(result.autoTranslateYueDefsTargetLang || 'zh-Hans', result.yueDefDisplayMode || 'expand');
 
     displayModeSelect.value = result.displayMode || 'jyutping';
     if (toneStyleToggle) toneStyleToggle.checked = result.toneStyle !== 'inline'; // 預設為 'superscript'
@@ -439,7 +467,7 @@ async function applyI18n(lang) {
     aiApiKeyInput.value = result.aiApiKey || '';
     aiModelInput.value = result.aiModel || '';
     if (aiLanguageSelect) {
-      aiLanguageSelect.value = result.aiLanguage || '繁體中文';
+      aiLanguageSelect.value = result.aiLanguage || 'auto';
     }
     if (aiPromptInput) {
       aiPromptInput.value = result.aiPrompt || '';
@@ -612,6 +640,93 @@ async function applyI18n(lang) {
           updateDemoTransHoverEngine(val);
         }
       });
+    });
+  }
+
+  const enableAutoTranslateYueDefsEl = document.getElementById('enableAutoTranslateYueDefs');
+  const autoTranslateYueDefsTargetLangEl = document.getElementById('autoTranslateYueDefsTargetLang');
+  const autoTranslateYueDefsEngineEl = document.getElementById('autoTranslateYueDefsEngine');
+
+  function updateYueDefDemo(targetLang, mode) {
+    const container = document.getElementById('yueDefDemoContainer');
+    if (!container) return;
+
+    const langMap = {
+      'zh-Hans': { label: '普', text: '标明事物或动作所在的时空' },
+      'zh-CN': { label: '普', text: '标明事物或动作所在的时空' },
+      'en': { label: '英', text: 'Indicates the time and space of things or actions' },
+      'ja': { label: '日', text: '物事や動作の時空を示す' },
+      'ko': { label: '韓', text: '사물이나 동작의 시공간을 나타냄' },
+      'zh-Hant': { label: '書', text: '標明事物或動作所在的時空' },
+      'zh-TW': { label: '書', text: '標明事物或動作所在的時空' },
+      'zh-HK': { label: '書', text: '標明事物或動作所在的時空' }
+    };
+
+    const info = langMap[targetLang] || { label: '譯', text: '标明事物或动作所在的时空' };
+
+    const expandBadge = document.getElementById('demoExpandLangBadge');
+    const expandText = document.getElementById('demoExpandTransText');
+    const replacedLang = document.getElementById('demoReplacedLang');
+    const replacedText = document.getElementById('demoReplacedText');
+
+    if (expandBadge) expandBadge.textContent = info.label;
+    if (expandText) expandText.textContent = info.text;
+    if (replacedLang) replacedLang.textContent = info.label;
+    if (replacedText) replacedText.textContent = info.text;
+
+    const loadingText = chrome.i18n.getMessage('badgeTranslating') || '翻譯中...';
+    container.querySelectorAll('.demo-text-loading, .demo-expand-loading-text').forEach(el => {
+      el.textContent = loadingText;
+    });
+
+    // Switch demo container mode
+    const isReplace = mode === 'replace';
+    container.classList.toggle('demo-mode-replace', isReplace);
+    container.classList.toggle('demo-mode-expand', !isReplace);
+
+    // Restart animations smoothly
+    const animEls = container.querySelectorAll('.demo-def-cursor, .cursor-svg-arrow, .cursor-svg-hand, .demo-def-ripple, .demo-badge-yue, .demo-badge-replaced, .demo-yue-expand-subline, .demo-text-orig, .demo-text-loading, .demo-text-trans, .demo-expand-loading-text, .demo-expand-done-text');
+    animEls.forEach(el => el.style.animation = 'none');
+    void container.offsetWidth;
+    animEls.forEach(el => el.style.animation = '');
+  }
+
+  if (enableAutoTranslateYueDefsEl) {
+    enableAutoTranslateYueDefsEl.addEventListener('change', () => {
+      const val = enableAutoTranslateYueDefsEl.checked;
+      chrome.storage.sync.set({ enableAutoTranslateYueDefs: val });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'enableAutoTranslateYueDefs', value: val });
+      notifyContentScripts({ action: 'changeEnableAutoTranslateYueDefs', enableAutoTranslateYueDefs: val });
+    });
+  }
+
+  if (autoTranslateYueDefsTargetLangEl) {
+    autoTranslateYueDefsTargetLangEl.addEventListener('change', () => {
+      const val = autoTranslateYueDefsTargetLangEl.value;
+      chrome.storage.sync.set({ autoTranslateYueDefsTargetLang: val });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'autoTranslateYueDefsTargetLang', value: val });
+      notifyContentScripts({ action: 'changeAutoTranslateYueDefsTargetLang', autoTranslateYueDefsTargetLang: val });
+      updateYueDefDemo(val, yueDefDisplayModeEl ? yueDefDisplayModeEl.value : 'expand');
+    });
+  }
+
+  if (autoTranslateYueDefsEngineEl) {
+    autoTranslateYueDefsEngineEl.addEventListener('change', () => {
+      const val = autoTranslateYueDefsEngineEl.value;
+      chrome.storage.sync.set({ autoTranslateYueDefsEngine: val });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'autoTranslateYueDefsEngine', value: val });
+      notifyContentScripts({ action: 'changeAutoTranslateYueDefsEngine', autoTranslateYueDefsEngine: val });
+    });
+  }
+
+  const yueDefDisplayModeEl = document.getElementById('yueDefDisplayMode');
+  if (yueDefDisplayModeEl) {
+    yueDefDisplayModeEl.addEventListener('change', () => {
+      const val = yueDefDisplayModeEl.value;
+      chrome.storage.sync.set({ yueDefDisplayMode: val });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'yueDefDisplayMode', value: val });
+      notifyContentScripts({ action: 'changeYueDefDisplayMode', yueDefDisplayMode: val });
+      updateYueDefDemo(autoTranslateYueDefsTargetLangEl ? autoTranslateYueDefsTargetLangEl.value : 'zh-Hans', val);
     });
   }
 
@@ -1237,7 +1352,7 @@ async function applyI18n(lang) {
     testAiBtn.textContent = t('optTestingAI');
 
     try {
-      const targetLang = aiLanguageSelect ? aiLanguageSelect.value : '繁體中文';
+      const targetLang = aiLanguageSelect ? aiLanguageSelect.value : 'auto';
       
       let promptTemplate = aiPromptInput ? aiPromptInput.value.trim() : '';
       if (!promptTemplate) {
@@ -1892,50 +2007,254 @@ async function applyI18n(lang) {
 
   // TOC Navigation Logic
   const tocLinks = document.querySelectorAll('.toc-list a');
-  const sections = document.querySelectorAll('.settings-card[id]');
+  const sections = Array.from(document.querySelectorAll('.settings-card[id]'));
 
-  // Smooth scroll
+  let isManualScrolling = false;
+  let scrollTimeout = null;
+
+  function setActiveTOC(id) {
+    tocLinks.forEach(link => {
+      const href = link.getAttribute('href');
+      if (href === `#${id}`) {
+        link.classList.add('active');
+      } else {
+        link.classList.remove('active');
+      }
+    });
+  }
+
+  function updateActiveTOC() {
+    if (isManualScrolling || sections.length === 0) return;
+
+    // Check if scrolled near the bottom of page
+    const isAtBottom = (window.innerHeight + window.pageYOffset) >= (document.documentElement.scrollHeight - 60);
+    if (isAtBottom) {
+      const lastSectionId = sections[sections.length - 1].getAttribute('id');
+      setActiveTOC(lastSectionId);
+      return;
+    }
+
+    // Find current active section based on reading trigger line (140px from top)
+    let activeId = sections[0].getAttribute('id');
+    for (let i = 0; i < sections.length; i++) {
+      const section = sections[i];
+      const rect = section.getBoundingClientRect();
+      if (rect.top <= 140) {
+        activeId = section.getAttribute('id');
+      } else {
+        break;
+      }
+    }
+
+    setActiveTOC(activeId);
+  }
+
+  // Smooth scroll click
   tocLinks.forEach(link => {
     link.addEventListener('click', (e) => {
       const href = link.getAttribute('href');
-      // 非錨點連結（如 wordbook.html）直接跳轉，不攔截
       if (!href || !href.startsWith('#')) return;
 
       e.preventDefault();
       const targetId = href.substring(1);
       const targetSection = document.getElementById(targetId);
       if (targetSection) {
+        isManualScrolling = true;
+        setActiveTOC(targetId);
+
         window.scrollTo({
-          top: targetSection.offsetTop - 20, // offset for padding
+          top: targetSection.offsetTop - 20,
           behavior: 'smooth'
         });
+
+        if (scrollTimeout) clearTimeout(scrollTimeout);
+        scrollTimeout = setTimeout(() => {
+          isManualScrolling = false;
+          updateActiveTOC();
+        }, 800);
       }
     });
   });
 
-  // IntersectionObserver to highlight active section
-  const observerOptions = {
-    root: null,
-    rootMargin: '0px 0px -40% 0px',
-    threshold: 0.1
-  };
+  // RAF throttled scroll event listener
+  let isTicking = false;
+  window.addEventListener('scroll', () => {
+    if (!isTicking) {
+      window.requestAnimationFrame(() => {
+        updateActiveTOC();
+        isTicking = false;
+      });
+      isTicking = true;
+    }
+  }, { passive: true });
 
-  const observer = new IntersectionObserver((entries) => {
-    entries.forEach(entry => {
-      if (entry.isIntersecting) {
-        // Remove active class from all links
-        tocLinks.forEach(link => link.classList.remove('active'));
-        // Add active class to corresponding link
-        const id = entry.target.getAttribute('id');
-        const activeLink = document.querySelector(`.toc-list a[href="#${id}"]`);
-        if (activeLink) {
-          activeLink.classList.add('active');
+  // Initial check on load
+  updateActiveTOC();
+
+  // === Feedback Widget Logic ===
+  const feedbackWidget = document.getElementById('feedbackWidget');
+  const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
+  const fbPrevBtn = document.getElementById('fb_prevBtn');
+  const fbNextBtn = document.getElementById('fb_nextBtn');
+  const fbProgress = document.getElementById('fb_progress');
+  const fbSteps = document.querySelectorAll('.feedback-step');
+  const fbStars = document.querySelectorAll('.fb-star');
+  let fbCurrentStep = 0;
+  const fbTotalSteps = 4;
+  let selectedRating = 0;
+
+  if (feedbackWidget) {
+    chrome.storage.local.get(['v157_feedback_done'], (result) => {
+      if (!result.v157_feedback_done) {
+        // Show after a delay so it doesn't pop up immediately
+        setTimeout(() => {
+          feedbackWidget.style.display = 'block';
+        }, 1500);
+      }
+    });
+
+    const updateFbUI = () => {
+      fbSteps.forEach((step, index) => {
+        step.style.transform = `translateX(-${fbCurrentStep * 100}%)`;
+      });
+      fbProgress.textContent = `${fbCurrentStep + 1} / ${fbTotalSteps}`;
+      
+      if (fbCurrentStep === 0) {
+        fbPrevBtn.style.opacity = '0.5';
+        fbPrevBtn.style.pointerEvents = 'none';
+      } else {
+        fbPrevBtn.style.opacity = '1';
+        fbPrevBtn.style.pointerEvents = 'auto';
+      }
+
+      if (fbCurrentStep === fbTotalSteps - 1) {
+        fbNextBtn.textContent = '提交';
+      } else {
+        fbNextBtn.textContent = '下一步';
+      }
+    };
+    
+    // Initialize initial layout (left: 0, 100%, 200%...)
+    fbSteps.forEach((step, index) => {
+      step.style.left = (index * 100) + '%';
+    });
+    updateFbUI();
+
+    closeFeedbackBtn.addEventListener('click', () => {
+      feedbackWidget.style.display = 'none';
+      chrome.storage.local.set({ v157_feedback_done: true });
+    });
+
+    fbPrevBtn.addEventListener('click', () => {
+      if (fbCurrentStep > 0) {
+        fbCurrentStep--;
+        updateFbUI();
+      }
+    });
+
+    fbNextBtn.addEventListener('click', () => {
+      if (fbCurrentStep < fbTotalSteps - 1) {
+        fbCurrentStep++;
+        updateFbUI();
+      } else {
+        // Submit logic
+        submitFeedbackWidget();
+      }
+    });
+
+    fbStars.forEach(star => {
+      star.addEventListener('click', (e) => {
+        selectedRating = parseInt(e.currentTarget.getAttribute('data-rating'));
+        fbStars.forEach(s => {
+          if (parseInt(s.getAttribute('data-rating')) <= selectedRating) {
+            s.style.color = '#eab308'; // Tailwind yellow-500
+            s.setAttribute('fill', '#eab308');
+          } else {
+            s.style.color = 'var(--border)';
+            s.setAttribute('fill', 'none');
+          }
+        });
+      });
+    });
+
+    async function submitFeedbackWidget() {
+      // Gather data
+      const purposeInput = document.querySelector('input[name="fb_purpose"]:checked');
+      let purpose = purposeInput ? purposeInput.value : '';
+      if (purpose === 'learn') purpose = '學習粵語';
+      if (purpose === 'read') purpose = '日常網頁閱讀輔助';
+      if (purpose === 'translate') purpose = '翻譯輔助';
+      if (purpose === 'entertainment') purpose = '娛樂/社交';
+      const purposeOther = document.getElementById('fb_purpose_other').value;
+
+      const featureInputs = document.querySelectorAll('input[name="fb_feature"]:checked');
+      const features = Array.from(featureInputs).map(i => {
+        if (i.value === 'sync') return '雲端同步';
+        if (i.value === 'translate') return '智能翻譯';
+        if (i.value === 'dicts') return '更多詞典';
+        if (i.value === 'mobile') return '手機版';
+        return i.value;
+      });
+      const featureOther = document.getElementById('fb_feature_other').value;
+
+      const comments = document.getElementById('fb_comments').value;
+      const includeSys = document.getElementById('fb_include_sys').checked;
+      const osInfo = includeSys ? navigator.userAgent : '未授權提供';
+      const langInfo = includeSys ? navigator.language : '未授權提供';
+
+      const finalPurpose = purpose === 'other' ? purposeOther : purpose;
+      const finalFeatures = features.map(f => f === 'other' ? featureOther : f).join(', ');
+
+      const messageBody = `
+=== Jyutping Extension v1.5.7 反饋 ===
+
+1. 使用目的: ${finalPurpose || '未填寫'}
+2. 期望功能: ${finalFeatures || '未填寫'}
+3. 整體評分: ${selectedRating} 顆星
+4. 建議/Bug: ${comments || '無'}
+
+--- 系統資訊 ---
+語言: ${langInfo}
+環境: ${osInfo}
+`.trim();
+
+      fbNextBtn.textContent = '發送中...';
+      fbNextBtn.style.pointerEvents = 'none';
+      fbNextBtn.style.opacity = '0.7';
+
+      try {
+        const formData = new FormData();
+        // 使用與底部反饋表單相同的 Web3Forms Access Key
+        formData.append("access_key", "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c");
+        formData.append("subject", `[懸浮窗問卷] ${selectedRating}星反饋 - 粵語詞典`);
+        formData.append("message", messageBody);
+        
+        // 可選：可以偽造一個 from_name 讓信箱顯示得更好看
+        formData.append("from_name", "插件問卷系統");
+
+        const response = await fetch("https://api.web3forms.com/submit", {
+          method: "POST",
+          body: formData
+        });
+
+        if (response.ok) {
+          feedbackWidget.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--text-primary); font-size: 14px; font-weight: 500;">✅ 感謝您的反饋！<br><span style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; display: block; font-weight: 400;">我們將持續優化插件體驗。</span></div>`;
+          
+          setTimeout(() => {
+            feedbackWidget.style.display = 'none';
+          }, 3000);
+
+          chrome.storage.local.set({ v157_feedback_done: true });
+        } else {
+          throw new Error('網絡請求失敗');
         }
+      } catch (error) {
+        alert('反饋發送失敗，請稍後再試。');
+        fbNextBtn.textContent = '提交';
+        fbNextBtn.style.pointerEvents = 'auto';
+        fbNextBtn.style.opacity = '1';
       }
-    });
-  }, observerOptions);
+    }
+  }
 
-  sections.forEach(section => {
-    observer.observe(section);
   });
-});
