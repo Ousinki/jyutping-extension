@@ -107,6 +107,10 @@
   const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
   let dictionary = null;
   let isDetailMode = localStorage.getItem('jyutping_detail_mode') === 'true';
+  let aiHoverPronunciationEnabled = true;
+  chrome.storage.local.get({ aiHoverPronunciationEnabled: true }, (res) => {
+    aiHoverPronunciationEnabled = res.aiHoverPronunciationEnabled !== false;
+  });
 
   // ==================== 存儲工具 ====================
 
@@ -159,6 +163,10 @@
       wordbookAiSettingsDesc: '自訂詞典面板底部的快捷提問按鈕，點擊即可快速發送預設對話指令。',
       wordbookAiTabQuickActions: '快捷指令',
       wordbookAiTabCustomPrompt: '全域 Prompt',
+      wordbookAiTabInteraction: '交互設定',
+      wordbookAiTabInteractionDesc: '自訂 AI 回答區域中的浮動音標、單詞吸附與劃詞朗讀等互動功能。',
+      aiHoverTtsSettingTitle: 'AI 回答懸停吸附音標與劃詞朗讀',
+      aiHoverTtsSettingDesc: '光標懸停在 AI 回答的粵語單詞上時吸附展示音標發音膠囊，拖選文字時彈出朗讀懸浮窗。',
       wordbookEnableAiQuickActions: '顯示快捷指令欄',
       wordbookAddQuickAction: '添加新指令',
       wordbookAiQuery1: '用呢個詞造一個粵語例句，並附上書面語翻譯',
@@ -200,6 +208,26 @@
       wordbookExportMd: 'Markdown',
       wordbookExportTxt: '純文本 TXT',
       wordbookExportImport: '導入...',
+      wordbookSpeak: '朗讀',
+      aiActionRegenerate: '重新生成',
+      aiActionFeedback: '反饋與建議',
+      aiFeedbackModalTitle: '問題與反饋',
+      aiFeedbackContextLabel: '提問與 AI 回答上下文',
+      aiFeedbackMessageLabel: '反饋建議與問題描述',
+      aiFeedbackMessagePlaceholder: '請描述這條 AI 回答有什麼問題或您的改進建議...',
+      aiFeedbackTagWord: '詞',
+      aiFeedbackTagQuestion: '問',
+      aiFeedbackTagAi: 'AI',
+      aiFeedbackSending: '發送中...',
+      aiFeedbackSuccess: '發送成功！感謝您的反饋',
+      aiFeedbackFail: '發送失敗，請稍後再試',
+      aiFeedbackNetError: '發送失敗，請檢查網絡連接',
+      optRequired: '必填',
+      optOptional: '選填',
+      optEmailLabel: '聯絡電郵',
+      optEmailPlaceholder: 'your@email.com (方便回覆您)',
+      optSend: '發送反饋',
+      titleClose: '關閉',
       dictSearchFallback: '📖 詞典搜索',
       dictSearchEmpty: '未在詞典中找到匹配結果',
       dictSearchNoDetail: '詞典中未找到 <strong>$1</strong> 的詳細釋義。',
@@ -241,6 +269,10 @@
       wordbookAiSettingsDesc: '自定义词典面板底部的快捷提问按钮，点击即可快速发送预设对话指令。',
       wordbookAiTabQuickActions: '快捷指令',
       wordbookAiTabCustomPrompt: '全局 Prompt',
+      wordbookAiTabInteraction: '交互设置',
+      wordbookAiTabInteractionDesc: '自定义 AI 回答区域中的浮动音标、单词吸附与划词朗读等互动功能。',
+      aiHoverTtsSettingTitle: 'AI 回答悬停吸附音标与划词朗读',
+      aiHoverTtsSettingDesc: '光标悬停在 AI 回答的粤语单词上时吸附展示音标发音胶囊，拖选文字时弹出朗读悬浮窗。',
       wordbookEnableAiQuickActions: '显示快捷指令栏',
       wordbookAddQuickAction: '添加新指令',
       wordbookAiQuery1: '用这个词造一个粤语例句，并附上书面语翻译',
@@ -282,6 +314,28 @@
       wordbookExportMd: 'Markdown',
       wordbookExportTxt: '纯文本 TXT',
       wordbookExportImport: '导入...',
+      wordbookSpeak: '朗读',
+      aiActionCopy: '复制内容',
+      aiActionCopied: '已复制',
+      aiActionRegenerate: '重新生成',
+      aiActionFeedback: '反馈与建议',
+      aiFeedbackModalTitle: '问题与反馈',
+      aiFeedbackContextLabel: '提问与 AI 回答上下文',
+      aiFeedbackMessageLabel: '反馈建议与问题描述',
+      aiFeedbackMessagePlaceholder: '请描述这条 AI 回答有什么问题或您的改进建议...',
+      aiFeedbackTagWord: '词',
+      aiFeedbackTagQuestion: '问',
+      aiFeedbackTagAi: 'AI',
+      aiFeedbackSending: '发送中...',
+      aiFeedbackSuccess: '发送成功！感谢您的反馈',
+      aiFeedbackFail: '发送失败，请稍后再试',
+      aiFeedbackNetError: '发送失败，请检查网络连接',
+      optRequired: '必填',
+      optOptional: '选填',
+      optEmailLabel: '联系邮箱',
+      optEmailPlaceholder: 'your@email.com (方便回复您)',
+      optSend: '发送反馈',
+      titleClose: '关闭',
       dictSearchFallback: '📖 词典搜索',
       dictSearchEmpty: '未在词典中找到匹配结果',
       dictSearchNoDetail: '词典中未找到 <strong>$1</strong> 的详细释义。',
@@ -323,6 +377,10 @@
       wordbookAiSettingsDesc: 'Customize the shortcut buttons below the dictionary panel to quickly send predefined prompts to AI.',
       wordbookAiTabQuickActions: 'Quick Actions',
       wordbookAiTabCustomPrompt: 'Global Prompt',
+      wordbookAiTabInteraction: 'Interaction',
+      wordbookAiTabInteractionDesc: 'Customize floating phonetic pills, word snapping, and selection reading in AI responses.',
+      aiHoverTtsSettingTitle: 'AI Hover Phonetic Pill & Selection Reading',
+      aiHoverTtsSettingDesc: 'Show floating phonetic pill on word hover, and show reading button on text selection in AI responses.',
       wordbookEnableAiQuickActions: 'Show Quick Actions Bar',
       wordbookAddQuickAction: 'Add Action',
       wordbookAiQuery1: 'Make a Cantonese example sentence using this word, and provide an English translation.',
@@ -364,6 +422,28 @@
       wordbookExportMd: 'Markdown',
       wordbookExportTxt: 'Plain Text',
       wordbookExportImport: 'Import...',
+      wordbookSpeak: 'Read',
+      aiActionCopy: 'Copy',
+      aiActionCopied: 'Copied',
+      aiActionRegenerate: 'Regenerate',
+      aiActionFeedback: 'Feedback & Report',
+      aiFeedbackModalTitle: 'Feedback & Issues',
+      aiFeedbackContextLabel: 'Question & AI Response Context',
+      aiFeedbackMessageLabel: 'Feedback & Issue Description',
+      aiFeedbackMessagePlaceholder: 'Please describe what was wrong with this AI answer or suggestions for improvement...',
+      aiFeedbackTagWord: 'Word',
+      aiFeedbackTagQuestion: 'Ask',
+      aiFeedbackTagAi: 'AI',
+      aiFeedbackSending: 'Sending...',
+      aiFeedbackSuccess: 'Sent successfully! Thank you for your feedback',
+      aiFeedbackFail: 'Failed to send, please try again later',
+      aiFeedbackNetError: 'Failed to send, please check network connection',
+      optRequired: 'Required',
+      optOptional: 'Optional',
+      optEmailLabel: 'Contact Email',
+      optEmailPlaceholder: 'your@email.com (so we can reply)',
+      optSend: 'Send Feedback',
+      titleClose: 'Close',
       dictSearchFallback: '📖 Dictionary Search',
       dictSearchEmpty: 'No matching results found in dictionary',
       dictSearchNoDetail: 'Detailed definition for <strong>$1</strong> not found in dictionary.',
@@ -405,6 +485,10 @@
       wordbookAiSettingsDesc: '辞書パネルの下にあるショートカットボタンをカスタマイズして、定義済みのプロンプトをAIにすばやく送信します。',
       wordbookAiTabQuickActions: 'クイックアクション',
       wordbookAiTabCustomPrompt: 'グローバルプロンプト',
+      wordbookAiTabInteraction: '対話設定',
+      wordbookAiTabInteractionDesc: 'AI 回答領域における発音記号の浮動表示、単語スナップ、選択読み上げなどをカスタマイズします。',
+      aiHoverTtsSettingTitle: 'AI 回答ホバー発音記号＆選択読み上げ',
+      aiHoverTtsSettingDesc: 'AI 回答の広東語単語にホバーすると発音記号を表示し、テキスト選択時に読み上げボタンを表示します。',
       wordbookEnableAiQuickActions: 'クイックアクションバーを表示',
       wordbookAddQuickAction: 'アクションを追加',
       wordbookAiQuery1: 'この言葉を使って広東語の例文を作り、日本語の翻訳を付けてください',
@@ -446,6 +530,28 @@
       wordbookExportMd: 'Markdown',
       wordbookExportTxt: 'プレーンテキスト',
       wordbookExportImport: 'インポート...',
+      wordbookSpeak: '読み上げ',
+      aiActionCopy: 'コピー',
+      aiActionCopied: 'コピーしました',
+      aiActionRegenerate: '再生成',
+      aiActionFeedback: 'フィードバック',
+      aiFeedbackModalTitle: 'フィードバック',
+      aiFeedbackContextLabel: '質問と AI 回答のコンテキスト',
+      aiFeedbackMessageLabel: 'フィードバックと問題の説明',
+      aiFeedbackMessagePlaceholder: 'この AI 回答の問題点や改善提案を記入してください...',
+      aiFeedbackTagWord: '単語',
+      aiFeedbackTagQuestion: '質問',
+      aiFeedbackTagAi: 'AI',
+      aiFeedbackSending: '送信中...',
+      aiFeedbackSuccess: '送信しました！ご意見ありがとうございます',
+      aiFeedbackFail: '送信に失敗しました。後でもう一度お試しください',
+      aiFeedbackNetError: '送信に失敗しました。ネットワーク接続を確認してください',
+      optRequired: '必須',
+      optOptional: '任意',
+      optEmailLabel: '連絡先メール',
+      optEmailPlaceholder: 'your@email.com（返信用）',
+      optSend: '送信',
+      titleClose: '閉じる',
       dictSearchFallback: '📖 辞書検索',
       dictSearchEmpty: '辞書に一致する結果が見つかりませんでした',
       dictSearchNoDetail: '辞書に <strong>$1</strong> の詳細な定義が見つかりません。',
@@ -487,6 +593,10 @@
       wordbookAiSettingsDesc: '사전 패널 아래의 단축 버튼을 사용자 정의하여 AI에 미리 정의된 프롬프트를 빠르게 보냅니다.',
       wordbookAiTabQuickActions: '빠른 작업',
       wordbookAiTabCustomPrompt: '글로벌 프롬프트',
+      wordbookAiTabInteraction: '인터랙션 설정',
+      wordbookAiTabInteractionDesc: 'AI 답변 영역의 발음 기호 팝업, 단어 스냅 및 선택 낭독 등의 상호작용 기능을 설정합니다。',
+      aiHoverTtsSettingTitle: 'AI 답변 호버 발음 기호 및 선택 낭독',
+      aiHoverTtsSettingDesc: 'AI 답변의 광둥어 단어에 마우스를 올리면 발음 기호를 표시하고, 텍스트 선택 시 낭독 버튼을 표시합니다。',
       wordbookEnableAiQuickActions: '빠른 작업 표시줄 표시',
       wordbookAddQuickAction: '작업 추가',
       wordbookAiQuery1: '이 단어를 사용하여 광둥어 예문을 만들고 한국어 번역을 제공해 주세요',
@@ -528,6 +638,27 @@
       wordbookExportMd: 'Markdown',
       wordbookExportTxt: '일반 텍스트',
       wordbookExportImport: '가져오기...',
+      wordbookSpeak: '낭독',
+      aiActionCopy: '복사',
+      aiActionCopied: '복사됨',
+      aiActionRegenerate: '다시 생성',
+      aiFeedbackModalTitle: '피드백 및 문의',
+      aiFeedbackContextLabel: '질문 및 AI 답변 컨텍스트',
+      aiFeedbackMessageLabel: '피드백 및 문제 설명',
+      aiFeedbackMessagePlaceholder: '이 AI 답변의 문제점이나 개선 제안을 적어주세요...',
+      aiFeedbackTagWord: '단어',
+      aiFeedbackTagQuestion: '질문',
+      aiFeedbackTagAi: 'AI',
+      aiFeedbackSending: '전송 중...',
+      aiFeedbackSuccess: '전송 완료! 의견 감사합니다',
+      aiFeedbackFail: '전송 실패, 나중에 다시 시도해 주세요',
+      aiFeedbackNetError: '전송 실패, 네트워크 연결을 확인해 주세요',
+      optRequired: '필수',
+      optOptional: '선택',
+      optEmailLabel: '연락처 이메일',
+      optEmailPlaceholder: 'your@email.com (답변용)',
+      optSend: '피드백 보내기',
+      titleClose: '닫기',
       dictSearchFallback: '📖 사전 검색',
       dictSearchEmpty: '사전에서 일치하는 결과를 찾을 수 없습니다',
       dictSearchNoDetail: '사전에서 <strong>$1</strong>의 자세한 정의를 찾을 수 없습니다.',
@@ -867,13 +998,15 @@
               </svg>
               <h3>${t('wordbookTrashEmptyTitle') || '廢紙簍為空'}</h3>
               <p>${t('wordbookTrashEmptyDesc') || '沒有已刪除的生詞'}</p>
-              <button class="btn btn-sm btn-outline" id="btnBackToAllEmpty" style="margin-top: 16px;">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;">
-                  <line x1="19" y1="12" x2="5" y2="12"></line>
-                  <polyline points="12 19 5 12 12 5"></polyline>
-                </svg>
-                ${t('wordbookTabAll') || '返回全部生詞'}
-              </button>
+              <div>
+                <button class="empty-state-action-btn" id="btnBackToAllEmpty">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                  </svg>
+                  <span>${t('wordbookTabAll') || '返回全部生詞'}</span>
+                </button>
+              </div>
             </div>
           `;
           const btnBackEmpty = document.getElementById('btnBackToAllEmpty');
@@ -916,8 +1049,9 @@
     if (selectAllLabel) selectAllLabel.style.display = '';
     if (bulkDeleteBtn) bulkDeleteBtn.style.display = '';
 
-    // Build permanent chronological ID mapping (1 = earliest created, N = newest)
-    const chronologicalOrder = [...wordbook].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
+    // Build chronological ID mapping for the current view scope (1 = earliest created, N = newest)
+    const currentScopeWords = wordbook.filter(w => isTrash ? !!w.deletedAt : !w.deletedAt);
+    const chronologicalOrder = [...currentScopeWords].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
     const idSeqMap = new Map();
     chronologicalOrder.forEach((w, i) => {
       idSeqMap.set(w.id, i + 1);
@@ -1000,8 +1134,8 @@
     if (statWeekEl) statWeekEl.textContent = activeWords.filter(w => w.timestamp >= weekStart).length;
 
     if (badgeTrash) {
-      badgeTrash.textContent = trashWords.length;
-      badgeTrash.style.display = trashWords.length > 0 ? 'inline-block' : 'none';
+      badgeTrash.textContent = trashWords.length > 99 ? '99+' : trashWords.length;
+      badgeTrash.classList.toggle('has-items', trashWords.length > 0);
     }
   }
 
@@ -1901,7 +2035,7 @@
       speakingBtn.classList.remove('speaking');
       const parentCell = speakingBtn.closest('.excel-cell');
       if (parentCell) parentCell.querySelectorAll('.word-character, .jyutping-text').forEach(el => el.classList.remove('speaking'));
-      const parentToolbar = speakingBtn.closest('.ai-selection-toolbar');
+      const parentToolbar = speakingBtn.closest('.ai-selection-toolbar, .ai-hover-phonetic-pill');
       if (parentToolbar) parentToolbar.classList.remove('speaking');
     }
     if (speakingTimer) clearTimeout(speakingTimer);
@@ -1910,7 +2044,7 @@
       btn.classList.add('speaking');
       const parentCell = btn.closest('.excel-cell');
       if (parentCell) parentCell.querySelectorAll('.word-character, .jyutping-text').forEach(el => el.classList.add('speaking'));
-      const parentToolbar = btn.closest('.ai-selection-toolbar');
+      const parentToolbar = btn.closest('.ai-selection-toolbar, .ai-hover-phonetic-pill');
       if (parentToolbar) parentToolbar.classList.add('speaking');
     }
     speakingTimer = setTimeout(stopSpeaking, 8000);
@@ -1921,7 +2055,7 @@
       speakingBtn.classList.remove('speaking');
       const parentCell = speakingBtn.closest('.excel-cell');
       if (parentCell) parentCell.querySelectorAll('.word-character, .jyutping-text').forEach(el => el.classList.remove('speaking'));
-      const parentToolbar = speakingBtn.closest('.ai-selection-toolbar');
+      const parentToolbar = speakingBtn.closest('.ai-selection-toolbar, .ai-hover-phonetic-pill');
       if (parentToolbar) parentToolbar.classList.remove('speaking');
     }
     speakingBtn = null;
@@ -2561,6 +2695,100 @@
 
   // ==================== Detail Panel Rendering ====================
 
+  function renderAiResponseBubble(container, replyText, elapsed, onRetry, question, targetWord) {
+    if (!container) return;
+    const copyLabel = t('aiActionCopy') || '複製內容';
+    const copiedLabel = t('aiActionCopied') || '已複製';
+    const retryLabel = t('aiActionRegenerate') || '重新生成';
+    const feedbackLabel = t('aiActionFeedback') || '反饋與建議';
+
+    const bubble = document.createElement('div');
+    bubble.className = 'ai-response-bubble';
+    bubble.innerHTML = `
+      <div class="ai-response-meta">
+        <span class="ai-badge">AI</span>
+        <span class="ai-timing">思考了 ${elapsed}s</span>
+      </div>
+      <div class="ai-response-content">${renderMarkdown(replyText)}</div>
+      <div class="ai-response-actions">
+        <button class="ai-action-btn ai-copy-btn" title="${copyLabel}" aria-label="${copyLabel}">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+          </svg>
+        </button>
+        ${onRetry ? `
+        <button class="ai-action-btn ai-retry-btn" title="${retryLabel}" aria-label="${retryLabel}">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="23 4 23 10 17 10"></polyline>
+            <polyline points="1 20 1 14 7 14"></polyline>
+            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+          </svg>
+        </button>
+        ` : ''}
+        <div class="ai-action-spacer"></div>
+        <button class="ai-action-btn ai-feedback-btn" title="${feedbackLabel}" aria-label="${feedbackLabel}">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            <line x1="9" y1="9" x2="15" y2="9"></line>
+            <line x1="9" y1="13" x2="13" y2="13"></line>
+          </svg>
+        </button>
+      </div>
+    `;
+
+    // Copy event handler
+    const copyBtn = bubble.querySelector('.ai-copy-btn');
+    if (copyBtn) {
+      copyBtn.addEventListener('click', async (e) => {
+        e.preventDefault();
+        try {
+          await navigator.clipboard.writeText(replyText);
+          copyBtn.classList.add('is-copied');
+          copyBtn.title = copiedLabel;
+          copyBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+          `;
+          setTimeout(() => {
+            copyBtn.classList.remove('is-copied');
+            copyBtn.title = copyLabel;
+            copyBtn.innerHTML = `
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+                <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+              </svg>
+            `;
+          }, 2000);
+        } catch (err) {
+          console.error('Failed to copy AI reply:', err);
+        }
+      });
+    }
+
+    // Retry event handler
+    const retryBtn = bubble.querySelector('.ai-retry-btn');
+    if (retryBtn && typeof onRetry === 'function') {
+      retryBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        onRetry();
+      });
+    }
+
+    // Feedback event handler (Open In-app Email Feedback Modal)
+    const feedbackBtn = bubble.querySelector('.ai-feedback-btn');
+    if (feedbackBtn) {
+      feedbackBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        openAiFeedbackModal(question, replyText, targetWord);
+      });
+    }
+
+    container.innerHTML = '';
+    container.appendChild(bubble);
+  }
+
   function showGenericAiPanel() {
     const detailPane = document.getElementById('detailPane');
     if (!detailPane) return;
@@ -2568,14 +2796,16 @@
     delete detailPane.dataset.activeWord;
 
     detailPane.innerHTML = `
-      <div class="detail-empty-state" style="flex: 1;">
-        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4; margin-bottom: 8px;">
-          <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
-        </svg>
-        <p style="font-size: 13px; margin: 0;">${t('wordbookEmptyDetail1') || '點擊左側單詞查看詳情'}</p>
-        <p style="font-size: 11px; margin: 4px 0 0; opacity: 0.6;">${t('wordbookEmptyDetail2') || '或直接在下方提問'}</p>
+      <div class="detail-scroll-body" id="detailScrollBody">
+        <div class="detail-empty-state" style="flex: 1;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.4; margin-bottom: 8px;">
+            <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
+          </svg>
+          <p style="font-size: 13px; margin: 0;">${t('wordbookEmptyDetail1') || '點擊左側單詞查看詳情'}</p>
+          <p style="font-size: 11px; margin: 4px 0 0; opacity: 0.6;">${t('wordbookEmptyDetail2') || '或直接在下方提問'}</p>
+        </div>
+        <div class="ai-response-area" id="aiResponseArea"></div>
       </div>
-      <div class="ai-response-area" id="aiResponseArea"></div>
       <div class="ai-chat-section" id="aiChatSection">
         <div class="ai-chat-header">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -2641,6 +2871,9 @@
           <div class="ai-typing-dot"></div>
         </div>
       `;
+      setTimeout(() => {
+        aiResponseArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }, 50);
 
       chrome.runtime.sendMessage({
         action: 'aiChatQuery',
@@ -2660,11 +2893,14 @@
         if (response && response.success) {
           aiChatHistory.push({ role: 'user', content: question });
           aiChatHistory.push({ role: 'assistant', content: response.reply });
-          aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">思考了 ${elapsed}s</span></div><div class="ai-response-content">${renderMarkdown(response.reply)}</div></div>`;
+          renderAiResponseBubble(aiResponseArea, response.reply, elapsed, () => sendGenericQuestion(question), question, '');
         } else {
           const errMsg = response?.error || '請求失敗';
           aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">${elapsed}s</span></div><div class="ai-response-content" style="color: var(--text-muted);">${escapeHtml(errMsg)}</div></div>`;
         }
+        setTimeout(() => {
+          aiResponseArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
       });
     };
 
@@ -2704,8 +2940,9 @@
     
     // Header
     let html = `
-      <div id="cantonese-popup-dict" style="position: static; width: 100%; filter: none; margin: 0; padding: 0; background: transparent;">
-        <div class="popup-main" style="width: 100%; min-width: auto; padding: 0; position: relative;">
+      <div class="detail-scroll-body" id="detailScrollBody">
+        <div id="cantonese-popup-dict" style="position: static; width: 100%; filter: none; margin: 0; padding: 0; background: transparent;">
+          <div class="popup-main" style="width: 100%; min-width: auto; padding: 0; position: relative;">
           <!-- Action Buttons -->
           <div class="detail-actions-wrapper" id="detailActionsWrapper">
             <div class="detail-report-btn" id="detailReportBtn" title="報告錯誤">
@@ -2850,12 +3087,15 @@
       </div>
     `;
 
-    // AI Response Area — placed between dictionary content and AI controls
-    html += `<div class="ai-response-area" id="aiResponseArea"></div>`;
-
-    // AI Chat Controls — pushed to bottom via margin-top: auto
+    // AI Response Area — placed inside the scroll body below dictionary content
     html += `
-      <div class="ai-chat-section" id="aiChatSection" style="margin-top: auto;">
+        <div class="ai-response-area" id="aiResponseArea"></div>
+      </div>
+    `;
+
+    // Fixed AI Chat Controls at Bottom
+    html += `
+      <div class="ai-chat-section" id="aiChatSection">
         <div class="ai-chat-header">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/>
@@ -3336,6 +3576,9 @@
             <div class="ai-typing-dot"></div>
           </div>
         `;
+        setTimeout(() => {
+          aiResponseArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 50);
 
         // Build context from dictionary entry
         const definitions = (entry.english || [])
@@ -3364,12 +3607,15 @@
             // Add to conversation history
             aiChatHistory.push({ role: 'user', content: question });
             aiChatHistory.push({ role: 'assistant', content: response.reply });
-
-            aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">思考了 ${elapsed}s</span></div><div class="ai-response-content">${renderMarkdown(response.reply)}</div></div>`;
+            const targetWordStr = character ? `${character}${pronunciation ? ` (${pronunciation})` : ''}` : '';
+            renderAiResponseBubble(aiResponseArea, response.reply, elapsed, () => sendAiQuestion(question), question, targetWordStr);
           } else {
             const errMsg = response?.error || '請求失敗';
             aiResponseArea.innerHTML = `<div class="ai-response-bubble"><div class="ai-response-meta"><span class="ai-badge">AI</span><span class="ai-timing">${elapsed}s</span></div><div class="ai-response-content" style="color: var(--text-muted);">${escapeHtml(errMsg)}</div></div>`;
           }
+          setTimeout(() => {
+            aiResponseArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }, 50);
         });
       };
 
@@ -3483,17 +3729,14 @@
 
   init();
 
-
-
-
 // ==================== AI Settings Modal Logic ====================
-const aiSettingsModal = document.getElementById('aiSettingsModal');
-const closeAiSettingsBtn = document.getElementById('closeAiSettingsBtn');
-const aiQuickActionsListModal = document.getElementById('aiQuickActionsListModal');
-const addAiQuickActionBtnModal = document.getElementById('addAiQuickActionBtnModal');
-const restoreAiQuickActionsBtnModal = document.getElementById('restoreAiQuickActionsBtnModal');
-const aiModalTabs = document.getElementById('aiModalTabs');
-const aiCustomPromptInputModal = document.getElementById('aiCustomPromptInputModal');
+  const aiSettingsModal = document.getElementById('aiSettingsModal');
+  const closeAiSettingsBtn = document.getElementById('closeAiSettingsBtn');
+  const aiQuickActionsListModal = document.getElementById('aiQuickActionsListModal');
+  const addAiQuickActionBtnModal = document.getElementById('addAiQuickActionBtnModal');
+  const restoreAiQuickActionsBtnModal = document.getElementById('restoreAiQuickActionsBtnModal');
+  const aiModalTabs = document.getElementById('aiModalTabs');
+  const aiCustomPromptInputModal = document.getElementById('aiCustomPromptInputModal');
 const restoreAiPromptBtnModal = document.getElementById('restoreAiPromptBtnModal');
 const aiPromptSavedHint = document.getElementById('aiPromptSavedHint');
 
@@ -3520,8 +3763,15 @@ function openAiSettingsModal() {
     });
     const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
     const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
+    const tabPaneInteraction = document.getElementById('tabPaneInteraction');
     if (tabPaneQuickActions) tabPaneQuickActions.classList.add('active');
     if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.remove('active');
+    if (tabPaneInteraction) tabPaneInteraction.classList.remove('active');
+  }
+
+  const aiHoverPronunciationToggle = document.getElementById('aiHoverPronunciationToggle');
+  if (aiHoverPronunciationToggle) {
+    aiHoverPronunciationToggle.checked = aiHoverPronunciationEnabled;
   }
 
   renderAiSettingsList();
@@ -3587,6 +3837,142 @@ if (aiSettingsModal) {
   });
 }
 
+// ==================== AI Feedback Modal Logic (Web3Forms Email) ====================
+const aiFeedbackModal = document.getElementById('aiFeedbackModal');
+const closeAiFeedbackBtn = document.getElementById('closeAiFeedbackBtn');
+const cancelAiFeedbackBtn = document.getElementById('cancelAiFeedbackBtn');
+const aiFeedbackForm = document.getElementById('aiFeedbackForm');
+const submitAiFeedbackBtn = document.getElementById('submitAiFeedbackBtn');
+const aiFeedbackResult = document.getElementById('aiFeedbackResult');
+const aiFeedbackContextPreview = document.getElementById('aiFeedbackContextPreview');
+const aiFeedbackContextHidden = document.getElementById('aiFeedbackContextHidden');
+const aiFeedbackSubject = document.getElementById('aiFeedbackSubject');
+const aiFeedbackMessage = document.getElementById('aiFeedbackMessage');
+
+function openAiFeedbackModal(question, replyText, targetWord) {
+  if (!aiFeedbackModal) return;
+  const detailPane = document.getElementById('detailPane');
+  const wordDisplay = targetWord || (detailPane?.dataset?.activeWord ? detailPane.dataset.activeWord : '');
+  const contextStr = `${wordDisplay ? `【關聯單詞】\n${wordDisplay}\n\n` : ''}【提問內容】\n${question || '（自訂問答）'}\n\n【AI 回答】\n${replyText}`;
+  if (aiFeedbackContextPreview) {
+    let html = '';
+    if (wordDisplay) {
+      html += `
+        <div class="ai-fb-ctx-row">
+          <span class="ai-fb-tag ai-fb-tag-word">詞</span>
+          <span class="ai-fb-text ai-fb-word-text">${escapeHtml(wordDisplay)}</span>
+        </div>
+      `;
+    }
+    html += `
+      <div class="ai-fb-ctx-row">
+        <span class="ai-fb-tag">問</span>
+        <span class="ai-fb-text">${escapeHtml(question || '（自訂問答）')}</span>
+      </div>
+      <div class="ai-fb-ctx-row">
+        <span class="ai-fb-tag ai-fb-tag-ai">AI</span>
+        <span class="ai-fb-text">${escapeHtml(replyText.length > 220 ? replyText.slice(0, 220) + '...' : replyText)}</span>
+      </div>
+    `;
+    aiFeedbackContextPreview.innerHTML = html;
+  }
+  if (aiFeedbackContextHidden) aiFeedbackContextHidden.value = contextStr;
+  if (aiFeedbackSubject) aiFeedbackSubject.value = `【粵拼插件 AI 反饋】${wordDisplay ? `[${wordDisplay}] ` : ''}${(question || '').slice(0, 25)}`;
+  if (aiFeedbackMessage) aiFeedbackMessage.value = '';
+  if (aiFeedbackResult) {
+    aiFeedbackResult.className = 'ai-fb-result';
+    aiFeedbackResult.innerHTML = '';
+    aiFeedbackResult.style.display = 'none';
+  }
+  if (submitAiFeedbackBtn) {
+    submitAiFeedbackBtn.disabled = false;
+    submitAiFeedbackBtn.style.opacity = '1';
+  }
+  aiFeedbackModal.classList.add('show');
+  document.body.classList.add('modal-open');
+  if (aiFeedbackMessage) {
+    setTimeout(() => aiFeedbackMessage.focus(), 50);
+  }
+}
+
+function closeAiFeedbackModal() {
+  if (!aiFeedbackModal) return;
+  aiFeedbackModal.classList.remove('show');
+  document.body.classList.remove('modal-open');
+}
+
+if (closeAiFeedbackBtn) closeAiFeedbackBtn.addEventListener('click', closeAiFeedbackModal);
+if (cancelAiFeedbackBtn) cancelAiFeedbackBtn.addEventListener('click', closeAiFeedbackModal);
+if (aiFeedbackModal) {
+  aiFeedbackModal.addEventListener('click', (e) => {
+    if (e.target === aiFeedbackModal) closeAiFeedbackModal();
+  });
+}
+
+if (aiFeedbackForm) {
+  aiFeedbackForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const formData = new FormData(aiFeedbackForm);
+    const originalHTML = submitAiFeedbackBtn.innerHTML;
+
+    submitAiFeedbackBtn.innerHTML = `<span>發送中...</span>`;
+    submitAiFeedbackBtn.disabled = true;
+    submitAiFeedbackBtn.style.opacity = '0.7';
+    if (aiFeedbackResult) {
+      aiFeedbackResult.className = 'ai-fb-result';
+      aiFeedbackResult.style.display = 'none';
+    }
+
+    try {
+      const response = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        body: formData
+      });
+      const data = await response.json();
+      if (response.ok) {
+        aiFeedbackResult.className = 'ai-fb-result is-success';
+        aiFeedbackResult.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"></polyline>
+          </svg>
+          <span>發送成功！感謝您的反饋</span>
+        `;
+        aiFeedbackResult.style.display = 'inline-flex';
+        aiFeedbackForm.reset();
+        setTimeout(() => {
+          closeAiFeedbackModal();
+        }, 1600);
+      } else {
+        aiFeedbackResult.className = 'ai-fb-result is-error';
+        aiFeedbackResult.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>${escapeHtml(data.message || '發送失敗，請稍後再試')}</span>
+        `;
+        aiFeedbackResult.style.display = 'inline-flex';
+      }
+    } catch (err) {
+      aiFeedbackResult.className = 'ai-fb-result is-error';
+      aiFeedbackResult.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"></circle>
+          <line x1="12" y1="8" x2="12" y2="12"></line>
+          <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        <span>發送失敗，請檢查網絡連接</span>
+      `;
+      aiFeedbackResult.style.display = 'inline-flex';
+    } finally {
+      submitAiFeedbackBtn.innerHTML = originalHTML;
+      submitAiFeedbackBtn.disabled = false;
+      submitAiFeedbackBtn.style.opacity = '1';
+    }
+  });
+}
+
 // Prevent wheel scrolling inside modal from bubbling / chaining to the background page
 document.querySelectorAll('.modal-overlay').forEach(overlay => {
   overlay.addEventListener('wheel', (e) => {
@@ -3620,8 +4006,10 @@ if (aiModalTabs) {
     
     const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
     const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
+    const tabPaneInteraction = document.getElementById('tabPaneInteraction');
     if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', targetTab === 'quick-actions');
     if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', targetTab === 'custom-prompt');
+    if (tabPaneInteraction) tabPaneInteraction.classList.toggle('active', targetTab === 'interaction');
   });
 }
 
@@ -3786,14 +4174,123 @@ if (restoreAiQuickActionsBtnModal) {
 
   // ==================== AI 劃詞懸浮發音工具條 ====================
 
-  function initAiSelectionToolbar() {
-    let toolbarEl = document.getElementById('aiSelectionToolbar');
-    if (!toolbarEl) {
-      toolbarEl = document.createElement('div');
-      toolbarEl.id = 'aiSelectionToolbar';
-      toolbarEl.className = 'ai-selection-toolbar';
-      toolbarEl.innerHTML = `
-        <button class="ai-selection-tts-btn" title="朗讀選中文本" aria-label="朗讀選中文本">
+  // ==================== AI 回答框劃詞朗讀與光標懸停音標吸附 ====================
+
+  let jyutpingLookupMap = null;
+
+  function buildJyutpingLookupMap() {
+    if (jyutpingLookupMap || !dictionary) return;
+    jyutpingLookupMap = new Map();
+    for (const key of Object.keys(dictionary)) {
+      const entry = dictionary[key];
+      if (entry && entry.jyutping) {
+        if (entry.traditional) jyutpingLookupMap.set(entry.traditional, entry.jyutping);
+        if (entry.simplified) jyutpingLookupMap.set(entry.simplified, entry.jyutping);
+        jyutpingLookupMap.set(key, entry.jyutping);
+      }
+    }
+  }
+
+  function findBestWordAtPoint(clientX, clientY) {
+    if (!dictionary) return null;
+
+    let range = null;
+    if (document.caretRangeFromPoint) {
+      range = document.caretRangeFromPoint(clientX, clientY);
+    } else if (document.caretPositionFromPoint) {
+      const pos = document.caretPositionFromPoint(clientX, clientY);
+      if (pos && pos.offsetNode) {
+        range = document.createRange();
+        range.setStart(pos.offsetNode, pos.offset);
+        range.setEnd(pos.offsetNode, pos.offset);
+      }
+    }
+
+    if (!range || range.startContainer.nodeType !== Node.TEXT_NODE) return null;
+
+    const textNode = range.startContainer;
+    const parentEl = textNode.parentElement;
+    if (!parentEl || !parentEl.closest('.ai-response-content')) return null;
+    if (parentEl.closest('.ai-response-actions, .ai-response-meta, button, .ai-chat-header, .ai-input-row')) return null;
+
+    const text = textNode.textContent;
+    if (!text) return null;
+
+    const offset = range.startOffset;
+    let charIdx = offset;
+    if (charIdx >= text.length || !/[\u4e00-\u9fff\u3400-\u4dbf]/.test(text[charIdx])) {
+      if (charIdx > 0 && /[\u4e00-\u9fff\u3400-\u4dbf]/.test(text[charIdx - 1])) {
+        charIdx = charIdx - 1;
+      } else {
+        return null;
+      }
+    }
+
+    buildJyutpingLookupMap();
+
+    let bestMatch = null;
+    const maxLen = 6;
+    const startMin = Math.max(0, charIdx - maxLen + 1);
+    const startMax = charIdx;
+
+    for (let s = startMin; s <= startMax; s++) {
+      for (let len = maxLen; len >= 1; len--) {
+        const e = s + len;
+        if (e <= charIdx) continue;
+        if (e > text.length) continue;
+
+        const sub = text.substring(s, e);
+        if (jyutpingLookupMap && jyutpingLookupMap.has(sub)) {
+          if (!bestMatch || sub.length > bestMatch.word.length) {
+            bestMatch = {
+              word: sub,
+              jyutping: jyutpingLookupMap.get(sub),
+              startOffset: s,
+              endOffset: e,
+              textNode: textNode
+            };
+          }
+        }
+      }
+    }
+
+    if (!bestMatch) {
+      const singleChar = text[charIdx];
+      if (jyutpingLookupMap && jyutpingLookupMap.has(singleChar)) {
+        bestMatch = {
+          word: singleChar,
+          jyutping: jyutpingLookupMap.get(singleChar),
+          startOffset: charIdx,
+          endOffset: charIdx + 1,
+          textNode: textNode
+        };
+      }
+    }
+
+    return bestMatch;
+  }
+
+  function initAiSelectionAndHover() {
+    const aiHoverPronunciationToggle = document.getElementById('aiHoverPronunciationToggle');
+    if (aiHoverPronunciationToggle) {
+      aiHoverPronunciationToggle.addEventListener('change', () => {
+        aiHoverPronunciationEnabled = aiHoverPronunciationToggle.checked;
+        chrome.storage.local.set({ aiHoverPronunciationEnabled });
+        if (!aiHoverPronunciationEnabled) {
+          hideHoverSnap();
+          hideSelectionToolbar();
+        }
+      });
+    }
+
+    // 1. 拖動劃選朗讀工具條 (Drag Selection Toolbar)
+    let selectionToolbarEl = document.getElementById('aiSelectionToolbar');
+    if (!selectionToolbarEl) {
+      selectionToolbarEl = document.createElement('div');
+      selectionToolbarEl.id = 'aiSelectionToolbar';
+      selectionToolbarEl.className = 'ai-selection-toolbar';
+      selectionToolbarEl.innerHTML = `
+        <button class="ai-selection-tts-btn" aria-label="朗讀選中文本">
           <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
             <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -3802,89 +4299,260 @@ if (restoreAiQuickActionsBtnModal) {
           <span>朗讀</span>
         </button>
       `;
-      document.body.appendChild(toolbarEl);
+      document.body.appendChild(selectionToolbarEl);
     }
 
-    const ttsBtn = toolbarEl.querySelector('.ai-selection-tts-btn');
+    const selectionTtsBtn = selectionToolbarEl.querySelector('.ai-selection-tts-btn');
     let currentSelectedText = '';
 
-    function hideToolbar() {
-      toolbarEl.classList.remove('is-visible');
+    function hideSelectionToolbar() {
+      selectionToolbarEl.classList.remove('is-visible');
       currentSelectedText = '';
     }
 
-    ttsBtn.addEventListener('mousedown', (e) => {
-      // Prevent clearing selection on click
+    selectionTtsBtn.addEventListener('mousedown', (e) => {
       e.preventDefault();
       e.stopPropagation();
     });
 
-    ttsBtn.addEventListener('click', (e) => {
+    selectionTtsBtn.addEventListener('click', (e) => {
       e.preventDefault();
       e.stopPropagation();
       if (currentSelectedText) {
-        playTts(currentSelectedText, ttsBtn);
+        playTts(currentSelectedText, selectionTtsBtn);
       }
     });
 
+    // 2. 光標懸停吸附高亮框與音標窗 (Hover Snap Highlight & Phonetic Pill)
+    let hoverHighlightEl = document.getElementById('aiWordHighlightOverlay');
+    if (!hoverHighlightEl) {
+      hoverHighlightEl = document.createElement('div');
+      hoverHighlightEl.id = 'aiWordHighlightOverlay';
+      hoverHighlightEl.className = 'ai-word-hover-highlight';
+      document.body.appendChild(hoverHighlightEl);
+    }
+
+    let hoverPillEl = document.getElementById('aiHoverPhoneticPill');
+    if (!hoverPillEl) {
+      hoverPillEl = document.createElement('div');
+      hoverPillEl.id = 'aiHoverPhoneticPill';
+      hoverPillEl.className = 'ai-hover-phonetic-pill';
+      hoverPillEl.innerHTML = `
+        <button class="ai-selection-tts-btn" aria-label="點擊發音">
+          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+            <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+            <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+          </svg>
+          <span></span>
+        </button>
+      `;
+      document.body.appendChild(hoverPillEl);
+    }
+
+    const hoverPillBtn = hoverPillEl.querySelector('.ai-selection-tts-btn');
+    const hoverPillSpan = hoverPillEl.querySelector('.ai-selection-tts-btn span');
+    let currentHoverWord = '';
+
+    function hideHoverSnap() {
+      hoverHighlightEl.style.display = 'none';
+      hoverPillEl.classList.remove('is-visible');
+      currentHoverWord = '';
+    }
+
+    function triggerHoverTts(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      if (currentHoverWord) {
+        playTts(currentHoverWord, hoverPillBtn);
+      }
+    }
+
+    hoverHighlightEl.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    hoverHighlightEl.addEventListener('click', triggerHoverTts);
+
+    hoverPillBtn.addEventListener('mousedown', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+    });
+    hoverPillBtn.addEventListener('click', triggerHoverTts);
+
+    // 處理劃詞選區 (Drag Selection Handler)
     function handleSelection() {
+      if (!aiHoverPronunciationEnabled) {
+        hideSelectionToolbar();
+        return;
+      }
+
       const selection = window.getSelection();
       if (!selection || selection.isCollapsed) {
-        hideToolbar();
+        hideSelectionToolbar();
         return;
       }
 
       const selectedText = selection.toString().trim();
       if (!selectedText || !/[\u4e00-\u9fa5a-zA-Z0-9]/.test(selectedText)) {
-        hideToolbar();
+        hideSelectionToolbar();
         return;
       }
 
-      // Check if selection is within AI response container
+      // Check if selection is strictly within AI response content (exclude system buttons and meta)
       const anchorNode = selection.anchorNode;
       const focusNode = selection.focusNode;
       const anchorEl = anchorNode?.nodeType === Node.ELEMENT_NODE ? anchorNode : anchorNode?.parentElement;
       const focusEl = focusNode?.nodeType === Node.ELEMENT_NODE ? focusNode : focusNode?.parentElement;
 
-      const insideAiArea = (anchorEl && (anchorEl.closest('.ai-response-bubble') || anchorEl.closest('#aiResponseArea') || anchorEl.closest('#wordDetailAiResponseArea'))) &&
-                           (focusEl && (focusEl.closest('.ai-response-bubble') || focusEl.closest('#aiResponseArea') || focusEl.closest('#wordDetailAiResponseArea')));
-
-      if (!insideAiArea) {
-        hideToolbar();
+      if (anchorEl?.closest('.ai-response-actions, .ai-response-meta, button, .ai-chat-header, .ai-input-row') ||
+          focusEl?.closest('.ai-response-actions, .ai-response-meta, button, .ai-chat-header, .ai-input-row')) {
+        hideSelectionToolbar();
         return;
       }
 
+      const insideAiContent = (anchorEl && anchorEl.closest('.ai-response-content')) &&
+                              (focusEl && focusEl.closest('.ai-response-content'));
+
+      if (!insideAiContent) {
+        hideSelectionToolbar();
+        return;
+      }
+
+      // 隱藏懸停吸附框，展示拖選朗讀欄
+      hideHoverSnap();
       currentSelectedText = selectedText;
+
+      const textSpan = selectionTtsBtn.querySelector('span');
+      if (textSpan) {
+        textSpan.textContent = t('wordbookSpeak') || '朗讀';
+      }
+
       const range = selection.getRangeAt(0);
       const clientRects = Array.from(range.getClientRects()).filter(r => r.width > 0 && r.height > 0);
       if (clientRects.length === 0) {
-        hideToolbar();
+        hideSelectionToolbar();
         return;
       }
 
-      // For cross-line / multi-line selection, anchor to the last selected fragment (where cursor stops)
-      // For single-line selection, this is the entire word
       const targetRect = clientRects[clientRects.length - 1];
 
-      // Position centered directly above the active target fragment
       let top = Math.max(10, targetRect.top);
       let left = Math.max(50, Math.min(window.innerWidth - 50, targetRect.left + targetRect.width / 2));
 
       let isFlipped = false;
-      // If too close to viewport top, flip cleanly below the selection
       if (top < 45) {
         top = targetRect.bottom;
         isFlipped = true;
       }
 
-      toolbarEl.classList.toggle('is-flipped', isFlipped);
-      toolbarEl.style.top = `${top}px`;
-      toolbarEl.style.left = `${left}px`;
-      toolbarEl.classList.add('is-visible');
+      selectionToolbarEl.classList.toggle('is-flipped', isFlipped);
+      selectionToolbarEl.style.top = `${top}px`;
+      selectionToolbarEl.style.left = `${left}px`;
+      selectionToolbarEl.classList.add('is-visible');
     }
 
+    // 處理光標懸停吸附 (Hover Word Snap Handler)
+    let hoverThrottleTimer = null;
+    let isSelecting = false;
+
+    document.addEventListener('mousedown', (e) => {
+      if (e.target === hoverHighlightEl || hoverPillEl.contains(e.target) || selectionToolbarEl.contains(e.target)) {
+        return;
+      }
+      isSelecting = true;
+      hideHoverSnap();
+    });
+
     document.addEventListener('mouseup', () => {
+      isSelecting = false;
       setTimeout(handleSelection, 15);
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!aiHoverPronunciationEnabled) {
+        hideHoverSnap();
+        return;
+      }
+
+      if (isSelecting) return;
+
+      // 如果有手動選區，不觸發懸停
+      const selection = window.getSelection();
+      if (selection && !selection.isCollapsed) return;
+
+      if (hoverThrottleTimer) return;
+      hoverThrottleTimer = setTimeout(() => {
+        hoverThrottleTimer = null;
+      }, 35);
+
+      // 檢查是否在 AI 回答區域內
+      const target = document.elementFromPoint(e.clientX, e.clientY);
+      if (!target) return;
+
+      // 如果鼠標就在當前高亮框或音標窗上，保持顯示
+      if (target === hoverHighlightEl || hoverPillEl.contains(target)) {
+        return;
+      }
+
+      // 排除系統按鈕/元信息區域 (例如底欄複製按鈕、頂欄思考時間)，這些區域絕不觸發懸停
+      if (target.closest('.ai-response-actions, .ai-response-meta, button, .ai-chat-header, .ai-input-row')) {
+        hideHoverSnap();
+        return;
+      }
+
+      const aiContentArea = target.closest('.ai-response-content');
+      if (!aiContentArea) {
+        hideHoverSnap();
+        return;
+      }
+
+      const best = findBestWordAtPoint(e.clientX, e.clientY);
+      if (!best || !best.jyutping) {
+        hideHoverSnap();
+        return;
+      }
+
+      // 計算匹配詞的精準幾何位置
+      try {
+        const wordRange = document.createRange();
+        wordRange.setStart(best.textNode, best.startOffset);
+        wordRange.setEnd(best.textNode, best.endOffset);
+        const rect = wordRange.getBoundingClientRect();
+
+        if (rect.width <= 0 || rect.height <= 0) {
+          hideHoverSnap();
+          return;
+        }
+
+        currentHoverWord = best.word;
+
+        // 1. 定位高亮吸附框
+        hoverHighlightEl.style.top = `${rect.top}px`;
+        hoverHighlightEl.style.left = `${rect.left}px`;
+        hoverHighlightEl.style.width = `${rect.width}px`;
+        hoverHighlightEl.style.height = `${rect.height}px`;
+        hoverHighlightEl.style.display = 'block';
+
+        // 2. 定位音標懸浮窗
+        hoverPillSpan.textContent = best.jyutping;
+
+        let top = Math.max(10, rect.top);
+        let left = Math.max(50, Math.min(window.innerWidth - 50, rect.left + rect.width / 2));
+
+        let isFlipped = false;
+        if (top < 45) {
+          top = rect.bottom;
+          isFlipped = true;
+        }
+
+        hoverPillEl.classList.toggle('is-flipped', isFlipped);
+        hoverPillEl.style.top = `${top}px`;
+        hoverPillEl.style.left = `${left}px`;
+        hoverPillEl.classList.add('is-visible');
+      } catch (err) {
+        hideHoverSnap();
+      }
     });
 
     document.addEventListener('keyup', (e) => {
@@ -3893,16 +4561,13 @@ if (restoreAiQuickActionsBtnModal) {
       }
     });
 
-    document.addEventListener('mousedown', (e) => {
-      if (!toolbarEl.contains(e.target)) {
-        hideToolbar();
-      }
-    });
-
-    document.addEventListener('scroll', hideToolbar, true);
+    document.addEventListener('scroll', () => {
+      hideHoverSnap();
+      hideSelectionToolbar();
+    }, true);
   }
 
-  // Initialize AI selection floating toolbar
-  initAiSelectionToolbar();
+  // Initialize AI selection and hover word snap
+  initAiSelectionAndHover();
 
 })();

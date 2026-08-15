@@ -10,7 +10,7 @@
     "message": "<b>新機能「単語帳」＆「AI アシスタント」</b>：語彙の保存、ピンイン検索、多彩な形式でのエクスポート、文脈に応じた AI 解説に対応。"
   },
   "clItem12": {
-    "message": "<b>広東語学習ナビ（Learning Hub）</b>：厳選された32の権威あるピンイン講座、辞書、入力システム、メディアリソースを多言語で提供。"
+    "message": "<b>広東語学習ナビ（Learning Hub）</b>：厳選された33の権威あるピンイン講座、辞書、入力システム、メディアリソースを多言語で提供。"
   },
   "clItem13": {
     "message": "<b>広東語口語の意味翻訳機能</b>：辞書内の [粤] 口語定義をワンクリックまたは自動翻訳（Bing / Google / カスタム AI に対応）。"
@@ -767,6 +767,75 @@
   },
   "wordbookExportImport": {
     "message": "インポート..."
+  },
+  "wordbookSpeak": {
+    "message": "読み上げ"
+  },
+  "aiActionCopy": {
+    "message": "コピー"
+  },
+  "aiActionCopied": {
+    "message": "コピーしました"
+  },
+  "aiActionRegenerate": {
+    "message": "再生成"
+  },
+  "aiActionFeedback": {
+    "message": "フィードバック"
+  },
+  "aiActionThumbsUp": {
+    "message": "高評価"
+  },
+  "aiActionThumbsDown": {
+    "message": "低評価"
+  },
+  "wordbookAiTabInteraction": {
+    "message": "対話設定"
+  },
+  "wordbookAiTabInteractionDesc": {
+    "message": "AI 回答領域における発音記号の浮動表示、単語スナップ、選択読み上げなどをカスタマイズします。"
+  },
+  "aiHoverTtsSettingTitle": {
+    "message": "AI 回答ホバー発音記号＆選択読み上げ"
+  },
+  "aiHoverTtsSettingDesc": {
+    "message": "AI 回答の広東語単語にホバーすると発音記号を表示し、テキスト選択時に読み上げボタンを表示します。"
+  },
+  "aiFeedbackModalTitle": {
+    "message": "フィードバック"
+  },
+  "optRequired": {
+    "message": "必須"
+  },
+  "aiFeedbackContextLabel": {
+    "message": "質問と AI 回答のコンテキスト"
+  },
+  "aiFeedbackMessageLabel": {
+    "message": "フィードバックと問題の説明"
+  },
+  "aiFeedbackMessagePlaceholder": {
+    "message": "この AI 回答の問題点や改善提案を記入してください..."
+  },
+  "aiFeedbackTagWord": {
+    "message": "単語"
+  },
+  "aiFeedbackTagQuestion": {
+    "message": "質問"
+  },
+  "aiFeedbackTagAi": {
+    "message": "AI"
+  },
+  "aiFeedbackSending": {
+    "message": "送信中..."
+  },
+  "aiFeedbackSuccess": {
+    "message": "送信しました！ご意見ありがとうございます"
+  },
+  "aiFeedbackFail": {
+    "message": "送信に失敗しました。後でもう一度お試しください"
+  },
+  "aiFeedbackNetError": {
+    "message": "送信に失敗しました。ネットワーク接続を確認してください"
   },
   "dictSearchFallback": {
     "message": "📖 辞書検索"

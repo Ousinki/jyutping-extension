@@ -9,7 +9,7 @@
     "message": "<b>새로운 단어장 및 AI 어시스턴트</b>：단어 저장, 월병 검색, 다양한 형식 내보내기 및 문맥별 AI 설명 지원."
   },
   "clItem12": {
-    "message": "<b>광둥어 학습 로드맵（Learning Hub）</b>：엄선된 32개의 권위 있는 발음 강좌, 사전, 입력기 및 미디어 리소스를 다국어로 지원."
+    "message": "<b>광둥어 학습 로드맵（Learning Hub）</b>：엄선된 33개의 권위 있는 발음 강좌, 사전, 입력기 및 미디어 리소스를 다국어로 지원."
   },
   "clItem13": {
     "message": "<b>광둥어 구어체 정의 번역 기능</b>：사전 내 [粵] 구어 정의를 원클릭 또는 자동 번역 지원 (Bing / Google / 사용자 정의 AI 지원)."
@@ -721,6 +721,75 @@
   },
   "wordbookExportImport": {
     "message": "가져오기..."
+  },
+  "wordbookSpeak": {
+    "message": "낭독"
+  },
+  "aiActionCopy": {
+    "message": "복사"
+  },
+  "aiActionCopied": {
+    "message": "복사됨"
+  },
+  "aiActionRegenerate": {
+    "message": "다시 생성"
+  },
+  "aiActionFeedback": {
+    "message": "피드백"
+  },
+  "aiActionThumbsUp": {
+    "message": "좋아요"
+  },
+  "aiActionThumbsDown": {
+    "message": "싫어요"
+  },
+  "wordbookAiTabInteraction": {
+    "message": "인터랙션 설정"
+  },
+  "wordbookAiTabInteractionDesc": {
+    "message": "AI 답변 영역의 발음 기호 팝업, 단어 스냅 및 선택 낭독 등의 상호작용 기능을 설정합니다。"
+  },
+  "aiHoverTtsSettingTitle": {
+    "message": "AI 답변 호버 발음 기호 및 선택 낭독"
+  },
+  "aiHoverTtsSettingDesc": {
+    "message": "AI 답변의 광둥어 단어에 마우스를 올리면 발음 기호를 표시하고, 텍스트 선택 시 낭독 버튼을 표시합니다。"
+  },
+  "aiFeedbackModalTitle": {
+    "message": "피드백 및 문의"
+  },
+  "optRequired": {
+    "message": "필수"
+  },
+  "aiFeedbackContextLabel": {
+    "message": "질문 및 AI 답변 컨텍스트"
+  },
+  "aiFeedbackMessageLabel": {
+    "message": "피드백 및 문제 설명"
+  },
+  "aiFeedbackMessagePlaceholder": {
+    "message": "이 AI 답변의 문제점이나 개선 제안을 적어주세요..."
+  },
+  "aiFeedbackTagWord": {
+    "message": "단어"
+  },
+  "aiFeedbackTagQuestion": {
+    "message": "질문"
+  },
+  "aiFeedbackTagAi": {
+    "message": "AI"
+  },
+  "aiFeedbackSending": {
+    "message": "전송 중..."
+  },
+  "aiFeedbackSuccess": {
+    "message": "전송 완료! 의견 감사합니다"
+  },
+  "aiFeedbackFail": {
+    "message": "전송 실패, 나중에 다시 시도해 주세요"
+  },
+  "aiFeedbackNetError": {
+    "message": "전송 실패, 네트워크 연결을 확인해 주세요"
   },
   "dictSearchFallback": {
     "message": "📖 사전 검색"

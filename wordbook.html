@@ -124,16 +124,16 @@
       .detail-pane {
         width: 420px;
         height: 100%;
-        overflow-y: auto;
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 24px;
+        padding: 24px 6px 20px 24px;
         box-shadow: var(--shadow);
         transform: translateX(30px);
         transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
         display: flex;
         flex-direction: column;
+        overflow: hidden;
       }
       
       body.detail-mode-active .detail-pane {
@@ -153,6 +153,43 @@
           width: 300px;
         }
       }
+
+      .detail-scroll-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        padding-right: 18px;
+        display: flex;
+        flex-direction: column;
+        scrollbar-width: thin;
+        scrollbar-color: rgba(0, 0, 0, 0.1) transparent;
+      }
+
+      .detail-scroll-body::-webkit-scrollbar {
+        width: 4px;
+      }
+      .detail-scroll-body::-webkit-scrollbar-track {
+        background: transparent;
+      }
+      .detail-scroll-body::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.1);
+        border-radius: 10px;
+        transition: background 0.2s ease;
+      }
+      .detail-scroll-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(0, 0, 0, 0.22);
+      }
+
+      :root[data-theme="dark"] .detail-scroll-body {
+        scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+      }
+      :root[data-theme="dark"] .detail-scroll-body::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.1);
+      }
+      :root[data-theme="dark"] .detail-scroll-body::-webkit-scrollbar-thumb:hover {
+        background: rgba(255, 255, 255, 0.25);
+      }
+
       .detail-empty-state {
         display: flex;
         flex-direction: column;
@@ -165,11 +202,18 @@
         opacity: 0.8;
       }
 
-      /* ========== AI Chat Section ========== */
+      #cantonese-popup-dict {
+        flex-shrink: 0;
+      }
+
+      /* ========== Fixed AI Chat Section at Bottom ========== */
       .ai-chat-section {
-        margin-top: 20px;
-        padding-top: 16px;
+        flex-shrink: 0;
+        margin-top: 14px;
+        padding-top: 14px;
+        padding-right: 18px;
         border-top: 1px dashed var(--border);
+        background: var(--bg-card);
       }
       .ai-chat-header {
         display: flex;
@@ -258,9 +302,12 @@
 
       .ai-response-area {
         margin-top: 16px;
-        min-height: 0;
-        max-height: 50vh;
-        overflow-y: auto;
+        margin-bottom: 20px;
+        flex-shrink: 0;
+      }
+      .ai-response-area:empty {
+        display: none;
+        margin: 0;
       }
       .ai-response-bubble {
         background: var(--bg-input);
@@ -309,6 +356,55 @@
       }
       .ai-response-bubble em {
         font-style: italic;
+      }
+
+      /* AI 回答底栏操作按钮 (Action Bar) */
+      .ai-response-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 10px;
+        padding-top: 8px;
+        border-top: 1px dashed var(--border);
+      }
+      .ai-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        background: transparent;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        color: var(--text-muted);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        line-height: 1;
+        user-select: none;
+        flex-shrink: 0;
+      }
+      .ai-action-btn svg {
+        display: block;
+        width: 14px;
+        height: 14px;
+        transition: transform 0.15s ease, stroke 0.15s ease;
+      }
+      .ai-action-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: var(--border);
+      }
+      .ai-action-btn:active {
+        transform: scale(0.92);
+      }
+      .ai-action-spacer {
+        flex: 1;
+      }
+      .ai-action-btn.is-copied {
+        color: #10b981 !important;
+        border-color: rgba(16, 185, 129, 0.3) !important;
+        background: rgba(16, 185, 129, 0.1) !important;
       }
 
       /* AI Rich Structured Response (Word Capsules & Sentence Speakers) */
@@ -397,13 +493,14 @@
         text-shadow: none;
       }
 
-      /* AI 劃詞懸浮發音工具條 (Floating Selection TTS Toolbar) - Unified Single Pill */
-      .ai-selection-toolbar {
-        --tb-bg: rgba(255, 255, 255, 0.95);
+      /* AI 劃詞選區工具條 (Selection Toolbar) & 懸停吸附音標窗 (Hover Phonetic Pill) */
+      .ai-selection-toolbar,
+      .ai-hover-phonetic-pill {
+        --tb-bg: #ffffff;
         --tb-border: rgba(203, 213, 225, 0.9);
         --tb-color: var(--primary);
-        --tb-hover-bg: color-mix(in srgb, var(--primary) 8%, #ffffff);
-        --tb-hover-border: color-mix(in srgb, var(--primary) 30%, transparent);
+        --tb-hover-bg: #f8fafc;
+        --tb-hover-border: color-mix(in srgb, var(--primary) 35%, transparent);
 
         position: fixed;
         z-index: 10000;
@@ -413,9 +510,7 @@
         border: 1px solid var(--tb-border);
         border-radius: 9999px;
         padding: 4px 10px 4px 8px;
-        box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.12), 0 4px 10px -2px rgba(0, 0, 0, 0.05);
-        backdrop-filter: blur(16px) saturate(180%);
-        -webkit-backdrop-filter: blur(16px) saturate(180%);
+        box-shadow: 0 8px 20px -2px rgba(0, 0, 0, 0.12), 0 2px 6px -1px rgba(0, 0, 0, 0.05);
         transform: translate(-50%, -100%);
         margin-top: -8px;
         user-select: none;
@@ -424,7 +519,8 @@
         cursor: pointer;
         transition: opacity 0.15s ease, transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), background 0.15s ease, border-color 0.15s ease;
       }
-      .ai-selection-toolbar.is-visible {
+      .ai-selection-toolbar.is-visible,
+      .ai-hover-phonetic-pill.is-visible {
         display: flex;
         opacity: 1;
         transform: translate(-50%, -100%) scale(1);
@@ -432,7 +528,8 @@
       }
 
       /* 底部指向小箭頭 (Caret Arrow - 放置在底层 z-index: -1，绝不遮挡按钮正面) */
-      .ai-selection-toolbar::after {
+      .ai-selection-toolbar::after,
+      .ai-hover-phonetic-pill::after {
         content: '';
         position: absolute;
         bottom: -4px;
@@ -447,11 +544,13 @@
         pointer-events: none;
         transition: background 0.15s ease, border-color 0.15s ease;
       }
-      .ai-selection-toolbar.is-flipped {
+      .ai-selection-toolbar.is-flipped,
+      .ai-hover-phonetic-pill.is-flipped {
         transform: translate(-50%, 0);
         margin-top: 8px;
       }
-      .ai-selection-toolbar.is-flipped::after {
+      .ai-selection-toolbar.is-flipped::after,
+      .ai-hover-phonetic-pill.is-flipped::after {
         bottom: auto;
         top: -4px;
         border-right: none;
@@ -461,19 +560,39 @@
       }
 
       /* Hover 状态联动小箭头 */
-      .ai-selection-toolbar:hover {
+      .ai-selection-toolbar:hover,
+      .ai-hover-phonetic-pill:hover {
         background: var(--tb-hover-bg);
         border-color: var(--tb-hover-border);
         transform: translate(-50%, -100%) translateY(-1px);
         box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.16), 0 4px 12px -2px color-mix(in srgb, var(--primary) 15%, transparent);
       }
-      .ai-selection-toolbar:hover::after {
+      .ai-selection-toolbar:hover::after,
+      .ai-hover-phonetic-pill:hover::after {
         background: var(--tb-hover-bg);
         border-color: var(--tb-hover-border);
       }
 
-      .ai-selection-toolbar:active {
+      .ai-selection-toolbar:active,
+      .ai-hover-phonetic-pill:active {
         transform: translate(-50%, -100%) scale(0.96);
+      }
+
+      /* 吸附高亮框 (Word Hover Highlight Snap) */
+      .ai-word-hover-highlight {
+        position: fixed;
+        z-index: 9998;
+        pointer-events: auto;
+        cursor: text;
+        background: color-mix(in srgb, var(--primary) 14%, transparent);
+        border-bottom: 2px solid var(--primary);
+        border-radius: 3px;
+        box-shadow: 0 1px 4px color-mix(in srgb, var(--primary) 15%, transparent);
+        transition: background 0.12s ease, opacity 0.12s ease;
+        display: none;
+      }
+      .ai-word-hover-highlight:hover {
+        background: color-mix(in srgb, var(--primary) 24%, transparent);
       }
 
       @keyframes aiToolbarSpring {
@@ -503,6 +622,14 @@
         line-height: 1;
         font-family: inherit;
       }
+      .ai-selection-tts-btn span {
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "Liberation Mono", monospace, sans-serif;
+        letter-spacing: 0.3px;
+      }
       .ai-selection-tts-btn svg {
         width: 13px;
         height: 13px;
@@ -510,7 +637,8 @@
         flex-shrink: 0;
         transition: transform 0.15s ease;
       }
-      .ai-selection-toolbar:hover .ai-selection-tts-btn svg {
+      .ai-selection-toolbar:hover .ai-selection-tts-btn svg,
+      .ai-hover-phonetic-pill:hover .ai-selection-tts-btn svg {
         transform: scale(1.1);
       }
 
@@ -518,48 +646,77 @@
         opacity: 0.35;
         transition: opacity 0.2s ease;
       }
-      .ai-selection-toolbar:hover .tts-wave {
+      .ai-selection-toolbar:hover .tts-wave,
+      .ai-hover-phonetic-pill:hover .tts-wave {
         opacity: 0.75;
       }
 
       /* 播放中温润声学状态 (Speaking state) */
-      .ai-selection-toolbar.speaking {
-        --tb-bg: color-mix(in srgb, var(--primary) 12%, #ffffff);
+      .ai-selection-toolbar.speaking,
+      .ai-hover-phonetic-pill.speaking {
+        --tb-bg: #fff5f5;
         --tb-border: color-mix(in srgb, var(--primary) 35%, transparent);
-        box-shadow: 0 8px 24px -4px color-mix(in srgb, var(--primary) 25%, transparent);
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
       }
-      .ai-selection-toolbar.speaking .ai-selection-tts-btn {
+      .ai-selection-toolbar.speaking .ai-selection-tts-btn,
+      .ai-hover-phonetic-pill.speaking .ai-selection-tts-btn {
         color: var(--primary);
       }
-      .ai-selection-toolbar.speaking .tts-wave-1 {
-        animation: ttsWaveRadiate 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      .ai-selection-toolbar.speaking .ai-selection-tts-btn svg,
+      .ai-hover-phonetic-pill.speaking .ai-selection-tts-btn svg {
+        animation: ttsSpeakerPulse 1s ease-in-out infinite;
       }
-      .ai-selection-toolbar.speaking .tts-wave-2 {
-        animation: ttsWaveRadiate 1.1s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.28s;
+      .ai-selection-toolbar.speaking .tts-wave-1,
+      .ai-hover-phonetic-pill.speaking .tts-wave-1 {
+        animation: ttsWaveRadiate 1s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+      }
+      .ai-selection-toolbar.speaking .tts-wave-2,
+      .ai-hover-phonetic-pill.speaking .tts-wave-2 {
+        animation: ttsWaveRadiate 1s cubic-bezier(0.4, 0, 0.2, 1) infinite 0.25s;
+      }
+
+      @keyframes ttsSpeakerPulse {
+        0%, 100% {
+          transform: scale(1);
+        }
+        50% {
+          transform: scale(1.15);
+        }
       }
 
       @keyframes ttsWaveRadiate {
         0%, 100% {
-          opacity: 0.25;
+          opacity: 0.2;
+          transform: scale(0.95);
         }
         50% {
           opacity: 1;
+          transform: scale(1.1);
         }
       }
 
-      /* 暗色模式配色与小箭头完全同源，绝不出现白框 */
-      :root[data-theme="dark"] .ai-selection-toolbar {
-        --tb-bg: rgba(30, 41, 59, 0.94);
-        --tb-border: rgba(71, 85, 105, 0.85);
+      /* 暗色模式配色与小箭头完全同源，绝不出现白框或透视重叠 */
+      :root[data-theme="dark"] .ai-selection-toolbar,
+      :root[data-theme="dark"] .ai-hover-phonetic-pill {
+        --tb-bg: #1e293b;
+        --tb-border: #475569;
         --tb-color: #f87171;
-        --tb-hover-bg: rgba(40, 53, 72, 0.98);
+        --tb-hover-bg: #334155;
         --tb-hover-border: rgba(248, 113, 113, 0.45);
-        box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+        box-shadow: 0 8px 24px -2px rgba(0, 0, 0, 0.5), 0 2px 8px rgba(0, 0, 0, 0.3);
       }
-      :root[data-theme="dark"] .ai-selection-toolbar.speaking {
-        --tb-bg: rgba(45, 26, 30, 0.95);
+      :root[data-theme="dark"] .ai-selection-toolbar.speaking,
+      :root[data-theme="dark"] .ai-hover-phonetic-pill.speaking {
+        --tb-bg: #2d1a1e;
         --tb-border: rgba(248, 113, 113, 0.55);
-        box-shadow: 0 8px 24px -4px rgba(248, 113, 113, 0.28);
+        box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+      }
+      :root[data-theme="dark"] .ai-word-hover-highlight {
+        background: rgba(248, 113, 113, 0.22);
+        border-bottom-color: #f87171;
+      }
+      :root[data-theme="dark"] .ai-word-hover-highlight:hover {
+        background: rgba(248, 113, 113, 0.32);
       }
 
       .ai-typing-indicator {
@@ -918,9 +1075,72 @@
         text-align: center;
       }
 
-      .tab-badge.trash-badge {
-        background: color-mix(in srgb, #ef4444 15%, transparent);
-        color: #ef4444;
+      /* ========== Interactive Trash Button & Top-Right Floating Badge ========== */
+      .trash-toggle-btn {
+        position: relative;
+        overflow: visible !important;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all 0.25s ease;
+      }
+
+      .trash-icon-container {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 14px;
+        height: 14px;
+      }
+
+      .trash-icon-svg {
+        overflow: visible;
+      }
+
+      .trash-lid-group {
+        transform-origin: 4px 6px;
+        transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      /* Hover: Lid tilts open playfully */
+      .trash-toggle-btn:hover .trash-lid-group {
+        transform: rotate(-22deg) translateY(-1.5px);
+      }
+
+      /* Top Floating Badge: pops up directly on top-right corner of the button */
+      .trash-floating-badge {
+        position: absolute;
+        top: -7px;
+        right: -7px;
+        background: #ef4444;
+        color: #ffffff;
+        font-size: 10px;
+        font-weight: 700;
+        line-height: 1;
+        min-width: 16px;
+        height: 16px;
+        padding: 0 4px;
+        border-radius: 10px;
+        border: 2px solid var(--bg-card);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 2px 6px rgba(239, 68, 68, 0.4);
+        opacity: 0;
+        transform: translateY(6px) scale(0.2);
+        pointer-events: none;
+        white-space: nowrap;
+        user-select: none;
+        z-index: 10;
+        transition: transform 0.32s cubic-bezier(0.34, 1.56, 0.64, 1),
+                    opacity 0.2s ease;
+      }
+
+      /* When hover and there are items in trash: float up above the button */
+      .trash-toggle-btn:hover .trash-floating-badge.has-items {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
 
       /* ========== Trash Banner ========== */
@@ -1795,7 +2015,8 @@
         color: var(--text-muted);
       }
 
-      .empty-state svg {
+      .empty-state > svg,
+      .empty-state-icon {
         width: 80px;
         height: 80px;
         margin-bottom: 16px;
@@ -1814,6 +2035,41 @@
         max-width: 360px;
         margin: 0 auto;
         line-height: 1.8;
+      }
+
+      .empty-state .empty-state-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 9px 20px;
+        font-size: 13.5px;
+        font-weight: 500;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+      }
+
+      .empty-state .empty-state-action-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+        background: var(--bg-card);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 6px rgba(0, 0, 0, 0.08);
+      }
+
+      .empty-state .empty-state-action-btn svg {
+        width: 15px;
+        height: 15px;
+        margin: 0;
+        opacity: 1;
+        stroke-width: 2.2;
+        flex-shrink: 0;
       }
 
       .kbd {
@@ -2197,6 +2453,281 @@
         color: #fff;
       }
 
+      /* Tab 3: Interaction Settings */
+      .ai-setting-card {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 14px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .ai-setting-card:hover {
+        border-color: var(--border-hover);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      }
+      .ai-setting-info {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        flex: 1;
+      }
+      .ai-setting-title {
+        font-size: 13.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .ai-setting-desc {
+        font-size: 12px;
+        color: var(--text-muted);
+        line-height: 1.5;
+      }
+
+      /* iOS-style toggle switch */
+      .toggle {
+        position: relative;
+        display: inline-block;
+        width: 42px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--border);
+        transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 24px;
+      }
+      .toggle-slider::before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.18);
+      }
+      .toggle input:checked + .toggle-slider {
+        background-color: var(--primary);
+      }
+      .toggle input:checked + .toggle-slider::before {
+        transform: translateX(18px);
+      }
+      :root[data-theme="dark"] .toggle input:checked + .toggle-slider {
+        background-color: #ef4444;
+      }
+
+      /* AI Feedback Modal Dedicated Styling */
+      #aiFeedbackModal .modal {
+        max-width: 490px;
+        width: 92%;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 22px 24px;
+        box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.06);
+        animation: aiModalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+
+      .ai-fb-context-card {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-left: 3.5px solid var(--primary);
+        border-radius: 8px;
+        padding: 10px 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        max-height: 120px;
+        overflow-y: auto;
+      }
+
+      .ai-fb-context-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        color: var(--text-muted);
+      }
+
+      .ai-fb-context-body {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+
+      .ai-fb-ctx-row {
+        display: flex;
+        align-items: flex-start;
+        gap: 8px;
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      .ai-fb-tag {
+        font-size: 10.5px;
+        font-weight: 700;
+        padding: 1px 5px;
+        border-radius: 4px;
+        background: color-mix(in srgb, var(--primary) 15%, transparent);
+        color: var(--primary);
+        flex-shrink: 0;
+        margin-top: 1px;
+      }
+
+      .ai-fb-tag.ai-fb-tag-ai {
+        background: rgba(16, 185, 129, 0.15);
+        color: #10b981;
+      }
+      :root[data-theme="dark"] .ai-fb-tag.ai-fb-tag-ai {
+        background: rgba(16, 185, 129, 0.22);
+        color: #34d399;
+      }
+
+      .ai-fb-tag.ai-fb-tag-word {
+        background: color-mix(in srgb, var(--primary) 20%, transparent);
+        color: var(--primary);
+        font-weight: 700;
+      }
+
+      .ai-fb-word-text {
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .ai-fb-text {
+        color: var(--text-secondary);
+        word-break: break-word;
+        user-select: text;
+        flex: 1;
+      }
+
+      .ai-fb-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .ai-fb-label-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .ai-fb-label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .ai-fb-badge-req {
+        font-size: 10.5px;
+        font-weight: 600;
+        color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+
+      .ai-fb-badge-opt {
+        font-size: 10.5px;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--bg-hover);
+        padding: 1px 6px;
+        border-radius: 4px;
+      }
+
+      .ai-fb-textarea {
+        width: 100%;
+        min-height: 85px;
+        padding: 10px 12px;
+        font-size: 13px;
+        line-height: 1.5;
+        font-family: inherit;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        resize: vertical;
+        box-sizing: border-box;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        outline: none;
+      }
+
+      .ai-fb-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+      }
+
+      .ai-fb-input-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .ai-fb-input-icon {
+        position: absolute;
+        left: 10px;
+        color: var(--text-muted);
+        pointer-events: none;
+      }
+
+      .ai-fb-input {
+        width: 100%;
+        padding: 8px 12px 8px 32px;
+        font-size: 13px;
+        font-family: inherit;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        color: var(--text-primary);
+        box-sizing: border-box;
+        transition: border-color 0.15s ease, box-shadow 0.15s ease;
+        outline: none;
+      }
+
+      .ai-fb-input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+      }
+
+      .ai-fb-result {
+        display: none;
+        align-items: center;
+        gap: 6px;
+        font-size: 12.5px;
+        font-weight: 500;
+        padding: 6px 10px;
+        border-radius: 6px;
+      }
+      .ai-fb-result.is-success {
+        display: inline-flex;
+        color: #10b981;
+        background: rgba(16, 185, 129, 0.1);
+      }
+      .ai-fb-result.is-error {
+        display: inline-flex;
+        color: #ef4444;
+        background: rgba(239, 68, 68, 0.1);
+      }
+
       .drop-zone {
         border: 2px dashed var(--border);
         border-radius: 8px;
@@ -2453,15 +2984,20 @@
         
         <!-- Normal Mode Bulk Buttons (Trash on the left of Delete Selected) -->
         <div class="bulk-btns-all" id="bulkBtnsAll" style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
-          <button class="btn btn-outline" id="trashToggleBtn" title="查看廢紙簍">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 6h16l-1.5 14a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2L4 6z"></path>
-              <line x1="9" y1="10" x2="9" y2="17"></line>
-              <line x1="12" y1="10" x2="12" y2="17"></line>
-              <line x1="15" y1="10" x2="15" y2="17"></line>
-            </svg>
+          <button class="btn btn-outline trash-toggle-btn" id="trashToggleBtn" title="查看廢紙簍">
+            <span class="trash-icon-container">
+              <svg class="trash-icon-svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <g class="trash-lid-group">
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </g>
+                <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"></path>
+                <line x1="10" y1="11" x2="10" y2="17"></line>
+                <line x1="14" y1="11" x2="14" y2="17"></line>
+              </svg>
+            </span>
             <span data-i18n="wordbookTabTrash">廢紙簍</span>
-            <span class="tab-badge trash-badge" id="badgeTrash" style="display: none; margin-left: 4px;">0</span>
+            <span class="trash-floating-badge" id="badgeTrash">0</span>
           </button>
           <button class="btn bulk-delete-btn" id="bulkDeleteBtn" disabled>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -2537,6 +3073,7 @@
         <div class="ai-modal-tabs" id="aiModalTabs">
           <button class="ai-modal-tab-btn active" data-tab="quick-actions" data-i18n="wordbookAiTabQuickActions">快捷指令</button>
           <button class="ai-modal-tab-btn" data-tab="custom-prompt" data-i18n="wordbookAiTabCustomPrompt">全域 Prompt</button>
+          <button class="ai-modal-tab-btn" data-tab="interaction" data-i18n="wordbookAiTabInteraction">交互設定</button>
         </div>
 
         <!-- Tab 1: Quick Actions -->
@@ -2581,6 +3118,100 @@
             <span id="aiPromptSavedHint" style="font-size: 12px; color: var(--success); opacity: 0; transition: opacity 0.2s;">✓ 已保存</span>
           </div>
         </div>
+
+        <!-- Tab 3: Interaction Settings -->
+        <div class="ai-modal-tab-pane" id="tabPaneInteraction">
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 16px; flex-shrink: 0;" data-i18n="wordbookAiTabInteractionDesc">
+            自訂 AI 回答區域中的浮動音標、單詞吸附與劃詞朗讀等互動功能。
+          </p>
+
+          <div class="ai-setting-card">
+            <div class="ai-setting-info">
+              <div class="ai-setting-title" data-i18n="aiHoverTtsSettingTitle">AI 回答懸停吸附音標與劃詞朗讀</div>
+              <div class="ai-setting-desc" data-i18n="aiHoverTtsSettingDesc">光標懸停在 AI 回答的粵語單詞上時吸附展示音標發音膠囊，拖選文字時彈出朗讀懸浮窗。</div>
+            </div>
+            <label class="toggle">
+              <input type="checkbox" id="aiHoverPronunciationToggle" checked>
+              <span class="toggle-slider"></span>
+            </label>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI Feedback Modal (Direct to Developer Email via Web3Forms) -->
+    <div class="modal-overlay" id="aiFeedbackModal">
+      <div class="modal">
+        <div class="ai-modal-header" style="margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; gap: 10px;">
+            <div style="width: 32px; height: 32px; border-radius: 8px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+                <line x1="9" y1="9" x2="15" y2="9"></line>
+                <line x1="9" y1="13" x2="13" y2="13"></line>
+              </svg>
+            </div>
+            <div>
+              <h3 style="margin: 0; font-size: 16px; font-weight: 700; color: var(--text-primary);" data-i18n="aiFeedbackModalTitle">問題與反饋</h3>
+            </div>
+          </div>
+          <button class="ai-modal-close-btn" id="closeAiFeedbackBtn" title="關閉" aria-label="關閉">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="aiFeedbackForm" style="display: flex; flex-direction: column; gap: 12px;">
+          <input type="hidden" name="access_key" value="d19a0594-b64b-4593-b0e1-baf1cbeb6a4c">
+          <input type="hidden" name="subject" id="aiFeedbackSubject" value="【粵拼插件】AI 回答反饋">
+
+          <div class="ai-fb-context-card">
+            <div class="ai-fb-context-header">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="16" x2="12" y2="12"></line><line x1="12" y1="8" x2="12.01" y2="8"></line></svg>
+              <span data-i18n="aiFeedbackContextLabel">提問與 AI 回答上下文</span>
+            </div>
+            <div id="aiFeedbackContextPreview" class="ai-fb-context-body"></div>
+            <input type="hidden" name="ai_context" id="aiFeedbackContextHidden">
+          </div>
+
+          <div class="ai-fb-field">
+            <div class="ai-fb-label-row">
+              <label for="aiFeedbackMessage" class="ai-fb-label" data-i18n="aiFeedbackMessageLabel">反饋建議與問題描述</label>
+              <span class="ai-fb-badge-req" data-i18n="optRequired">必填</span>
+            </div>
+            <textarea name="message" id="aiFeedbackMessage" class="ai-fb-textarea" placeholder="請描述這條 AI 回答有什麼問題或您的改進建議..." data-i18n-placeholder="aiFeedbackMessagePlaceholder" required></textarea>
+          </div>
+
+          <div class="ai-fb-field">
+            <div class="ai-fb-label-row">
+              <label for="aiFeedbackEmail" class="ai-fb-label">
+                <span data-i18n="optEmailLabel">聯絡電郵</span>
+              </label>
+              <span class="ai-fb-badge-opt" data-i18n="optOptional">選填</span>
+            </div>
+            <div class="ai-fb-input-wrap">
+              <svg class="ai-fb-input-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                <polyline points="22,6 12,13 2,6"></polyline>
+              </svg>
+              <input type="email" name="email" id="aiFeedbackEmail" class="ai-fb-input" placeholder="your@email.com (方便回覆您)" data-i18n-placeholder="optEmailPlaceholder" />
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 10px; justify-content: flex-end; align-items: center; margin-top: 6px;">
+            <div id="aiFeedbackResult" class="ai-fb-result"></div>
+            <button type="button" class="btn" id="cancelAiFeedbackBtn" data-i18n="wordbookCancel" style="padding: 7px 16px; font-size: 13px;">取消</button>
+            <button type="submit" class="btn btn-primary" id="submitAiFeedbackBtn" style="padding: 7px 16px; font-size: 13px; display: inline-flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span data-i18n="optSend">發送反饋</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
 

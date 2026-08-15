@@ -10,7 +10,7 @@
     "message": "<b>全新生詞本與 AI 助手</b>：支援詞彙收藏、拼音檢索與多格式匯出，並內建 AI 懸浮助手深度解析詞義與例句。"
   },
   "clItem12": {
-    "message": "<b>粵語學習導航（Learning Hub）</b>：精選收錄 32 個權威拼音教學、辭書、輸入法與影視資源，全方位助力粵語學習。"
+    "message": "<b>粵語學習導航（Learning Hub）</b>：精選收錄 33 個權威拼音教學、辭書、輸入法與影視資源，全方位助力粵語學習。"
   },
   "clItem13": {
     "message": "<b>粵語本地詞典口語釋義翻譯</b>：詞典中 [粵] 口語標籤釋義支援一鍵點擊或自動翻譯（支援 Bing / Google / 自定義 AI）。"
@@ -788,6 +788,75 @@
   },
   "wordbookExportImport": {
     "message": "導入..."
+  },
+  "wordbookSpeak": {
+    "message": "朗讀"
+  },
+  "aiActionCopy": {
+    "message": "複製"
+  },
+  "aiActionCopied": {
+    "message": "已複製"
+  },
+  "aiActionRegenerate": {
+    "message": "重新生成"
+  },
+  "aiActionFeedback": {
+    "message": "反饋與建議"
+  },
+  "aiActionThumbsUp": {
+    "message": "讚好"
+  },
+  "aiActionThumbsDown": {
+    "message": "點踩"
+  },
+  "wordbookAiTabInteraction": {
+    "message": "交互設定"
+  },
+  "wordbookAiTabInteractionDesc": {
+    "message": "自訂 AI 回答區域中的浮動音標、單詞吸附與劃詞朗讀等互動功能。"
+  },
+  "aiHoverTtsSettingTitle": {
+    "message": "AI 回答懸停吸附音標與劃詞朗讀"
+  },
+  "aiHoverTtsSettingDesc": {
+    "message": "光標懸停在 AI 回答的粵語單詞上時吸附展示音標發音膠囊，拖選文字時彈出朗讀懸浮窗。"
+  },
+  "aiFeedbackModalTitle": {
+    "message": "問題與反饋"
+  },
+  "optRequired": {
+    "message": "必填"
+  },
+  "aiFeedbackContextLabel": {
+    "message": "提問與 AI 回答上下文"
+  },
+  "aiFeedbackMessageLabel": {
+    "message": "反饋建議與問題描述"
+  },
+  "aiFeedbackMessagePlaceholder": {
+    "message": "請描述這條 AI 回答有什麼問題或您的改進建議..."
+  },
+  "aiFeedbackTagWord": {
+    "message": "詞"
+  },
+  "aiFeedbackTagQuestion": {
+    "message": "問"
+  },
+  "aiFeedbackTagAi": {
+    "message": "AI"
+  },
+  "aiFeedbackSending": {
+    "message": "發送中..."
+  },
+  "aiFeedbackSuccess": {
+    "message": "發送成功！感謝您的反饋"
+  },
+  "aiFeedbackFail": {
+    "message": "發送失敗，請稍後再試"
+  },
+  "aiFeedbackNetError": {
+    "message": "發送失敗，請檢查網絡連接"
   },
   "dictSearchFallback": {
     "message": "📖 詞典搜索"

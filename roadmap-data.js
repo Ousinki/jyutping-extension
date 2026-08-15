@@ -718,5 +718,27 @@ window.ROADMAP_RESOURCES = [
       'ja': 'Bilibiliで大人気の広東語トークショー。テンポの良い広府方言のジョークや日常スラングが満載。',
       'ko': '빌리빌리 최고 인기 광둥어 스탠드업 코미디 채널. 풍부한 슬랭과 자연스러운 일상 대화.'
     }
+  },
+  {
+    id: 'feitsui-lyrics',
+    url: 'https://www.feitsui.com/hk/',
+    category: 'media',
+    domain: 'feitsui.com',
+    icon: 'https://www.google.com/s2/favicons?domain=feitsui.com&sz=128',
+    keywords: '翡翠歌词 翡翠粵語歌詞 粤语歌 歌词 拼音 粤拼 罗马音 经典 流行歌 音乐 唱片 cantopop feitsui lyrics',
+    title: {
+      'zh-HK': '翡翠歌詞 (粵語歌詞網)',
+      'zh-CN': '翡翠歌词 (粤语歌词网)',
+      'en': 'Feitsui (Cantopop Lyrics Hub)',
+      'ja': '翡翠歌詞 (広東語歌詞データベース)',
+      'ko': '비취 가사망 (광둥어 가사 DB)'
+    },
+    desc: {
+      'zh-HK': '收錄海量經典與流行粵語歌完整歌詞，附帶標準粵語拼音、羅馬音標註與唱片歌手資料庫，是聽歌學粵語的絕佳神器。',
+      'zh-CN': '收录海量经典与流行粤语歌完整歌词，附带标准粤语拼音、罗马音标注与唱片歌手资料库，是听歌学粤语的绝佳神器。',
+      'en': 'Comprehensive Cantopop lyrics database with standard Jyutping and romanization annotations, artist profiles, and album info—an ideal companion for learning Cantonese through music.',
+      'ja': '膨大な名曲・最新広東語ポップス（Cantopop）の歌詞データベース。ピンイン表記付きで、音楽を通じた広東語学習に最適。',
+      'ko': '방대한 캔토팝(광둥어 가요) 가사 데이터베이스. 표준 월병 및 발음 표기를 제공하여 음악을 통한 광둥어 학습에 탁월.'
+    }
   }
 ];

@@ -10,7 +10,7 @@
     "message": "<b>New Wordbook & AI Assistant</b>: Save vocabulary, search by Jyutping, export in multiple formats, and ask the built-in AI assistant for contextual explanations."
   },
   "clItem12": {
-    "message": "<b>Cantonese Learning Roadmap & Hub</b>: Curated 32 authoritative phonetics tutorials, dictionaries, input methods, and media resources to supercharge your Cantonese learning."
+    "message": "<b>Cantonese Learning Roadmap & Hub</b>: Curated 33 authoritative phonetics tutorials, dictionaries, input methods, and media resources to supercharge your Cantonese learning."
   },
   "clItem13": {
     "message": "<b>Cantonese Colloquial Definition Translation</b>: Click-to-translate or auto-translate [粵] colloquial definitions (supports Bing, Google, or Custom AI)."
@@ -788,6 +788,75 @@
   },
   "wordbookExportImport": {
     "message": "Import..."
+  },
+  "wordbookSpeak": {
+    "message": "Read"
+  },
+  "aiActionCopy": {
+    "message": "Copy"
+  },
+  "aiActionCopied": {
+    "message": "Copied"
+  },
+  "aiActionRegenerate": {
+    "message": "Regenerate"
+  },
+  "aiActionFeedback": {
+    "message": "Feedback & Report"
+  },
+  "aiActionThumbsUp": {
+    "message": "Helpful"
+  },
+  "aiActionThumbsDown": {
+    "message": "Unhelpful"
+  },
+  "wordbookAiTabInteraction": {
+    "message": "Interaction"
+  },
+  "wordbookAiTabInteractionDesc": {
+    "message": "Customize floating phonetic pills, word snapping, and selection reading in AI responses."
+  },
+  "aiHoverTtsSettingTitle": {
+    "message": "AI Hover Phonetic Pill & Selection Reading"
+  },
+  "aiHoverTtsSettingDesc": {
+    "message": "Show floating phonetic pill on word hover, and show reading button on text selection in AI responses."
+  },
+  "aiFeedbackModalTitle": {
+    "message": "Feedback & Issues"
+  },
+  "optRequired": {
+    "message": "Required"
+  },
+  "aiFeedbackContextLabel": {
+    "message": "Question & AI Response Context"
+  },
+  "aiFeedbackMessageLabel": {
+    "message": "Feedback & Issue Description"
+  },
+  "aiFeedbackMessagePlaceholder": {
+    "message": "Please describe what was wrong with this AI answer or suggestions for improvement..."
+  },
+  "aiFeedbackTagWord": {
+    "message": "Word"
+  },
+  "aiFeedbackTagQuestion": {
+    "message": "Ask"
+  },
+  "aiFeedbackTagAi": {
+    "message": "AI"
+  },
+  "aiFeedbackSending": {
+    "message": "Sending..."
+  },
+  "aiFeedbackSuccess": {
+    "message": "Sent successfully! Thank you for your feedback"
+  },
+  "aiFeedbackFail": {
+    "message": "Failed to send, please try again later"
+  },
+  "aiFeedbackNetError": {
+    "message": "Failed to send, please check network connection"
   },
   "dictSearchFallback": {
     "message": "📖 Dictionary Search"

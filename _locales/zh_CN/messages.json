@@ -10,7 +10,7 @@
     "message": "<b>全新生词本与 AI 助手</b>：支持词汇收藏、拼音检索与多格式导出，并内置 AI 悬浮助手深度解析词义与例句。"
   },
   "clItem12": {
-    "message": "<b>粤语学习导航（Learning Hub）</b>：精选收录 32 个权威拼音教学、辞书、输入法与影视资源，全方位助力粤语学习。"
+    "message": "<b>粤语学习导航（Learning Hub）</b>：精选收录 33 个权威拼音教学、辞书、输入法与影视资源，全方位助力粤语学习。"
   },
   "clItem13": {
     "message": "<b>粤语本地词典口语释义翻译</b>：词典中 [粤] 口语标签释义支持一键点击或自动翻译（支持 Bing / Google / 自定义 AI）。"
@@ -788,6 +788,75 @@
   },
   "wordbookExportImport": {
     "message": "导入..."
+  },
+  "wordbookSpeak": {
+    "message": "朗读"
+  },
+  "aiActionCopy": {
+    "message": "复制"
+  },
+  "aiActionCopied": {
+    "message": "已复制"
+  },
+  "aiActionRegenerate": {
+    "message": "重新生成"
+  },
+  "aiActionFeedback": {
+    "message": "反馈与建议"
+  },
+  "aiActionThumbsUp": {
+    "message": "赞好"
+  },
+  "aiActionThumbsDown": {
+    "message": "点踩"
+  },
+  "wordbookAiTabInteraction": {
+    "message": "交互设置"
+  },
+  "wordbookAiTabInteractionDesc": {
+    "message": "自定义 AI 回答区域中的浮动音标、单词吸附与划词朗读等互动功能。"
+  },
+  "aiHoverTtsSettingTitle": {
+    "message": "AI 回答悬停吸附音标与划词朗读"
+  },
+  "aiHoverTtsSettingDesc": {
+    "message": "光标悬停在 AI 回答的粤语单词上时吸附展示音标发音胶囊，拖选文字时弹出朗读悬浮窗。"
+  },
+  "aiFeedbackModalTitle": {
+    "message": "问题与反馈"
+  },
+  "optRequired": {
+    "message": "必填"
+  },
+  "aiFeedbackContextLabel": {
+    "message": "提问与 AI 回答上下文"
+  },
+  "aiFeedbackMessageLabel": {
+    "message": "反馈建议与问题描述"
+  },
+  "aiFeedbackMessagePlaceholder": {
+    "message": "请描述这条 AI 回答有什么问题或您的改进建议..."
+  },
+  "aiFeedbackTagWord": {
+    "message": "词"
+  },
+  "aiFeedbackTagQuestion": {
+    "message": "问"
+  },
+  "aiFeedbackTagAi": {
+    "message": "AI"
+  },
+  "aiFeedbackSending": {
+    "message": "发送中..."
+  },
+  "aiFeedbackSuccess": {
+    "message": "发送成功！感谢您的反馈"
+  },
+  "aiFeedbackFail": {
+    "message": "发送失败，请稍后再试"
+  },
+  "aiFeedbackNetError": {
+    "message": "发送失败，请检查网络连接"
   },
   "dictSearchFallback": {
     "message": "📖 词典搜索"
