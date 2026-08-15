@@ -3,7 +3,16 @@
     "message": "이번 업데이트에는 다음과 같은 개선 사항이 포함되어 있습니다:"
   },
   "clItem10": {
-    "message": "<b>컨텍스트 메뉴 저장</b>: 중국어 텍스트를 선택하고 마우스 오른쪽 버튼을 클릭하면 호버 팝업을 열지 않고도 단어장에 빠르게 추가할 수 있습니다."
+    "message": "<b>우클릭 메뉴로 단어 저장</b>：임의의 중국어 텍스트를 선택하고 마우스 우클릭만으로 팝업창을 열지 않고도 빠르게 단어장에 추가할 수 있습니다."
+  },
+  "clItem11": {
+    "message": "<b>새로운 단어장 및 AI 어시스턴트</b>：단어 저장, 월병 검색, 다양한 형식 내보내기 및 문맥별 AI 설명 지원."
+  },
+  "clItem12": {
+    "message": "<b>광둥어 학습 로드맵（Learning Hub）</b>：엄선된 32개의 권위 있는 발음 강좌, 사전, 입력기 및 미디어 리소스를 다국어로 지원."
+  },
+  "clItem13": {
+    "message": "<b>광둥어 구어체 정의 번역 기능</b>：사전 내 [粵] 구어 정의를 원클릭 또는 자동 번역 지원 (Bing / Google / 사용자 정의 AI 지원)."
   },
   "clItem5": {
     "message": "🎨 <b>새로운 루비 배경 스타일</b>: 루비 주음 모드에서 '단색 배경' 및 '페이드 배경'을 지원하여 어떤 웹페이지 배경에서도 발음 기호가 선명하게 보이도록 개선했습니다.",
@@ -823,5 +832,145 @@
   },
   "optRoadmapFilterReading": {
     "message": "읽기 및 듣기"
+  },
+  "optRoadmapFilterMedia": {
+    "message": "미디어 및 문화"
+  },
+  "optRoadmapSearchPlaceholder": {
+    "message": "리소스 이름, 키워드, 도메인 검색..."
+  },
+  "wordbookBackToSettings": {
+    "message": "설정으로 돌아가기"
+  },
+  "optRoadmapCount": {
+    "message": "$COUNT$개 엄선된 리소스",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRoadmapVisit": {
+    "message": "방문하기 ↗"
+  },
+  "optRoadmapEmptyTitle": {
+    "message": "일치하는 학습 리소스를 찾을 수 없습니다"
+  },
+  "optRoadmapEmptyDesc": {
+    "message": "다른 키워드로 검색하거나 카테고리 필터를 변경해 보세요"
+  },
+  "optAILangAuto": {
+    "message": "인터페이스 언어 따름 (Auto)"
+  },
+  "optAutoTranslateEngineGoogle": {
+    "message": "Google 번역 (설정 불필요 / 빠름)"
+  },
+  "optAutoTranslateEngineBing": {
+    "message": "Bing 번역 (광둥어 기본 지원)"
+  },
+  "optAutoTranslateEngineAI": {
+    "message": "사용자 정의 AI (API Key 필요)"
+  },
+  "optYueDefLangZhHans": {
+    "message": "간체 중국어 (Simplified Chinese)"
+  },
+  "optYueDefLangEn": {
+    "message": "영어 (English)"
+  },
+  "optYueDefLangJa": {
+    "message": "일본어 (Japanese)"
+  },
+  "optYueDefLangKo": {
+    "message": "한국어 (Korean)"
+  },
+  "optYueDefLangZhHant": {
+    "message": "번체 중국어 (Traditional Chinese)"
+  },
+  "optHoverTransEngineTitle": {
+    "message": "기본 번역 엔진"
+  },
+  "optHoverTransEngineDesc": {
+    "message": "팝업 번역에 사용할 기본 엔진 선택"
+  },
+  "optParaTransEngine": {
+    "message": "단락 번역 엔진"
+  },
+  "optParaTransEngineAI": {
+    "message": "사용자 정의 AI"
+  },
+  "optParaTransEngineBing": {
+    "message": "Bing 번역"
+  },
+  "optParaTransEngineDesc": {
+    "message": "Bing 번역은 즉시 결과를 제공하며, AI 번역은 더욱 자연스럽지만 몇 초 정도 걸립니다"
+  },
+  "fbTitle": {
+    "message": "확장 프로그램을 더 발전시켜 주세요 🚀"
+  },
+  "fbQ1Title": {
+    "message": "1. 이 확장 프로그램을 사용하는 주된 목적은 무엇인가요?"
+  },
+  "fbQ1OptLearn": {
+    "message": "광둥어 학습 (광둥어 학습자)"
+  },
+  "fbQ1OptRead": {
+    "message": "웹 브라우징 보조 (어려운 한자/단어 조회)"
+  },
+  "fbQ1OptTranslate": {
+    "message": "번역 보조 (문어체 변환 등)"
+  },
+  "fbQ1OptEntertainment": {
+    "message": "엔터테인먼트/SNS (YouTube 자막 등)"
+  },
+  "fbOptOther": {
+    "message": "기타: "
+  },
+  "fbQ2Title": {
+    "message": "2. 향후 어떤 핵심 기능이 우선적으로 추가되길 바라시나요? (중복 선택 가능)"
+  },
+  "fbQ2OptSync": {
+    "message": "☁️ 단어장 다중 기기 클라우드 동기화"
+  },
+  "fbQ2OptTranslate": {
+    "message": "🌐 텍스트 드래그 / 전체 문장 스마트 번역"
+  },
+  "fbQ2OptDicts": {
+    "message": "📚 더 많은 사전 데이터 소스 연동"
+  },
+  "fbQ2OptMobile": {
+    "message": "📱 모바일 브라우저 지원"
+  },
+  "fbQ3Title": {
+    "message": "3. 현재 확장 프로그램에 대한 전반적인 평가는 어떠신가요?"
+  },
+  "fbQ4Title": {
+    "message": "4. 제안, 피드백 또는 발견한 버그가 있으신가요? (선택)"
+  },
+  "fbCommentsPlaceholder": {
+    "message": "소중한 의견을 자유롭게 적어주세요..."
+  },
+  "fbPrivacyDesc": {
+    "message": "사용자 환경 개선을 위해 기본 환경 정보(언어 및 OS) 첨부를 허용합니다."
+  },
+  "btnPrevStep": {
+    "message": "이전"
+  },
+  "btnNextStep": {
+    "message": "다음"
+  },
+  "btnSubmit": {
+    "message": "제출"
+  },
+  "btnSubmitting": {
+    "message": "전송 중..."
+  },
+  "fbSuccessTitle": {
+    "message": "✅ 피드백을 보내주셔서 감사합니다!"
+  },
+  "fbSuccessDesc": {
+    "message": "보내주신 의견을 바탕으로 지속적으로 개선하겠습니다."
+  },
+  "fbErrorAlert": {
+    "message": "피드백 전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
   }
 }

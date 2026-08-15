@@ -6,6 +6,15 @@
   "clItem10": {
     "message": "<b>右鍵菜單收藏</b>：選中任意中文文字，右鍵即可快速加入生詞本，無需打開懸浮窗。"
   },
+  "clItem11": {
+    "message": "<b>全新生詞本與 AI 助手</b>：支援詞彙收藏、拼音檢索與多格式匯出，並內建 AI 懸浮助手深度解析詞義與例句。"
+  },
+  "clItem12": {
+    "message": "<b>粵語學習導航（Learning Hub）</b>：精選收錄 32 個權威拼音教學、辭書、輸入法與影視資源，全方位助力粵語學習。"
+  },
+  "clItem13": {
+    "message": "<b>粵語本地詞典口語釋義翻譯</b>：詞典中 [粵] 口語標籤釋義支援一鍵點擊或自動翻譯（支援 Bing / Google / 自定義 AI）。"
+  },
   "clItem5": {
     "message": "🎨 <b>新增注音背景樣式</b>：Ruby 內嵌注音模式現已支援「實色背景」與「消散背景」，在任何網頁背景下都能保證音標清晰可見。",
     "description": "Changelog item 5"
@@ -890,5 +899,127 @@
   },
   "optRoadmapFilterReading": {
     "message": "聽讀進階"
+  },
+  "optRoadmapFilterMedia": {
+    "message": "影視文化"
+  },
+  "optRoadmapSearchPlaceholder": {
+    "message": "搜尋資源名稱、關鍵字、網站域名..."
+  },
+  "wordbookBackToSettings": {
+    "message": "返回設定"
+  },
+  "optRoadmapCount": {
+    "message": "共 $COUNT$ 個精選資源",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "optRoadmapVisit": {
+    "message": "立即訪問 ↗"
+  },
+  "optRoadmapEmptyTitle": {
+    "message": "未找到匹配的學習資源"
+  },
+  "optRoadmapEmptyDesc": {
+    "message": "請嘗試使用其他關鍵字或切換分類篩選標籤"
+  },
+  "optAILangAuto": {
+    "message": "跟隨介面語言 (Auto)"
+  },
+  "optAutoTranslateEngineGoogle": {
+    "message": "Google 翻譯 (免配置 / 速度快)"
+  },
+  "optAutoTranslateEngineBing": {
+    "message": "Bing 翻譯 (原生支援粵語)"
+  },
+  "optAutoTranslateEngineAI": {
+    "message": "自定義 AI (需配置 API Key)"
+  },
+  "optYueDefLangZhHans": {
+    "message": "簡體中文 (Simplified Chinese)"
+  },
+  "optYueDefLangEn": {
+    "message": "英語 (English)"
+  },
+  "optYueDefLangJa": {
+    "message": "日語 (日本語)"
+  },
+  "optYueDefLangKo": {
+    "message": "韓語 (한국어)"
+  },
+  "optYueDefLangZhHant": {
+    "message": "繁體中文 (Traditional Chinese)"
+  },
+  "fbTitle": {
+    "message": "助力插件做得更好 🚀"
+  },
+  "fbQ1Title": {
+    "message": "1. 您使用本插件的主要目的是什麼？"
+  },
+  "fbQ1OptLearn": {
+    "message": "學習粵語（我是粵語學習者）"
+  },
+  "fbQ1OptRead": {
+    "message": "日常網頁閱讀輔助（查生僻字）"
+  },
+  "fbQ1OptTranslate": {
+    "message": "翻譯輔助（轉為書面語等）"
+  },
+  "fbQ1OptEntertainment": {
+    "message": "娛樂/社交（如 YouTube 字幕等）"
+  },
+  "fbOptOther": {
+    "message": "其他："
+  },
+  "fbQ2Title": {
+    "message": "2. 您希望未來優先增加哪項核心功能？(可多選)"
+  },
+  "fbQ2OptSync": {
+    "message": "☁️ 生詞本多設備雲端同步"
+  },
+  "fbQ2OptTranslate": {
+    "message": "🌐 網頁劃詞 / 整句智能翻譯"
+  },
+  "fbQ2OptDicts": {
+    "message": "📚 接入更多詞典源數據"
+  },
+  "fbQ2OptMobile": {
+    "message": "📱 推出手機端瀏覽器支持"
+  },
+  "fbQ3Title": {
+    "message": "3. 您對當前插件的整體評價如何？"
+  },
+  "fbQ4Title": {
+    "message": "4. 您的建議、反饋或遇到的 Bug？(選填)"
+  },
+  "fbCommentsPlaceholder": {
+    "message": "請告訴我們您的想法..."
+  },
+  "fbPrivacyDesc": {
+    "message": "允許附加基本環境資訊 (介面語言與作業系統) 以協助我們更好地優化體驗。"
+  },
+  "btnPrevStep": {
+    "message": "上一步"
+  },
+  "btnNextStep": {
+    "message": "下一步"
+  },
+  "btnSubmit": {
+    "message": "提交"
+  },
+  "btnSubmitting": {
+    "message": "發送中..."
+  },
+  "fbSuccessTitle": {
+    "message": "✅ 感謝您的反饋！"
+  },
+  "fbSuccessDesc": {
+    "message": "我們將持續優化插件體驗。"
+  },
+  "fbErrorAlert": {
+    "message": "反饋發送失敗，請稍後再試。"
   }
 }

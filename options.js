@@ -81,6 +81,12 @@ async function applyI18n(lang) {
       }
     }
   });
+  document.querySelectorAll('select:not(.native-only)').forEach(select => {
+    select.dispatchEvent(new Event('updateUI'));
+  });
+  if (typeof window.__updateFbUI === 'function') {
+    window.__updateFbUI();
+  }
   updateShortcutDesc(lang);
 }
 
@@ -2127,13 +2133,17 @@ async function applyI18n(lang) {
         fbPrevBtn.style.pointerEvents = 'auto';
       }
 
+      fbPrevBtn.textContent = activeDict['btnPrevStep'] || '上一步';
+
       if (fbCurrentStep === fbTotalSteps - 1) {
-        fbNextBtn.textContent = '提交';
+        fbNextBtn.textContent = activeDict['btnSubmit'] || '提交';
       } else {
-        fbNextBtn.textContent = '下一步';
+        fbNextBtn.textContent = activeDict['btnNextStep'] || '下一步';
       }
     };
     
+    window.__updateFbUI = updateFbUI;
+
     // Initialize initial layout (left: 0, 100%, 200%...)
     fbSteps.forEach((step, index) => {
       step.style.left = (index * 100) + '%';
@@ -2218,7 +2228,7 @@ async function applyI18n(lang) {
 環境: ${osInfo}
 `.trim();
 
-      fbNextBtn.textContent = '發送中...';
+      fbNextBtn.textContent = activeDict['btnSubmitting'] || '發送中...';
       fbNextBtn.style.pointerEvents = 'none';
       fbNextBtn.style.opacity = '0.7';
 
@@ -2238,7 +2248,9 @@ async function applyI18n(lang) {
         });
 
         if (response.ok) {
-          feedbackWidget.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--text-primary); font-size: 14px; font-weight: 500;">✅ 感謝您的反饋！<br><span style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; display: block; font-weight: 400;">我們將持續優化插件體驗。</span></div>`;
+          const successTitle = activeDict['fbSuccessTitle'] || '✅ 感謝您的反饋！';
+          const successDesc = activeDict['fbSuccessDesc'] || '我們將持續優化插件體驗。';
+          feedbackWidget.innerHTML = `<div style="padding: 40px 20px; text-align: center; color: var(--text-primary); font-size: 14px; font-weight: 500;">${successTitle}<br><span style="font-size: 12px; color: var(--text-secondary); margin-top: 8px; display: block; font-weight: 400;">${successDesc}</span></div>`;
           
           setTimeout(() => {
             feedbackWidget.style.display = 'none';
@@ -2249,8 +2261,8 @@ async function applyI18n(lang) {
           throw new Error('網絡請求失敗');
         }
       } catch (error) {
-        alert('反饋發送失敗，請稍後再試。');
-        fbNextBtn.textContent = '提交';
+        alert(activeDict['fbErrorAlert'] || '反饋發送失敗，請稍後再試。');
+        fbNextBtn.textContent = activeDict['btnSubmit'] || '提交';
         fbNextBtn.style.pointerEvents = 'auto';
         fbNextBtn.style.opacity = '1';
       }
