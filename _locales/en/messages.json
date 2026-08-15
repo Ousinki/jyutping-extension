@@ -1021,5 +1021,53 @@
   },
   "fbErrorAlert": {
     "message": "Failed to submit feedback. Please try again later."
+  },
+  "wordbookTabAll": {
+    "message": "All Words"
+  },
+  "wordbookTabTrash": {
+    "message": "Trash"
+  },
+  "wordbookTrashBannerNotice": {
+    "message": "Deleted words will be kept in the Trash for 30 days before being permanently removed."
+  },
+  "wordbookEmptyTrash": {
+    "message": "Empty Trash"
+  },
+  "wordbookEmptyTrashConfirm": {
+    "message": "Are you sure you want to empty the Trash? All deleted words will be permanently removed and cannot be recovered."
+  },
+  "wordbookRestoreAll": {
+    "message": "Restore All"
+  },
+  "wordbookRestoreAllConfirm": {
+    "message": "Are you sure you want to restore all words from Trash?"
+  },
+  "wordbookRestoreSelected": {
+    "message": "Restore Selected"
+  },
+  "wordbookDeletePermanentSelected": {
+    "message": "Delete Permanently"
+  },
+  "wordbookDeletePermanentConfirm": {
+    "message": "Are you sure you want to permanently delete the selected word(s)? This action cannot be undone."
+  },
+  "wordbookRestoreSingle": {
+    "message": "Restore"
+  },
+  "wordbookDeletePermanentSingle": {
+    "message": "Delete"
+  },
+  "wordbookTrashEmptyTitle": {
+    "message": "Trash is Empty"
+  },
+  "wordbookTrashEmptyDesc": {
+    "message": "No deleted words found"
+  },
+  "wordbookMovedToTrash": {
+    "message": "Moved to Trash"
+  },
+  "wordbookRestored": {
+    "message": "Restored"
   }
 }

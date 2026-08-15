@@ -891,9 +891,9 @@
       .stats-bar {
         display: flex;
         gap: 16px;
-        margin-bottom: 16px;
         font-size: 13px;
         color: var(--text-muted);
+        margin-bottom: 16px;
       }
 
       .stat-item {
@@ -905,6 +905,121 @@
       .stat-value {
         font-weight: 600;
         color: var(--text-primary);
+      }
+
+      .tab-badge {
+        font-size: 11px;
+        padding: 1px 6px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        color: var(--primary);
+        font-weight: 600;
+        min-width: 18px;
+        text-align: center;
+      }
+
+      .tab-badge.trash-badge {
+        background: color-mix(in srgb, #ef4444 15%, transparent);
+        color: #ef4444;
+      }
+
+      /* ========== Trash Banner ========== */
+      .trash-banner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 10px 16px;
+        background: color-mix(in srgb, #ef4444 8%, var(--bg-card));
+        border: 1px solid color-mix(in srgb, #ef4444 25%, var(--border));
+        border-radius: 10px;
+        margin-bottom: 16px;
+        font-size: 13px;
+        color: var(--text-primary);
+        flex-wrap: wrap;
+        animation: dropdownSlideIn 0.2s ease-out;
+      }
+
+      .trash-banner-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        font-size: 13px;
+      }
+
+      .trash-banner-info svg {
+        color: #ef4444;
+        flex-shrink: 0;
+      }
+
+      .trash-banner-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-left: auto;
+      }
+
+      .btn-sm {
+        padding: 5px 12px;
+        font-size: 12px;
+        border-radius: 6px;
+      }
+
+      .btn-outline {
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-primary);
+      }
+
+      .btn-outline:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .btn-danger {
+        border: 1px solid #ef4444;
+        background: transparent;
+        color: #ef4444;
+      }
+
+      .btn-danger:hover {
+        background: #ef4444;
+        color: #ffffff;
+      }
+
+      /* Trash Row Actions */
+      .trash-row-actions {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+      }
+
+      .trash-action-btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 3px;
+        padding: 3px 8px;
+        font-size: 11px;
+        font-weight: 500;
+        border-radius: 5px;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .trash-action-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .trash-action-btn.del-perm:hover {
+        border-color: #ef4444;
+        color: #ef4444;
+        background: color-mix(in srgb, #ef4444 8%, transparent);
       }
 
       /* ========== Search & Toolbar ========== */
@@ -1144,7 +1259,7 @@
         border-radius: 8px;
         box-shadow: var(--shadow);
         min-width: 180px;
-        z-index: 10;
+        z-index: 100;
         display: none;
         overflow: hidden;
       }
@@ -1225,9 +1340,15 @@
       .table-header > div {
         text-align: center;
         position: relative;
-        display: flex;
-        align-items: center;
-        justify-content: center;
+        min-width: 0;
+        white-space: nowrap;
+        line-height: 20px;
+      }
+      /* Compensate for column-gap: the visual column between dividers
+         is (gap + cell-width), so shift the centering left by adding
+         padding-right equal to the gap on all columns except the first. */
+      .table-header > div:not(:first-child) {
+        padding-right: 16px;
       }
 
       /* Draggable column divider resizer - Full header height & high contrast */
@@ -1363,8 +1484,9 @@
       .col-header-sortable {
         cursor: context-menu;
         user-select: none;
-        display: flex;
+        display: inline-flex;
         align-items: center;
+        justify-content: center;
         gap: 3px;
       }
       .col-header-sortable:hover {
@@ -2253,6 +2375,22 @@
         <div class="stat-item"><span data-i18n="wordbookWeek">本週</span> +<span class="stat-value" id="statWeek">0</span></div>
       </div>
 
+      <!-- Trash Notice Banner (shown only when in Trash view) -->
+      <div class="trash-banner" id="trashBanner" style="display: none;">
+        <div class="trash-banner-info">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span data-i18n="wordbookTrashBannerNotice">已刪除的生詞將在廢紙簍中保留 30 天，逾期將自動徹底清除。</span>
+        </div>
+        <div class="trash-banner-actions">
+          <button class="btn btn-sm btn-outline" id="restoreAllBtn" data-i18n="wordbookRestoreAll">全部還原</button>
+          <button class="btn btn-sm btn-danger" id="emptyTrashBtn" data-i18n="wordbookEmptyTrash">清空廢紙簍</button>
+        </div>
+      </div>
+
       <!-- Toolbar -->
       <div class="toolbar">
         <div class="search-box">
@@ -2262,8 +2400,8 @@
           </svg>
           <input type="text" id="searchInput" placeholder="搜索生詞..." data-i18n-placeholder="wordbookSearchPlaceholder" autocomplete="off" />
           <div class="search-mode-toggle" id="searchModeToggle">
-            <button class="search-mode-btn active" data-mode="wordbook">生詞</button>
-            <button class="search-mode-btn" data-mode="dict">詞典</button>
+            <button class="search-mode-btn active" data-mode="wordbook" data-i18n="wordbookModeWord">生詞</button>
+            <button class="search-mode-btn" data-mode="dict" data-i18n="wordbookModeDict">詞典</button>
           </div>
           <div class="dict-search-dropdown" id="dictSearchDropdown"></div>
         </div>
@@ -2280,24 +2418,24 @@
           <div class="export-menu" id="exportMenu">
             <button data-format="json">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M8 3H7a2 2 0 0 0-2 2v5a2 2 0 0 1-2 2 2 2 0 0 1 2 2v5a2 2 0 0 0 2 2h1"/><path d="M16 3h1a2 2 0 0 1 2 2v5a2 2 0 0 0 2 2 2 2 0 0 0-2 2v5a2 2 0 0 1-2 2h-1"/></svg>
-              JSON（完整備份）
+              <span data-i18n="wordbookExportJson">JSON (完整備份)</span>
             </button>
             <button data-format="csv">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="3" y1="15" x2="21" y2="15"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="15" y1="3" x2="15" y2="21"/></svg>
-              CSV（Excel 兼容）
+              <span data-i18n="wordbookExportCsv">CSV (Excel 兼容)</span>
             </button>
             <button data-format="markdown">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M4 4h16v16H4z" rx="2"/><path d="M7 15V9l3 3 3-3v6"/><path d="M17 12l-2 3h0l-2-3"/></svg>
-              Markdown
+              <span data-i18n="wordbookExportMd">Markdown</span>
             </button>
             <button data-format="txt">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="12" y2="17"/></svg>
-              純文本 TXT
+              <span data-i18n="wordbookExportTxt">純文本 TXT</span>
             </button>
             <div class="import-divider"></div>
             <button id="importBtn">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: -2px; margin-right: 6px; flex-shrink: 0;"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-              導入...
+              <span data-i18n="wordbookExportImport">導入...</span>
             </button>
           </div>
         </div>
@@ -2308,17 +2446,56 @@
 
       <!-- Bulk Actions -->
       <div class="bulk-actions" id="bulkActions" style="display: none;">
-        <label>
+        <label id="selectAllLabel">
           <input type="checkbox" id="selectAll" class="word-card-checkbox" />
           <span data-i18n="wordbookSelectAll">全選</span>
         </label>
-        <button class="btn bulk-delete-btn" id="bulkDeleteBtn" disabled>
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="3 6 5 6 21 6"></polyline>
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-          </svg>
-          <span data-i18n="wordbookDeleteSelected">刪除選中</span> (<span id="selectedCount">0</span>)
-        </button>
+        
+        <!-- Normal Mode Bulk Buttons (Trash on the left of Delete Selected) -->
+        <div class="bulk-btns-all" id="bulkBtnsAll" style="margin-left: auto; display: flex; align-items: center; gap: 8px;">
+          <button class="btn btn-outline" id="trashToggleBtn" title="查看廢紙簍">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 6h16l-1.5 14a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2L4 6z"></path>
+              <line x1="9" y1="10" x2="9" y2="17"></line>
+              <line x1="12" y1="10" x2="12" y2="17"></line>
+              <line x1="15" y1="10" x2="15" y2="17"></line>
+            </svg>
+            <span data-i18n="wordbookTabTrash">廢紙簍</span>
+            <span class="tab-badge trash-badge" id="badgeTrash" style="display: none; margin-left: 4px;">0</span>
+          </button>
+          <button class="btn bulk-delete-btn" id="bulkDeleteBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span data-i18n="wordbookDeleteSelected">刪除選中</span> (<span id="selectedCount">0</span>)
+          </button>
+        </div>
+
+        <!-- Trash Mode Bulk Buttons -->
+        <div class="bulk-btns-trash" id="bulkBtnsTrash" style="display: none; margin-left: auto; align-items: center; gap: 8px;">
+          <button class="btn btn-outline" id="btnBackToAll" title="返回全部生詞">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="19" y1="12" x2="5" y2="12"></line>
+              <polyline points="12 19 5 12 12 5"></polyline>
+            </svg>
+            <span data-i18n="wordbookTabAll">返回生詞</span>
+          </button>
+          <button class="btn btn-outline" id="bulkRestoreBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="1 4 1 10 7 10"></polyline>
+              <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+            </svg>
+            <span data-i18n="wordbookRestoreSelected">還原選中</span> (<span id="selectedCountTrash">0</span>)
+          </button>
+          <button class="btn btn-danger" id="bulkDeletePermanentBtn" disabled>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+            <span data-i18n="wordbookDeletePermanentSelected">徹底刪除</span>
+          </button>
+        </div>
       </div>
 
       <!-- Storage Info -->

@@ -1021,5 +1021,53 @@
   },
   "fbErrorAlert": {
     "message": "反馈发送失败，请稍后再试。"
+  },
+  "wordbookTabAll": {
+    "message": "全部生词"
+  },
+  "wordbookTabTrash": {
+    "message": "废纸篓"
+  },
+  "wordbookTrashBannerNotice": {
+    "message": "已删除的生词将在废纸篓中保留 30 天，逾期将自动彻底清除。"
+  },
+  "wordbookEmptyTrash": {
+    "message": "清空废纸篓"
+  },
+  "wordbookEmptyTrashConfirm": {
+    "message": "确定要清空废纸篓吗？这将会永久删除所有已删除的生词，无法恢复。"
+  },
+  "wordbookRestoreAll": {
+    "message": "全部还原"
+  },
+  "wordbookRestoreAllConfirm": {
+    "message": "确定要还原废纸篓中的所有生词吗？"
+  },
+  "wordbookRestoreSelected": {
+    "message": "还原选中"
+  },
+  "wordbookDeletePermanentSelected": {
+    "message": "彻底删除"
+  },
+  "wordbookDeletePermanentConfirm": {
+    "message": "确定要永久删除选中的生词吗？此操作无法撤销。"
+  },
+  "wordbookRestoreSingle": {
+    "message": "还原"
+  },
+  "wordbookDeletePermanentSingle": {
+    "message": "彻底删除"
+  },
+  "wordbookTrashEmptyTitle": {
+    "message": "废纸篓为空"
+  },
+  "wordbookTrashEmptyDesc": {
+    "message": "没有已删除的生词"
+  },
+  "wordbookMovedToTrash": {
+    "message": "已移至废纸篓"
+  },
+  "wordbookRestored": {
+    "message": "已还原"
   }
 }

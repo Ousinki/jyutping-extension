@@ -428,20 +428,51 @@
 
   // src/content/wordbook-storage.js
   var WORDBOOK_KEY = "wordbook";
+  var TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1e3;
   function generateId() {
     return "w_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6);
   }
   async function getWordbook() {
     return new Promise((resolve) => {
       chrome.storage.local.get([WORDBOOK_KEY], (result) => {
-        resolve(result[WORDBOOK_KEY] || []);
+        let list = result[WORDBOOK_KEY] || [];
+        const now = Date.now();
+        let hasExpired = false;
+        const purged = list.filter((w) => {
+          if (w.deletedAt && now - w.deletedAt > TRASH_AUTO_PURGE_MS) {
+            hasExpired = true;
+            return false;
+          }
+          return true;
+        });
+        if (hasExpired) {
+          chrome.storage.local.set({ [WORDBOOK_KEY]: purged });
+          resolve(purged);
+        } else {
+          resolve(list);
+        }
       });
     });
   }
   async function addWord(wordData) {
     const wordbook = await getWordbook();
-    const existing = wordbook.find((w) => w.character === wordData.character);
-    if (existing) {
+    const existingIndex = wordbook.findIndex((w) => w.character === wordData.character);
+    if (existingIndex !== -1) {
+      const existing = wordbook[existingIndex];
+      if (existing.deletedAt) {
+        delete existing.deletedAt;
+        existing.timestamp = Date.now();
+        if (wordData.jyutping) existing.jyutping = wordData.jyutping;
+        if (wordData.yale) existing.yale = wordData.yale;
+        if (wordData.english && wordData.english.length > 0) existing.english = wordData.english;
+        wordbook.splice(existingIndex, 1);
+        wordbook.unshift(existing);
+        return new Promise((resolve) => {
+          chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
+            resolve({ success: true, isNew: true, entry: existing, restoredFromTrash: true });
+          });
+        });
+      }
       return { success: true, isNew: false, entry: existing };
     }
     const entry = {
@@ -466,14 +497,15 @@
   }
   async function isWordSaved(character) {
     const wordbook = await getWordbook();
-    return wordbook.some((w) => w.character === character);
+    return wordbook.some((w) => w.character === character && !w.deletedAt);
   }
   async function removeWordByCharacter(character) {
     const wordbook = await getWordbook();
-    const filtered = wordbook.filter((w) => w.character !== character);
-    if (filtered.length === wordbook.length) return false;
+    const item = wordbook.find((w) => w.character === character && !w.deletedAt);
+    if (!item) return false;
+    item.deletedAt = Date.now();
     return new Promise((resolve) => {
-      chrome.storage.local.set({ [WORDBOOK_KEY]: filtered }, () => {
+      chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
         resolve(true);
       });
     });

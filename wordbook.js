@@ -104,6 +104,7 @@
   }
 
   const WORDBOOK_KEY = 'wordbook';
+  const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
   let dictionary = null;
   let isDetailMode = localStorage.getItem('jyutping_detail_mode') === 'true';
 
@@ -112,7 +113,25 @@
   async function getWordbook() {
     return new Promise(resolve => {
       chrome.storage.local.get([WORDBOOK_KEY], result => {
-        resolve(result[WORDBOOK_KEY] || []);
+        let list = result[WORDBOOK_KEY] || [];
+        const now = Date.now();
+        let hasExpired = false;
+
+        // 自動清理超過 30 天的廢紙簍詞條
+        const purged = list.filter(w => {
+          if (w.deletedAt && (now - w.deletedAt > TRASH_AUTO_PURGE_MS)) {
+            hasExpired = true;
+            return false;
+          }
+          return true;
+        });
+
+        if (hasExpired) {
+          chrome.storage.local.set({ [WORDBOOK_KEY]: purged });
+          resolve(purged);
+        } else {
+          resolve(list);
+        }
       });
     });
   }
@@ -199,7 +218,23 @@
       badgeClickToTranslate: '點擊翻譯此釋義',
       badgeTranslating: '翻譯中...',
       badgeTranslationError: '翻譯失敗',
-      badgeClickToRestore: '點擊切換回粵語原文'
+      badgeClickToRestore: '點擊切換回粵語原文',
+      wordbookTabAll: '全部生詞',
+      wordbookTabTrash: '廢紙簍',
+      wordbookTrashBannerNotice: '已刪除的生詞將在廢紙簍中保留 30 天，逾期將自動徹底清除。',
+      wordbookEmptyTrash: '清空廢紙簍',
+      wordbookEmptyTrashConfirm: '確定要清空廢紙簍嗎？這將會永久刪除所有已刪除的生詞，無法復原。',
+      wordbookRestoreAll: '全部還原',
+      wordbookRestoreAllConfirm: '確定要還原廢紙簍中的所有生詞嗎？',
+      wordbookRestoreSelected: '還原選中',
+      wordbookDeletePermanentSelected: '徹底刪除',
+      wordbookDeletePermanentConfirm: '確定要永久刪除選中的生詞嗎？此操作無法撤銷。',
+      wordbookRestoreSingle: '還原',
+      wordbookDeletePermanentSingle: '徹底刪除',
+      wordbookTrashEmptyTitle: '廢紙簍為空',
+      wordbookTrashEmptyDesc: '沒有已刪除的生詞',
+      wordbookMovedToTrash: '已移至廢紙簍',
+      wordbookRestored: '已還原'
     },
     'zh-CN': {
       wordbookAiSettingsTitle: 'AI 设置',
@@ -265,7 +300,23 @@
       badgeClickToTranslate: '点击翻译此释义',
       badgeTranslating: '翻译中...',
       badgeTranslationError: '翻译失败',
-      badgeClickToRestore: '点击切换回粤语原文'
+      badgeClickToRestore: '点击切换回粤语原文',
+      wordbookTabAll: '全部生词',
+      wordbookTabTrash: '废纸篓',
+      wordbookTrashBannerNotice: '已删除的生词将在废纸篓中保留 30 天，逾期将自动彻底清除。',
+      wordbookEmptyTrash: '清空废纸篓',
+      wordbookEmptyTrashConfirm: '确定要清空废纸篓吗？这将会永久删除所有已删除的生词，无法恢复。',
+      wordbookRestoreAll: '全部还原',
+      wordbookRestoreAllConfirm: '确定要还原废纸篓中的所有生词吗？',
+      wordbookRestoreSelected: '还原选中',
+      wordbookDeletePermanentSelected: '彻底删除',
+      wordbookDeletePermanentConfirm: '确定要永久删除选中的生词吗？此操作无法撤销。',
+      wordbookRestoreSingle: '还原',
+      wordbookDeletePermanentSingle: '彻底删除',
+      wordbookTrashEmptyTitle: '废纸篓为空',
+      wordbookTrashEmptyDesc: '没有已删除的生词',
+      wordbookMovedToTrash: '已移至废纸篓',
+      wordbookRestored: '已还原'
     },
     'en': {
       wordbookAiSettingsTitle: 'AI Settings',
@@ -331,7 +382,23 @@
       badgeClickToTranslate: 'Click to translate definition',
       badgeTranslating: 'Translating...',
       badgeTranslationError: 'Translation failed',
-      badgeClickToRestore: 'Click to switch back to Cantonese'
+      badgeClickToRestore: 'Click to switch back to Cantonese',
+      wordbookTabAll: 'All Words',
+      wordbookTabTrash: 'Trash',
+      wordbookTrashBannerNotice: 'Deleted words will be kept in the Trash for 30 days before being permanently removed.',
+      wordbookEmptyTrash: 'Empty Trash',
+      wordbookEmptyTrashConfirm: 'Are you sure you want to empty the Trash? All deleted words will be permanently removed and cannot be recovered.',
+      wordbookRestoreAll: 'Restore All',
+      wordbookRestoreAllConfirm: 'Are you sure you want to restore all words from Trash?',
+      wordbookRestoreSelected: 'Restore Selected',
+      wordbookDeletePermanentSelected: 'Delete Permanently',
+      wordbookDeletePermanentConfirm: 'Are you sure you want to permanently delete the selected word(s)? This action cannot be undone.',
+      wordbookRestoreSingle: 'Restore',
+      wordbookDeletePermanentSingle: 'Delete',
+      wordbookTrashEmptyTitle: 'Trash is Empty',
+      wordbookTrashEmptyDesc: 'No deleted words found',
+      wordbookMovedToTrash: 'Moved to Trash',
+      wordbookRestored: 'Restored'
     },
     'ja': {
       wordbookAiSettingsTitle: 'AI 設定',
@@ -397,7 +464,23 @@
       badgeClickToTranslate: 'クリックしてこの解説を翻訳',
       badgeTranslating: '翻訳中...',
       badgeTranslationError: '翻訳失敗',
-      badgeClickToRestore: 'クリックして広東語の原文に戻す'
+      badgeClickToRestore: 'クリックして広東語の原文に戻す',
+      wordbookTabAll: 'すべての単語',
+      wordbookTabTrash: 'ゴミ箱',
+      wordbookTrashBannerNotice: '削除された単語は30日間ゴミ箱に保持された後、自動的に完全に削除されます。',
+      wordbookEmptyTrash: 'ゴミ箱を空にする',
+      wordbookEmptyTrashConfirm: 'ゴミ箱を空にしてもよろしいですか？削除されたすべての単語が完全に削除され、復元できなくなります。',
+      wordbookRestoreAll: 'すべて復元',
+      wordbookRestoreAllConfirm: 'ゴミ箱内のすべての単語を復元してもよろしいですか？',
+      wordbookRestoreSelected: '選択項目を復元',
+      wordbookDeletePermanentSelected: '完全に削除',
+      wordbookDeletePermanentConfirm: '選択した単語を完全に削除してもよろしいですか？この操作は元に戻せません。',
+      wordbookRestoreSingle: '復元',
+      wordbookDeletePermanentSingle: '完全削除',
+      wordbookTrashEmptyTitle: 'ゴミ箱は空です',
+      wordbookTrashEmptyDesc: '削除された単語はありません',
+      wordbookMovedToTrash: 'ゴミ箱に移動しました',
+      wordbookRestored: '復元しました'
     },
     'ko': {
       wordbookAiSettingsTitle: 'AI 설정',
@@ -463,7 +546,23 @@
       badgeClickToTranslate: '클릭하여 이 설명 번역',
       badgeTranslating: '번역 중...',
       badgeTranslationError: '번역 실패',
-      badgeClickToRestore: '클릭하여 광둥어 원문으로 전환'
+      badgeClickToRestore: '클릭하여 광둥어 원문으로 전환',
+      wordbookTabAll: '모든 단어',
+      wordbookTabTrash: '휴지통',
+      wordbookTrashBannerNotice: '삭제된 단어는 30일 동안 휴지통에 보관된 후 자동으로 영구 삭제됩니다.',
+      wordbookEmptyTrash: '휴지통 비우기',
+      wordbookEmptyTrashConfirm: '휴지통을 비우시겠습니까? 삭제된 모든 단어가 영구적으로 삭제되며 복구할 수 없습니다.',
+      wordbookRestoreAll: '모두 복원',
+      wordbookRestoreAllConfirm: '휴지통의 모든 단어를 복원하시겠습니까?',
+      wordbookRestoreSelected: '선택 항목 복원',
+      wordbookDeletePermanentSelected: '영구 삭제',
+      wordbookDeletePermanentConfirm: '선택한 단어를 영구 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
+      wordbookRestoreSingle: '복원',
+      wordbookDeletePermanentSingle: '영구 삭제',
+      wordbookTrashEmptyTitle: '휴지통이 비어 있습니다',
+      wordbookTrashEmptyDesc: '삭제된 단어가 없습니다',
+      wordbookMovedToTrash: '휴지통으로 이동되었습니다',
+      wordbookRestored: '복원되었습니다'
     }
   };
 
@@ -538,6 +637,11 @@
       const val = t(key);
       if (val) el.placeholder = val;
     });
+    document.querySelectorAll('[data-i18n-title]').forEach(el => {
+      const key = el.getAttribute('data-i18n-title');
+      const val = t(key);
+      if (val) el.title = val;
+    });
     // Sort select options
     const sortSelect = document.getElementById('sortSelect');
     if (sortSelect) {
@@ -558,11 +662,19 @@
   let selectedIds = new Set();
   let currentSort = 'newest';
   let searchQuery = '';
+  let currentView = 'all'; // 'all' | 'trash'
 
   // ==================== DOM References ====================
 
   const wordListEl = document.getElementById('wordList');
   const searchInput = document.getElementById('searchInput');
+
+  const trashToggleBtn = document.getElementById('trashToggleBtn');
+  const btnBackToAll = document.getElementById('btnBackToAll');
+  const badgeTrash = document.getElementById('badgeTrash');
+  const trashBanner = document.getElementById('trashBanner');
+  const restoreAllBtn = document.getElementById('restoreAllBtn');
+  const emptyTrashBtn = document.getElementById('emptyTrashBtn');
 
   const exportBtn = document.getElementById('exportBtn');
   const exportMenu = document.getElementById('exportMenu');
@@ -575,9 +687,15 @@
   const dropZone = document.getElementById('dropZone');
   const chooseFileLink = document.getElementById('chooseFileLink');
   const selectAllCheckbox = document.getElementById('selectAll');
+  const selectAllLabel = document.getElementById('selectAllLabel');
   const bulkActions = document.getElementById('bulkActions');
   const bulkDeleteBtn = document.getElementById('bulkDeleteBtn');
+  const bulkBtnsAll = document.getElementById('bulkBtnsAll');
+  const bulkBtnsTrash = document.getElementById('bulkBtnsTrash');
+  const bulkRestoreBtn = document.getElementById('bulkRestoreBtn');
+  const bulkDeletePermanentBtn = document.getElementById('bulkDeletePermanentBtn');
   const selectedCountEl = document.getElementById('selectedCount');
+  const selectedCountTrash = document.getElementById('selectedCountTrash');
   const themeToggle = document.getElementById('themeToggle');
   const warningExportBtn = document.getElementById('warningExportBtn');
 
@@ -708,7 +826,8 @@
     const qCompact = rawQ.replace(/[\s\d]/g, '');
     const tokens = rawQ.split(/\s+/).filter(Boolean);
 
-    filteredWords = wordbook.filter(w => matchWord(w, rawQ, qNoTones, qCompact, tokens));
+    const sourceWords = wordbook.filter(w => currentView === 'trash' ? !!w.deletedAt : !w.deletedAt);
+    filteredWords = sourceWords.filter(w => matchWord(w, rawQ, qNoTones, qCompact, tokens));
 
     switch (currentSort) {
       case 'oldest':
@@ -721,27 +840,58 @@
         filteredWords.sort((a, b) => (a.jyutping || '').localeCompare(b.jyutping || ''));
         break;
       default: // newest
-        filteredWords.sort((a, b) => b.timestamp - a.timestamp);
+        if (currentView === 'trash') {
+          filteredWords.sort((a, b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+        } else {
+          filteredWords.sort((a, b) => b.timestamp - a.timestamp);
+        }
     }
   }
 
   function renderList() {
     filterAndSort();
 
+    const isTrash = currentView === 'trash';
+    const sourceTotal = wordbook.filter(w => isTrash ? !!w.deletedAt : !w.deletedAt).length;
+
     if (filteredWords.length === 0) {
-      if (wordbook.length === 0) {
-        wordListEl.innerHTML = `
-          <div class="empty-state">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
-              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
-              <line x1="12" y1="8" x2="12" y2="14"></line>
-              <line x1="9" y1="11" x2="15" y2="11"></line>
-            </svg>
-            <h3>${t('wordbookEmptyTitle')}</h3>
-            <p>${t('wordbookEmptyDesc')}</p>
-          </div>
-        `;
+      if (sourceTotal === 0) {
+        if (isTrash) {
+          wordListEl.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 6h16l-1.5 14a2 2 0 0 1-2 2H7.5a2 2 0 0 1-2-2L4 6z"></path>
+                <line x1="9" y1="10" x2="9" y2="17"></line>
+                <line x1="12" y1="10" x2="12" y2="17"></line>
+                <line x1="15" y1="10" x2="15" y2="17"></line>
+              </svg>
+              <h3>${t('wordbookTrashEmptyTitle') || '廢紙簍為空'}</h3>
+              <p>${t('wordbookTrashEmptyDesc') || '沒有已刪除的生詞'}</p>
+              <button class="btn btn-sm btn-outline" id="btnBackToAllEmpty" style="margin-top: 16px;">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; vertical-align: -2px;">
+                  <line x1="19" y1="12" x2="5" y2="12"></line>
+                  <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+                ${t('wordbookTabAll') || '返回全部生詞'}
+              </button>
+            </div>
+          `;
+          const btnBackEmpty = document.getElementById('btnBackToAllEmpty');
+          if (btnBackEmpty) btnBackEmpty.addEventListener('click', () => switchView('all'));
+        } else {
+          wordListEl.innerHTML = `
+            <div class="empty-state">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                <line x1="12" y1="8" x2="12" y2="14"></line>
+                <line x1="9" y1="11" x2="15" y2="11"></line>
+              </svg>
+              <h3>${t('wordbookEmptyTitle')}</h3>
+              <p>${t('wordbookEmptyDesc')}</p>
+            </div>
+          `;
+        }
       } else {
         wordListEl.innerHTML = `
           <div class="empty-state">
@@ -750,11 +900,21 @@
           </div>
         `;
       }
-      bulkActions.style.display = 'none';
+      
+      const hasTrash = wordbook.some(w => !!w.deletedAt);
+      if (!isTrash && hasTrash) {
+        bulkActions.style.display = 'flex';
+        if (selectAllLabel) selectAllLabel.style.display = 'none';
+        if (bulkDeleteBtn) bulkDeleteBtn.style.display = 'none';
+      } else {
+        bulkActions.style.display = 'none';
+      }
       return;
     }
 
     bulkActions.style.display = 'flex';
+    if (selectAllLabel) selectAllLabel.style.display = '';
+    if (bulkDeleteBtn) bulkDeleteBtn.style.display = '';
 
     // Build permanent chronological ID mapping (1 = earliest created, N = newest)
     const chronologicalOrder = [...wordbook].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
@@ -763,7 +923,13 @@
       idSeqMap.set(w.id, i + 1);
     });
 
-    const headerColsHTML = colOrder.map(c => HEADER_COL_TEMPLATES[c] || '').join('');
+    const headerColsHTML = colOrder.map(c => {
+      if (c === 'col-date' && isTrash) {
+        return `<div class="col-date"><span>操作</span><div class="col-resizer" data-col="col-date" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`;
+      }
+      return HEADER_COL_TEMPLATES[c] || '';
+    }).join('');
+
     const headerHTML = `
       <div class="table-header">
         <div class="col-selection">
@@ -780,12 +946,24 @@
     `;
 
     const rowsHTML = filteredWords.map((word, index) => {
-      const date = new Date(word.timestamp).toLocaleDateString();
+      const date = new Date(word.deletedAt || word.timestamp).toLocaleDateString();
       const englishText = (word.english || []).join('; ') || '—';
       const isChecked = selectedIds.has(word.id) ? 'checked' : '';
       const displayId = idSeqMap.get(word.id) || (index + 1);
 
-      const colsHTML = colOrder.map(c => getRowColHTML(c, word, date, englishText)).join('');
+      const colsHTML = colOrder.map(c => {
+        if (c === 'col-date' && isTrash) {
+          return `
+            <div class="col-date">
+              <div class="trash-row-actions">
+                <button class="trash-action-btn restore-single-btn" data-id="${word.id}" title="${t('wordbookRestoreSingle') || '還原'}">${t('wordbookRestoreSingle') || '還原'}</button>
+                <button class="trash-action-btn del-perm delete-single-perm-btn" data-id="${word.id}" title="${t('wordbookDeletePermanentSingle') || '徹底刪除'}">${t('wordbookDeletePermanentSingle') || '徹底刪除'}</button>
+              </div>
+            </div>
+          `;
+        }
+        return getRowColHTML(c, word, date, englishText);
+      }).join('');
 
       return `
         <div class="table-row word-card" data-id="${word.id}">
@@ -811,19 +989,31 @@
     const todayStart = new Date().setHours(0, 0, 0, 0);
     const weekStart = todayStart - 6 * 24 * 60 * 60 * 1000;
 
-    document.getElementById('statTotal').textContent = wordbook.length;
-    document.getElementById('statToday').textContent = wordbook.filter(w => w.timestamp >= todayStart).length;
-    document.getElementById('statWeek').textContent = wordbook.filter(w => w.timestamp >= weekStart).length;
+    const activeWords = wordbook.filter(w => !w.deletedAt);
+    const trashWords = wordbook.filter(w => !!w.deletedAt);
+
+    const statTotalEl = document.getElementById('statTotal');
+    const statTodayEl = document.getElementById('statToday');
+    const statWeekEl = document.getElementById('statWeek');
+    if (statTotalEl) statTotalEl.textContent = activeWords.length;
+    if (statTodayEl) statTodayEl.textContent = activeWords.filter(w => w.timestamp >= todayStart).length;
+    if (statWeekEl) statWeekEl.textContent = activeWords.filter(w => w.timestamp >= weekStart).length;
+
+    if (badgeTrash) {
+      badgeTrash.textContent = trashWords.length;
+      badgeTrash.style.display = trashWords.length > 0 ? 'inline-block' : 'none';
+    }
   }
 
   async function updateStorage() {
     const usage = await getStorageUsage();
     const storageText = document.getElementById('storageText');
     const storageFill = document.getElementById('storageProgressFill');
+    const activeWords = wordbook.filter(w => !w.deletedAt);
     if (storageText) {
       const usedKB = (usage.used / 1024).toFixed(1);
       const quotaMB = (usage.quota / (1024 * 1024)).toFixed(0);
-      storageText.textContent = `${usedKB} KB / ${quotaMB} MB（${t('wordbookTotal')} ${wordbook.length} ${t('wordbookWords')}）`;
+      storageText.textContent = `${usedKB} KB / ${quotaMB} MB（${t('wordbookTotal')} ${activeWords.length} ${t('wordbookWords')}）`;
     }
     if (storageFill) {
       storageFill.style.width = Math.min(usage.percentage, 100) + '%';
@@ -834,8 +1024,11 @@
 
   function updateSelectionUI() {
     const count = selectedIds.size;
-    selectedCountEl.textContent = count;
-    bulkDeleteBtn.disabled = count === 0;
+    if (selectedCountEl) selectedCountEl.textContent = count;
+    if (selectedCountTrash) selectedCountTrash.textContent = count;
+    if (bulkDeleteBtn) bulkDeleteBtn.disabled = count === 0;
+    if (bulkRestoreBtn) bulkRestoreBtn.disabled = count === 0;
+    if (bulkDeletePermanentBtn) bulkDeletePermanentBtn.disabled = count === 0;
     selectAllCheckbox.checked = filteredWords.length > 0 && filteredWords.every(w => selectedIds.has(w.id));
   }
 
@@ -1395,7 +1588,15 @@
   }
 
   function searchDictionary(query) {
+    query = query.trim();
     if (!dictSearchIndex || !query || query.length < 1) return [];
+
+    // For Chinese queries, strip everything that isn't a CJK character
+    // e.g. "香 港" / "香-港" / "香·港" → "香港"
+    const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(query);
+    if (hasChinese) {
+      query = query.replace(/[^\u4e00-\u9fff\u3400-\u4dbf]/g, '');
+    }
 
     const q = query.toLowerCase();
     const results = [];
@@ -1926,9 +2127,42 @@
 
   // Word card events (delegated)
   wordListEl.addEventListener('click', async (e) => {
+    // Single restore from trash
+    const restoreSingleBtn = e.target.closest('.restore-single-btn');
+    if (restoreSingleBtn && restoreSingleBtn.dataset.id) {
+      e.stopPropagation();
+      const id = restoreSingleBtn.dataset.id;
+      const target = wordbook.find(w => w.id === id);
+      if (target && target.deletedAt) {
+        delete target.deletedAt;
+        selectedIds.delete(id);
+        await saveWordbook(wordbook);
+        renderList();
+        updateStats();
+        updateStorage();
+      }
+      return;
+    }
+
+    // Single permanent delete from trash
+    const delSinglePermBtn = e.target.closest('.delete-single-perm-btn');
+    if (delSinglePermBtn && delSinglePermBtn.dataset.id) {
+      e.stopPropagation();
+      const id = delSinglePermBtn.dataset.id;
+      const confirmMsg = t('wordbookDeletePermanentConfirm') || '確定要永久刪除選中的生詞嗎？此操作無法撤銷。';
+      if (!confirm(confirmMsg)) return;
+      wordbook = wordbook.filter(w => w.id !== id);
+      selectedIds.delete(id);
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+      return;
+    }
+
     // Row click selection for detail panel (only in Detail Mode)
     const row = e.target.closest('.table-row');
-    if (isDetailMode && row && !e.target.closest('.bulk-actions') && !e.target.closest('.word-card-checkbox') && !e.target.closest('.word-character') && !e.target.closest('.jyutping-text')) {
+    if (isDetailMode && row && !e.target.closest('.bulk-actions') && !e.target.closest('.word-card-checkbox') && !e.target.closest('.word-character') && !e.target.closest('.jyutping-text') && !e.target.closest('.trash-action-btn')) {
       const charEl = row.querySelector('.word-character');
       if (charEl) {
         const character = charEl.dataset.word;
@@ -1990,13 +2224,40 @@
     renderList();
   });
 
-  // Bulk delete
+  // View Switcher (All vs Trash)
+  function switchView(view) {
+    if (currentView === view) return;
+    currentView = view;
+    selectedIds.clear();
+
+    if (trashBanner) {
+      trashBanner.style.display = currentView === 'trash' ? 'flex' : 'none';
+    }
+    if (bulkBtnsAll) {
+      bulkBtnsAll.style.display = currentView === 'all' ? 'flex' : 'none';
+    }
+    if (bulkBtnsTrash) {
+      bulkBtnsTrash.style.display = currentView === 'trash' ? 'flex' : 'none';
+    }
+
+    renderList();
+  }
+
+  if (trashToggleBtn) trashToggleBtn.addEventListener('click', () => switchView('trash'));
+  if (btnBackToAll) btnBackToAll.addEventListener('click', () => switchView('all'));
+
+  // Bulk delete (Normal mode: soft delete to trash)
   bulkDeleteBtn.addEventListener('click', async () => {
     if (selectedIds.size === 0) return;
-    const msg = t('wordbookDeleteConfirm').replace('{n}', selectedIds.size);
+    const msg = (t('wordbookDeleteConfirm') || '確定要刪除選中的 {n} 個詞嗎？').replace('{n}', selectedIds.size);
     if (!confirm(msg)) return;
 
-    wordbook = wordbook.filter(w => !selectedIds.has(w.id));
+    const now = Date.now();
+    wordbook.forEach(w => {
+      if (selectedIds.has(w.id)) {
+        w.deletedAt = now;
+      }
+    });
     selectedIds.clear();
     await saveWordbook(wordbook);
     renderList();
@@ -2004,10 +2265,80 @@
     updateStorage();
   });
 
+  // Bulk restore (Trash mode: restore selected)
+  if (bulkRestoreBtn) {
+    bulkRestoreBtn.addEventListener('click', async () => {
+      if (selectedIds.size === 0) return;
+      wordbook.forEach(w => {
+        if (selectedIds.has(w.id) && w.deletedAt) {
+          delete w.deletedAt;
+        }
+      });
+      selectedIds.clear();
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+    });
+  }
+
+  // Bulk permanent delete (Trash mode: permanently delete selected)
+  if (bulkDeletePermanentBtn) {
+    bulkDeletePermanentBtn.addEventListener('click', async () => {
+      if (selectedIds.size === 0) return;
+      const msg = t('wordbookDeletePermanentConfirm') || '確定要永久刪除選中的生詞嗎？此操作無法撤銷。';
+      if (!confirm(msg)) return;
+
+      wordbook = wordbook.filter(w => !selectedIds.has(w.id));
+      selectedIds.clear();
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+    });
+  }
+
+  // Restore All (Trash mode banner action)
+  if (restoreAllBtn) {
+    restoreAllBtn.addEventListener('click', async () => {
+      const trashItems = wordbook.filter(w => !!w.deletedAt);
+      if (trashItems.length === 0) return;
+      const msg = t('wordbookRestoreAllConfirm') || '確定要還原廢紙簍中的所有生詞嗎？';
+      if (!confirm(msg)) return;
+
+      wordbook.forEach(w => {
+        if (w.deletedAt) delete w.deletedAt;
+      });
+      selectedIds.clear();
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+    });
+  }
+
+  // Empty Trash (Trash mode banner action)
+  if (emptyTrashBtn) {
+    emptyTrashBtn.addEventListener('click', async () => {
+      const trashItems = wordbook.filter(w => !!w.deletedAt);
+      if (trashItems.length === 0) return;
+      const msg = t('wordbookEmptyTrashConfirm') || '確定要清空廢紙簍嗎？這將會永久刪除所有已刪除的生詞，無法復原。';
+      if (!confirm(msg)) return;
+
+      wordbook = wordbook.filter(w => !w.deletedAt);
+      selectedIds.clear();
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+    });
+  }
+
   // ==================== Export ====================
 
   async function doExport(format) {
-    const wb = await getWordbook();
+    const allWb = await getWordbook();
+    const wb = allWb.filter(w => !w.deletedAt);
 
     let content, mimeType, ext;
 

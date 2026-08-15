@@ -4,6 +4,7 @@
  */
 
 const WORDBOOK_KEY = 'wordbook';
+const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 
 /**
  * 生成唯一 ID
@@ -13,19 +14,37 @@ function generateId() {
 }
 
 /**
- * 獲取完整生詞列表
- * @returns {Promise<Array>} 按添加時間倒序排列的生詞數組
+ * 獲取完整生詞列表（自動清除超過 30 天的廢紙簍詞條）
+ * @returns {Promise<Array>} 生詞數組
  */
 export async function getWordbook() {
   return new Promise((resolve) => {
     chrome.storage.local.get([WORDBOOK_KEY], (result) => {
-      resolve(result[WORDBOOK_KEY] || []);
+      let list = result[WORDBOOK_KEY] || [];
+      const now = Date.now();
+      let hasExpired = false;
+
+      // 自動清理超過 30 天的廢紙簍詞條
+      const purged = list.filter(w => {
+        if (w.deletedAt && (now - w.deletedAt > TRASH_AUTO_PURGE_MS)) {
+          hasExpired = true;
+          return false;
+        }
+        return true;
+      });
+
+      if (hasExpired) {
+        chrome.storage.local.set({ [WORDBOOK_KEY]: purged });
+        resolve(purged);
+      } else {
+        resolve(list);
+      }
     });
   });
 }
 
 /**
- * 添加一個詞到生詞本（自動去重）
+ * 添加一個詞到生詞本（自動去重；若在廢紙簍中則自動復活）
  * @param {Object} wordData - 詞條數據
  * @param {string} wordData.character - 繁體漢字
  * @param {string} [wordData.simplified] - 簡體
@@ -39,9 +58,25 @@ export async function getWordbook() {
 export async function addWord(wordData) {
   const wordbook = await getWordbook();
 
-  // 去重：按 character 檢查
-  const existing = wordbook.find(w => w.character === wordData.character);
-  if (existing) {
+  // 檢查是否已存在
+  const existingIndex = wordbook.findIndex(w => w.character === wordData.character);
+  if (existingIndex !== -1) {
+    const existing = wordbook[existingIndex];
+    if (existing.deletedAt) {
+      // 處於廢紙簍中，自動還原並置頂
+      delete existing.deletedAt;
+      existing.timestamp = Date.now();
+      if (wordData.jyutping) existing.jyutping = wordData.jyutping;
+      if (wordData.yale) existing.yale = wordData.yale;
+      if (wordData.english && wordData.english.length > 0) existing.english = wordData.english;
+      wordbook.splice(existingIndex, 1);
+      wordbook.unshift(existing);
+      return new Promise((resolve) => {
+        chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
+          resolve({ success: true, isNew: true, entry: existing, restoredFromTrash: true });
+        });
+      });
+    }
     return { success: true, isNew: false, entry: existing };
   }
 
@@ -70,46 +105,119 @@ export async function addWord(wordData) {
 }
 
 /**
- * 檢查一個詞是否已收藏
+ * 檢查一個詞是否已收藏（排除廢紙簍）
  * @param {string} character - 漢字
  * @returns {Promise<boolean>}
  */
 export async function isWordSaved(character) {
   const wordbook = await getWordbook();
-  return wordbook.some(w => w.character === character);
+  return wordbook.some(w => w.character === character && !w.deletedAt);
 }
 
 /**
- * 按 ID 刪除一個詞
+ * 按 ID 軟刪除一個詞（移至廢紙簍）
  * @param {string} id - 詞條 ID
  * @returns {Promise<boolean>}
  */
 export async function removeWord(id) {
   const wordbook = await getWordbook();
-  const filtered = wordbook.filter(w => w.id !== id);
-  if (filtered.length === wordbook.length) return false;
+  const item = wordbook.find(w => w.id === id);
+  if (!item || item.deletedAt) return false;
+
+  item.deletedAt = Date.now();
 
   return new Promise((resolve) => {
-    chrome.storage.local.set({ [WORDBOOK_KEY]: filtered }, () => {
+    chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
       resolve(true);
     });
   });
 }
 
 /**
- * 批量刪除
+ * 批量軟刪除（移至廢紙簍）
  * @param {Array<string>} ids - 要刪除的 ID 列表
- * @returns {Promise<number>} 刪除的數量
+ * @returns {Promise<number>} 移至廢紙簍的數量
  */
 export async function removeWords(ids) {
+  const idSet = new Set(ids);
+  const wordbook = await getWordbook();
+  let count = 0;
+  const now = Date.now();
+
+  for (const w of wordbook) {
+    if (idSet.has(w.id) && !w.deletedAt) {
+      w.deletedAt = now;
+      count++;
+    }
+  }
+
+  if (count === 0) return 0;
+
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
+      resolve(count);
+    });
+  });
+}
+
+/**
+ * 還原詞條（從廢紙簍救回）
+ * @param {Array<string>} ids - 要還原的 ID 列表
+ * @returns {Promise<number>} 還原的數量
+ */
+export async function restoreWords(ids) {
+  const idSet = new Set(ids);
+  const wordbook = await getWordbook();
+  let count = 0;
+
+  for (const w of wordbook) {
+    if (idSet.has(w.id) && w.deletedAt) {
+      delete w.deletedAt;
+      count++;
+    }
+  }
+
+  if (count === 0) return 0;
+
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
+      resolve(count);
+    });
+  });
+}
+
+/**
+ * 徹底永久刪除詞條
+ * @param {Array<string>} ids - 要徹底刪除的 ID 列表
+ * @returns {Promise<number>} 徹底刪除的數量
+ */
+export async function permanentlyDeleteWords(ids) {
   const idSet = new Set(ids);
   const wordbook = await getWordbook();
   const filtered = wordbook.filter(w => !idSet.has(w.id));
   const removedCount = wordbook.length - filtered.length;
 
+  if (removedCount === 0) return 0;
+
   return new Promise((resolve) => {
     chrome.storage.local.set({ [WORDBOOK_KEY]: filtered }, () => {
       resolve(removedCount);
+    });
+  });
+}
+
+/**
+ * 清空廢紙簍
+ * @returns {Promise<number>} 清空的詞條數量
+ */
+export async function emptyTrash() {
+  const wordbook = await getWordbook();
+  const filtered = wordbook.filter(w => !w.deletedAt);
+  const count = wordbook.length - filtered.length;
+
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [WORDBOOK_KEY]: filtered }, () => {
+      resolve(count);
     });
   });
 }
@@ -141,36 +249,40 @@ export async function updateWord(id, updates) {
 }
 
 /**
- * 從生詞本移除一個詞（按 character）
+ * 從生詞本移除一個詞（按 character 軟刪除）
  * @param {string} character - 漢字
  * @returns {Promise<boolean>}
  */
 export async function removeWordByCharacter(character) {
   const wordbook = await getWordbook();
-  const filtered = wordbook.filter(w => w.character !== character);
-  if (filtered.length === wordbook.length) return false;
+  const item = wordbook.find(w => w.character === character && !w.deletedAt);
+  if (!item) return false;
+
+  item.deletedAt = Date.now();
 
   return new Promise((resolve) => {
-    chrome.storage.local.set({ [WORDBOOK_KEY]: filtered }, () => {
+    chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, () => {
       resolve(true);
     });
   });
 }
 
 /**
- * 獲取生詞本統計信息
+ * 獲取生詞本統計信息（僅統計未刪除詞條）
  * @returns {Promise<Object>}
  */
 export async function getWordbookStats() {
-  const wordbook = await getWordbook();
-  const now = Date.now();
+  const allWords = await getWordbook();
+  const activeWords = allWords.filter(w => !w.deletedAt);
+  const trashWords = allWords.filter(w => !!w.deletedAt);
   const todayStart = new Date().setHours(0, 0, 0, 0);
   const weekStart = todayStart - 6 * 24 * 60 * 60 * 1000;
 
   return {
-    total: wordbook.length,
-    today: wordbook.filter(w => w.timestamp >= todayStart).length,
-    thisWeek: wordbook.filter(w => w.timestamp >= weekStart).length
+    total: activeWords.length,
+    today: activeWords.filter(w => w.timestamp >= todayStart).length,
+    thisWeek: activeWords.filter(w => w.timestamp >= weekStart).length,
+    trashTotal: trashWords.length
   };
 }
 
@@ -197,7 +309,8 @@ export async function getStorageUsage() {
  * @returns {Promise<{content: string, mimeType: string, ext: string}>}
  */
 export async function exportWordbook(format) {
-  const wordbook = await getWordbook();
+  const allWords = await getWordbook();
+  const wordbook = allWords.filter(w => !w.deletedAt);
 
   switch (format) {
     case 'json':

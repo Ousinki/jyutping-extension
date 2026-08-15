@@ -1018,5 +1018,53 @@
   },
   "fbErrorAlert": {
     "message": "送信に失敗しました。後でもう一度お試しください。"
+  },
+  "wordbookTabAll": {
+    "message": "すべての単語"
+  },
+  "wordbookTabTrash": {
+    "message": "ゴミ箱"
+  },
+  "wordbookTrashBannerNotice": {
+    "message": "削除された単語は30日間ゴミ箱に保持された後、自動的に完全に削除されます。"
+  },
+  "wordbookEmptyTrash": {
+    "message": "ゴミ箱を空にする"
+  },
+  "wordbookEmptyTrashConfirm": {
+    "message": "ゴミ箱を空にしてもよろしいですか？削除されたすべての単語が完全に削除され、復元できなくなります。"
+  },
+  "wordbookRestoreAll": {
+    "message": "すべて復元"
+  },
+  "wordbookRestoreAllConfirm": {
+    "message": "ゴミ箱内のすべての単語を復元してもよろしいですか？"
+  },
+  "wordbookRestoreSelected": {
+    "message": "選択項目を復元"
+  },
+  "wordbookDeletePermanentSelected": {
+    "message": "完全に削除"
+  },
+  "wordbookDeletePermanentConfirm": {
+    "message": "選択した単語を完全に削除してもよろしいですか？この操作は元に戻せません。"
+  },
+  "wordbookRestoreSingle": {
+    "message": "復元"
+  },
+  "wordbookDeletePermanentSingle": {
+    "message": "完全削除"
+  },
+  "wordbookTrashEmptyTitle": {
+    "message": "ゴミ箱は空です"
+  },
+  "wordbookTrashEmptyDesc": {
+    "message": "削除された単語はありません"
+  },
+  "wordbookMovedToTrash": {
+    "message": "ゴミ箱に移動しました"
+  },
+  "wordbookRestored": {
+    "message": "復元しました"
   }
 }

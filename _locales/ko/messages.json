@@ -972,5 +972,53 @@
   },
   "fbErrorAlert": {
     "message": "피드백 전송에 실패했습니다. 잠시 후 다시 시도해 주세요."
+  },
+  "wordbookTabAll": {
+    "message": "모든 단어"
+  },
+  "wordbookTabTrash": {
+    "message": "휴지통"
+  },
+  "wordbookTrashBannerNotice": {
+    "message": "삭제된 단어는 30일 동안 휴지통에 보관된 후 자동으로 영구 삭제됩니다."
+  },
+  "wordbookEmptyTrash": {
+    "message": "휴지통 비우기"
+  },
+  "wordbookEmptyTrashConfirm": {
+    "message": "휴지통을 비우시겠습니까? 삭제된 모든 단어가 영구적으로 삭제되며 복구할 수 없습니다."
+  },
+  "wordbookRestoreAll": {
+    "message": "모두 복원"
+  },
+  "wordbookRestoreAllConfirm": {
+    "message": "휴지통의 모든 단어를 복원하시겠습니까?"
+  },
+  "wordbookRestoreSelected": {
+    "message": "선택 항목 복원"
+  },
+  "wordbookDeletePermanentSelected": {
+    "message": "영구 삭제"
+  },
+  "wordbookDeletePermanentConfirm": {
+    "message": "선택한 단어를 영구 삭제하시겠습니까? 이 작업은 취소할 수 없습니다."
+  },
+  "wordbookRestoreSingle": {
+    "message": "복원"
+  },
+  "wordbookDeletePermanentSingle": {
+    "message": "영구 삭제"
+  },
+  "wordbookTrashEmptyTitle": {
+    "message": "휴지통이 비어 있습니다"
+  },
+  "wordbookTrashEmptyDesc": {
+    "message": "삭제된 단어가 없습니다"
+  },
+  "wordbookMovedToTrash": {
+    "message": "휴지통으로 이동되었습니다"
+  },
+  "wordbookRestored": {
+    "message": "복원되었습니다"
   }
 }
