@@ -288,23 +288,50 @@
 
   // ==================== Theme ====================
 
+  function applyTheme(theme) {
+    const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.style.backgroundColor = '#121214';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.style.backgroundColor = '#f8fafc';
+    }
+  }
+
   function initTheme() {
     const saved = localStorage.getItem('jyutping_ui_theme') || 'auto';
     applyTheme(saved);
-  }
 
-  function applyTheme(theme) {
-    const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      if (chrome.storage.sync) {
+        chrome.storage.sync.get(['uiTheme'], (res) => {
+          const theme = (res && res.uiTheme) || saved || 'auto';
+          localStorage.setItem('jyutping_ui_theme', theme);
+          applyTheme(theme);
+        });
+      }
+
+      if (chrome.storage.onChanged) {
+        chrome.storage.onChanged.addListener((changes, namespace) => {
+          if (namespace === 'sync' && changes.uiTheme) {
+            const next = changes.uiTheme.newValue || 'auto';
+            localStorage.setItem('jyutping_ui_theme', next);
+            applyTheme(next);
+          }
+        });
+      }
+    }
   }
 
   function toggleTheme() {
-    const cur = localStorage.getItem('jyutping_ui_theme') || 'auto';
-    let next;
-    if (cur === 'auto' || cur === 'light') next = 'dark';
-    else next = 'light';
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const next = isDark ? 'light' : 'dark';
     localStorage.setItem('jyutping_ui_theme', next);
     applyTheme(next);
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set({ uiTheme: next });
+    }
   }
 
   // ==================== Data Loading ====================

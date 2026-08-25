@@ -1030,50 +1030,62 @@
   }
   initTranslationSettings();
 
-  function initTheme() {
-    chrome.storage.sync.get(['uiTheme'], (res) => {
-      const theme = res.uiTheme || 'auto';
-      localStorage.setItem('jyutping_ui_theme', theme);
-      const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      if (isDark) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-      } else {
-        document.documentElement.removeAttribute('data-theme');
-      }
-    });
+  function applyTheme(theme) {
+    const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    if (isDark) {
+      document.documentElement.setAttribute('data-theme', 'dark');
+      document.documentElement.style.backgroundColor = '#121214';
+    } else {
+      document.documentElement.removeAttribute('data-theme');
+      document.documentElement.style.backgroundColor = '#f8fafc';
+    }
+  }
 
-    chrome.storage.onChanged.addListener((changes, namespace) => {
-      if (namespace === 'sync') {
-        if (changes.uiTheme) {
-          const theme = changes.uiTheme.newValue || 'auto';
-          const isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-          if (isDark) {
-            document.documentElement.setAttribute('data-theme', 'dark');
-          } else {
-            document.documentElement.removeAttribute('data-theme');
+  function initTheme() {
+    const saved = localStorage.getItem('jyutping_ui_theme') || 'auto';
+    applyTheme(saved);
+
+    if (typeof chrome !== 'undefined' && chrome.storage) {
+      if (chrome.storage.sync) {
+        chrome.storage.sync.get(['uiTheme'], (res) => {
+          const theme = (res && res.uiTheme) || saved || 'auto';
+          localStorage.setItem('jyutping_ui_theme', theme);
+          applyTheme(theme);
+        });
+      }
+
+      chrome.storage.onChanged.addListener((changes, namespace) => {
+        if (namespace === 'sync') {
+          if (changes.uiTheme) {
+            const theme = changes.uiTheme.newValue || 'auto';
+            localStorage.setItem('jyutping_ui_theme', theme);
+            applyTheme(theme);
+          }
+          if (changes.enableAutoTranslateYueDefs) {
+            enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
+          }
+          if (changes.autoTranslateYueDefsTargetLang) {
+            autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
+          }
+          if (changes.autoTranslateYueDefsEngine) {
+            autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
+          }
+          if (changes.yueDefDisplayMode) {
+            yueDefDisplayMode = changes.yueDefDisplayMode.newValue || 'expand';
           }
         }
-        if (changes.enableAutoTranslateYueDefs) {
-          enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
-        }
-        if (changes.autoTranslateYueDefsTargetLang) {
-          autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
-        }
-        if (changes.autoTranslateYueDefsEngine) {
-          autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
-        }
-        if (changes.yueDefDisplayMode) {
-          yueDefDisplayMode = changes.yueDefDisplayMode.newValue || 'expand';
-        }
-      }
-    });
+      });
+    }
   }
 
   themeToggle.addEventListener('click', () => {
     const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
     const newTheme = isDark ? 'light' : 'dark';
-    chrome.storage.sync.set({ uiTheme: newTheme });
     localStorage.setItem('jyutping_ui_theme', newTheme);
+    applyTheme(newTheme);
+    if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.sync) {
+      chrome.storage.sync.set({ uiTheme: newTheme });
+    }
   });
 
   // ==================== Rendering ====================

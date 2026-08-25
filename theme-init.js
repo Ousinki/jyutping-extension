@@ -3,6 +3,6 @@ try {
   var isDark = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   if (isDark) {
     document.documentElement.setAttribute('data-theme', 'dark');
-    document.documentElement.style.backgroundColor = '#0f172a';
+    document.documentElement.style.backgroundColor = '#121214';
   }
 } catch (e) {}
