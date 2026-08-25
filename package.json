@@ -7,7 +7,8 @@
   "scripts": {
     "build": "node build.mjs",
     "watch": "node build.mjs --watch",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "apply-custom": "node scripts/apply-custom-entries.js"
   },
   "dependencies": {
     "jsdom": "^29.1.1",

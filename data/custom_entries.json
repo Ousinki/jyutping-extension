@@ -1,0 +1,72 @@
+{
+  "得得哋": {
+    "traditional": "得得哋",
+    "simplified": "得得哋",
+    "source": "custom",
+    "pinyin": "de2 de2 di4",
+    "jyutping": "dak1 dak1 dei2",
+    "english": [
+      "so-so; passable; fairly okay; a little bit capable [colloquial]",
+      "[粵] 還可以、尚可、過得去；略懂",
+      "[粵] 略帶古怪、不怎麼樣（戲謔或反語語境）"
+    ],
+    "yale": "dāk dák déi",
+    "see_also": [
+      "得得地"
+    ],
+    "examples": [
+      null,
+      [
+        {
+          "yue": "呢間餐廳啲嘢食得得哋啦，唔算好食但勝在平。",
+          "eng": "The food at this restaurant is fairly okay; it is not super delicious but it is affordable."
+        },
+        {
+          "yue": "我啲英文得得哋咋，日常溝通仲勉強應付到。",
+          "eng": "My English is just passable, barely enough for daily communication."
+        }
+      ],
+      [
+        {
+          "yue": "條友平時份人得得哋㗎，你唔好咁認真聽佢講嘢。",
+          "eng": "That guy is a bit weird sometimes, do not take what he says too seriously."
+        }
+      ]
+    ]
+  },
+  "得得地": {
+    "traditional": "得得地",
+    "simplified": "得得地",
+    "source": "custom",
+    "pinyin": "de2 de2 di4",
+    "jyutping": "dak1 dak1 dei2",
+    "english": [
+      "so-so; passable; fairly okay; a little bit capable [colloquial]",
+      "[粵] 還可以、尚可、過得去；「得得哋」嘅異體寫法",
+      "[粵] 略帶古怪、不怎麼樣（戲謔或反語語境）"
+    ],
+    "yale": "dāk dák déi",
+    "see_also": [
+      "得得哋"
+    ],
+    "examples": [
+      null,
+      [
+        {
+          "yue": "呢間餐廳啲嘢食得得地啦，唔算好食但勝在平。",
+          "eng": "The food at this restaurant is fairly okay; it is not super delicious but it is affordable."
+        },
+        {
+          "yue": "我啲英文得得地咋，日常溝通仲勉強應付到。",
+          "eng": "My English is just passable, barely enough for daily communication."
+        }
+      ],
+      [
+        {
+          "yue": "條友平時份人得得地㗎，你唔好咁認真聽佢講嘢。",
+          "eng": "That guy is a bit weird sometimes, do not take what he says too seriously."
+        }
+      ]
+    ]
+  }
+}

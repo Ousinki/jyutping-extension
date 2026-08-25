@@ -783,6 +783,44 @@
     "message": "词典模式",
     "description": "Wordbook: toggle detail mode"
   },
+  "wordbookAutoPronounce": {
+    "message": "自动朗读",
+    "description": "Wordbook: toggle auto-pronounce on navigation"
+  },
+  "wordbookTabShortcuts": {
+    "message": "快捷键与朗读",
+    "description": "Tab for shortcuts & pronunciation settings"
+  },
+  "wordbookShortcutsDesc": {
+    "message": "生词表键盘快捷键一览及自定义生词切换时的发音行为。"
+  },
+  "shortcutNextWord": {
+    "message": "切换至下一个生词"
+  },
+  "shortcutPrevWord": {
+    "message": "切换至上一个生词"
+  },
+  "shortcutPronounceActive": {
+    "message": "手动朗读当前选中生词"
+  },
+  "shortcutArrowPronounce": {
+    "message": "左右键手动朗读当前生词"
+  },
+  "shortcutCloseModal": {
+    "message": "关闭当前弹窗或右键菜单"
+  },
+  "settingAutoPronounceTitle": {
+    "message": "切换生词时自动朗读"
+  },
+  "settingAutoPronounceDesc": {
+    "message": "使用 ↑ / ↓ 方向键或 Enter 键切换生词时，自动播放该生词的粤语发音。"
+  },
+  "settingArrowPronounceTitle": {
+    "message": "允许使用 ← / → 键朗读当前词条"
+  },
+  "settingArrowPronounceDesc": {
+    "message": "若关闭自动朗读，可随时按键盘左右方向键（← 或 →）手动播放当前选中词条的发音。"
+  },
   "wordbookEmptyDetail": {
     "message": "点击左侧单词<br>查看详细词典释义"
   },
@@ -1180,5 +1218,44 @@
   },
   "wordbookSearchPrefix": {
     "message": "搜索"
+  },
+  "settingsCategoryWordbook": {
+    "message": "生词表设置"
+  },
+  "settingsCategoryAi": {
+    "message": "AI 助手设置"
+  },
+  "wordbookSettingsModalTitle": {
+    "message": "设置"
+  },
+  "wordbookAiTabCustomPromptDesc": {
+    "message": "自定义 AI 随身问答的系统提示词（System Prompt），此 Prompt 会引导 AI 在解答所有问题时的人设与回答风格。"
+  },
+  "wordbookAiCustomPromptPlaceholder": {
+    "message": "输入自定义全局系统提示词..."
+  },
+  "wordbookAiInsertVariable": {
+    "message": "插入变量："
+  },
+  "wordbookTagTargetLang": {
+    "message": "目标语言"
+  },
+  "wordbookTagWord": {
+    "message": "选中词"
+  },
+  "wordbookClickToInsert": {
+    "message": "点击插入"
+  },
+  "wordbookRestoreDefaultPrompt": {
+    "message": "恢复预设 Prompt"
+  },
+  "wordbookPromptSaved": {
+    "message": "✓ 已保存"
+  },
+  "wordbookRestoreDefaultActions": {
+    "message": "恢复预设指令"
+  },
+  "wordbookRestoreDefaultEngines": {
+    "message": "恢复预设搜索源"
   }
 }

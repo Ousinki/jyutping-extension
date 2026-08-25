@@ -137,10 +137,11 @@
 
       /* ===== Quiz Card ===== */
       .sq-card {
+        position: relative;
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: 16px;
-        padding: 36px 32px;
+        padding: 44px 32px 36px;
         transition: border-color 0.3s, box-shadow 0.3s;
       }
       .sq-card.sq-correct {
@@ -635,70 +636,144 @@
         font-size: 17px;
         font-weight: 700;
         color: var(--text-primary);
-        margin: 0 0 14px 0;
+        margin: 0 0 16px 0;
       }
       .sq-review-list {
         display: flex;
         flex-direction: column;
-        gap: 8px;
+        gap: 10px;
       }
       .sq-review-item {
-        display: flex;
-        align-items: flex-start;
-        gap: 12px;
-        padding: 14px 18px;
-        border-radius: 12px;
         background: var(--bg-card);
         border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 16px 20px;
+        transition: all 0.2s ease;
       }
-      .sq-review-correct { border-left: 3px solid var(--success); }
-      .sq-review-wrong { border-left: 3px solid var(--danger); }
+      .sq-review-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+      }
+      .sq-review-item.is-wrong {
+        border-color: color-mix(in srgb, var(--danger) 30%, var(--border));
+        background: color-mix(in srgb, var(--danger) 2%, var(--bg-card));
+      }
+      .sq-review-item.is-skipped {
+        border-style: dashed;
+      }
+      .sq-review-header {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .sq-review-title-group {
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
       .sq-review-num {
-        font-size: 13px;
-        font-weight: 600;
+        font-size: 14px;
+        font-weight: 700;
         color: var(--text-muted);
-        min-width: 20px;
-        text-align: center;
-        padding-top: 2px;
+        min-width: 18px;
       }
-      .sq-review-body { flex: 1; min-width: 0; }
       .sq-review-word {
-        font-size: 17px;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin-bottom: 4px;
-      }
-      .sq-review-jyutping {
-        font-size: 13px;
-        font-weight: 400;
-        color: var(--text-muted);
-        margin-left: 6px;
-      }
-      .sq-review-sentence {
-        font-size: 13px;
-        color: var(--text-secondary);
-        line-height: 1.5;
-      }
-      .sq-review-answer {
-        font-size: 13px;
-        color: var(--danger);
-        margin-top: 4px;
-      }
-      .sq-review-user-answer {
-        text-decoration: line-through;
-        opacity: 0.7;
-      }
-      .sq-review-skipped {
-        color: var(--text-muted);
-        font-style: italic;
-      }
-      .sq-review-status {
         font-size: 18px;
         font-weight: 700;
-        padding-top: 2px;
+        color: var(--text-primary);
       }
-      .sq-review-correct .sq-review-status { color: var(--success); }
-      .sq-review-wrong .sq-review-status { color: var(--danger); }
+      .sq-review-jyutping {
+        font-size: 14px;
+        font-weight: 400;
+        font-family: 'SF Mono', monospace;
+        color: var(--text-muted);
+      }
+      .sq-review-type {
+        font-size: 12px;
+        color: var(--text-muted);
+      }
+      .sq-review-type::before {
+        content: '· ';
+        opacity: 0.6;
+      }
+      .sq-review-status {
+        font-size: 13px;
+        font-weight: 600;
+        white-space: nowrap;
+      }
+      .sq-review-status.is-correct { color: var(--success); }
+      .sq-review-status.is-wrong { color: var(--danger); }
+      .sq-review-status.is-skipped { color: var(--text-muted); }
+
+      .sq-review-context {
+        margin-top: 10px;
+        padding: 9px 14px;
+        border-radius: 8px;
+        background: var(--bg-input);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+      }
+      .sq-review-sentence-text {
+        font-size: 14px;
+        color: var(--text-secondary);
+        line-height: 1.5;
+        word-break: break-word;
+      }
+      .sq-review-speak-btn {
+        background: none;
+        border: none;
+        width: 26px;
+        height: 26px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-muted);
+        flex-shrink: 0;
+        border-radius: 6px;
+        transition: all 0.2s ease;
+      }
+      .sq-review-speak-btn:hover {
+        color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 10%, transparent);
+      }
+
+      .sq-review-diff {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        background: color-mix(in srgb, var(--danger) 5%, var(--bg-card));
+        border: 1px solid color-mix(in srgb, var(--danger) 15%, transparent);
+      }
+      .sq-diff-row {
+        display: flex;
+        align-items: baseline;
+        gap: 6px;
+        font-size: 13px;
+      }
+      .sq-diff-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        min-width: 65px;
+      }
+      .sq-diff-val {
+        font-weight: 500;
+        line-height: 1.4;
+      }
+      .sq-diff-val.is-wrong {
+        color: var(--danger);
+        text-decoration: line-through;
+      }
+      .sq-diff-val.is-correct {
+        color: var(--success);
+        font-weight: 600;
+      }
 
       /* ===== Loading State ===== */
       .sq-loading {
@@ -823,7 +898,6 @@
         cursor: pointer;
         transition: background 0.12s ease;
       }
-      .ime-candidate-item:hover,
       .ime-candidate-item.is-active {
         background: color-mix(in srgb, var(--primary) 12%, transparent);
       }
@@ -1101,6 +1175,403 @@
         color: var(--primary);
       }
 
+      .sq-settings-btn {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        color: var(--text-muted);
+        transition: all var(--transition);
+      }
+      .sq-settings-btn:hover {
+        color: var(--primary);
+        border-color: var(--primary);
+      }
+
+      /* ===== Question Type Badge ===== */
+      .sq-type-badge {
+        position: absolute;
+        top: 16px;
+        left: 18px;
+        display: inline-flex;
+        align-items: center;
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        background: var(--bg-input);
+        color: var(--text-muted);
+        border: 1px solid var(--border);
+        user-select: none;
+        letter-spacing: 0.3px;
+      }
+
+      /* ===== Word Spelling & Definition Prompt ===== */
+      .sq-word-prompt-wrap {
+        text-align: center;
+        margin-bottom: 24px;
+      }
+      .sq-word-prompt-main {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.4;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+      }
+      .sq-prompt-jyutping {
+        font-size: 15px;
+        color: var(--text-muted);
+        font-family: 'SF Mono', monospace;
+        margin-top: 4px;
+      }
+      .sq-word-len-pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        background: var(--bg-input);
+        padding: 3px 10px;
+        border-radius: 12px;
+        margin-top: 8px;
+        border: 1px solid var(--border);
+      }
+
+      /* ===== Listening Mode Hero ===== */
+      .sq-listen-hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 16px 0 20px;
+        gap: 12px;
+      }
+      .sq-listen-btn {
+        width: 76px;
+        height: 76px;
+        border-radius: 50%;
+        background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
+        border: 2px solid var(--primary);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 4px 16px color-mix(in srgb, var(--primary) 25%, transparent);
+      }
+      .sq-listen-btn:hover {
+        transform: scale(1.08);
+        background: var(--primary);
+        color: #ffffff;
+      }
+      .sq-listen-btn.speaking {
+        animation: sq-pulse-listen 1.2s infinite;
+        background: var(--primary);
+        color: #ffffff;
+      }
+      @keyframes sq-pulse-listen {
+        0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--primary) 50%, transparent); }
+        70% { box-shadow: 0 0 0 16px rgba(0,0,0,0); }
+        100% { box-shadow: 0 0 0 0 rgba(0,0,0,0); }
+      }
+      .sq-listen-hint {
+        font-size: 13px;
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      /* ===== Multiple Choice Grid ===== */
+      .sq-choice-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-top: 24px;
+      }
+      @media (max-width: 580px) {
+        .sq-choice-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+      .sq-choice-item {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 16px;
+        border-radius: 12px;
+        background: var(--bg);
+        border: 2px solid var(--border);
+        cursor: pointer;
+        transition: all 0.18s ease;
+        user-select: none;
+        text-align: left;
+      }
+      .sq-choice-item:hover {
+        border-color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 5%, var(--bg));
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+      }
+      .sq-choice-badge {
+        width: 26px;
+        height: 26px;
+        border-radius: 6px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        flex-shrink: 0;
+        transition: all 0.2s ease;
+      }
+      .sq-choice-item:hover .sq-choice-badge {
+        background: var(--primary);
+        color: #fff;
+        border-color: var(--primary);
+      }
+      .sq-choice-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .sq-choice-main {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-primary);
+        line-height: 1.4;
+        word-break: break-word;
+      }
+      .sq-choice-sub {
+        font-size: 12px;
+        color: var(--text-muted);
+        margin-top: 2px;
+        line-height: 1.3;
+      }
+      .sq-choice-item.is-selected.is-correct {
+        border-color: var(--success) !important;
+        background: color-mix(in srgb, var(--success) 12%, var(--bg)) !important;
+      }
+      .sq-choice-item.is-selected.is-correct .sq-choice-badge {
+        background: var(--success) !important;
+        color: #fff !important;
+        border-color: var(--success) !important;
+      }
+      .sq-choice-item.is-selected.is-wrong {
+        border-color: var(--danger) !important;
+        background: color-mix(in srgb, var(--danger) 10%, var(--bg)) !important;
+      }
+      .sq-choice-item.is-selected.is-wrong .sq-choice-badge {
+        background: var(--danger) !important;
+        color: #fff !important;
+        border-color: var(--danger) !important;
+      }
+      .sq-choice-item.is-revealed-correct {
+        border-color: var(--success) !important;
+        border-style: dashed;
+        background: color-mix(in srgb, var(--success) 8%, var(--bg)) !important;
+      }
+
+      /* ===== Settings Modal Dialog ===== */
+      .sq-modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.65);
+        backdrop-filter: blur(8px);
+        -webkit-backdrop-filter: blur(8px);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+        z-index: 2000;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.25s ease;
+      }
+      .sq-modal-overlay.open {
+        opacity: 1;
+        visibility: visible;
+      }
+      .sq-modal-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        width: 100%;
+        max-width: 480px;
+        padding: 24px 28px;
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+        transform: scale(0.94) translateY(10px);
+        transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+      }
+      .sq-modal-overlay.open .sq-modal-card {
+        transform: scale(1) translateY(0);
+      }
+      .sq-modal-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+      .sq-modal-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .sq-modal-close-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        font-size: 20px;
+        line-height: 1;
+        padding: 4px;
+        border-radius: 6px;
+        transition: color 0.2s;
+      }
+      .sq-modal-close-btn:hover {
+        color: var(--text-primary);
+      }
+      .sq-modal-section {
+        margin-bottom: 20px;
+      }
+      .sq-modal-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        color: var(--text-muted);
+        margin-bottom: 10px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .sq-radio-pills {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .sq-radio-pill {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 14px;
+        border-radius: 10px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+      .sq-radio-pill:hover {
+        border-color: var(--primary);
+        color: var(--text-primary);
+      }
+      .sq-radio-pill.is-active {
+        background: color-mix(in srgb, var(--primary) 12%, var(--bg-card));
+        border-color: var(--primary);
+        color: var(--primary);
+        font-weight: 700;
+      }
+      .sq-toggle-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 0;
+      }
+      .sq-toggle-label {
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+      .sq-switch {
+        position: relative;
+        display: inline-block;
+        width: 44px;
+        height: 24px;
+        flex-shrink: 0;
+      }
+      .sq-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+      }
+      .sq-switch-slider {
+        position: absolute;
+        cursor: pointer;
+        inset: 0;
+        background-color: var(--border);
+        transition: .25s ease;
+        border-radius: 24px;
+      }
+      .sq-switch-slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .25s cubic-bezier(0.4, 0, 0.2, 1);
+        border-radius: 50%;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+      }
+      .sq-switch input:checked + .sq-switch-slider {
+        background-color: var(--primary);
+      }
+      .sq-switch input:checked + .sq-switch-slider:before {
+        transform: translateX(20px);
+      }
+      .sq-modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+        margin-top: 24px;
+        padding-top: 16px;
+        border-top: 1px solid var(--border);
+      }
+      .sq-modal-save-btn {
+        padding: 9px 20px;
+        border-radius: 8px;
+        background: var(--primary);
+        color: #fff;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .sq-modal-save-btn:hover {
+        filter: brightness(1.1);
+      }
+      .sq-modal-cancel-btn {
+        padding: 9px 16px;
+        border-radius: 8px;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text-secondary);
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+      }
+      .sq-modal-cancel-btn:hover {
+        color: var(--text-primary);
+      }
+
       /* ===== Responsive ===== */
       @media (max-width: 768px) {
         .sq-bottom-bar {
@@ -1124,7 +1595,7 @@
       @media (max-width: 600px) {
         .sq-container { padding: 16px 14px 70px; }
         .sq-sentence { font-size: 20px; }
-        .sq-card { padding: 28px 20px; }
+        .sq-card { padding: 36px 18px 24px; }
         .sq-input { font-size: 18px; padding: 12px 16px; }
         .sq-result-card { padding: 28px 20px; }
         .ime-mode-toggle-btn { font-size: 11px; padding: 4px 10px; }
@@ -1137,16 +1608,67 @@
     </div>
 
     <!-- Fixed Bottom Bar: IME Toggle & Tone Cheatsheet -->
-    <div class="sq-bottom-bar">
+    <div class="sq-bottom-bar" id="sqBottomBar">
       <div id="sqImeBottomToggle" class="ime-bottom-left-wrapper"></div>
-      <div class="sq-tone-cheatsheet" title="輸入對應字母可直接指定聲調 (支援數字 1-6 或字母 v/x/q/vv/xx/qq)">
-        <span class="sq-tone-title">聲調鍵位：</span>
-        <span class="sq-tone-tag"><span class="sq-tone-key">v</span> 1聲</span>
-        <span class="sq-tone-tag"><span class="sq-tone-key">x</span> 2聲</span>
-        <span class="sq-tone-tag"><span class="sq-tone-key">q</span> 3聲</span>
-        <span class="sq-tone-tag"><span class="sq-tone-key">vv</span> 4聲</span>
-        <span class="sq-tone-tag"><span class="sq-tone-key">xx</span> 5聲</span>
-        <span class="sq-tone-tag"><span class="sq-tone-key">qq</span> 6聲</span>
+      <div class="sq-tone-cheatsheet" id="sqToneCheatsheet" title="輸入對應字母可直接指定聲調 (支援數字 1-6 或字母 v/x/q/vv/xx/qq)">
+        <span class="sq-tone-title" id="sqToneTitle">聲調鍵位：</span>
+        <span class="sq-tone-tag"><span class="sq-tone-key">v</span> <span class="sq-tone-label" data-tone="1">1聲</span></span>
+        <span class="sq-tone-tag"><span class="sq-tone-key">x</span> <span class="sq-tone-label" data-tone="2">2聲</span></span>
+        <span class="sq-tone-tag"><span class="sq-tone-key">q</span> <span class="sq-tone-label" data-tone="3">3聲</span></span>
+        <span class="sq-tone-tag"><span class="sq-tone-key">vv</span> <span class="sq-tone-label" data-tone="4">4聲</span></span>
+        <span class="sq-tone-tag"><span class="sq-tone-key">xx</span> <span class="sq-tone-label" data-tone="5">5聲</span></span>
+        <span class="sq-tone-tag"><span class="sq-tone-key">qq</span> <span class="sq-tone-label" data-tone="6">6聲</span></span>
+      </div>
+    </div>
+
+    <!-- Settings Modal Overlay -->
+    <div class="sq-modal-overlay" id="sqSettingsModal">
+      <div class="sq-modal-card">
+        <div class="sq-modal-header">
+          <div class="sq-modal-title">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+            <span id="sqModalTitleText">練習設定</span>
+          </div>
+          <button class="sq-modal-close-btn" id="sqModalCloseBtn" title="關閉">✕</button>
+        </div>
+
+        <div class="sq-modal-body">
+          <div class="sq-modal-section">
+            <div class="sq-modal-section-title" id="sqModalModeSectionTitle">題型模式（可多選）</div>
+            <div class="sq-radio-pills" id="sqModePills">
+              <button type="button" class="sq-radio-pill is-active" data-mode="sentence_cloze">例句填空</button>
+              <button type="button" class="sq-radio-pill is-active" data-mode="word_spelling">單詞拼寫</button>
+              <button type="button" class="sq-radio-pill is-active" data-mode="definition_choice">釋義選擇</button>
+              <button type="button" class="sq-radio-pill is-active" data-mode="listening_choice">聽音辨字</button>
+            </div>
+          </div>
+
+          <div class="sq-modal-section">
+            <div class="sq-modal-section-title" id="sqModalCountSectionTitle">練習題量</div>
+            <div class="sq-radio-pills" id="sqCountPills">
+              <button type="button" class="sq-radio-pill is-active" data-count="10">10 題</button>
+              <button type="button" class="sq-radio-pill" data-count="20">20 題</button>
+              <button type="button" class="sq-radio-pill" data-count="all">全部單詞</button>
+            </div>
+          </div>
+
+          <div class="sq-modal-section" style="margin-bottom: 0;">
+            <div class="sq-modal-section-title" id="sqModalClozeTtsSectionTitle">例句填空自動朗讀</div>
+            <div class="sq-radio-pills" id="sqClozeTtsPills">
+              <button type="button" class="sq-radio-pill is-active" data-cloze-tts="sentence">朗讀例句</button>
+              <button type="button" class="sq-radio-pill" data-cloze-tts="word">朗讀單詞</button>
+              <button type="button" class="sq-radio-pill" data-cloze-tts="off">關閉</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="sq-modal-footer">
+          <button type="button" class="sq-modal-cancel-btn" id="sqModalCancelBtn">取消</button>
+          <button type="button" class="sq-modal-save-btn" id="sqModalSaveBtn">儲存並重新開始</button>
+        </div>
       </div>
     </div>
 

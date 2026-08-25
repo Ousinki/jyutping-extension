@@ -6,7 +6,8 @@ node_modules/
 dist/
 
 # Raw dictionary source data (large files)
-data/
+data/*
+!data/custom_entries.json
 
 # Local tools and server (not for distribution)
 wordshk-tools/

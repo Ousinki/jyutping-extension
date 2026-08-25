@@ -196,7 +196,7 @@
         }
         return false;
       }();
-      const baseRgb = isDark ? { r: 24, g: 24, b: 27 } : { r: 255, g: 255, b: 255 };
+      const baseRgb = isDark ? { r: 18, g: 18, b: 20 } : { r: 255, g: 255, b: 255 };
       while (el && el !== document.documentElement) {
         const style = window.getComputedStyle(el);
         const bg = parseRgba(style.backgroundColor);
@@ -229,7 +229,7 @@
           return `rgb(${htmlBg.r}, ${htmlBg.g}, ${htmlBg.b})`;
         }
       }
-      return isDark ? "rgb(24, 24, 27)" : "rgb(255, 255, 255)";
+      return isDark ? "rgb(18, 18, 20)" : "rgb(255, 255, 255)";
     } catch (e) {
     }
     return "rgb(255, 255, 255)";

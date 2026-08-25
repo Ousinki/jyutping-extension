@@ -780,8 +780,46 @@
     "description": "Toast shown when full page ruby is enabled"
   },
   "wordbookDetailMode": {
-    "message": "Dictionary Mode",
+    "message": "Detail Mode",
     "description": "Wordbook: toggle detail mode"
+  },
+  "wordbookAutoPronounce": {
+    "message": "Auto-Pronounce",
+    "description": "Wordbook: toggle auto-pronounce on navigation"
+  },
+  "wordbookTabShortcuts": {
+    "message": "Shortcuts & Audio",
+    "description": "Tab for shortcuts & pronunciation settings"
+  },
+  "wordbookShortcutsDesc": {
+    "message": "Overview of keyboard shortcuts and customization of audio pronunciation on navigation."
+  },
+  "shortcutNextWord": {
+    "message": "Navigate to next word"
+  },
+  "shortcutPrevWord": {
+    "message": "Navigate to previous word"
+  },
+  "shortcutPronounceActive": {
+    "message": "Pronounce active word manually"
+  },
+  "shortcutArrowPronounce": {
+    "message": "Pronounce active word with Left/Right arrows"
+  },
+  "shortcutCloseModal": {
+    "message": "Close modal or context menu"
+  },
+  "settingAutoPronounceTitle": {
+    "message": "Auto-pronounce on navigation"
+  },
+  "settingAutoPronounceDesc": {
+    "message": "Automatically play Cantonese pronunciation when navigating words via ↑ / ↓ arrow keys or Enter."
+  },
+  "settingArrowPronounceTitle": {
+    "message": "Pronounce with ← / → arrow keys"
+  },
+  "settingArrowPronounceDesc": {
+    "message": "Allow pressing Left or Right arrow keys (← / →) to manually pronounce the active word."
   },
   "wordbookEmptyDetail": {
     "message": "Click a word on the left<br>to view dictionary details"
@@ -1180,5 +1218,44 @@
   },
   "wordbookSearchPrefix": {
     "message": "Search"
+  },
+  "settingsCategoryWordbook": {
+    "message": "Word Book"
+  },
+  "settingsCategoryAi": {
+    "message": "AI Assistant"
+  },
+  "wordbookSettingsModalTitle": {
+    "message": "Settings"
+  },
+  "wordbookAiTabCustomPromptDesc": {
+    "message": "Customize the system prompt for AI Q&A to guide the persona and answering style."
+  },
+  "wordbookAiCustomPromptPlaceholder": {
+    "message": "Enter custom global system prompt..."
+  },
+  "wordbookAiInsertVariable": {
+    "message": "Insert Variables:"
+  },
+  "wordbookTagTargetLang": {
+    "message": "Target Language"
+  },
+  "wordbookTagWord": {
+    "message": "Selected Word"
+  },
+  "wordbookClickToInsert": {
+    "message": "Click to insert"
+  },
+  "wordbookRestoreDefaultPrompt": {
+    "message": "Restore Default Prompt"
+  },
+  "wordbookPromptSaved": {
+    "message": "✓ Saved"
+  },
+  "wordbookRestoreDefaultActions": {
+    "message": "Restore Default Actions"
+  },
+  "wordbookRestoreDefaultEngines": {
+    "message": "Restore Default Engines"
   }
 }

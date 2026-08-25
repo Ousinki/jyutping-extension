@@ -775,6 +775,7 @@
         z-index: 10;
       }
 
+      .detail-note-btn,
       .detail-report-btn,
       .detail-bookmark-btn {
         display: flex;
@@ -786,6 +787,7 @@
         color: var(--text-secondary);
       }
 
+      .detail-note-btn,
       .detail-report-btn {
         height: 26px;
         font-size: 12px;
@@ -798,6 +800,20 @@
         background: var(--bg-input);
       }
 
+      .detail-note-btn.has-note {
+        opacity: 0.85;
+        width: auto;
+        padding: 0 7px;
+        margin-right: 4px;
+        color: var(--text-secondary);
+        background: var(--bg-input);
+        font-weight: 500;
+      }
+
+      .detail-note-btn.has-note svg {
+        color: var(--primary);
+      }
+
       /* Bookmark is always visible at low opacity as the hover anchor */
       .detail-bookmark-btn {
         height: 26px;
@@ -805,6 +821,14 @@
         padding: 0 6px;
         opacity: 0.4;
         background: transparent;
+      }
+
+      .detail-actions-wrapper:hover .detail-note-btn {
+        opacity: 1;
+        width: auto;
+        min-width: 58px;
+        padding: 0 7px;
+        margin-right: 4px;
       }
 
       .detail-actions-wrapper:hover .detail-report-btn {
@@ -819,12 +843,164 @@
         background: var(--bg-input);
       }
 
+      .detail-note-btn:hover,
       .detail-report-btn:hover {
         background: var(--border) !important;
       }
 
+      .detail-note-btn:hover {
+        color: var(--primary) !important;
+      }
+
       .detail-bookmark-btn:hover {
         background: var(--border) !important;
+      }
+
+      /* ========== Detail Note Section ========== */
+      .detail-note-section {
+        margin-top: 14px;
+        margin-bottom: 2px;
+      }
+
+      .detail-note-card {
+        padding: 10px 13px 12px 13px;
+        background: color-mix(in srgb, var(--primary) 3.5%, var(--bg-card));
+        border: 1px solid color-mix(in srgb, var(--primary) 18%, var(--border));
+        border-radius: 8px;
+        transition: border-color 0.2s ease, background 0.2s ease;
+      }
+
+      .detail-note-card:hover {
+        border-color: color-mix(in srgb, var(--primary) 32%, var(--border));
+      }
+
+      .detail-note-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 5px;
+      }
+
+      .detail-note-title {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.4px;
+        color: color-mix(in srgb, var(--primary) 75%, var(--text-secondary));
+        user-select: none;
+      }
+
+      .detail-note-title svg {
+        opacity: 0.85;
+      }
+
+      .detail-note-actions {
+        display: flex;
+        align-items: center;
+        gap: 2px;
+        opacity: 0.4;
+        transition: opacity 0.2s ease;
+      }
+
+      .detail-note-card:hover .detail-note-actions {
+        opacity: 1;
+      }
+
+      .detail-note-action-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+        border-radius: 4px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+
+      .detail-note-action-btn:hover {
+        color: var(--text-primary);
+        background: color-mix(in srgb, var(--text-primary) 10%, transparent);
+      }
+
+      .detail-note-action-btn.btn-delete:hover {
+        color: #ef4444;
+        background: color-mix(in srgb, #ef4444 12%, transparent);
+      }
+
+      .detail-note-content {
+        font-size: 13.5px;
+        line-height: 1.6;
+        color: var(--text-primary);
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+
+      /* Note Editor */
+      .detail-note-editor {
+        padding: 12px 14px;
+        background: var(--bg-card);
+        border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border));
+        border-radius: 8px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+        animation: dropdownSlideIn 0.15s ease-out;
+      }
+
+      .detail-note-textarea {
+        width: 100%;
+        min-height: 72px;
+        max-height: 240px;
+        padding: 8px 10px;
+        font-size: 13.5px;
+        line-height: 1.5;
+        font-family: inherit;
+        background: var(--bg-input);
+        color: var(--text-primary);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        resize: vertical;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      .detail-note-textarea:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 20%, transparent);
+      }
+
+      .detail-note-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 2px;
+      }
+
+      .detail-note-hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        user-select: none;
+      }
+
+      .detail-note-btn-group {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+      }
+
+      .detail-note-btn-group .btn {
+        padding: 3px 10px;
+        font-size: 12px;
+        height: 26px;
+        border-radius: 5px;
       }
 
       /* ========== Detail Report Form ========== */
@@ -1571,7 +1747,7 @@
         padding-right: 16px;
       }
 
-      /* Draggable column divider resizer - Full header height & high contrast */
+      /* Draggable column divider resizer - Full header height & theme-adaptive color */
       .col-resizer {
         position: absolute;
         top: -12px;
@@ -1590,12 +1766,12 @@
         content: '';
         width: 1px;
         height: 100%;
-        background-color: #cbd5e1;
+        background-color: var(--border);
         transition: background-color 0.15s ease, width 0.15s ease, box-shadow 0.15s ease;
       }
 
       :root[data-theme="dark"] .col-resizer::after {
-        background-color: #475569;
+        background-color: var(--border);
       }
 
       .col-resizer:hover::after,
@@ -2360,16 +2536,16 @@
       }
 
       #aiSettingsModal .modal {
-        max-width: 580px;
-        width: 92%;
-        height: 540px;
+        max-width: 720px;
+        width: 94%;
+        height: 620px;
         max-height: 88vh;
         display: flex;
         flex-direction: column;
         background: var(--bg-card);
         border: 1px solid var(--border);
         border-radius: 16px;
-        padding: 22px 24px;
+        padding: 24px 28px;
         box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 4px 16px rgba(0, 0, 0, 0.06);
         animation: aiModalZoomIn 0.2s cubic-bezier(0.16, 1, 0.3, 1);
         overscroll-behavior: contain;
@@ -2428,7 +2604,51 @@
         color: var(--text-primary);
       }
 
-      /* Classic Underline Tabs */
+      /* Segmented Category Switcher (Wordbook vs AI) */
+      .settings-category-switch {
+        display: flex;
+        background: var(--bg-input);
+        padding: 3px;
+        border-radius: 9px;
+        margin-bottom: 14px;
+        gap: 4px;
+        border: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+      .settings-category-btn {
+        flex: 1;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        padding: 7px 14px;
+        border-radius: 6px;
+        font-size: 13.5px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        background: transparent;
+        border: none;
+        cursor: pointer;
+        transition: all 0.18s ease;
+        font-family: inherit;
+        user-select: none;
+      }
+      .settings-category-btn:hover {
+        color: var(--text-primary);
+      }
+      .settings-category-btn.active {
+        background: var(--bg-card);
+        color: var(--text-primary);
+        font-weight: 600;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+      }
+      :root[data-theme="dark"] .settings-category-btn.active {
+        background: #2a292e;
+        color: #f3f2f5;
+        box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+      }
+
+      /* Classic Underline Sub Tabs */
       .ai-modal-tabs {
         display: flex;
         border-bottom: 1px solid var(--border);
@@ -2676,6 +2896,53 @@
         font-size: 12px;
         color: var(--text-muted);
         line-height: 1.5;
+      }
+
+      /* Tab 4: Shortcuts & Audio Settings */
+      .shortcut-table {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 10px 14px;
+      }
+      .shortcut-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 6px 0;
+        border-bottom: 1px solid color-mix(in srgb, var(--border) 45%, transparent);
+      }
+      .shortcut-row:last-child {
+        border-bottom: none;
+      }
+      .shortcut-desc {
+        font-size: 13px;
+        color: var(--text-primary);
+      }
+      .shortcut-keys {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .shortcut-key {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-width: 24px;
+        height: 22px;
+        padding: 0 6px;
+        font-size: 11.5px;
+        font-weight: 600;
+        font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'SF Mono', monospace;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-bottom-width: 2px;
+        border-radius: 5px;
+        color: var(--text-primary);
+        box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
       }
 
       /* iOS-style toggle switch */
@@ -3259,7 +3526,7 @@
     <div class="modal-overlay" id="aiSettingsModal">
       <div class="modal">
         <div class="ai-modal-header">
-          <h3 data-i18n="wordbookAiSettingsTitle">AI 設定</h3>
+          <h3 data-i18n="wordbookSettingsModalTitle">設定</h3>
           <button class="ai-modal-close-btn" id="closeAiSettingsBtn" title="關閉" aria-label="關閉">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <line x1="18" y1="6" x2="6" y2="18"></line>
@@ -3268,12 +3535,23 @@
           </button>
         </div>
 
-        <!-- Tabs Header -->
-        <div class="ai-modal-tabs" id="aiModalTabs">
+        <!-- Main Category Segmented Switcher -->
+        <div class="settings-category-switch" id="settingsCategorySwitch">
+          <button class="settings-category-btn" data-category="wordbook" data-i18n="settingsCategoryWordbook">生詞表設定</button>
+          <button class="settings-category-btn active" data-category="ai" data-i18n="settingsCategoryAi">AI 助手設定</button>
+        </div>
+
+        <!-- Sub Tabs: Wordbook Settings -->
+        <div class="ai-modal-tabs" id="categoryTabsWordbook" style="display: none;">
+          <button class="ai-modal-tab-btn active" data-tab="shortcuts" data-i18n="wordbookTabShortcuts">快捷鍵與朗讀</button>
+          <button class="ai-modal-tab-btn" data-tab="context-menu" data-i18n="wordbookTabContextMenu">右鍵搜尋</button>
+        </div>
+
+        <!-- Sub Tabs: AI Assistant Settings -->
+        <div class="ai-modal-tabs" id="categoryTabsAi">
           <button class="ai-modal-tab-btn active" data-tab="quick-actions" data-i18n="wordbookAiTabQuickActions">快捷指令</button>
           <button class="ai-modal-tab-btn" data-tab="custom-prompt" data-i18n="wordbookAiTabCustomPrompt">全域 Prompt</button>
           <button class="ai-modal-tab-btn" data-tab="interaction" data-i18n="wordbookAiTabInteraction">交互設定</button>
-          <button class="ai-modal-tab-btn" data-tab="context-menu" data-i18n="wordbookTabContextMenu">右鍵搜尋</button>
         </div>
 
         <!-- Tab 1: Quick Actions -->
@@ -3291,7 +3569,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               <span data-i18n="wordbookAddQuickAction">添加新指令</span>
             </button>
-            <button id="restoreAiQuickActionsBtnModal" class="wordbook-btn" style="padding: 0 12px; background: transparent; color: var(--text-muted); border: 1px solid transparent;" title="恢復預設指令">
+            <button id="restoreAiQuickActionsBtnModal" class="wordbook-btn" style="padding: 0 12px; background: transparent; color: var(--text-muted); border: 1px solid transparent;" data-i18n-title="wordbookRestoreDefaultActions" title="恢復預設指令">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
           </div>
@@ -3299,23 +3577,23 @@
 
         <!-- Tab 2: Custom System Prompt -->
         <div class="ai-modal-tab-pane" id="tabPaneCustomPrompt">
-          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;">
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;" data-i18n="wordbookAiTabCustomPromptDesc">
             自訂 AI 隨身問答的系統提示詞（System Prompt），此 Prompt 會引導 AI 在解答所有問題時的人設與回答風格。
           </p>
 
-          <textarea id="aiCustomPromptInputModal" class="ai-prompt-textarea" placeholder="輸入自訂全域系統提示詞..."></textarea>
+          <textarea id="aiCustomPromptInputModal" class="ai-prompt-textarea" data-i18n-placeholder="wordbookAiCustomPromptPlaceholder" placeholder="輸入自訂全域系統提示詞..."></textarea>
 
           <div class="ai-prompt-tags">
-            <span style="font-size: 11px; color: var(--text-muted);">插入變量：</span>
-            <span class="ai-prompt-tag" data-tag="{targetLang}" title="點擊插入">{targetLang} (目標語言)</span>
-            <span class="ai-prompt-tag" data-tag="{word}" title="點擊插入">{word} (選中詞)</span>
+            <span style="font-size: 11px; color: var(--text-muted);" data-i18n="wordbookAiInsertVariable">插入變量：</span>
+            <span class="ai-prompt-tag" data-tag="{targetLang}" data-i18n-title="wordbookClickToInsert" title="點擊插入">{targetLang} (<span data-i18n="wordbookTagTargetLang">目標語言</span>)</span>
+            <span class="ai-prompt-tag" data-tag="{word}" data-i18n-title="wordbookClickToInsert" title="點擊插入">{word} (<span data-i18n="wordbookTagWord">選中詞</span>)</span>
           </div>
 
           <div style="display: flex; justify-content: space-between; align-items: center; margin-top: auto; flex-shrink: 0;">
-            <button id="restoreAiPromptBtnModal" class="wordbook-btn" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border); font-size: 12px; padding: 6px 12px;">
+            <button id="restoreAiPromptBtnModal" class="wordbook-btn" style="background: transparent; color: var(--text-muted); border: 1px solid var(--border); font-size: 12px; padding: 6px 12px;" data-i18n="wordbookRestoreDefaultPrompt">
               恢復預設 Prompt
             </button>
-            <span id="aiPromptSavedHint" style="font-size: 12px; color: var(--success); opacity: 0; transition: opacity 0.2s;">✓ 已保存</span>
+            <span id="aiPromptSavedHint" style="font-size: 12px; color: var(--success); opacity: 0; transition: opacity 0.2s;" data-i18n="wordbookPromptSaved">✓ 已保存</span>
           </div>
         </div>
 
@@ -3337,6 +3615,77 @@
           </div>
         </div>
 
+        <!-- Tab 4: Shortcuts & Audio Settings -->
+        <div class="ai-modal-tab-pane" id="tabPaneShortcuts">
+          <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;" data-i18n="wordbookShortcutsDesc">
+            生詞表鍵盤快捷鍵一覽及自訂生詞切換時的發音行為。
+          </p>
+
+          <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; padding-right: 4px;">
+            <!-- Shortcuts Reference Table -->
+            <div class="shortcut-table">
+              <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcutNextWord">切換至下一個生詞</span>
+                <div class="shortcut-keys">
+                  <span class="shortcut-key">↓</span>
+                  <span style="font-size: 11px; color: var(--text-muted); padding: 0 1px;">/</span>
+                  <span class="shortcut-key">Enter</span>
+                </div>
+              </div>
+              <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcutPrevWord">切換至上一個生詞</span>
+                <div class="shortcut-keys">
+                  <span class="shortcut-key">↑</span>
+                </div>
+              </div>
+              <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcutPronounceActive">手動朗讀當前選中生詞</span>
+                <div class="shortcut-keys">
+                  <span class="shortcut-key">Space</span>
+                </div>
+              </div>
+              <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcutArrowPronounce">左右鍵手動朗讀當前生詞</span>
+                <div class="shortcut-keys">
+                  <span class="shortcut-key">←</span>
+                  <span style="font-size: 11px; color: var(--text-muted); padding: 0 1px;">/</span>
+                  <span class="shortcut-key">→</span>
+                </div>
+              </div>
+              <div class="shortcut-row">
+                <span class="shortcut-desc" data-i18n="shortcutCloseModal">關閉當前彈窗或右鍵選單</span>
+                <div class="shortcut-keys">
+                  <span class="shortcut-key">Esc</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Setting Card 1: Auto Pronounce on Navigation -->
+            <div class="ai-setting-card">
+              <div class="ai-setting-info">
+                <div class="ai-setting-title" data-i18n="settingAutoPronounceTitle">切換生詞時自動朗讀</div>
+                <div class="ai-setting-desc" data-i18n="settingAutoPronounceDesc">使用 ↑ / ↓ 方向鍵或 Enter 鍵切換生詞時，自動播放該生詞的粵語發音。</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="autoPronounceSettingToggle">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+
+            <!-- Setting Card 2: Left/Right Arrow Key Pronunciation -->
+            <div class="ai-setting-card">
+              <div class="ai-setting-info">
+                <div class="ai-setting-title" data-i18n="settingArrowPronounceTitle">允許使用 ← / → 鍵朗讀當前詞條</div>
+                <div class="ai-setting-desc" data-i18n="settingArrowPronounceDesc">若關閉自動朗讀，可隨時按鍵盤左右方向鍵（← 或 →）手動播放當前選中詞條的發音。</div>
+              </div>
+              <label class="toggle">
+                <input type="checkbox" id="arrowPronounceSettingToggle" checked>
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+        </div>
+
         <!-- Tab 4: Context Menu Search Engines -->
         <div class="ai-modal-tab-pane" id="tabPaneContextMenu">
           <p style="font-size: 13px; color: var(--text-muted); margin-top: 0; margin-bottom: 12px; flex-shrink: 0;" data-i18n="wordbookContextMenuDesc">
@@ -3352,7 +3701,7 @@
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
               <span data-i18n="wordbookAddSearchEngine">添加新搜尋源</span>
             </button>
-            <button id="restoreContextMenuEnginesBtnModal" class="wordbook-btn" style="padding: 0 12px; background: transparent; color: var(--text-muted); border: 1px solid transparent;" title="恢復預設搜尋源">
+            <button id="restoreContextMenuEnginesBtnModal" class="wordbook-btn" style="padding: 0 12px; background: transparent; color: var(--text-muted); border: 1px solid transparent;" data-i18n-title="wordbookRestoreDefaultEngines" title="恢復預設搜尋源">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path></svg>
             </button>
           </div>

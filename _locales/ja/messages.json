@@ -762,6 +762,44 @@
     "message": "辞書モード",
     "description": "Wordbook: toggle detail mode"
   },
+  "wordbookAutoPronounce": {
+    "message": "自動読み上げ",
+    "description": "Wordbook: toggle auto-pronounce on navigation"
+  },
+  "wordbookTabShortcuts": {
+    "message": "ショートカットと音声",
+    "description": "Tab for shortcuts & pronunciation settings"
+  },
+  "wordbookShortcutsDesc": {
+    "message": "単語帳のキーボードショートカット一覧と単語切り替え時の発音設定。"
+  },
+  "shortcutNextWord": {
+    "message": "次の単語に切り替え"
+  },
+  "shortcutPrevWord": {
+    "message": "前の単語に切り替え"
+  },
+  "shortcutPronounceActive": {
+    "message": "選択中の単語を手動で読み上げ"
+  },
+  "shortcutArrowPronounce": {
+    "message": "左右キーで現在の単語を読み上げ"
+  },
+  "shortcutCloseModal": {
+    "message": "モーダルまたはメニューを閉じる"
+  },
+  "settingAutoPronounceTitle": {
+    "message": "単語切り替え時に自動読み上げ"
+  },
+  "settingAutoPronounceDesc": {
+    "message": "↑ / ↓ 方向キーまたは Enter キーで単語を切り替える際、広東語の発音を自動再生します。"
+  },
+  "settingArrowPronounceTitle": {
+    "message": "← / → キーで現在の単語を読み上げ"
+  },
+  "settingArrowPronounceDesc": {
+    "message": "自動読み上げが無効の場合、← または → キーで選択中の単語の発音を再生できます。"
+  },
   "wordbookEmptyDetail": {
     "message": "左側の単語をクリックして<br>辞書の詳細を表示します"
   },
@@ -1177,5 +1215,44 @@
   },
   "wordbookSearchPrefix": {
     "message": "検索"
+  },
+  "settingsCategoryWordbook": {
+    "message": "単語帳設定"
+  },
+  "settingsCategoryAi": {
+    "message": "AI 設定"
+  },
+  "wordbookSettingsModalTitle": {
+    "message": "設定"
+  },
+  "wordbookAiTabCustomPromptDesc": {
+    "message": "AI アシスタントのシステムプロンプトをカスタマイズし、回答のペルソナやスタイルを設定します。"
+  },
+  "wordbookAiCustomPromptPlaceholder": {
+    "message": "カスタムグローバルシステムプロンプトを入力..."
+  },
+  "wordbookAiInsertVariable": {
+    "message": "変数を挿入："
+  },
+  "wordbookTagTargetLang": {
+    "message": "対象言語"
+  },
+  "wordbookTagWord": {
+    "message": "選択単語"
+  },
+  "wordbookClickToInsert": {
+    "message": "クリックして挿入"
+  },
+  "wordbookRestoreDefaultPrompt": {
+    "message": "デフォルトの Prompt に戻す"
+  },
+  "wordbookPromptSaved": {
+    "message": "✓ 保存しました"
+  },
+  "wordbookRestoreDefaultActions": {
+    "message": "デフォルトのアクションに戻す"
+  },
+  "wordbookRestoreDefaultEngines": {
+    "message": "デフォルトの検索エンジンに戻す"
   }
 }

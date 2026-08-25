@@ -16,6 +16,8 @@
   // 粵語拼音容錯規範化 (支援常見粵語羅馬化變體)
   function normalizeJyutpingFuzzy(str) {
     return str.toLowerCase()
+      .replace(/yu/g, 'jyu')   // yu → jyu (魚/語/雨)
+      .replace(/^y/g, 'j')     // y → j (yi→ji, yau→jau, yat→jat)
       .replace(/eu/g, 'oe')
       .replace(/ch/g, 'c')
       .replace(/sh/g, 's')
@@ -34,6 +36,36 @@
       .replace(/q$/i, '3');
   }
 
+  // 粵拼聲母表 (按長度降序排列)
+  const JYUTPING_INITIALS = ['gw', 'kw', 'ng', 'b', 'p', 'm', 'f', 'd', 't', 'n', 'l', 'g', 'k', 'h', 'z', 'c', 's', 'j', 'w'];
+
+  function getSyllableInitial(syllable) {
+    const raw = syllable.toLowerCase().replace(/[1-6]/g, '').trim();
+    if (!raw) return '';
+    for (const init of JYUTPING_INITIALS) {
+      if (raw.startsWith(init)) return init;
+    }
+    return raw[0] || '';
+  }
+
+  function getAbbreviationKeys(jyutping) {
+    if (!jyutping) return [];
+    const syllables = jyutping.trim().split(/\s+/).filter(Boolean);
+    if (syllables.length < 2) return [];
+
+    const inits = syllables.map(getSyllableInitial);
+    const baseInitials = inits.map(i => i[0] || '');
+    const baseKey = baseInitials.join('');
+
+    const keys = new Set();
+    if (baseKey) keys.add(baseKey);
+
+    const fullKey = inits.join('');
+    if (fullKey && fullKey !== baseKey) keys.add(fullKey);
+
+    return Array.from(keys);
+  }
+
   // ==================== 1. 粵拼檢索引擎 ====================
 
   class JyutpingImeEngine {
@@ -41,7 +73,9 @@
       this.charBySyllable = new Map();  // rawJp -> array of single characters
       this.wordBySyllable = new Map();  // rawJp -> array of multi-character words
       this.tonedIndex = new Map();      // tonedJp -> array of Candidate (exact)
+      this.abbrIndex = new Map();       // abbrKey (e.g. 'sl', 'ss', 'hg') -> array of multi-character Candidate
       this.validSyllables = new Set();  // 合法單字音節集合 (用於分音切分)
+      this.validPrefixes = new Set();   // 合法音節前綴集合 (用於分音時識別部分輸入，如 'ma' 是 'maa' 的前綴)
       this.isReady = false;
     }
 
@@ -50,6 +84,7 @@
       this.charBySyllable.clear();
       this.wordBySyllable.clear();
       this.tonedIndex.clear();
+      this.abbrIndex.clear();
       this.validSyllables.clear();
 
       for (const [key, entry] of Object.entries(dict)) {
@@ -86,14 +121,19 @@
 
         // 計算詞頻評分
         let score = 0;
-        score += exCount * 20;
-        score += (entry.english || []).length * 5;
+        score += exCount * 25;
+        score += (entry.english || []).length * 8;
+        if (entry.sims && entry.sims.length > 0) score += 20;
+        if (entry.see_also && entry.see_also.length > 0) score += 15;
         if (trad.length === 1) score += 300;
         if (/^[0-9A-Za-z]+$/.test(trad)) score -= 500;
 
-        // 超高頻常用口語字加權
+        // 超高頻常用口語字/詞加權
         if ('係嘅唔乜咁點好咗喺我你佢哋睇邊度聽食瞓玩諗講搵買賣啱快遲仲未先話為回或和運位會問要年事做去得要過到生人天地心家'.includes(trad)) {
           score += 400;
+        }
+        if ('成立 實力 相信 消息 小時 少少 先生 小心 心理 上年 少女 犀利 新年 香港 唔該 點解 明白 知道 可以 應該 點樣 點算 邊度 多謝 唔緊要 今日 明日 琴日 聽日 依家 喺度 食飯 睇戲 買嘢 返工 返學 放學 放工 出去 入嚟 出嚟 講嘢 叫做出發'.split(' ').includes(trad)) {
+          score += 500;
         }
 
         // 精簡中英詞義 (TypeDuck 風格短釋義)
@@ -134,6 +174,13 @@
         } else {
           if (!this.wordBySyllable.has(rawJp)) this.wordBySyllable.set(rawJp, []);
           this.wordBySyllable.get(rawJp).push(item);
+
+          // 構建首字母簡拼 / 縮寫索引 (Abbreviation Index)
+          const abbrKeys = getAbbreviationKeys(jp);
+          for (const ak of abbrKeys) {
+            if (!this.abbrIndex.has(ak)) this.abbrIndex.set(ak, []);
+            this.abbrIndex.get(ak).push(item);
+          }
         }
       }
 
@@ -147,6 +194,17 @@
       for (const list of this.tonedIndex.values()) {
         list.sort((a, b) => b.score - a.score);
       }
+      for (const list of this.abbrIndex.values()) {
+        list.sort((a, b) => b.score - a.score);
+      }
+
+      // 構建音節前綴集合 (用於分音識別部分輸入)
+      this.validPrefixes.clear();
+      for (const syl of this.validSyllables) {
+        for (let len = 2; len < syl.length; len++) {
+          this.validPrefixes.add(syl.substring(0, len));
+        }
+      }
 
       this.isReady = true;
     }
@@ -156,7 +214,7 @@
       const converted = convertToneLettersToDigits(rawQuery.toLowerCase().trim());
       const query = converted;
       const hasTone = /[1-6]$/.test(query);
-      const raw = query.replace(/[1-6]/g, '');
+      const raw = query.replace(/[1-6]/g, '').replace(/\s+/g, '');
       const fuzzy = normalizeJyutpingFuzzy(raw);
       const fuzzyToned = normalizeJyutpingFuzzy(query);
 
@@ -182,7 +240,7 @@
         return results;
       }
 
-      // 2. 精確音節完全匹配 (當用戶輸入了完整音節如 'wui' 或 'dei' 時優先排列)
+      // 2. 精確音節完全匹配 (當用戶輸入了完整音節如 'wui' 或 'mgoi' 時優先排列)
       if (this.charBySyllable.has(raw)) {
         for (const it of this.charBySyllable.get(raw)) addItem(it);
       }
@@ -192,8 +250,12 @@
       if (this.wordBySyllable.has(raw)) {
         for (const it of this.wordBySyllable.get(raw)) addItem(it);
       }
+      if (fuzzy !== raw && this.wordBySyllable.has(fuzzy)) {
+        for (const it of this.wordBySyllable.get(fuzzy)) addItem(it);
+      }
 
-      // 3. 前綴匹配：按字母升序 (Alphabetical Order: waa -> wai -> wo -> wu...)
+      // 3. 音節前綴匹配：按字母升序 (Alphabetical Order: waa -> wai -> wo -> wu...)
+      //    優先於縮寫匹配，確保輸入 'ma' 時「馬」(maa) 排在「咩啊」(m+a 縮寫) 前面
       const matchingCharSyllables = Array.from(this.charBySyllable.keys())
         .filter(s => s.startsWith(raw) || (fuzzy !== raw && s.startsWith(fuzzy)))
         .sort((a, b) => a.localeCompare(b));
@@ -206,7 +268,17 @@
         }
       }
 
-      // 第二輪：追加各前綴音節剩餘單字
+      // 4. 首字母簡拼/縮寫精確匹配 (Abbreviation Matching: 如輸入 'sl' -> 成立/實力；輸入 'ss' -> 相信/消息/小時/少少)
+      if (raw.length >= 2) {
+        if (this.abbrIndex.has(raw)) {
+          for (const it of this.abbrIndex.get(raw)) addItem(it);
+        }
+        if (fuzzy !== raw && this.abbrIndex.has(fuzzy)) {
+          for (const it of this.abbrIndex.get(fuzzy)) addItem(it);
+        }
+      }
+
+      // 5. 追加各前綴音節剩餘單字
       for (const s of matchingCharSyllables) {
         const list = this.charBySyllable.get(s) || [];
         for (let i = 2; i < list.length; i++) {
@@ -227,6 +299,22 @@
           if (results.length > 300) break;
         }
         if (results.length > 300) break;
+      }
+
+      // 第四輪：縮寫前綴匹配 (如輸入 'gd' -> 匹配 3 字詞 'gdw' 廣東話)
+      if (raw.length >= 2) {
+        const matchingAbbrKeys = Array.from(this.abbrIndex.keys())
+          .filter(k => k.length > raw.length && (k.startsWith(raw) || (fuzzy !== raw && k.startsWith(fuzzy))))
+          .sort((a, b) => a.length - b.length || a.localeCompare(b));
+
+        for (const ak of matchingAbbrKeys) {
+          const list = this.abbrIndex.get(ak) || [];
+          for (let i = 0; i < Math.min(3, list.length); i++) {
+            addItem(list[i]);
+            if (results.length > 300) break;
+          }
+          if (results.length > 300) break;
+        }
       }
 
       return results;
@@ -262,11 +350,49 @@
         }
 
         if (matched) {
+          // 已匹配到完整音節，但檢查：若後方剩餘字符可組成更長的合法前綴，
+          // 則優先保持為一體 (如 'm' 是合法音節 '唔'，但 'ma' 是 'maa' 的前綴，
+          // 用戶正在輸入中，應顯示 'ma' 而非 'm a')
+          const afterMatch = i + matched.length;
+          if (afterMatch < raw.length) {
+            // 嘗試找更長的前綴
+            let longerPrefix = '';
+            for (let len = Math.min(6, raw.length - i); len > matched.length; len--) {
+              const sub = raw.substring(i, i + len);
+              if (this.validPrefixes.has(sub) || this.validSyllables.has(sub)) {
+                longerPrefix = sub;
+                break;
+              }
+            }
+            if (longerPrefix) {
+              tokens.push(longerPrefix);
+              i += longerPrefix.length;
+              continue;
+            }
+          }
           tokens.push(matched);
           i += matched.length;
         } else {
-          tokens.push(raw[i]);
-          i++;
+          // 未匹配到完整音節：檢查尾部剩餘是否為某合法音節的前綴
+          // (如 'ma' 是 'maa'/'maai' 的前綴，應保持為一整體，而非拆成 'm' + 'a')
+          const tail = raw.substring(i);
+          let prefixLen = 0;
+          for (let len = Math.min(6, tail.length); len >= 2; len--) {
+            const sub = tail.substring(0, len);
+            if (this.validPrefixes.has(sub)) {
+              prefixLen = len;
+              break;
+            }
+          }
+
+          if (prefixLen > 0) {
+            // 尾部前綴作為一個整體 token（用戶仍在輸入中）
+            tokens.push(tail.substring(0, prefixLen));
+            i += prefixLen;
+          } else {
+            tokens.push(raw[i]);
+            i++;
+          }
         }
       }
 
@@ -281,6 +407,11 @@
       this.engine = engine;
       this.pageSize = options.pageSize || 6;
       this.enabled = localStorage.getItem('jyutping_web_ime_enabled') !== 'false';
+      this.i18n = options.i18n || {
+        enabled: 'Web 版粵拼輸入法',
+        disabled: 'Web 版粵拼輸入法 (已關閉)',
+        title: '切換 Web 版粵拼輸入法'
+      };
       this.buffer = '';
       this.candidates = [];
       this.pageIndex = 0;
@@ -297,6 +428,26 @@
       this.createPopover();
     }
 
+    setI18n(i18n) {
+      if (!i18n) return;
+      this.i18n = Object.assign({}, this.i18n, i18n);
+      this.updateToggleBtn();
+    }
+
+    updateToggleBtn() {
+      if (!this.toggleBtnEl) return;
+      this.toggleBtnEl.title = this.i18n.title || '切換 Web 版粵拼輸入法';
+      this.toggleBtnEl.classList.toggle('is-active', this.enabled);
+      const badge = this.toggleBtnEl.querySelector('.ime-mode-badge');
+      const label = this.toggleBtnEl.querySelector('.ime-mode-label');
+      if (badge) badge.textContent = this.enabled ? '粵' : 'EN';
+      if (label) {
+        label.textContent = this.enabled
+          ? (this.i18n.enabled || 'Web 版粵拼輸入法')
+          : (this.i18n.disabled || 'Web 版粵拼輸入法 (已關閉)');
+      }
+    }
+
     createPopover() {
       if (document.getElementById('jyutpingImePopover')) {
         this.popoverEl = document.getElementById('jyutpingImePopover');
@@ -309,23 +460,43 @@
       document.body.appendChild(el);
       this.popoverEl = el;
 
-      // 滑鼠移動/懸停在某個選項上時，才展開該詞條的側邊欄
-      this.popoverEl.addEventListener('mouseover', (e) => {
+      this.lastMousePos = { x: -1, y: -1 };
+
+      // 滑鼠移動：只有當滑鼠真正發生物理位移時，才選中該詞條並展開側邊欄
+      // 防止候選框剛彈出時，靜止停留在該位置的光標誤觸發選中與展開
+      this.popoverEl.addEventListener('mousemove', (e) => {
+        if (e.target.closest('.ime-detail-panel')) return;
+
         const itemEl = e.target.closest('.ime-candidate-item');
-        if (itemEl && itemEl.dataset.index !== undefined && !e.target.closest('.ime-detail-panel')) {
-          const idx = parseInt(itemEl.dataset.index, 10);
-          const currentCandidates = this.getCurrentPageCandidates();
-          const hoveredItem = currentCandidates[idx];
-          if (hoveredItem && (this.activeDetailItem !== hoveredItem || this.selectedIndex !== idx)) {
-            this.selectedIndex = idx;
-            this.activeDetailItem = hoveredItem;
-            this.renderPopover();
-          }
+        if (!itemEl || itemEl.dataset.index === undefined) return;
+
+        // 若之前未記錄滑鼠位置 (例如剛進行鍵盤輸入/候選框剛刷新)，先記錄座標並略過本次
+        if (this.lastMousePos.x === -1 || this.lastMousePos.y === -1) {
+          this.lastMousePos = { x: e.clientX, y: e.clientY };
+          return;
+        }
+
+        const dx = Math.abs(e.clientX - this.lastMousePos.x);
+        const dy = Math.abs(e.clientY - this.lastMousePos.y);
+        if (dx < 3 && dy < 3) {
+          return; // 位移過小視為靜止，忽略
+        }
+
+        this.lastMousePos = { x: e.clientX, y: e.clientY };
+
+        const idx = parseInt(itemEl.dataset.index, 10);
+        const currentCandidates = this.getCurrentPageCandidates();
+        const hoveredItem = currentCandidates[idx];
+        if (hoveredItem && (this.activeDetailItem !== hoveredItem || this.selectedIndex !== idx)) {
+          this.selectedIndex = idx;
+          this.activeDetailItem = hoveredItem;
+          this.renderPopover();
         }
       });
 
       // 滑鼠移出整個候選浮窗時，自動關閉側邊欄 (還原為緊湊候選列表)
       this.popoverEl.addEventListener('mouseleave', () => {
+        this.lastMousePos = { x: -1, y: -1 };
         if (this.activeDetailItem) {
           this.activeDetailItem = null;
           this.renderPopover();
@@ -395,10 +566,10 @@
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = `ime-mode-toggle-btn ${this.enabled ? 'is-active' : ''}`;
-      btn.title = '切換 Web 版粵拼輸入法';
+      btn.title = this.i18n.title || '切換 Web 版粵拼輸入法';
       btn.innerHTML = `
         <span class="ime-mode-badge">${this.enabled ? '粵' : 'EN'}</span>
-        <span class="ime-mode-label">${this.enabled ? 'Web 版粵拼輸入法' : 'Web 版粵拼輸入法 (已關閉)'}</span>
+        <span class="ime-mode-label">${this.enabled ? (this.i18n.enabled || 'Web 版粵拼輸入法') : (this.i18n.disabled || 'Web 版粵拼輸入法 (已關閉)')}</span>
       `;
 
       btn.addEventListener('mousedown', (e) => {
@@ -418,13 +589,7 @@
       this.enabled = typeof forceState === 'boolean' ? forceState : !this.enabled;
       localStorage.setItem('jyutping_web_ime_enabled', this.enabled ? 'true' : 'false');
       
-      if (this.toggleBtnEl) {
-        this.toggleBtnEl.classList.toggle('is-active', this.enabled);
-        const badge = this.toggleBtnEl.querySelector('.ime-mode-badge');
-        const label = this.toggleBtnEl.querySelector('.ime-mode-label');
-        if (badge) badge.textContent = this.enabled ? '粵' : 'EN';
-        if (label) label.textContent = this.enabled ? 'Web 版粵拼輸入法' : 'Web 版粵拼輸入法 (已關閉)';
-      }
+      this.updateToggleBtn();
 
       if (!this.enabled) {
         this.clearBuffer();
@@ -437,6 +602,9 @@
 
       // 組合鍵 (Ctrl/Cmd/Alt) 不攔截
       if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+      // 任何鍵盤互動都重置滑鼠靜止位置，避免懸停誤觸
+      this.lastMousePos = { x: -1, y: -1 };
 
       // 1. 如果緩衝區為空
       if (!this.buffer) {
@@ -623,6 +791,7 @@
       this.pageIndex = 0;
       this.selectedIndex = 0;
       this.activeDetailItem = null; // 輸入新字母時預設不展開側邊欄
+      this.lastMousePos = { x: -1, y: -1 }; // 重置滑鼠位移偵測
       this.renderPopover();
     }
 
@@ -640,6 +809,8 @@
       if (this.pageIndex < total - 1) {
         this.pageIndex++;
         this.selectedIndex = 0;
+        this.activeDetailItem = null;
+        this.lastMousePos = { x: -1, y: -1 };
         this.renderPopover();
       }
     }
@@ -648,6 +819,8 @@
       if (this.pageIndex > 0) {
         this.pageIndex--;
         this.selectedIndex = 0;
+        this.activeDetailItem = null;
+        this.lastMousePos = { x: -1, y: -1 };
         this.renderPopover();
       }
     }
@@ -687,6 +860,7 @@
       this.pageIndex = 0;
       this.selectedIndex = 0;
       this.activeDetailItem = null;
+      this.lastMousePos = { x: -1, y: -1 };
       if (this.popoverEl) {
         this.popoverEl.style.display = 'none';
       }

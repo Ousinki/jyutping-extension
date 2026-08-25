@@ -12,6 +12,36 @@ const fs = require("fs");
 const path = require("path");
 
 /**
+ * 分割釋義字符串，避免將括號內的斜槓（如 (n. / appellation)）誤當作詞條分隔符
+ */
+function splitDefinitions(defString) {
+  const result = [];
+  let current = "";
+  let parenDepth = 0;
+  for (let i = 0; i < defString.length; i++) {
+    const ch = defString[i];
+    if (ch === "(" || ch === "[") {
+      parenDepth++;
+      current += ch;
+    } else if (ch === ")" || ch === "]") {
+      if (parenDepth > 0) parenDepth--;
+      current += ch;
+    } else if (ch === "/" && parenDepth === 0) {
+      if (current.trim()) {
+        result.push(current.trim());
+      }
+      current = "";
+    } else {
+      current += ch;
+    }
+  }
+  if (current.trim()) {
+    result.push(current.trim());
+  }
+  return result;
+}
+
+/**
  * 解析單行 CC-Canto 數據
  * 格式：你好 你好 [ni3 hao3] {nei5 hou2} /hello/hi/
  */
@@ -33,7 +63,7 @@ function parseLine(line) {
       simplified,
       pinyin,
       jyutping,
-      english: definitions.split('/').filter(d => d.trim())
+      english: splitDefinitions(definitions)
     };
   }
 
@@ -65,7 +95,7 @@ function parseLine(line) {
       simplified,
       pinyin,
       jyutping: '', // 沒有粵拼
-      english: definitions.split('/').filter(d => d.trim())
+      english: splitDefinitions(definitions)
     };
   }
 

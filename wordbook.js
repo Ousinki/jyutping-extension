@@ -107,10 +107,21 @@
   const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
   let dictionary = null;
   let isDetailMode = localStorage.getItem('jyutping_detail_mode') === 'true';
+  let isAutoPronounce = localStorage.getItem('jyutping_auto_pronounce') === 'true';
+  let isArrowPronounce = localStorage.getItem('jyutping_arrow_pronounce') !== 'false';
+  let autoTtsTimer = null;
   let aiHoverPronunciationEnabled = true;
   chrome.storage.local.get({ aiHoverPronunciationEnabled: true }, (res) => {
     aiHoverPronunciationEnabled = res.aiHoverPronunciationEnabled !== false;
   });
+
+  function triggerAutoPronounce(wordText, ttsTargetEl) {
+    if (!isAutoPronounce || !wordText) return;
+    if (autoTtsTimer) clearTimeout(autoTtsTimer);
+    autoTtsTimer = setTimeout(() => {
+      playTts(wordText, ttsTargetEl);
+    }, 120);
+  }
 
   // ==================== 存儲工具 ====================
 
@@ -294,7 +305,41 @@
       spellingQuizResultWrong: '答錯',
       spellingQuizResultSkipped: '跳過',
       spellingQuizSeconds: '秒',
-      spellingQuizReviewTitle: '題目回顧'
+      spellingQuizReviewTitle: '題目回顧',
+      wordbookNote: '筆記',
+      wordbookAddNote: '添加筆記',
+      wordbookEditNote: '編輯筆記',
+      wordbookDeleteNote: '刪除筆記',
+      wordbookNoteTitle: '自定義筆記',
+      wordbookNotePlaceholder: '在此記錄記憶技巧、生活例句或筆記備註...',
+      wordbookNoteSave: '保存筆記',
+      wordbookNoteCancel: '取消',
+      wordbookNoteDeleteConfirm: '確定要刪除此筆記嗎？',
+      wordbookNoteShortcutHint: 'Cmd/Ctrl + Enter 保存',
+      wordbookTabShortcuts: '快捷鍵與朗讀',
+      wordbookShortcutsDesc: '生詞表鍵盤快捷鍵一覽及自訂生詞切換時的發音行為。',
+      shortcutNextWord: '切換至下一個生詞',
+      shortcutPrevWord: '切換至上一個生詞',
+      shortcutPronounceActive: '手動朗讀當前選中生詞',
+      shortcutArrowPronounce: '左右鍵手動朗讀當前生詞',
+      shortcutCloseModal: '關閉當前彈窗或右鍵選單',
+      settingAutoPronounceTitle: '切換生詞時自動朗讀',
+      settingAutoPronounceDesc: '使用 ↑ / ↓ 方向鍵或 Enter 鍵切換生詞時，自動播放該生詞的粵語發音。',
+      settingArrowPronounceTitle: '允許使用 ← / → 鍵朗讀當前詞條',
+      settingArrowPronounceDesc: '若關閉自動朗讀，可隨時按鍵盤左右方向鍵（← 或 →）手動播放當前選中詞條的發音。',
+      settingsCategoryWordbook: '生詞表設定',
+      settingsCategoryAi: 'AI 助手設定',
+      wordbookSettingsModalTitle: '設定',
+      wordbookAiTabCustomPromptDesc: '自訂 AI 隨身問答的系統提示詞（System Prompt），此 Prompt 會引導 AI 在解答所有問題時的人設與回答風格。',
+      wordbookAiCustomPromptPlaceholder: '輸入自訂全域系統提示詞...',
+      wordbookAiInsertVariable: '插入變量：',
+      wordbookTagTargetLang: '目標語言',
+      wordbookTagWord: '選中詞',
+      wordbookClickToInsert: '點擊插入',
+      wordbookRestoreDefaultPrompt: '恢復預設 Prompt',
+      wordbookPromptSaved: '✓ 已保存',
+      wordbookRestoreDefaultActions: '恢復預設指令',
+      wordbookRestoreDefaultEngines: '恢復預設搜尋源'
     },
     'zh-CN': {
       wordbookAiSettingsTitle: 'AI 设置',
@@ -434,7 +479,41 @@
       spellingQuizResultWrong: '答错',
       spellingQuizResultSkipped: '跳过',
       spellingQuizSeconds: '秒',
-      spellingQuizReviewTitle: '题目回顾'
+      spellingQuizReviewTitle: '题目回顾',
+      wordbookNote: '笔记',
+      wordbookAddNote: '添加笔记',
+      wordbookEditNote: '编辑笔记',
+      wordbookDeleteNote: '删除笔记',
+      wordbookNoteTitle: '自定义笔记',
+      wordbookNotePlaceholder: '在此记录记忆技巧、生活例句或笔记备注...',
+      wordbookNoteSave: '保存笔记',
+      wordbookNoteCancel: '取消',
+      wordbookNoteDeleteConfirm: '确定要删除此笔记吗？',
+      wordbookNoteShortcutHint: 'Cmd/Ctrl + Enter 保存',
+      wordbookTabShortcuts: '快捷键与朗读',
+      wordbookShortcutsDesc: '生词表键盘快捷键一览及自定义生词切换时的发音行为。',
+      shortcutNextWord: '切换至下一个生词',
+      shortcutPrevWord: '切换至上一个生词',
+      shortcutPronounceActive: '手动朗读当前选中生词',
+      shortcutArrowPronounce: '左右键手动朗读当前生词',
+      shortcutCloseModal: '关闭当前弹窗或右键菜单',
+      settingAutoPronounceTitle: '切换生词时自动朗读',
+      settingAutoPronounceDesc: '使用 ↑ / ↓ 方向键或 Enter 键切换生词时，自动播放该生词的粤语发音。',
+      settingArrowPronounceTitle: '允许使用 ← / → 键朗读当前词条',
+      settingArrowPronounceDesc: '若关闭自动朗读，可随时按键盘左右方向键（← 或 →）手动播放当前选中词条的发音。',
+      settingsCategoryWordbook: '生词表设置',
+      settingsCategoryAi: 'AI 助手设置',
+      wordbookSettingsModalTitle: '设置',
+      wordbookAiTabCustomPromptDesc: '自定义 AI 随身问答的系统提示词（System Prompt），此 Prompt 会引导 AI 在解答所有问题时的人设与回答风格。',
+      wordbookAiCustomPromptPlaceholder: '输入自定义全局系统提示词...',
+      wordbookAiInsertVariable: '插入变量：',
+      wordbookTagTargetLang: '目标语言',
+      wordbookTagWord: '选中词',
+      wordbookClickToInsert: '点击插入',
+      wordbookRestoreDefaultPrompt: '恢复预设 Prompt',
+      wordbookPromptSaved: '✓ 已保存',
+      wordbookRestoreDefaultActions: '恢复预设指令',
+      wordbookRestoreDefaultEngines: '恢复预设搜索源'
     },
     'en': {
       wordbookAiSettingsTitle: 'AI Settings',
@@ -574,7 +653,41 @@
       spellingQuizResultWrong: 'Wrong',
       spellingQuizResultSkipped: 'Skipped',
       spellingQuizSeconds: 's',
-      spellingQuizReviewTitle: 'Review'
+      spellingQuizReviewTitle: 'Review',
+      wordbookNote: 'Note',
+      wordbookAddNote: 'Add Note',
+      wordbookEditNote: 'Edit Note',
+      wordbookDeleteNote: 'Delete Note',
+      wordbookNoteTitle: 'Custom Note',
+      wordbookNotePlaceholder: 'Write your memory tips, example sentences, or notes here...',
+      wordbookNoteSave: 'Save Note',
+      wordbookNoteCancel: 'Cancel',
+      wordbookNoteDeleteConfirm: 'Are you sure you want to delete this note?',
+      wordbookNoteShortcutHint: 'Cmd/Ctrl + Enter to save',
+      wordbookTabShortcuts: 'Shortcuts & Audio',
+      wordbookShortcutsDesc: 'Overview of keyboard shortcuts and customization of audio pronunciation on navigation.',
+      shortcutNextWord: 'Navigate to next word',
+      shortcutPrevWord: 'Navigate to previous word',
+      shortcutPronounceActive: 'Pronounce active word manually',
+      shortcutArrowPronounce: 'Pronounce active word with Left/Right arrows',
+      shortcutCloseModal: 'Close modal or context menu',
+      settingAutoPronounceTitle: 'Auto-pronounce on navigation',
+      settingAutoPronounceDesc: 'Automatically play Cantonese pronunciation when navigating words via ↑ / ↓ arrow keys or Enter.',
+      settingArrowPronounceTitle: 'Pronounce with ← / → arrow keys',
+      settingArrowPronounceDesc: 'Allow pressing Left or Right arrow keys (← / →) to manually pronounce the active word.',
+      settingsCategoryWordbook: 'Word Book',
+      settingsCategoryAi: 'AI Assistant',
+      wordbookSettingsModalTitle: 'Settings',
+      wordbookAiTabCustomPromptDesc: 'Customize the system prompt for AI Q&A to guide the persona and answering style.',
+      wordbookAiCustomPromptPlaceholder: 'Enter custom global system prompt...',
+      wordbookAiInsertVariable: 'Insert Variables:',
+      wordbookTagTargetLang: 'Target Language',
+      wordbookTagWord: 'Selected Word',
+      wordbookClickToInsert: 'Click to insert',
+      wordbookRestoreDefaultPrompt: 'Restore Default Prompt',
+      wordbookPromptSaved: '✓ Saved',
+      wordbookRestoreDefaultActions: 'Restore Default Actions',
+      wordbookRestoreDefaultEngines: 'Restore Default Engines'
     },
     'ja': {
       wordbookAiSettingsTitle: 'AI 設定',
@@ -714,7 +827,41 @@
       spellingQuizResultWrong: '不正解',
       spellingQuizResultSkipped: 'スキップ',
       spellingQuizSeconds: '秒',
-      spellingQuizReviewTitle: '振り返り'
+      spellingQuizReviewTitle: '振り返り',
+      wordbookNote: 'ノート',
+      wordbookAddNote: 'ノートを追加',
+      wordbookEditNote: 'ノートを編集',
+      wordbookDeleteNote: 'ノートを削除',
+      wordbookNoteTitle: 'カスタムノート',
+      wordbookNotePlaceholder: '記憶のヒント、例文、メモをここに記入...',
+      wordbookNoteSave: '保存',
+      wordbookNoteCancel: 'キャンセル',
+      wordbookNoteDeleteConfirm: 'このノートを削除してもよろしいですか？',
+      wordbookNoteShortcutHint: 'Cmd/Ctrl + Enter で保存',
+      wordbookTabShortcuts: 'ショートカットと音声',
+      wordbookShortcutsDesc: '単語帳のキーボードショートカット一覧と単語切り替え時の発音設定。',
+      shortcutNextWord: '次の単語に切り替え',
+      shortcutPrevWord: '前の単語に切り替え',
+      shortcutPronounceActive: '選択中の単語を手動で読み上げ',
+      shortcutArrowPronounce: '左右キーで現在の単語を読み上げ',
+      shortcutCloseModal: 'モーダルまたはメニューを閉じる',
+      settingAutoPronounceTitle: '単語切り替え時に自動読み上げ',
+      settingAutoPronounceDesc: '↑ / ↓ 方向キーまたは Enter キーで単語を切り替える際、広東語の発音を自動再生します。',
+      settingArrowPronounceTitle: '← / → キーで現在の単語を読み上げ',
+      settingArrowPronounceDesc: '自動読み上げが無効の場合、← または → キーで選択中の単語の発音を再生できます。',
+      settingsCategoryWordbook: '単語帳設定',
+      settingsCategoryAi: 'AI 設定',
+      wordbookSettingsModalTitle: '設定',
+      wordbookAiTabCustomPromptDesc: 'AI アシスタントのシステムプロンプトをカスタマイズし、回答のペルソナやスタイルを設定します。',
+      wordbookAiCustomPromptPlaceholder: 'カスタムグローバルシステムプロンプトを入力...',
+      wordbookAiInsertVariable: '変数を挿入：',
+      wordbookTagTargetLang: '対象言語',
+      wordbookTagWord: '選択単語',
+      wordbookClickToInsert: 'クリックして挿入',
+      wordbookRestoreDefaultPrompt: 'デフォルトの Prompt に戻す',
+      wordbookPromptSaved: '✓ 保存しました',
+      wordbookRestoreDefaultActions: 'デフォルトのアクションに戻す',
+      wordbookRestoreDefaultEngines: 'デフォルトの検索エンジンに戻す'
     },
     'ko': {
       wordbookAiSettingsTitle: 'AI 설정',
@@ -853,11 +1000,72 @@
       spellingQuizResultWrong: '오답',
       spellingQuizResultSkipped: '건너뜀',
       spellingQuizSeconds: '초',
-      spellingQuizReviewTitle: '문제 리뷰'
+      spellingQuizReviewTitle: '문제 리뷰',
+      wordbookNote: '메모',
+      wordbookAddNote: '메모 추가',
+      wordbookEditNote: '메모 편집',
+      wordbookDeleteNote: '메모 삭제',
+      wordbookNoteTitle: '사용자 메모',
+      wordbookNotePlaceholder: '기억 팁, 예문 또는 메모를 여기에 작성하세요...',
+      wordbookNoteSave: '저장',
+      wordbookNoteCancel: '취소',
+      wordbookNoteDeleteConfirm: '이 메모를 삭제하시겠습니까?',
+      wordbookNoteShortcutHint: 'Cmd/Ctrl + Enter 로 저장',
+      wordbookTabShortcuts: '단축키 및 발음',
+      wordbookShortcutsDesc: '단어장 키보드 단축키 안내 및 단어 전환 시 발음 설정.',
+      shortcutNextWord: '다음 단어로 이동',
+      shortcutPrevWord: '이전 단어로 이동',
+      shortcutPronounceActive: '현재 선택된 단어 수동 발음',
+      shortcutArrowPronounce: '좌우 방향키로 현재 단어 발음',
+      shortcutCloseModal: '팝업 또는 메뉴 닫기',
+      settingAutoPronounceTitle: '단어 이동 시 자동 발음',
+      settingAutoPronounceDesc: '↑ / ↓ 방향키 또는 Enter 키로 단어를 전환할 때 광둥어 발음을 자동으로 재생합니다.',
+      settingArrowPronounceTitle: '← / → 키로 현재 단어 발음',
+      settingArrowPronounceDesc: '자동 발음이 꺼져 있을 때, ← 또는 → 키로 현재 선택된 단어의 발음을 재생할 수 있습니다.',
+      settingsCategoryWordbook: '단어장 설정',
+      settingsCategoryAi: 'AI 설정',
+      wordbookSettingsModalTitle: '설정',
+      wordbookAiTabCustomPromptDesc: 'AI 질의응답을 위한 시스템 프롬프트를 사용자 정의하여 답변 스타일과 페르소나를 설정합니다。',
+      wordbookAiCustomPromptPlaceholder: '사용자 정의 글로벌 시스템 프롬프트 입력...',
+      wordbookAiInsertVariable: '변수 삽입:',
+      wordbookTagTargetLang: '대상 언어',
+      wordbookTagWord: '선택된 단어',
+      wordbookClickToInsert: '클릭하여 삽입',
+      wordbookRestoreDefaultPrompt: '기본 Prompt 복원',
+      wordbookPromptSaved: '✓ 저장됨',
+      wordbookRestoreDefaultActions: '기본 작업 복원',
+      wordbookRestoreDefaultEngines: '기본 검색 엔진 복원'
     }
   };
 
   let currentLang = 'zh-HK';
+
+  function normalizeLang(lang) {
+    if (!lang) return 'zh-HK';
+    if (lang === 'zh-CN' || lang === 'zh_CN' || lang === 'zh-Hans' || lang === 'zh_Hans') return 'zh-CN';
+    if (lang === 'zh-TW' || lang === 'zh_TW' || lang === 'zh-HK' || lang === 'zh_HK' || lang === 'zh-Hant' || lang === 'zh_Hant') return 'zh-HK';
+    if (lang.startsWith('en')) return 'en';
+    if (lang.startsWith('ja')) return 'ja';
+    if (lang.startsWith('ko')) return 'ko';
+    return 'zh-HK';
+  }
+
+  function getDefaultSystemPrompt(lang) {
+    const l = normalizeLang(lang || currentLang);
+    if (l === 'zh-CN') {
+      return '你是一个粤语语言专家。请用{targetLang}回答用户关于选中字词或句子的疑问，解答要简明扼要、准确可靠。';
+    }
+    if (l === 'en') {
+      return 'You are an expert in Cantonese linguistics. Please answer the user\'s questions about the selected words or sentences in {targetLang}. Provide concise, accurate, and reliable explanations.';
+    }
+    if (l === 'ja') {
+      return 'あなたは広東語の専門家です。選択された単語や文章に関する質問に{targetLang}で回答してください。簡潔で正確、信頼できる解説を提供してください。';
+    }
+    if (l === 'ko') {
+      return '당신은 광둥어 언어 전문가입니다. 선택한 단어나 문장에 대한 사용자의 질문에 {targetLang}로 답변해 주세요. 간결하고 정확하며 신뢰할 수 있는 설명을 제공해 주세요.';
+    }
+    return '你是一個粵語語言專家。請用{targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。';
+  }
 
   const DEFAULT_AI_SYSTEM_PROMPT = '你是一個粵語語言專家。請用{targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。';
 
@@ -1443,6 +1651,18 @@
           </div>
         `;
       case 'col-meaning':
+        if (word.notes) {
+          return `
+            <div class="col-meaning">
+              <div class="excel-cell" title="${escapeHtml(word.notes)}">
+                <span class="excel-cell-text" style="display: flex; align-items: center; gap: 5px; color: var(--primary); font-size: 12px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
+                  <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${escapeHtml(word.notes)}</span>
+                </span>
+              </div>
+            </div>
+          `;
+        }
         return `<div class="col-meaning"></div>`;
       case 'col-date':
         return `<div class="col-date">${date}</div>`;
@@ -2256,6 +2476,23 @@
     if (speakingTimer) { clearTimeout(speakingTimer); speakingTimer = null; }
   }
 
+  const MAX_TTS_CACHE_SIZE = 100;
+  const ttsCache = new Map();
+
+  function cacheTtsAudio(key, blobUrl) {
+    if (ttsCache.has(key)) {
+      const oldUrl = ttsCache.get(key);
+      if (oldUrl && oldUrl !== blobUrl && oldUrl.startsWith('blob:')) URL.revokeObjectURL(oldUrl);
+      ttsCache.delete(key);
+    } else if (ttsCache.size >= MAX_TTS_CACHE_SIZE) {
+      const oldestKey = ttsCache.keys().next().value;
+      const oldUrl = ttsCache.get(oldestKey);
+      if (oldUrl && oldUrl.startsWith('blob:')) URL.revokeObjectURL(oldUrl);
+      ttsCache.delete(oldestKey);
+    }
+    ttsCache.set(key, blobUrl);
+  }
+
   function playTts(text, ttsBtn) {
     if (!text) return;
     const reqId = ++currentTtsRequestId;
@@ -2307,6 +2544,31 @@
           stopSpeaking();
         }
       } else if (engine === 'edgeTts') {
+        const cacheKey = `${engine}:${rate}:${text}`;
+        if (ttsCache.has(cacheKey)) {
+          const cachedUrl = ttsCache.get(cacheKey);
+          // Refresh LRU position
+          ttsCache.delete(cacheKey);
+          ttsCache.set(cacheKey, cachedUrl);
+
+          const audio = new Audio(cachedUrl);
+          currentAudio = audio;
+          audio.onended = () => {
+            if (reqId === currentTtsRequestId) {
+              currentAudio = null;
+              stopSpeaking();
+            }
+          };
+          audio.onerror = () => {
+            if (reqId === currentTtsRequestId) {
+              currentAudio = null;
+              stopSpeaking();
+            }
+          };
+          audio.play().catch(() => stopSpeaking());
+          return;
+        }
+
         try {
           const baseUrl = (result.edgeTtsMode === 'custom' ? result.edgeTtsUrl : EDGE_TTS_DEFAULT_URL).replace(/\/$/, '');
           const resp = await fetch(baseUrl + '/v1/audio/speech', {
@@ -2319,11 +2581,12 @@
           const blob = await resp.blob();
           if (reqId !== currentTtsRequestId) return;
 
-          const audio = new Audio(URL.createObjectURL(blob));
+          const blobUrl = URL.createObjectURL(blob);
+          cacheTtsAudio(cacheKey, blobUrl);
+          const audio = new Audio(blobUrl);
           currentAudio = audio;
           audio.onended = () => {
             if (reqId === currentTtsRequestId) {
-              URL.revokeObjectURL(audio.src);
               currentAudio = null;
               stopSpeaking();
             }
@@ -2503,6 +2766,9 @@
         document.querySelectorAll('.table-row').forEach(r => r.classList.remove('active-row'));
         row.classList.add('active-row');
         renderDetailPanel(character);
+        if (isAutoPronounce) {
+          triggerAutoPronounce(character, charEl);
+        }
       }
     }
 
@@ -3130,7 +3396,9 @@
 
     const entry = dictionary[character];
     const pronunciation = entry.jyutping || '';
-    const isSaved = wordbook.some(w => w.character === character);
+    const isSaved = wordbook.some(w => w.character === character && !w.deletedAt);
+    const wordItem = wordbook.find(w => w.character === character && !w.deletedAt);
+    const existingNote = wordItem ? (wordItem.notes || '') : '';
     
     // Header
     let html = `
@@ -3139,6 +3407,15 @@
           <div class="popup-main" style="width: 100%; min-width: auto; padding: 0; position: relative;">
           <!-- Action Buttons -->
           <div class="detail-actions-wrapper" id="detailActionsWrapper">
+            <div class="detail-note-btn ${existingNote ? 'has-note' : ''}" id="detailNoteBtn" title="${existingNote ? (t('wordbookEditNote') || '編輯筆記') : (t('wordbookAddNote') || '添加筆記')}">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;">
+                ${existingNote
+                  ? '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>'
+                  : '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>'
+                }
+              </svg>
+              <span>${t('wordbookNote') || '筆記'}</span>
+            </div>
             <div class="detail-report-btn" id="detailReportBtn" title="報告錯誤">
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 3px;">
                 <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
@@ -3256,6 +3533,53 @@
     if (refLines.length > 0) {
       html += `<div class="see-also-section" style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--popup-divider-strong);">${refLines.join('')}</div>`;
     }
+
+    // Note Section
+    html += `
+      <div class="detail-note-section" id="detailNoteSection">
+        <!-- Note Card (shown when note exists) -->
+        <div class="detail-note-card" id="detailNoteCard" style="${existingNote ? '' : 'display: none;'}">
+          <div class="detail-note-header">
+            <div class="detail-note-title">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>${t('wordbookNote') || '筆記'}</span>
+            </div>
+            <div class="detail-note-actions">
+              <button class="detail-note-action-btn" id="detailNoteEditBtn" title="${t('wordbookEditNote') || '編輯筆記'}" aria-label="${t('wordbookEditNote') || '編輯筆記'}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path>
+                </svg>
+              </button>
+              <button class="detail-note-action-btn btn-delete" id="detailNoteDeleteBtn" title="${t('wordbookDeleteNote') || '刪除筆記'}" aria-label="${t('wordbookDeleteNote') || '刪除筆記'}">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="3 6 5 6 21 6"></polyline>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="detail-note-content" id="detailNoteContent">${escapeHtml(existingNote)}</div>
+        </div>
+
+        <!-- Note Editor (hidden by default) -->
+        <div class="detail-note-editor" id="detailNoteEditor" style="display: none;">
+          <textarea id="detailNoteTextarea" class="detail-note-textarea" placeholder="${t('wordbookNotePlaceholder') || '在此記錄記憶技巧、生活例句或筆記備註...'}">${escapeHtml(existingNote)}</textarea>
+          <div class="detail-note-footer">
+            <span class="detail-note-hint">${t('wordbookNoteShortcutHint') || 'Cmd/Ctrl + Enter 保存'}</span>
+            <div class="detail-note-btn-group">
+              <button class="btn" id="detailNoteCancelBtn">${t('wordbookNoteCancel') || '取消'}</button>
+              <button class="btn btn-primary" id="detailNoteSaveBtn">${t('wordbookNoteSave') || '保存筆記'}</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
 
     // Report Form (hidden by default)
     html += `
@@ -3725,6 +4049,160 @@
       }
     }
 
+    // ==================== Detail Note Binding ====================
+    const noteBtn = document.getElementById('detailNoteBtn');
+    const noteSection = document.getElementById('detailNoteSection');
+    const noteCard = document.getElementById('detailNoteCard');
+    const noteContent = document.getElementById('detailNoteContent');
+    const noteEditor = document.getElementById('detailNoteEditor');
+    const noteTextarea = document.getElementById('detailNoteTextarea');
+    const noteEditBtn = document.getElementById('detailNoteEditBtn');
+    const noteDeleteBtn = document.getElementById('detailNoteDeleteBtn');
+    const noteCancelBtn = document.getElementById('detailNoteCancelBtn');
+    const noteSaveBtn = document.getElementById('detailNoteSaveBtn');
+
+    function openNoteEditor() {
+      const currentWord = wordbook.find(w => w.character === character && !w.deletedAt);
+      const curNote = currentWord ? (currentWord.notes || '') : '';
+      if (noteTextarea) {
+        noteTextarea.value = curNote;
+      }
+      if (noteCard) noteCard.style.display = 'none';
+      if (noteEditor) noteEditor.style.display = 'flex';
+      if (noteTextarea) {
+        noteTextarea.focus();
+        noteTextarea.setSelectionRange(noteTextarea.value.length, noteTextarea.value.length);
+      }
+      if (noteSection) {
+        noteSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+      }
+    }
+
+    function closeNoteEditor() {
+      const currentWord = wordbook.find(w => w.character === character && !w.deletedAt);
+      const curNote = currentWord ? (currentWord.notes || '') : '';
+      if (noteEditor) noteEditor.style.display = 'none';
+      if (curNote) {
+        if (noteCard) noteCard.style.display = 'block';
+        if (noteContent) noteContent.textContent = curNote;
+      } else {
+        if (noteCard) noteCard.style.display = 'none';
+      }
+    }
+
+    async function saveNoteAction() {
+      if (!noteTextarea) return;
+      const newNote = noteTextarea.value.trim();
+      let currentWord = wordbook.find(w => w.character === character && !w.deletedAt);
+
+      if (!currentWord) {
+        // Auto-add to wordbook
+        currentWord = {
+          id: 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+          character: character,
+          simplified: entry.simplified || character,
+          jyutping: entry.jyutping || '',
+          yale: entry.yale || '',
+          english: entry.english || [],
+          timestamp: Date.now(),
+          sourceUrl: '',
+          sourceTitle: '',
+          tags: [],
+          notes: newNote
+        };
+        wordbook.unshift(currentWord);
+
+        const bookmarkBtn = document.getElementById('detailBookmarkBtn');
+        if (bookmarkBtn) {
+          const svg = bookmarkBtn.querySelector('svg');
+          if (svg) {
+            svg.innerHTML = '<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="#D4AF37" stroke="#D4AF37" stroke-width="1.5"></polygon>';
+          }
+          bookmarkBtn.title = '從生詞本移除';
+        }
+      } else {
+        currentWord.notes = newNote;
+      }
+
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+
+      if (noteBtn) {
+        if (newNote) {
+          noteBtn.classList.add('has-note');
+          noteBtn.title = t('wordbookEditNote') || '編輯筆記';
+          noteBtn.querySelector('svg').innerHTML = '<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline>';
+        } else {
+          noteBtn.classList.remove('has-note');
+          noteBtn.title = t('wordbookAddNote') || '添加筆記';
+          noteBtn.querySelector('svg').innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+        }
+      }
+
+      closeNoteEditor();
+    }
+
+    async function deleteNoteAction() {
+      const currentWord = wordbook.find(w => w.character === character && !w.deletedAt);
+      if (!currentWord || !currentWord.notes) return;
+
+      const confirmMsg = t('wordbookNoteDeleteConfirm') || '確定要刪除此筆記嗎？';
+      if (!confirm(confirmMsg)) return;
+
+      currentWord.notes = '';
+      await saveWordbook(wordbook);
+      renderList();
+      updateStats();
+      updateStorage();
+
+      if (noteBtn) {
+        noteBtn.classList.remove('has-note');
+        noteBtn.title = t('wordbookAddNote') || '添加筆記';
+        noteBtn.querySelector('svg').innerHTML = '<line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line>';
+      }
+
+      if (noteTextarea) noteTextarea.value = '';
+      if (noteEditor) noteEditor.style.display = 'none';
+      if (noteCard) noteCard.style.display = 'none';
+    }
+
+    if (noteBtn) noteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      if (noteEditor && noteEditor.style.display === 'flex') {
+        closeNoteEditor();
+      } else {
+        openNoteEditor();
+      }
+    });
+    if (noteEditBtn) noteEditBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      openNoteEditor();
+    });
+    if (noteDeleteBtn) noteDeleteBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      deleteNoteAction();
+    });
+    if (noteCancelBtn) noteCancelBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeNoteEditor();
+    });
+    if (noteSaveBtn) noteSaveBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      saveNoteAction();
+    });
+    if (noteTextarea) {
+      noteTextarea.addEventListener('keydown', (e) => {
+        if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
+          e.preventDefault();
+          saveNoteAction();
+        } else if (e.key === 'Escape') {
+          closeNoteEditor();
+        }
+      });
+    }
+
     // ==================== AI Chat Section Binding ====================
     const aiChatSection = document.getElementById('aiChatSection');
     const aiChatInput = document.getElementById('aiChatInput');
@@ -3863,9 +4341,23 @@
     initTheme();
 
     // Detect language
-    chrome.storage.local.get(['extensionLang'], (res) => {
-      if (res.extensionLang) currentLang = res.extensionLang;
+    chrome.storage.local.get(['uiLang', 'extensionLang'], (res) => {
+      if (res) {
+        const rawLang = res.uiLang || res.extensionLang;
+        if (rawLang) currentLang = normalizeLang(rawLang);
+      }
       applyI18n();
+    });
+
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && (changes.uiLang || changes.extensionLang)) {
+        const nextLang = (changes.uiLang || changes.extensionLang).newValue;
+        if (nextLang) {
+          currentLang = normalizeLang(nextLang);
+          applyI18n();
+          renderList();
+        }
+      }
     });
 
     // Load wordbook
@@ -3916,6 +4408,25 @@
       });
     }
 
+    // Shortcuts & Audio Settings Toggles in Modal
+    const autoPronounceSettingToggle = document.getElementById('autoPronounceSettingToggle');
+    if (autoPronounceSettingToggle) {
+      autoPronounceSettingToggle.checked = isAutoPronounce;
+      autoPronounceSettingToggle.addEventListener('change', () => {
+        isAutoPronounce = autoPronounceSettingToggle.checked;
+        localStorage.setItem('jyutping_auto_pronounce', isAutoPronounce);
+      });
+    }
+
+    const arrowPronounceSettingToggle = document.getElementById('arrowPronounceSettingToggle');
+    if (arrowPronounceSettingToggle) {
+      arrowPronounceSettingToggle.checked = isArrowPronounce;
+      arrowPronounceSettingToggle.addEventListener('change', () => {
+        isArrowPronounce = arrowPronounceSettingToggle.checked;
+        localStorage.setItem('jyutping_arrow_pronounce', isArrowPronounce);
+      });
+    }
+
     renderList();
     updateStats();
     updateStorage();
@@ -3951,28 +4462,26 @@
     if (aiCustomPromptInputModal) {
       aiCustomPromptInputModal.value = globalAiCustomSystemPrompt || '';
       if (!aiCustomPromptInputModal.value) {
-        aiCustomPromptInputModal.placeholder = DEFAULT_AI_SYSTEM_PROMPT;
+        aiCustomPromptInputModal.placeholder = getDefaultSystemPrompt();
       }
     }
 
     const activeTabName = (typeof initialTab === 'string' && initialTab) ? initialTab : 'quick-actions';
-    if (aiModalTabs) {
-      aiModalTabs.querySelectorAll('.ai-modal-tab-btn').forEach((b) => {
-        b.classList.toggle('active', b.dataset.tab === activeTabName);
-      });
-      const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
-      const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
-      const tabPaneInteraction = document.getElementById('tabPaneInteraction');
-      const tabPaneContextMenu = document.getElementById('tabPaneContextMenu');
-      if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', activeTabName === 'quick-actions');
-      if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', activeTabName === 'custom-prompt');
-      if (tabPaneInteraction) tabPaneInteraction.classList.toggle('active', activeTabName === 'interaction');
-      if (tabPaneContextMenu) tabPaneContextMenu.classList.toggle('active', activeTabName === 'context-menu');
-    }
+    switchSettingsTab(activeTabName);
 
     const aiHoverPronunciationToggle = document.getElementById('aiHoverPronunciationToggle');
     if (aiHoverPronunciationToggle) {
       aiHoverPronunciationToggle.checked = aiHoverPronunciationEnabled;
+    }
+
+    const autoPronounceSettingToggle = document.getElementById('autoPronounceSettingToggle');
+    if (autoPronounceSettingToggle) {
+      autoPronounceSettingToggle.checked = isAutoPronounce;
+    }
+
+    const arrowPronounceSettingToggle = document.getElementById('arrowPronounceSettingToggle');
+    if (arrowPronounceSettingToggle) {
+      arrowPronounceSettingToggle.checked = isArrowPronounce;
     }
 
     renderAiSettingsList();
@@ -4216,24 +4725,86 @@ document.querySelectorAll('.modal-overlay').forEach(overlay => {
   }, { passive: false });
 });
 
-// Tab Switching
-if (aiModalTabs) {
-  aiModalTabs.addEventListener('click', (e) => {
-    const tabBtn = e.target.closest('.ai-modal-tab-btn');
-    if (!tabBtn) return;
-    const targetTab = tabBtn.dataset.tab;
-    aiModalTabs.querySelectorAll('.ai-modal-tab-btn').forEach(b => b.classList.toggle('active', b === tabBtn));
-    
-    const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
-    const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
-    const tabPaneInteraction = document.getElementById('tabPaneInteraction');
-    const tabPaneContextMenu = document.getElementById('tabPaneContextMenu');
-    if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', targetTab === 'quick-actions');
-    if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', targetTab === 'custom-prompt');
-    if (tabPaneInteraction) tabPaneInteraction.classList.toggle('active', targetTab === 'interaction');
-    if (tabPaneContextMenu) tabPaneContextMenu.classList.toggle('active', targetTab === 'context-menu');
+// Category & Tab Switching
+const WORDBOOK_TABS = ['shortcuts', 'context-menu'];
+const AI_TABS = ['quick-actions', 'custom-prompt', 'interaction'];
+
+function switchSettingsCategory(category, initialSubTab) {
+  const isWordbook = category === 'wordbook';
+  const settingsCategorySwitch = document.getElementById('settingsCategorySwitch');
+  const categoryTabsWordbook = document.getElementById('categoryTabsWordbook');
+  const categoryTabsAi = document.getElementById('categoryTabsAi');
+
+  if (settingsCategorySwitch) {
+    settingsCategorySwitch.querySelectorAll('.settings-category-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.category === category);
+    });
+  }
+
+  if (categoryTabsWordbook) categoryTabsWordbook.style.display = isWordbook ? 'flex' : 'none';
+  if (categoryTabsAi) categoryTabsAi.style.display = isWordbook ? 'none' : 'flex';
+
+  const activeContainer = isWordbook ? categoryTabsWordbook : categoryTabsAi;
+  let targetSubTab = initialSubTab;
+  if (!targetSubTab && activeContainer) {
+    const activeBtn = activeContainer.querySelector('.ai-modal-tab-btn.active') || activeContainer.querySelector('.ai-modal-tab-btn');
+    targetSubTab = activeBtn?.dataset.tab;
+  }
+  if (!targetSubTab) {
+    targetSubTab = isWordbook ? 'shortcuts' : 'quick-actions';
+  }
+
+  switchSettingsTab(targetSubTab);
+}
+
+function switchSettingsTab(targetTab) {
+  const isWordbookTab = WORDBOOK_TABS.includes(targetTab);
+  const category = isWordbookTab ? 'wordbook' : 'ai';
+  const settingsCategorySwitch = document.getElementById('settingsCategorySwitch');
+  const categoryTabsWordbook = document.getElementById('categoryTabsWordbook');
+  const categoryTabsAi = document.getElementById('categoryTabsAi');
+
+  if (settingsCategorySwitch) {
+    settingsCategorySwitch.querySelectorAll('.settings-category-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.category === category);
+    });
+  }
+  if (categoryTabsWordbook) categoryTabsWordbook.style.display = isWordbookTab ? 'flex' : 'none';
+  if (categoryTabsAi) categoryTabsAi.style.display = isWordbookTab ? 'none' : 'flex';
+
+  document.querySelectorAll('.ai-modal-tabs .ai-modal-tab-btn').forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.tab === targetTab);
+  });
+
+  const tabPaneQuickActions = document.getElementById('tabPaneQuickActions');
+  const tabPaneCustomPrompt = document.getElementById('tabPaneCustomPrompt');
+  const tabPaneInteraction = document.getElementById('tabPaneInteraction');
+  const tabPaneShortcuts = document.getElementById('tabPaneShortcuts');
+  const tabPaneContextMenu = document.getElementById('tabPaneContextMenu');
+
+  if (tabPaneQuickActions) tabPaneQuickActions.classList.toggle('active', targetTab === 'quick-actions');
+  if (tabPaneCustomPrompt) tabPaneCustomPrompt.classList.toggle('active', targetTab === 'custom-prompt');
+  if (tabPaneInteraction) tabPaneInteraction.classList.toggle('active', targetTab === 'interaction');
+  if (tabPaneShortcuts) tabPaneShortcuts.classList.toggle('active', targetTab === 'shortcuts');
+  if (tabPaneContextMenu) tabPaneContextMenu.classList.toggle('active', targetTab === 'context-menu');
+}
+
+const settingsCategorySwitch = document.getElementById('settingsCategorySwitch');
+if (settingsCategorySwitch) {
+  settingsCategorySwitch.addEventListener('click', (e) => {
+    const btn = e.target.closest('.settings-category-btn');
+    if (!btn) return;
+    switchSettingsCategory(btn.dataset.category);
   });
 }
+
+document.querySelectorAll('.ai-modal-tabs').forEach(tabGroup => {
+  tabGroup.addEventListener('click', (e) => {
+    const tabBtn = e.target.closest('.ai-modal-tab-btn');
+    if (!tabBtn) return;
+    switchSettingsTab(tabBtn.dataset.tab);
+  });
+});
 
 // Save prompt helper
 function savePromptState(val) {
@@ -4277,8 +4848,9 @@ if (restoreAiPromptBtnModal) {
     const confirmMsg = t('wordbookConfirmRestorePrompt') || '確定要恢復預設 Prompt 嗎？這將會清除您自訂的系統提示詞。';
     if (confirm(confirmMsg)) {
       if (aiCustomPromptInputModal) {
-        aiCustomPromptInputModal.value = DEFAULT_AI_SYSTEM_PROMPT;
-        savePromptState(DEFAULT_AI_SYSTEM_PROMPT);
+        const defaultPrompt = getDefaultSystemPrompt();
+        aiCustomPromptInputModal.value = defaultPrompt;
+        savePromptState(defaultPrompt);
       }
     }
   });
@@ -4596,6 +5168,95 @@ document.addEventListener('click', (e) => {
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
     hideCustomContextMenu();
+    return;
+  }
+
+  // 生詞表鍵盤導航：ArrowUp / ArrowDown / Enter 切換生詞
+  const activeEl = document.activeElement;
+  const isInputActive = activeEl && (
+    activeEl.tagName === 'INPUT' ||
+    activeEl.tagName === 'TEXTAREA' ||
+    activeEl.isContentEditable
+  );
+  if (isInputActive) return;
+
+  if (document.body.classList.contains('modal-open')) return;
+  if (customContextMenu && customContextMenu.style.display !== 'none') return;
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+  if (e.key === 'ArrowDown' || e.key === 'ArrowUp' || e.key === 'Enter') {
+    const rows = Array.from(document.querySelectorAll('#wordList .table-row.word-card'));
+    if (rows.length === 0) return;
+
+    e.preventDefault();
+
+    const activeIndex = rows.findIndex(r => r.classList.contains('active-row'));
+    let targetIndex = 0;
+
+    if (e.key === 'ArrowDown' || e.key === 'Enter') {
+      if (activeIndex === -1) {
+        targetIndex = 0;
+      } else {
+        targetIndex = Math.min(activeIndex + 1, rows.length - 1);
+      }
+    } else if (e.key === 'ArrowUp') {
+      if (activeIndex === -1) {
+        targetIndex = rows.length - 1;
+      } else {
+        targetIndex = Math.max(activeIndex - 1, 0);
+      }
+    }
+
+    const targetRow = rows[targetIndex];
+    if (!targetRow) return;
+
+    // 移除舊的 active-row 並選中新的 targetRow
+    rows.forEach(r => r.classList.remove('active-row'));
+    targetRow.classList.add('active-row');
+
+    // 滾動保證選中行在視野範圍內
+    targetRow.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+
+    // 如果當前處於詳情面板模式 (Detail Mode)，即時渲染該生詞的詳細釋義
+    const charEl = targetRow.querySelector('.word-character');
+    const wordText = charEl?.dataset.word;
+    if (isDetailMode && wordText) {
+      renderDetailPanel(wordText);
+    }
+
+    // 若開啟了自動朗讀，切換時即時發音
+    if (wordText) {
+      triggerAutoPronounce(wordText, charEl);
+    }
+    return;
+  }
+
+  // 空格鍵 (Space)：手動朗讀當前選中生詞
+  if (e.key === ' ' || e.key === 'Spacebar') {
+    const activeRow = document.querySelector('#wordList .table-row.active-row');
+    if (activeRow) {
+      e.preventDefault();
+      const charEl = activeRow.querySelector('.word-character');
+      const wordText = charEl?.dataset.word;
+      if (wordText) {
+        playTts(wordText, charEl);
+      }
+    }
+    return;
+  }
+
+  // 左右方向鍵 (ArrowLeft / ArrowRight)：手動朗讀當前生詞 (若在設定中開啟)
+  if (isArrowPronounce && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) {
+    const activeRow = document.querySelector('#wordList .table-row.active-row');
+    if (activeRow) {
+      e.preventDefault();
+      const charEl = activeRow.querySelector('.word-character');
+      const wordText = charEl?.dataset.word;
+      if (wordText) {
+        playTts(wordText, charEl);
+      }
+    }
+    return;
   }
 });
 
