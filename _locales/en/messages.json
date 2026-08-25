@@ -95,6 +95,9 @@
   "optAILangJA": {
     "message": "Japanese (日本語)"
   },
+  "optAILangKO": {
+    "message": "Korean (한국어)"
+  },
   "optAILangTW": {
     "message": "Traditional Chinese"
   },
@@ -451,6 +454,15 @@
   "optParaTransDemoTranslated": {
     "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
   },
+  "optParaTransDirection": {
+    "message": "Translation Direction"
+  },
+  "optParaTransDirectionColon": {
+    "message": "Translation Direction:"
+  },
+  "optParaTransDirectionDesc": {
+    "message": "Click the arrow to toggle between translating to Target Language or Cantonese"
+  },
   "optParaTransEngine": {
     "message": "Paragraph Translation Engine"
   },
@@ -464,12 +476,18 @@
     "message": "Bing Translator is fast, while AI is more accurate but takes a few seconds."
   },
   "optParaTransKey": {
-    "message": "Paragraph Cantonese translation key",
+    "message": "Paragraph translation shortcut",
     "description": "optParaTransKey"
   },
   "optParaTransKeyDesc": {
-    "message": "Hover over a paragraph and press this key to AI-translate the whole paragraph into Cantonese below the original; press again to remove (requires AI translation configured)",
+    "message": "Hover over a paragraph and press this key to translate below the original; press again to remove",
     "description": "optParaTransKeyDesc"
+  },
+  "optParaTransLangYue": {
+    "message": "Cantonese (廣東話)"
+  },
+  "optParaTransLangTarget": {
+    "message": "Target Language"
   },
   "optParaTransKeyLongPress": {
     "message": "Long-press left mouse button",

@@ -1603,8 +1603,8 @@
 
           <div class="setting-item" id="paragraphTransKeyContainer">
             <div class="setting-info">
-              <span class="setting-label" data-i18n="optParaTransKey">段落粵語翻譯觸發鍵</span>
-              <span class="setting-desc" data-i18n="optParaTransKeyDesc">滑鼠停在一段文字上時，按此鍵用 AI 將整段翻譯成粵語，顯示在原文下方；再按一次移除（需先配置 AI 翻譯）</span>
+              <span class="setting-label" data-i18n="optParaTransKey">段落翻譯觸發鍵</span>
+              <span class="setting-desc" data-i18n="optParaTransKeyDesc">滑鼠停在一段文字上時，按此鍵進行段落翻譯，顯示在原文下方；再按一次移除</span>
             </div>
             <div class="select-wrapper">
               <select id="paragraphTransKey">
@@ -1628,6 +1628,110 @@
                 <option value="below" data-i18n="optParaTransModeBelow">顯示在原文下方</option>
                 <option value="replace" data-i18n="optParaTransModeReplace">直接覆蓋原文</option>
               </select>
+            </div>
+          </div>
+
+          <div id="paraTransDirectionContainer" style="margin-top: 18px; margin-bottom: 6px;">
+            <div style="font-size: 13.5px; font-weight: 600; color: var(--text-primary); margin-bottom: 10px;" data-i18n="optParaTransDirectionColon">翻譯方向：</div>
+            <style>
+              .para-dir-center-row {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                width: 100%;
+                margin: 6px 0 10px 0;
+              }
+              .para-dir-switcher {
+                display: grid;
+                grid-template-columns: 1fr auto 1fr;
+                align-items: center;
+                column-gap: 16px;
+                width: 100%;
+                max-width: 520px;
+                background: transparent;
+                padding: 0;
+                border: none;
+                box-shadow: none;
+                user-select: none;
+              }
+              .para-dir-col-left {
+                display: flex;
+                justify-content: flex-end;
+              }
+              .para-dir-col-right {
+                display: flex;
+                justify-content: flex-start;
+              }
+              .para-dir-tag {
+                font-size: 13.5px;
+                font-weight: 600;
+                padding: 6px 16px;
+                border-radius: 20px;
+                cursor: pointer;
+                transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+                white-space: nowrap;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+              }
+              .para-dir-tag.from {
+                color: var(--text-primary);
+                background: var(--bg-card, #fff);
+                border: 1px solid var(--border);
+                box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+              }
+              .para-dir-tag.from:hover {
+                background: var(--bg-hover, rgba(0, 0, 0, 0.03));
+                border-color: color-mix(in srgb, var(--primary, #8a1c1c) 35%, var(--border));
+                transform: translateY(-1px);
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+              }
+              .para-dir-tag.to {
+                color: var(--primary, #8a1c1c);
+                background: color-mix(in srgb, var(--primary, #8a1c1c) 12%, transparent);
+                border: 1px solid color-mix(in srgb, var(--primary, #8a1c1c) 25%, transparent);
+                font-weight: 700;
+              }
+              .para-dir-tag.to:hover {
+                background: color-mix(in srgb, var(--primary, #8a1c1c) 18%, transparent);
+                border-color: color-mix(in srgb, var(--primary, #8a1c1c) 40%, transparent);
+                transform: translateY(-1px);
+                box-shadow: 0 2px 6px color-mix(in srgb, var(--primary, #8a1c1c) 20%, transparent);
+              }
+              .para-dir-tag:active {
+                transform: scale(0.96) !important;
+              }
+              .para-dir-arrow-wrapper {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                color: var(--text-secondary, #666);
+                pointer-events: none;
+                user-select: none;
+                flex-shrink: 0;
+                width: 44px;
+              }
+              .para-dir-arrow-icon {
+                display: block;
+                color: var(--text-secondary, #666);
+                opacity: 0.85;
+              }
+            </style>
+            <div class="para-dir-center-row">
+              <div class="para-dir-switcher" id="paraDirSwitcher">
+                <div class="para-dir-col-left">
+                  <span class="para-dir-tag from" id="paraDirFromText" role="button" tabindex="0" title="點擊切換翻譯方向">粵語 (廣東話)</span>
+                </div>
+                <div class="para-dir-arrow-wrapper" aria-hidden="true">
+                  <svg class="para-dir-arrow-icon" width="40" height="16" viewBox="0 0 40 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="2" y1="8" x2="36" y2="8"></line>
+                    <polyline points="29 3 36 8 29 13"></polyline>
+                  </svg>
+                </div>
+                <div class="para-dir-col-right">
+                  <span class="para-dir-tag to" id="paraDirToText" role="button" tabindex="0" title="點擊切換翻譯方向">目標語言</span>
+                </div>
+              </div>
             </div>
           </div>
 

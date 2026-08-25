@@ -93,7 +93,10 @@
     "message": "英文 (English)"
   },
   "optAILangJA": {
-    "message": "日文 (日本語)"
+    "message": "日本語 (日文)"
+  },
+  "optAILangKO": {
+    "message": "韩文 (한국어)"
   },
   "optAILangTW": {
     "message": "繁体中文"
@@ -451,6 +454,15 @@
   "optParaTransDemoTranslated": {
     "message": "呢段系用来示范段落翻译功能嘅文字。"
   },
+  "optParaTransDirection": {
+    "message": "翻译方向"
+  },
+  "optParaTransDirectionColon": {
+    "message": "翻译方向："
+  },
+  "optParaTransDirectionDesc": {
+    "message": "点击中间箭头可切换“译为目标语言”或“译为粤语”"
+  },
   "optParaTransEngine": {
     "message": "段落翻译引擎"
   },
@@ -464,12 +476,18 @@
     "message": "Bing 翻译极速出结果，AI 翻译则更精准地道但需要等待几秒钟"
   },
   "optParaTransKey": {
-    "message": "段落粤语翻译触发键",
+    "message": "段落翻译触发键",
     "description": "optParaTransKey"
   },
   "optParaTransKeyDesc": {
-    "message": "鼠标停在一段文字上时，按此键用 AI 将整段翻译成粤语，显示在原文下方；再按一次移除（需先配置 AI 翻译）",
+    "message": "鼠标停在一段文字上时，按此键进行段落翻译，显示在原文下方；再按一次移除（需先配置 AI 翻译）",
     "description": "optParaTransKeyDesc"
+  },
+  "optParaTransLangYue": {
+    "message": "粤语 (广东话)"
+  },
+  "optParaTransLangTarget": {
+    "message": "目标语言"
   },
   "optParaTransKeyLongPress": {
     "message": "长按鼠标左键",

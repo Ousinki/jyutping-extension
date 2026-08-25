@@ -84,6 +84,9 @@
   "optAILangJA": {
     "message": "일본어 (日本語)"
   },
+  "optAILangKO": {
+    "message": "한국어"
+  },
   "optAILangTW": {
     "message": "번체 중국어"
   },
@@ -413,11 +416,26 @@
   "optParaTransDemoTranslated": {
     "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
   },
+  "optParaTransDirection": {
+    "message": "번역 방향"
+  },
+  "optParaTransDirectionColon": {
+    "message": "번역 방향:"
+  },
+  "optParaTransDirectionDesc": {
+    "message": "화살표를 클릭하여 '대상 언어로 번역' 또는 '광둥어로 번역'을 전환합니다"
+  },
   "optParaTransKey": {
-    "message": "단락 광둥어 번역 트리거 키"
+    "message": "단락 번역 단축키"
   },
   "optParaTransKeyDesc": {
-    "message": "텍스트 단락 위에 마우스를 올리고 이 키를 누르면 AI를 사용하여 전체 단락을 광둥어로 번역하여 원본 아래에 표시합니다. 다시 누르면 제거됩니다 (AI 번역 구성 필요)."
+    "message": "텍스트 단락 위에 마우스를 올리고 이 키를 누르면 단락을 번역하여 원본 아래에 표시합니다. 다시 누르면 제거됩니다."
+  },
+  "optParaTransLangYue": {
+    "message": "광둥어 (粵語)"
+  },
+  "optParaTransLangTarget": {
+    "message": "대상 언어"
   },
   "optParaTransKeyLongPress": {
     "message": "마우스 왼쪽 버튼 길게 누르기"

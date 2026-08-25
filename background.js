@@ -795,8 +795,14 @@ async function handleAiTranslateParagraph(request, tabId) {
 
   try {
     const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
-    const syncSettings = await chrome.storage.sync.get(['paragraphTransEngine']);
+    const syncSettings = await chrome.storage.sync.get([
+      'paragraphTransEngine',
+      'paragraphTransDirection',
+      'autoTranslateYueDefsTargetLang'
+    ]);
     const engine = syncSettings.paragraphTransEngine || 'bing';
+    const direction = syncSettings.paragraphTransDirection || 'yue_to_target';
+    const targetLangCode = syncSettings.autoTranslateYueDefsTargetLang || 'zh-Hans';
     const { aiBaseUrl, aiApiKey, aiModel } = settings;
 
     if (!html || !html.trim()) {
@@ -821,6 +827,20 @@ async function handleAiTranslateParagraph(request, tabId) {
     if (engine === 'bing') {
       await getBingAccessToken();
 
+      let bingTarget = 'yue';
+      if (direction === 'yue_to_target') {
+        switch (targetLangCode) {
+          case 'zh-Hans': bingTarget = 'zh-Hans'; break;
+          case 'zh-Hant':
+          case 'zh-TW':
+          case 'zh-HK': bingTarget = 'zh-Hant'; break;
+          case 'en': bingTarget = 'en'; break;
+          case 'ja': bingTarget = 'ja'; break;
+          case 'ko': bingTarget = 'ko'; break;
+          default: bingTarget = 'zh-Hans'; break;
+        }
+      }
+
       if (cleanHtml.length > 950) {
         // 段落過長，使用句子分割法分段請求
         const chunks = cleanHtml.split(/(?<=[。！？\n])(?![^<]*>)/);
@@ -837,7 +857,7 @@ async function handleAiTranslateParagraph(request, tabId) {
         if (currentBatch) batches.push(currentBatch);
 
         // 並行翻譯所有分段
-        const promises = batches.map(batch => translateWithBing(batch, 'auto', 'yue'));
+        const promises = batches.map(batch => translateWithBing(batch, 'auto', bingTarget));
         const results = await Promise.all(promises);
         
         reply({ success: true, html: results.join('') });
@@ -845,7 +865,7 @@ async function handleAiTranslateParagraph(request, tabId) {
       }
 
       // 使用 Bing 進行極速段落翻譯
-      const result = await translateWithBing(cleanHtml, 'auto', 'yue');
+      const result = await translateWithBing(cleanHtml, 'auto', bingTarget);
       if (!result) {
         throw new Error('Bing Translate 返回空結果');
       }
@@ -858,7 +878,21 @@ async function handleAiTranslateParagraph(request, tabId) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
-    const prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段文字翻譯成自然、地道的粵語書面語。
+    let targetLangPromptLabel = '簡體中文（普通話/國語）';
+    switch (targetLangCode) {
+      case 'zh-Hans': targetLangPromptLabel = '簡體中文（普通話/國語）'; break;
+      case 'zh-Hant':
+      case 'zh-TW':
+      case 'zh-HK': targetLangPromptLabel = '繁體中文（現代標準漢語書面語）'; break;
+      case 'en': targetLangPromptLabel = 'English (英語)'; break;
+      case 'ja': targetLangPromptLabel = '日本語 (日語)'; break;
+      case 'ko': targetLangPromptLabel = '한국어 (韓語)'; break;
+      default: targetLangPromptLabel = '簡體中文（普通話/國語）'; break;
+    }
+
+    let prompt = '';
+    if (direction === 'target_to_yue') {
+      prompt = `你是一位專業的粵語（廣東話）翻譯。請將下面這段文字翻譯成自然、地道的粵語（廣東話口語/書面語）。
 
 嚴格要求：
 1. 只輸出翻譯後的結果本身，不要任何前後綴或解釋。
@@ -866,6 +900,16 @@ async function handleAiTranslateParagraph(request, tabId) {
 
 待翻譯內容：
 ${cleanHtml}`;
+    } else {
+      prompt = `你是一位專業的粵語（廣東話）語言專家和翻譯家。請將下面這段粵語（廣東話）文字翻譯成流暢、通順且自然的【${targetLangPromptLabel}】。
+
+嚴格要求：
+1. 只輸出翻譯後的結果本身，不要任何前後綴或解釋。
+2. 保持原文的 HTML 標籤結構完全不變（包括標籤及其屬性），只翻譯純文字內容。
+
+待翻譯內容：
+${cleanHtml}`;
+    }
 
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
     const response = await fetch(url, {

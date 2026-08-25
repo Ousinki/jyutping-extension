@@ -93,7 +93,10 @@
     "message": "英語 (English)"
   },
   "optAILangJA": {
-    "message": "日本語"
+    "message": "日本語 (日本語)"
+  },
+  "optAILangKO": {
+    "message": "韓国語 (한국어)"
   },
   "optAILangTW": {
     "message": "繁体字中国語"
@@ -445,11 +448,26 @@
   "optParaTransDemoTranslated": {
     "message": "呢段係用嚟示範段落翻譯功能嘅文字。"
   },
+  "optParaTransDirection": {
+    "message": "翻訳方向"
+  },
+  "optParaTransDirectionColon": {
+    "message": "翻訳方向："
+  },
+  "optParaTransDirectionDesc": {
+    "message": "矢印をクリックして「目標言語への翻訳」または「広東語への翻訳」を切り替えます"
+  },
   "optParaTransKey": {
-    "message": "段落広東語翻訳のトリガーキー"
+    "message": "段落翻訳トリガーキー"
   },
   "optParaTransKeyDesc": {
-    "message": "テキストの段落にカーソルを合わせ、このキーを押すと、AIを使用して段落全体を広東語に翻訳し、元のテキストの下に表示します。もう一度押すと削除されます（AI翻訳の設定が必要です）。"
+    "message": "テキストの段落にカーソルを合わせ、このキーを押すと段落を翻訳して元のテキストの下に表示します。もう一度押すと非表示になります。"
+  },
+  "optParaTransLangYue": {
+    "message": "広東語"
+  },
+  "optParaTransLangTarget": {
+    "message": "目標言語"
   },
   "optParaTransKeyLongPress": {
     "message": "左クリックを長押し"

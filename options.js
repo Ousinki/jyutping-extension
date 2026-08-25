@@ -88,6 +88,11 @@ async function applyI18n(lang) {
     window.__updateFbUI();
   }
   updateShortcutDesc(lang);
+  chrome.storage.sync.get(['paragraphTransDirection', 'autoTranslateYueDefsTargetLang'], (res) => {
+    if (typeof updateParaTransDirectionUI === 'function') {
+      updateParaTransDirectionUI(res.paragraphTransDirection || 'yue_to_target', res.autoTranslateYueDefsTargetLang || 'zh-Hans');
+    }
+  });
 }
 
   // Get saved language or default
@@ -199,7 +204,7 @@ async function applyI18n(lang) {
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
-  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'transHoverEngine', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode' ], (result) => {
+  , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'transHoverEngine', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode' ], (result) => {
 
     // 總開關
     const isEnabled = result.enabled !== false;
@@ -228,6 +233,8 @@ async function applyI18n(lang) {
         r.checked = (r.value === selectedValue);
       });
     }
+
+    updateParaTransDirectionUI(result.paragraphTransDirection || 'yue_to_target', result.autoTranslateYueDefsTargetLang || 'zh-Hans');
     
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
     
@@ -713,6 +720,9 @@ async function applyI18n(lang) {
       GoogleAnalytics.fireEvent('change_setting', { setting: 'autoTranslateYueDefsTargetLang', value: val });
       notifyContentScripts({ action: 'changeAutoTranslateYueDefsTargetLang', autoTranslateYueDefsTargetLang: val });
       updateYueDefDemo(val, yueDefDisplayModeEl ? yueDefDisplayModeEl.value : 'expand');
+      chrome.storage.sync.get(['paragraphTransDirection'], (res) => {
+        updateParaTransDirectionUI(res.paragraphTransDirection || 'yue_to_target', val);
+      });
     });
   }
 
@@ -900,6 +910,90 @@ async function applyI18n(lang) {
       }
     });
   });
+
+  function getTargetLangDisplayName(langCode) {
+    switch (langCode) {
+      case 'zh-Hans': return t('optAILangCN') || '簡體中文';
+      case 'zh-Hant':
+      case 'zh-TW':
+      case 'zh-HK': return t('optAILangTW') || '繁體中文';
+      case 'en': return t('optAILangEN') || 'English';
+      case 'ja': return t('optAILangJA') || '日本語';
+      case 'ko': return t('optAILangKO') || '한국어';
+      default: return t('optAILangCN') || '簡體中文';
+    }
+  }
+
+  function updateParaTransDirectionUI(direction, targetLangCode) {
+    const paraDirFromText = document.getElementById('paraDirFromText');
+    const paraDirToText = document.getElementById('paraDirToText');
+    const targetLangSelect = document.getElementById('autoTranslateYueDefsTargetLang');
+    const effectiveLangCode = targetLangCode || (targetLangSelect ? targetLangSelect.value : 'zh-Hans');
+    const targetName = `${t('optParaTransLangTarget')} (${getTargetLangDisplayName(effectiveLangCode)})`;
+    const yueName = t('optParaTransLangYue');
+
+    if (direction === 'target_to_yue') {
+      if (paraDirFromText) paraDirFromText.textContent = targetName;
+      if (paraDirToText) paraDirToText.textContent = yueName;
+    } else {
+      if (paraDirFromText) paraDirFromText.textContent = yueName;
+      if (paraDirToText) paraDirToText.textContent = targetName;
+    }
+
+    updateDemoParaDirection(direction);
+  }
+
+  function updateDemoParaDirection(direction) {
+    const demoTextEl = document.querySelector('#paraTransDemo .demo-para-text');
+    const demoTransEl = document.querySelector('#paraTransDemo .demo-para-translated span');
+    if (demoTextEl && demoTransEl) {
+      if (direction === 'target_to_yue') {
+        demoTextEl.textContent = t('optParaTransDemoText') || '這是一段用來示範段落翻譯功能的文字。';
+        demoTransEl.textContent = t('optParaTransDemoTranslated') || '呢段係用嚟示範段落翻譯功能嘅文字。';
+      } else {
+        demoTextEl.textContent = t('optParaTransDemoTranslated') || '呢段係用嚟示範段落翻譯功能嘅文字。';
+        demoTransEl.textContent = t('optParaTransDemoText') || '這是一段用來示範段落翻譯功能的文字。';
+      }
+    }
+  }
+
+  function toggleParaTransDirection() {
+    chrome.storage.sync.get(['paragraphTransDirection', 'autoTranslateYueDefsTargetLang'], (res) => {
+      const currentDir = res.paragraphTransDirection || 'yue_to_target';
+      const newDir = currentDir === 'yue_to_target' ? 'target_to_yue' : 'yue_to_target';
+      chrome.storage.sync.set({ paragraphTransDirection: newDir });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransDirection', value: newDir });
+      updateParaTransDirectionUI(newDir, res.autoTranslateYueDefsTargetLang);
+      notifyContentScripts({ action: 'changeParagraphTransDirection', value: newDir });
+    });
+  }
+
+  const paraDirSwapBtn = document.getElementById('paraDirSwapBtn');
+  if (paraDirSwapBtn) {
+    paraDirSwapBtn.addEventListener('click', toggleParaTransDirection);
+  }
+
+  const paraDirFromText = document.getElementById('paraDirFromText');
+  if (paraDirFromText) {
+    paraDirFromText.addEventListener('click', toggleParaTransDirection);
+    paraDirFromText.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleParaTransDirection();
+      }
+    });
+  }
+
+  const paraDirToText = document.getElementById('paraDirToText');
+  if (paraDirToText) {
+    paraDirToText.addEventListener('click', toggleParaTransDirection);
+    paraDirToText.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggleParaTransDirection();
+      }
+    });
+  }
 
   function updateDemoParaKeyText(val) {
     const keyEl = document.getElementById('demoParaKey');

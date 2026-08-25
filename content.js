@@ -621,6 +621,7 @@
     let paragraphTransKey = "shift";
     let paragraphTransMode = "below";
     let paragraphTransEngine = "bing";
+    let paragraphTransDirection = "yue_to_target";
     let paraTransSeq = 0;
     const pendingParaTrans = /* @__PURE__ */ new Map();
     let activeQAContext = {
@@ -2225,6 +2226,7 @@ ${userDesc || "未提供具體描述"}`;
         "paragraphTransKey",
         "paragraphTransMode",
         "paragraphTransEngine",
+        "paragraphTransDirection",
         "enableAutoTranslateYueDefs",
         "autoTranslateYueDefsTargetLang",
         "autoTranslateYueDefsEngine",
@@ -2241,6 +2243,7 @@ ${userDesc || "未提供具體描述"}`;
         paragraphTransKey = result.paragraphTransKey || "shift";
         paragraphTransMode = result.paragraphTransMode || "below";
         paragraphTransEngine = result.paragraphTransEngine || "bing";
+        paragraphTransDirection = result.paragraphTransDirection || "yue_to_target";
         popupDisplayStyle = result.popupDisplayStyle || "full";
         popupTheme = result.popupTheme || "classic";
         customZhFont = result.customZhFont || "";
@@ -2358,6 +2361,8 @@ ${userDesc || "未提供具體描述"}`;
           transTrigger = changes.transTrigger.newValue;
         } else if (changes.transHoverEngine) {
           transHoverEngine = changes.transHoverEngine.newValue;
+        } else if (changes.paragraphTransDirection) {
+          paragraphTransDirection = changes.paragraphTransDirection.newValue || "yue_to_target";
         } else if (changes.enableAutoTranslateYueDefs) {
           enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
         } else if (changes.autoTranslateYueDefsTargetLang) {
@@ -4334,7 +4339,7 @@ ${userDesc || "未提供具體描述"}`;
       const translationEl = createTranslationPlaceholder(block);
       block.setAttribute("data-jyutping-trans-id", String(id));
       pendingParaTrans.set(id, { block, translationEl, isReplaceMode });
-      chrome.runtime.sendMessage({ action: "aiTranslateParagraph", id, html, textContent });
+      chrome.runtime.sendMessage({ action: "aiTranslateParagraph", id, html, textContent, direction: paragraphTransDirection });
     }
     function createTranslationPlaceholder(block) {
       const loadingText = paragraphTransEngine === "bing" ? "使用 Bing 翻译" : "使用 AI 翻译";
@@ -4437,7 +4442,7 @@ ${userDesc || "未提供具體描述"}`;
           <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
         </svg>
       `;
-        speakerIcon.title = "朗讀粵語翻譯";
+        speakerIcon.title = paragraphTransDirection === "target_to_yue" ? "朗讀粵語翻譯" : "朗讀翻譯";
         speakerIcon.addEventListener("click", (e) => {
           e.stopPropagation();
           e.preventDefault();
@@ -4613,6 +4618,8 @@ ${userDesc || "未提供具體描述"}`;
         paragraphTransMode = request.paragraphTransMode || "below";
       } else if (request.action === "updateParagraphTransEngine") {
         paragraphTransEngine = request.paragraphTransEngine || "bing";
+      } else if (request.action === "changeParagraphTransDirection") {
+        paragraphTransDirection = request.value || "yue_to_target";
       } else if (request.action === "aiTranslateSentenceLangResult") {
         let row = null;
         if (translatePopup && translatePopup.style.display !== "none") {

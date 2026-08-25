@@ -63,10 +63,11 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let currentMouseX = 0; // 用於記錄絕對鼠標 X 位置
   let currentMouseY = 0; // 用於記錄絕對鼠標 Y 位置
 
-  // 段落整段粵語翻譯（按鍵觸發，譯文內聯顯示在原文下方）
+  // 段落整段翻譯（按鍵觸發，譯文內聯顯示在原文下方）
   let paragraphTransKey = 'shift'; // 觸發鍵：'off' | 'shift' | 'alt' | 'ctrl' | 'meta'（可在選項頁設定）
   let paragraphTransMode = 'below'; // 顯示方式：'below' | 'replace'
   let paragraphTransEngine = 'bing'; // 引擎：'bing' | 'ai'
+  let paragraphTransDirection = 'yue_to_target'; // 翻譯方向：'yue_to_target' | 'target_to_yue'
   let paraTransSeq = 0; // 翻譯請求自增 id
   const pendingParaTrans = new Map(); // id -> { block, translationEl }
 
@@ -1876,7 +1877,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   function loadSettings() {
     chrome.storage.sync.get([
       'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
@@ -1892,6 +1893,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       paragraphTransKey = result.paragraphTransKey || 'shift';
       paragraphTransMode = result.paragraphTransMode || 'below';
       paragraphTransEngine = result.paragraphTransEngine || 'bing';
+      paragraphTransDirection = result.paragraphTransDirection || 'yue_to_target';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
       popupTheme = result.popupTheme || 'classic';
       customZhFont = result.customZhFont || '';
@@ -2017,6 +2019,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         transTrigger = changes.transTrigger.newValue;
       } else if (changes.transHoverEngine) {
         transHoverEngine = changes.transHoverEngine.newValue;
+      } else if (changes.paragraphTransDirection) {
+        paragraphTransDirection = changes.paragraphTransDirection.newValue || 'yue_to_target';
       } else if (changes.enableAutoTranslateYueDefs) {
         enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
       } else if (changes.autoTranslateYueDefsTargetLang) {
@@ -4561,7 +4565,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     block.setAttribute('data-jyutping-trans-id', String(id));
     pendingParaTrans.set(id, { block, translationEl, isReplaceMode });
 
-    chrome.runtime.sendMessage({ action: 'aiTranslateParagraph', id, html, textContent });
+    chrome.runtime.sendMessage({ action: 'aiTranslateParagraph', id, html, textContent, direction: paragraphTransDirection });
   }
 
   // 創建翻譯佔位符：永遠先在段落末尾添加一個 span 顯示 loading，不立刻隱藏原文
@@ -4687,7 +4691,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
         </svg>
       `;
-      speakerIcon.title = '朗讀粵語翻譯';
+      speakerIcon.title = paragraphTransDirection === 'target_to_yue' ? '朗讀粵語翻譯' : '朗讀翻譯';
       
       speakerIcon.addEventListener('click', (e) => {
         e.stopPropagation();
@@ -4875,6 +4879,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       paragraphTransMode = request.paragraphTransMode || 'below';
     } else if (request.action === 'updateParagraphTransEngine') {
       paragraphTransEngine = request.paragraphTransEngine || 'bing';
+    } else if (request.action === 'changeParagraphTransDirection') {
+      paragraphTransDirection = request.value || 'yue_to_target';
     } else if (request.action === 'aiTranslateSentenceLangResult') {
       let row = null;
       if (translatePopup && translatePopup.style.display !== 'none') {
