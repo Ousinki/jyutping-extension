@@ -55,6 +55,14 @@
     "message": "全ページ広東語ルビ",
     "description": "Context menu to toggle full page ruby annotations"
   },
+  "ctxAddWord": {
+    "message": "単語帳に追加",
+    "description": "Context menu to add word to wordbook"
+  },
+  "ctxOpenWordbook": {
+    "message": "単語帳を開く",
+    "description": "Context menu to open wordbook"
+  },
   "extActionTitle": {
     "message": "広東語ピンインホバー辞書",
     "description": "extActionTitle"
@@ -766,6 +774,38 @@
     "message": "自動読み上げ",
     "description": "Wordbook: toggle auto-pronounce on navigation"
   },
+  "wordbookAiGenerateNote": {
+    "message": "AI で解説を作成"
+  },
+  "wordbookAiGenerating": {
+    "message": "生成中..."
+  },
+  "wordbookAiEditingPlaceholder": {
+    "message": "AI で編集中..."
+  },
+  "wordbookAiGenerateSelected": {
+    "message": "AI ノート"
+  },
+  "wordbookAiAddNotes": {
+    "message": "AI ノート追加"
+  },
+  "wordbookAiTooltipDesc": {
+    "message": "ノートを作成したい単語を選択し、クリックすると AI が一括作成します。"
+  },
+  "wordbookSelectUnannotated": {
+    "message": "ノート未作成の単語をすべて選択"
+  },
+  "wordbookAllHaveNotes": {
+    "message": "現在のリスト内のすべての単語にノートが作成済みです！"
+  },
+  "wordbookAiBulkConfirm": {
+    "message": "選択した $COUNT$ 個の単語に AI でノートを作成しますか？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "wordbookTabShortcuts": {
     "message": "ショートカットと音声",
     "description": "Tab for shortcuts & pronunciation settings"
@@ -780,10 +820,7 @@
     "message": "前の単語に切り替え"
   },
   "shortcutPronounceActive": {
-    "message": "選択中の単語を手動で読み上げ"
-  },
-  "shortcutArrowPronounce": {
-    "message": "左右キーで現在の単語を読み上げ"
+    "message": "選択中の単語を読み上げ"
   },
   "shortcutCloseModal": {
     "message": "モーダルまたはメニューを閉じる"
@@ -792,13 +829,7 @@
     "message": "単語切り替え時に自動読み上げ"
   },
   "settingAutoPronounceDesc": {
-    "message": "↑ / ↓ 方向キーまたは Enter キーで単語を切り替える際、広東語の発音を自動再生します。"
-  },
-  "settingArrowPronounceTitle": {
-    "message": "← / → キーで現在の単語を読み上げ"
-  },
-  "settingArrowPronounceDesc": {
-    "message": "自動読み上げが無効の場合、← または → キーで選択中の単語の発音を再生できます。"
+    "message": "↑ / ↓ 方向キーで単語を切り替える際、広東語の発音を自動再生します。"
   },
   "wordbookEmptyDetail": {
     "message": "左側の単語をクリックして<br>辞書の詳細を表示します"
@@ -1249,10 +1280,86 @@
   "wordbookPromptSaved": {
     "message": "✓ 保存しました"
   },
+  "wordbookAiTabNotePrompt": {
+    "message": "ノート Prompt"
+  },
+  "wordbookAiTabNotePromptDesc": {
+    "message": "単語帳で AI によるノート作成や一括生成時のプロンプト（Prompt）をカスタマイズし、好みの解説を作成します。"
+  },
+  "wordbookAiNotePromptPlaceholder": {
+    "message": "カスタム AI ノートプロンプトを入力..."
+  },
+  "wordbookTagPronunciation": {
+    "message": "発音"
+  },
+  "wordbookTagDefinitions": {
+    "message": "辞書釈義"
+  },
   "wordbookRestoreDefaultActions": {
     "message": "デフォルトのアクションに戻す"
   },
   "wordbookRestoreDefaultEngines": {
     "message": "デフォルトの検索エンジンに戻す"
+  },
+  "engineWiki": {
+    "message": "Wiktionary 広東語"
+  },
+  "engineWordsHk": {
+    "message": "Words.hk 広東語辞典"
+  },
+  "engineSheik": {
+    "message": "Sheik 広東語辞典"
+  },
+  "engineTwitter": {
+    "message": "X (Twitter) で検索"
+  },
+  "engineGoogle": {
+    "message": "Google 広東語検索"
+  },
+  "dictLabelJyutping": {
+    "message": "Jyutping:"
+  },
+  "dictLabelYale": {
+    "message": "Yale:"
+  },
+  "dictLabelSims": {
+    "message": "類義語："
+  },
+  "dictLabelAnts": {
+    "message": "対義語："
+  },
+  "dictLabelVariants": {
+    "message": "異体字："
+  },
+  "dictBtnReport": {
+    "message": "報告"
+  },
+  "dictReportTitle": {
+    "message": "エラーを報告"
+  },
+  "dictReportWord": {
+    "message": "単語："
+  },
+  "dictReportPlaceholder": {
+    "message": "具体的なエラー（発音の間違い、解説の誤りなど）を入力してください..."
+  },
+  "dictReportSend": {
+    "message": "報告を送信"
+  },
+  "dictReportSent": {
+    "message": "報告を送信しました"
+  },
+  "dictBookmarkAdd": {
+    "message": "単語帳に追加"
+  },
+  "dictBookmarkRemove": {
+    "message": "単語帳から削除"
+  },
+  "wordbookSelectItem": {
+    "message": "クリックして選択"
+  },
+  "wordbookDeselectItem": {
+    "message": "クリックして選択解除"
   }
 }
+

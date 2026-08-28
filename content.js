@@ -1940,22 +1940,22 @@
         <!-- 右上角操作按鈕區（包含報告和設定） -->
         <div class="popup-actions-wrapper" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; z-index: 10;">
           <!-- 報告錯誤按鈕 (預設隱藏，hover wrapper 時滑出) -->
-          <div class="popup-report-btn" title="報告錯誤" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); font-size: 12px; white-space: nowrap; padding: 0;">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px;">
+          <div class="popup-report-btn" title="${chrome.i18n.getMessage("dictReportTitle") || "報告錯誤"}" style="cursor: pointer; opacity: 0; width: 0; min-width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); font-size: 12px; white-space: nowrap; padding: 0;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; flex-shrink: 0;">
               <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
               <line x1="4" y1="22" x2="4" y2="15"></line>
             </svg>
-            <span style="transform: translateY(-0.5px)">報告</span>
+            <span style="transform: translateY(-0.5px)">${chrome.i18n.getMessage("dictBtnReport") || "報告"}</span>
           </div>
           <!-- 生詞本收藏按鈕 -->
-          <div class="popup-bookmark-btn" title="加入生詞本" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; width: 0; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); padding: 0;">
-            <svg width="14" height="14" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+          <div class="popup-bookmark-btn" title="${chrome.i18n.getMessage("dictBookmarkAdd") || "加入生詞本"}" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; width: 0; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); padding: 0;">
+            <svg width="14" height="14" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" stroke-width="1.5"></polygon>
             </svg>
           </div>
           <!-- 設定按鈕 -->
-          <div class="popup-settings-btn" title="設定" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <div class="popup-settings-btn" title="${chrome.i18n.getMessage("optSettingsTitle") || "設定"}" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
@@ -1970,17 +1970,17 @@
         <!-- 內聯報告表單 (預設隱藏) -->
         <div class="popup-report-form" style="display:none; padding: 12px; flex-direction: column; gap: 8px;">
           <div style="font-weight: bold; color: var(--popup-text); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
-            <span>報告錯誤</span>
+            <span>${chrome.i18n.getMessage("dictReportTitle") || "報告錯誤"}</span>
             <span class="report-cancel-icon" style="cursor: pointer; opacity: 0.6;">✕</span>
           </div>
           <div style="font-size: 13px; color: var(--popup-text-muted); background: var(--popup-bg); padding: 6px; border-radius: 4px; border: 1px solid var(--popup-divider);">
-            <div><strong>詞語：</strong><span class="report-word-preview"></span></div>
-            <div style="margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>句子：</strong><span class="report-sentence-preview"></span></div>
+            <div><strong>${chrome.i18n.getMessage("dictReportWord") || "詞語："}</strong><span class="report-word-preview"></span></div>
+            <div style="margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${chrome.i18n.getMessage("optSentenceLabel") || "句子："}</strong><span class="report-sentence-preview"></span></div>
           </div>
-          <textarea class="report-textarea" placeholder="請描述具体的错误（例如读音不正确、释义有误等）..." style="width: 100%; height: 60px; padding: 6px; border: 1px solid var(--popup-border); border-radius: 4px; background: var(--popup-bg); color: var(--popup-text); font-size: 13px; resize: none; outline: none !important; box-shadow: none !important; -webkit-appearance: none; box-sizing: border-box;"></textarea>
+          <textarea class="report-textarea" placeholder="${chrome.i18n.getMessage("dictReportPlaceholder") || "請描述具體的錯誤（例如讀音不正確、釋義有誤等）..."}" style="width: 100%; height: 60px; padding: 6px; border: 1px solid var(--popup-border); border-radius: 4px; background: var(--popup-bg); color: var(--popup-text); font-size: 13px; resize: none; outline: none !important; box-shadow: none !important; -webkit-appearance: none; box-sizing: border-box;"></textarea>
           <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
-            <button class="report-cancel-btn" style="padding: 4px 10px; border: 1px solid var(--popup-border); background: transparent; color: var(--popup-text); border-radius: 4px; cursor: pointer; font-size: 12px;">取消</button>
-            <button class="report-send-btn" style="padding: 4px 10px; border: none; background: var(--popup-accent); color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">呼叫郵件發送</button>
+            <button class="report-cancel-btn" style="padding: 4px 10px; border: 1px solid var(--popup-border); background: transparent; color: var(--popup-text); border-radius: 4px; cursor: pointer; font-size: 12px;">${chrome.i18n.getMessage("wordbookNoteCancel") || "取消"}</button>
+            <button class="report-send-btn" style="padding: 4px 10px; border: none; background: var(--popup-accent); color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">${chrome.i18n.getMessage("dictReportSend") || "發送報告"}</button>
           </div>
         </div>
       </div>
@@ -1999,7 +1999,8 @@
         settingsBtn.style.opacity = "1";
         settingsBtn.style.backgroundColor = "var(--popup-divider)";
         reportBtn.style.opacity = "1";
-        reportBtn.style.width = "60px";
+        reportBtn.style.width = "auto";
+        reportBtn.style.minWidth = "58px";
         reportBtn.style.padding = "0 8px";
         reportBtn.style.marginRight = "4px";
         bookmarkBtn.style.opacity = "1";
@@ -2012,6 +2013,7 @@
         settingsBtn.style.backgroundColor = "transparent";
         reportBtn.style.opacity = "0";
         reportBtn.style.width = "0";
+        reportBtn.style.minWidth = "0";
         reportBtn.style.padding = "0";
         reportBtn.style.marginRight = "0";
         reportBtn.style.backgroundColor = "var(--popup-divider)";
@@ -2305,6 +2307,82 @@ ${userDesc || "未提供具體描述"}`;
     }
     chrome.storage.onChanged.addListener((changes, area) => {
       if (area === "sync") {
+        if (changes.enabled !== void 0) {
+          isEnabled = changes.enabled.newValue !== false;
+        }
+        if (changes.popupDisplayStyle) {
+          popupDisplayStyle = changes.popupDisplayStyle.newValue || "full";
+        }
+        if (changes.displayMode) {
+          displayMode = changes.displayMode.newValue || "jyutping";
+        }
+        if (changes.toneStyle) {
+          toneStyle = changes.toneStyle.newValue || "superscript";
+        }
+        if (changes.rubyRtBackground) {
+          const val = changes.rubyRtBackground.newValue;
+          if (val === true) rubyRtBackground = "solid";
+          else if (val === false || !val) rubyRtBackground = "none";
+          else rubyRtBackground = val;
+        }
+        if (changes.hoverModifier) {
+          hoverModifier = changes.hoverModifier.newValue || "none";
+        }
+        if (changes.popupTheme) {
+          popupTheme = changes.popupTheme.newValue || "classic";
+          applyPopupTheme(popupTheme);
+        }
+        if (changes.customZhFont) {
+          customZhFont = changes.customZhFont.newValue || "";
+        }
+        if (changes.customEnFont) {
+          customEnFont = changes.customEnFont.newValue || "";
+        }
+        if (changes.highlightStyle) {
+          highlightStyle = changes.highlightStyle.newValue || "yellow";
+        }
+        if (changes.rubyHoverStyle) {
+          rubyHoverStyle = changes.rubyHoverStyle.newValue || "ruby-red";
+        }
+        if (changes.compactExpandBtn) {
+          compactExpandBtn = changes.compactExpandBtn.newValue !== false;
+        }
+        if (changes.ttsEnabled !== void 0) {
+          ttsEnabled = changes.ttsEnabled.newValue !== false;
+        }
+        if (changes.ttsEngine) {
+          ttsEngine = changes.ttsEngine.newValue || "edgeTts";
+        }
+        if (changes.edgeTtsMode) {
+          edgeTtsMode = changes.edgeTtsMode.newValue || "default";
+        }
+        if (changes.edgeTtsUrl) {
+          edgeTtsUrl = changes.edgeTtsUrl.newValue || "";
+        }
+        if (changes.azureTtsMode) {
+          azureTtsMode = changes.azureTtsMode.newValue || "default";
+        }
+        if (changes.azureTtsKey) {
+          azureTtsKey = changes.azureTtsKey.newValue || "";
+        }
+        if (changes.azureTtsRegion) {
+          azureTtsRegion = changes.azureTtsRegion.newValue || "";
+        }
+        if (changes.azureTtsVoice) {
+          azureTtsVoice = changes.azureTtsVoice.newValue || "zh-HK-HiuMaanNeural";
+        }
+        if (changes.ttsRate) {
+          ttsRate = changes.ttsRate.newValue || 0.9;
+        }
+        if (changes.paragraphTransKey) {
+          paragraphTransKey = changes.paragraphTransKey.newValue || "shift";
+        }
+        if (changes.paragraphTransMode) {
+          paragraphTransMode = changes.paragraphTransMode.newValue || "below";
+        }
+        if (changes.paragraphTransEngine) {
+          paragraphTransEngine = changes.paragraphTransEngine.newValue || "bing";
+        }
         if (changes.uiTheme) {
           applyPopupTheme(popupTheme);
         }

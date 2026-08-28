@@ -55,6 +55,14 @@
     "message": "Full-page Cantonese Ruby",
     "description": "Context menu to toggle full page ruby annotations"
   },
+  "ctxAddWord": {
+    "message": "Add to Wordbook",
+    "description": "Context menu to add word to wordbook"
+  },
+  "ctxOpenWordbook": {
+    "message": "Open Wordbook",
+    "description": "Context menu to open wordbook"
+  },
   "extActionTitle": {
     "message": "Toggle Jyutping Hover Dictionary",
     "description": "extActionTitle"
@@ -787,6 +795,38 @@
     "message": "Auto-Pronounce",
     "description": "Wordbook: toggle auto-pronounce on navigation"
   },
+  "wordbookAiGenerateNote": {
+    "message": "AI Write Note"
+  },
+  "wordbookAiGenerating": {
+    "message": "Generating..."
+  },
+  "wordbookAiEditingPlaceholder": {
+    "message": "Editing with AI..."
+  },
+  "wordbookAiGenerateSelected": {
+    "message": "AI Note"
+  },
+  "wordbookAiAddNotes": {
+    "message": "AI Add Notes"
+  },
+  "wordbookAiTooltipDesc": {
+    "message": "Select words first, then click to generate notes with AI in bulk."
+  },
+  "wordbookSelectUnannotated": {
+    "message": "Click to select all words without notes"
+  },
+  "wordbookAllHaveNotes": {
+    "message": "All words in the current list already have notes!"
+  },
+  "wordbookAiBulkConfirm": {
+    "message": "Generate AI notes for $COUNT$ selected words?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "wordbookTabShortcuts": {
     "message": "Shortcuts & Audio",
     "description": "Tab for shortcuts & pronunciation settings"
@@ -801,10 +841,7 @@
     "message": "Navigate to previous word"
   },
   "shortcutPronounceActive": {
-    "message": "Pronounce active word manually"
-  },
-  "shortcutArrowPronounce": {
-    "message": "Pronounce active word with Left/Right arrows"
+    "message": "Pronounce active word"
   },
   "shortcutCloseModal": {
     "message": "Close modal or context menu"
@@ -813,13 +850,7 @@
     "message": "Auto-pronounce on navigation"
   },
   "settingAutoPronounceDesc": {
-    "message": "Automatically play Cantonese pronunciation when navigating words via ↑ / ↓ arrow keys or Enter."
-  },
-  "settingArrowPronounceTitle": {
-    "message": "Pronounce with ← / → arrow keys"
-  },
-  "settingArrowPronounceDesc": {
-    "message": "Allow pressing Left or Right arrow keys (← / →) to manually pronounce the active word."
+    "message": "Automatically play Cantonese pronunciation when navigating words via ↑ / ↓ arrow keys."
   },
   "wordbookEmptyDetail": {
     "message": "Click a word on the left<br>to view dictionary details"
@@ -1252,10 +1283,86 @@
   "wordbookPromptSaved": {
     "message": "✓ Saved"
   },
+  "wordbookAiTabNotePrompt": {
+    "message": "Note Prompt"
+  },
+  "wordbookAiTabNotePromptDesc": {
+    "message": "Customize the AI prompt for generating wordbook notes, guiding the AI to produce definitions tailored to your style."
+  },
+  "wordbookAiNotePromptPlaceholder": {
+    "message": "Enter custom AI note prompt..."
+  },
+  "wordbookTagPronunciation": {
+    "message": "Pronunciation"
+  },
+  "wordbookTagDefinitions": {
+    "message": "Definitions"
+  },
   "wordbookRestoreDefaultActions": {
     "message": "Restore Default Actions"
   },
   "wordbookRestoreDefaultEngines": {
-    "message": "Restore Default Engines"
+    "message": "Restore Default Search Engines"
+  },
+  "engineWiki": {
+    "message": "Wiktionary Cantonese"
+  },
+  "engineWordsHk": {
+    "message": "Words.hk Cantonese Dict"
+  },
+  "engineSheik": {
+    "message": "Sheik Cantonese Dict"
+  },
+  "engineTwitter": {
+    "message": "Search on X (Twitter)"
+  },
+  "engineGoogle": {
+    "message": "Google Cantonese Search"
+  },
+  "dictLabelJyutping": {
+    "message": "Jyutping:"
+  },
+  "dictLabelYale": {
+    "message": "Yale:"
+  },
+  "dictLabelSims": {
+    "message": "Synonyms: "
+  },
+  "dictLabelAnts": {
+    "message": "Antonyms: "
+  },
+  "dictLabelVariants": {
+    "message": "Variants: "
+  },
+  "dictBtnReport": {
+    "message": "Report"
+  },
+  "dictReportTitle": {
+    "message": "Report Issue"
+  },
+  "dictReportWord": {
+    "message": "Word: "
+  },
+  "dictReportPlaceholder": {
+    "message": "Please describe the issue (e.g. incorrect pronunciation, definition error)..."
+  },
+  "dictReportSend": {
+    "message": "Send Report"
+  },
+  "dictReportSent": {
+    "message": "Report Sent"
+  },
+  "dictBookmarkAdd": {
+    "message": "Add to Word Book"
+  },
+  "dictBookmarkRemove": {
+    "message": "Remove from Word Book"
+  },
+  "wordbookSelectItem": {
+    "message": "Click to select"
+  },
+  "wordbookDeselectItem": {
+    "message": "Click to deselect"
   }
 }
+

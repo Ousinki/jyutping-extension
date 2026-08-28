@@ -1018,6 +1018,14 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 
   chrome.contextMenus.create({
+    id: "mode-ruby",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("optStyleRuby") || "網頁內嵌 Ruby",
+    type: "radio",
+    contexts: ["all"]
+  });
+
+  chrome.contextMenus.create({
     id: "sep-ruby",
     parentId: "jyutping-parent",
     type: "separator",
@@ -1039,9 +1047,16 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 
   chrome.contextMenus.create({
-    id: "open-settings",
+    id: "add-to-wordbook",
     parentId: "jyutping-parent",
-    title: chrome.i18n.getMessage("ctxMenuSettings") || "詞典設定...",
+    title: chrome.i18n.getMessage("ctxAddWord") || "加入生詞本",
+    contexts: ["selection"]
+  });
+
+  chrome.contextMenus.create({
+    id: "open-wordbook",
+    parentId: "jyutping-parent",
+    title: chrome.i18n.getMessage("ctxOpenWordbook") || "打開生詞本",
     contexts: ["all"]
   });
 
@@ -1053,16 +1068,9 @@ chrome.runtime.onInstalled.addListener(() => {
   });
 
   chrome.contextMenus.create({
-    id: "add-to-wordbook",
+    id: "open-settings",
     parentId: "jyutping-parent",
-    title: chrome.i18n.getMessage("ctxAddWord") || "📌 加入生詞本",
-    contexts: ["selection"]
-  });
-
-  chrome.contextMenus.create({
-    id: "open-wordbook",
-    parentId: "jyutping-parent",
-    title: chrome.i18n.getMessage("ctxOpenWordbook") || "📖 打開生詞本",
+    title: chrome.i18n.getMessage("ctxMenuSettings") || "詞典設定...",
     contexts: ["all"]
   });
   
@@ -1086,6 +1094,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   } else if (info.menuItemId === "mode-compact") {
     await chrome.storage.sync.set({ popupDisplayStyle: 'compact' });
     GoogleAnalytics.fireEvent('change_setting_context', { setting: 'popupDisplayStyle', value: 'compact' });
+  } else if (info.menuItemId === "mode-ruby") {
+    await chrome.storage.sync.set({ popupDisplayStyle: 'ruby' });
+    GoogleAnalytics.fireEvent('change_setting_context', { setting: 'popupDisplayStyle', value: 'ruby' });
   } else if (info.menuItemId === "open-settings") {
     chrome.runtime.openOptionsPage();
   } else if (info.menuItemId === "open-wordbook") {
@@ -1158,9 +1169,9 @@ function updateContextMenuState(isEnabled, displayStyle) {
   }
   
   if (displayStyle !== null) {
-    const isFull = displayStyle !== 'compact';
-    chrome.contextMenus.update("mode-full", { checked: isFull }).catch(() => {});
-    chrome.contextMenus.update("mode-compact", { checked: !isFull }).catch(() => {});
+    chrome.contextMenus.update("mode-full", { checked: displayStyle === 'full' }).catch(() => {});
+    chrome.contextMenus.update("mode-compact", { checked: displayStyle === 'compact' }).catch(() => {});
+    chrome.contextMenus.update("mode-ruby", { checked: displayStyle === 'ruby' }).catch(() => {});
   }
 }
 
@@ -1177,9 +1188,8 @@ function updateActionBadge(isEnabled) {
       }
     });
   } else {
-    // 停用時顯示 OFF，並使用灰色圖標
-    chrome.action.setBadgeText({ text: 'OFF' });
-    chrome.action.setBadgeBackgroundColor({ color: '#888888' }); // 灰色
+    // 停用時不顯示文字角標，僅顯示灰色圖標
+    chrome.action.setBadgeText({ text: '' });
     chrome.action.setIcon({
       path: {
         "16": "icon_action_gray.png",
@@ -1194,12 +1204,16 @@ function updateActionBadge(isEnabled) {
 
 async function handleAiChatQuery(request, sendResponse) {
   const { word, sentence, originalTranslation, question, history, systemPrompt } = request;
+  console.log('[AI Chat Background] Received query request:', { word, question, historyLength: history?.length });
 
   try {
     const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'uiLang', 'aiCustomSystemPrompt']);
     const { aiBaseUrl, aiApiKey, aiModel, aiLanguage, uiLang, aiCustomSystemPrompt } = settings;
 
+    console.log('[AI Chat Background] Settings loaded:', { aiBaseUrl, aiModel, hasApiKey: !!aiApiKey, aiLanguage });
+
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
+      console.warn('[AI Chat Background] AI API configuration missing');
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
@@ -1258,6 +1272,8 @@ async function handleAiChatQuery(request, sendResponse) {
     });
 
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
+    console.log('[AI Chat Background] Sending request to:', url, 'with model:', aiModel);
+
     const response = await fetch(url, {
       method: 'POST',
       headers: {
@@ -1272,8 +1288,11 @@ async function handleAiChatQuery(request, sendResponse) {
       })
     });
 
+    console.log('[AI Chat Background] Fetch response status:', response.status, response.statusText);
+
     if (!response.ok) {
       const errText = await response.text();
+      console.error('[AI Chat Background] Fetch error body:', errText);
       throw new Error(`API 錯誤 (${response.status}): ${errText.substring(0, 100)}`);
     }
 
@@ -1281,11 +1300,14 @@ async function handleAiChatQuery(request, sendResponse) {
     const reply = data.choices?.[0]?.message?.content?.trim() || '';
 
     if (!reply) {
+      console.warn('[AI Chat Background] Empty reply returned from model');
       throw new Error('AI 返回空結果');
     }
 
+    console.log('[AI Chat Background] Successfully received reply (length:', reply.length, ')');
     sendResponse({ success: true, reply: reply });
   } catch (error) {
+    console.error('[AI Chat Background] Exception caught:', error);
     sendResponse({ success: false, error: error.message });
   }
 }

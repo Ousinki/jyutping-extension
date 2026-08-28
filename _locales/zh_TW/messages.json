@@ -55,6 +55,14 @@
     "message": "全文粵語注音",
     "description": "Context menu to toggle full page ruby annotations"
   },
+  "ctxAddWord": {
+    "message": "加入生詞本",
+    "description": "Context menu to add word to wordbook"
+  },
+  "ctxOpenWordbook": {
+    "message": "打開生詞本",
+    "description": "Context menu to open wordbook"
+  },
   "extActionTitle": {
     "message": "粵語拼音懸浮詞典",
     "description": "extActionTitle"
@@ -787,6 +795,38 @@
     "message": "自動朗讀",
     "description": "Wordbook: toggle auto-pronounce on navigation"
   },
+  "wordbookAiGenerateNote": {
+    "message": "AI 撰寫釋義"
+  },
+  "wordbookAiGenerating": {
+    "message": "生成中..."
+  },
+  "wordbookAiEditingPlaceholder": {
+    "message": "正在使用 AI 進行編輯..."
+  },
+  "wordbookAiGenerateSelected": {
+    "message": "AI 筆記"
+  },
+  "wordbookAiAddNotes": {
+    "message": "AI 添加筆記"
+  },
+  "wordbookAiTooltipDesc": {
+    "message": "先勾選需要編寫筆記的詞條，然後點擊按鈕由 AI 批量生成。"
+  },
+  "wordbookSelectUnannotated": {
+    "message": "點擊選中所有未添加筆記的詞條"
+  },
+  "wordbookAllHaveNotes": {
+    "message": "當前列表中的所有詞條均已添加筆記！"
+  },
+  "wordbookAiBulkConfirm": {
+    "message": "確定要使用 AI 為選中的 $COUNT$ 個詞條生成筆記釋義嗎？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "wordbookTabShortcuts": {
     "message": "快捷鍵與朗讀",
     "description": "Tab for shortcuts & pronunciation settings"
@@ -801,10 +841,7 @@
     "message": "切換至上一個生詞"
   },
   "shortcutPronounceActive": {
-    "message": "手動朗讀當前選中生詞"
-  },
-  "shortcutArrowPronounce": {
-    "message": "左右鍵手動朗讀當前生詞"
+    "message": "朗讀當前選中生詞"
   },
   "shortcutCloseModal": {
     "message": "關閉當前彈窗或右鍵選單"
@@ -813,13 +850,7 @@
     "message": "切換生詞時自動朗讀"
   },
   "settingAutoPronounceDesc": {
-    "message": "使用 ↑ / ↓ 方向鍵或 Enter 鍵切換生詞時，自動播放該生詞的粵語發音。"
-  },
-  "settingArrowPronounceTitle": {
-    "message": "允許使用 ← / → 鍵朗讀當前詞條"
-  },
-  "settingArrowPronounceDesc": {
-    "message": "若關閉自動朗讀，可隨時按鍵盤左右方向鍵（← 或 →）手動播放當前選中詞條的發音。"
+    "message": "使用 ↑ / ↓ 方向鍵切換生詞時，自動播放該生詞的粵語發音。"
   },
   "wordbookEmptyDetail": {
     "message": "點擊左側單字<br>查看詳細詞典釋義"
@@ -1252,10 +1283,86 @@
   "wordbookPromptSaved": {
     "message": "✓ 已保存"
   },
+  "wordbookAiTabNotePrompt": {
+    "message": "筆記 Prompt"
+  },
+  "wordbookAiTabNotePromptDesc": {
+    "message": "自訂生詞本中 AI 編輯或批量生成筆記時的提示詞（Prompt），引導 AI 生成符合您個人習慣的筆記釋義。"
+  },
+  "wordbookAiNotePromptPlaceholder": {
+    "message": "輸入自訂 AI 筆記提示詞..."
+  },
+  "wordbookTagPronunciation": {
+    "message": "發音"
+  },
+  "wordbookTagDefinitions": {
+    "message": "詞典釋義"
+  },
   "wordbookRestoreDefaultActions": {
     "message": "恢復預設指令"
   },
   "wordbookRestoreDefaultEngines": {
     "message": "恢復預設搜尋源"
+  },
+  "engineWiki": {
+    "message": "Wiki 粵語詞典"
+  },
+  "engineWordsHk": {
+    "message": "Words.hk 粵典"
+  },
+  "engineSheik": {
+    "message": "羊羊粵語詞典"
+  },
+  "engineTwitter": {
+    "message": "X (Twitter) 搜尋"
+  },
+  "engineGoogle": {
+    "message": "Google 粵語搜尋"
+  },
+  "dictLabelJyutping": {
+    "message": "粵拼:"
+  },
+  "dictLabelYale": {
+    "message": "耶魯:"
+  },
+  "dictLabelSims": {
+    "message": "近義："
+  },
+  "dictLabelAnts": {
+    "message": "反義："
+  },
+  "dictLabelVariants": {
+    "message": "異體："
+  },
+  "dictBtnReport": {
+    "message": "報告"
+  },
+  "dictReportTitle": {
+    "message": "報告錯誤"
+  },
+  "dictReportWord": {
+    "message": "詞語："
+  },
+  "dictReportPlaceholder": {
+    "message": "請描述具體的錯誤（例如讀音不正確、釋義有誤等）..."
+  },
+  "dictReportSend": {
+    "message": "發送報告"
+  },
+  "dictReportSent": {
+    "message": "報告已送出"
+  },
+  "dictBookmarkAdd": {
+    "message": "加入生詞本"
+  },
+  "dictBookmarkRemove": {
+    "message": "從生詞本移除"
+  },
+  "wordbookSelectItem": {
+    "message": "點擊選中"
+  },
+  "wordbookDeselectItem": {
+    "message": "點擊取消選中"
   }
 }
+

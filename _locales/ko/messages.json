@@ -50,6 +50,14 @@
     "message": "전체 페이지 광둥어 발음기호",
     "description": "Context menu to toggle full page ruby annotations"
   },
+  "ctxAddWord": {
+    "message": "단어장에 추가",
+    "description": "Context menu to add word to wordbook"
+  },
+  "ctxOpenWordbook": {
+    "message": "단어장 열기",
+    "description": "Context menu to open wordbook"
+  },
   "extActionTitle": {
     "message": "Jyutping Hover Dictionary 켜기/끄기"
   },
@@ -720,6 +728,38 @@
     "message": "자동 발음",
     "description": "Wordbook: toggle auto-pronounce on navigation"
   },
+  "wordbookAiGenerateNote": {
+    "message": "AI로 해설 작성"
+  },
+  "wordbookAiGenerating": {
+    "message": "생성 중..."
+  },
+  "wordbookAiEditingPlaceholder": {
+    "message": "AI로 편집 중..."
+  },
+  "wordbookAiGenerateSelected": {
+    "message": "AI 메모"
+  },
+  "wordbookAiAddNotes": {
+    "message": "AI 메모 추가"
+  },
+  "wordbookAiTooltipDesc": {
+    "message": "메모를 작성할 단어를 선택한 후 클릭하면 AI가 일괄 생성합니다。"
+  },
+  "wordbookSelectUnannotated": {
+    "message": "메모가 없는 모든 단어 선택"
+  },
+  "wordbookAllHaveNotes": {
+    "message": "현재 목록의 모든 단어에 이미 메모가 작성되어 있습니다!"
+  },
+  "wordbookAiBulkConfirm": {
+    "message": "선택한 $COUNT$개 단어에 AI 메모를 생성하시겠습니까?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "wordbookTabShortcuts": {
     "message": "단축키 및 발음",
     "description": "Tab for shortcuts & pronunciation settings"
@@ -734,10 +774,7 @@
     "message": "이전 단어로 이동"
   },
   "shortcutPronounceActive": {
-    "message": "현재 선택된 단어 수동 발음"
-  },
-  "shortcutArrowPronounce": {
-    "message": "좌우 방향키로 현재 단어 발음"
+    "message": "현재 선택된 단어 발음"
   },
   "shortcutCloseModal": {
     "message": "팝업 또는 메뉴 닫기"
@@ -746,13 +783,7 @@
     "message": "단어 이동 시 자동 발음"
   },
   "settingAutoPronounceDesc": {
-    "message": "↑ / ↓ 방향키 또는 Enter 키로 단어를 전환할 때 광둥어 발음을 자동으로 재생합니다."
-  },
-  "settingArrowPronounceTitle": {
-    "message": "← / → 키로 현재 단어 발음"
-  },
-  "settingArrowPronounceDesc": {
-    "message": "자동 발음이 꺼져 있을 때, ← 또는 → 키로 현재 선택된 단어의 발음을 재생할 수 있습니다."
+    "message": "↑ / ↓ 방향키로 단어를 전환할 때 광둥어 발음을 자동으로 재생합니다."
   },
   "wordbookEmptyDetail": {
     "message": "왼쪽 단어를 클릭하여<br>사전 세부 정보를 봅니다"
@@ -1203,10 +1234,86 @@
   "wordbookPromptSaved": {
     "message": "✓ 저장됨"
   },
+  "wordbookAiTabNotePrompt": {
+    "message": "메모 Prompt"
+  },
+  "wordbookAiTabNotePromptDesc": {
+    "message": "단어장에서 AI로 메모를 생성하거나 일괄 작성할 때 사용할 프롬프트(Prompt)를 맞춤 설정합니다."
+  },
+  "wordbookAiNotePromptPlaceholder": {
+    "message": "사용자 지정 AI 메모 프롬프트 입력..."
+  },
+  "wordbookTagPronunciation": {
+    "message": "발음"
+  },
+  "wordbookTagDefinitions": {
+    "message": "사전 뜻"
+  },
   "wordbookRestoreDefaultActions": {
     "message": "기본 작업 복원"
   },
   "wordbookRestoreDefaultEngines": {
     "message": "기본 검색 엔진 복원"
+  },
+  "engineWiki": {
+    "message": "위키낱말사전 광둥어"
+  },
+  "engineWordsHk": {
+    "message": "Words.hk 광둥어 사전"
+  },
+  "engineSheik": {
+    "message": "Sheik 광둥어 사전"
+  },
+  "engineTwitter": {
+    "message": "X (Twitter) 검색"
+  },
+  "engineGoogle": {
+    "message": "Google 광둥어 검색"
+  },
+  "dictLabelJyutping": {
+    "message": "Jyutping:"
+  },
+  "dictLabelYale": {
+    "message": "Yale:"
+  },
+  "dictLabelSims": {
+    "message": "유의어: "
+  },
+  "dictLabelAnts": {
+    "message": "반의어: "
+  },
+  "dictLabelVariants": {
+    "message": "이체자: "
+  },
+  "dictBtnReport": {
+    "message": "신고"
+  },
+  "dictReportTitle": {
+    "message": "오류 신고"
+  },
+  "dictReportWord": {
+    "message": "단어: "
+  },
+  "dictReportPlaceholder": {
+    "message": "구체적인 오류(발음 오류, 뜻 오류 등)를 입력해 주세요..."
+  },
+  "dictReportSend": {
+    "message": "신고 보내기"
+  },
+  "dictReportSent": {
+    "message": "신고가 제출되었습니다"
+  },
+  "dictBookmarkAdd": {
+    "message": "단어장에 추가"
+  },
+  "dictBookmarkRemove": {
+    "message": "단어장에서 제거"
+  },
+  "wordbookSelectItem": {
+    "message": "클릭하여 선택"
+  },
+  "wordbookDeselectItem": {
+    "message": "클릭하여 선택 해제"
   }
 }
+

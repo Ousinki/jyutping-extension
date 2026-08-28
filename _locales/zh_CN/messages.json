@@ -55,6 +55,14 @@
     "message": "全文粤语注音",
     "description": "Context menu to toggle full page ruby annotations"
   },
+  "ctxAddWord": {
+    "message": "加入生词本",
+    "description": "Context menu to add word to wordbook"
+  },
+  "ctxOpenWordbook": {
+    "message": "打开生词本",
+    "description": "Context menu to open wordbook"
+  },
   "extActionTitle": {
     "message": "粤语拼音悬浮词典",
     "description": "extActionTitle"
@@ -787,6 +795,38 @@
     "message": "自动朗读",
     "description": "Wordbook: toggle auto-pronounce on navigation"
   },
+  "wordbookAiGenerateNote": {
+    "message": "AI 撰写释义"
+  },
+  "wordbookAiGenerating": {
+    "message": "生成中..."
+  },
+  "wordbookAiEditingPlaceholder": {
+    "message": "正在使用 AI 进行编辑..."
+  },
+  "wordbookAiGenerateSelected": {
+    "message": "AI 笔记"
+  },
+  "wordbookAiAddNotes": {
+    "message": "AI 添加笔记"
+  },
+  "wordbookAiTooltipDesc": {
+    "message": "先勾选需要编写笔记的词条，然后点击按钮由 AI 批量生成。"
+  },
+  "wordbookSelectUnannotated": {
+    "message": "点击选中所有未添加笔记的词条"
+  },
+  "wordbookAllHaveNotes": {
+    "message": "当前列表中的所有词条均已添加笔记！"
+  },
+  "wordbookAiBulkConfirm": {
+    "message": "确定要使用 AI 为选中的 $COUNT$ 个词条生成笔记释义吗？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
   "wordbookTabShortcuts": {
     "message": "快捷键与朗读",
     "description": "Tab for shortcuts & pronunciation settings"
@@ -801,10 +841,7 @@
     "message": "切换至上一个生词"
   },
   "shortcutPronounceActive": {
-    "message": "手动朗读当前选中生词"
-  },
-  "shortcutArrowPronounce": {
-    "message": "左右键手动朗读当前生词"
+    "message": "朗读当前选中生词"
   },
   "shortcutCloseModal": {
     "message": "关闭当前弹窗或右键菜单"
@@ -813,13 +850,7 @@
     "message": "切换生词时自动朗读"
   },
   "settingAutoPronounceDesc": {
-    "message": "使用 ↑ / ↓ 方向键或 Enter 键切换生词时，自动播放该生词的粤语发音。"
-  },
-  "settingArrowPronounceTitle": {
-    "message": "允许使用 ← / → 键朗读当前词条"
-  },
-  "settingArrowPronounceDesc": {
-    "message": "若关闭自动朗读，可随时按键盘左右方向键（← 或 →）手动播放当前选中词条的发音。"
+    "message": "使用 ↑ / ↓ 方向键切换生词时，自动播放该生词的粤语发音。"
   },
   "wordbookEmptyDetail": {
     "message": "点击左侧单词<br>查看详细词典释义"
@@ -1252,10 +1283,86 @@
   "wordbookPromptSaved": {
     "message": "✓ 已保存"
   },
+  "wordbookAiTabNotePrompt": {
+    "message": "笔记 Prompt"
+  },
+  "wordbookAiTabNotePromptDesc": {
+    "message": "自定义生词本中 AI 编纂或批量生成笔记时的提示词（Prompt），引导 AI 生成符合您个人习惯的笔记释义。"
+  },
+  "wordbookAiNotePromptPlaceholder": {
+    "message": "输入自定义 AI 笔记提示词..."
+  },
+  "wordbookTagPronunciation": {
+    "message": "发音"
+  },
+  "wordbookTagDefinitions": {
+    "message": "词典释义"
+  },
   "wordbookRestoreDefaultActions": {
-    "message": "恢复预设指令"
+    "message": "恢复默认指令"
   },
   "wordbookRestoreDefaultEngines": {
-    "message": "恢复预设搜索源"
+    "message": "恢复默认搜索源"
+  },
+  "engineWiki": {
+    "message": "Wiki 粤语词典"
+  },
+  "engineWordsHk": {
+    "message": "Words.hk 粤典"
+  },
+  "engineSheik": {
+    "message": "羊羊粤语词典"
+  },
+  "engineTwitter": {
+    "message": "X (Twitter) 搜索"
+  },
+  "engineGoogle": {
+    "message": "Google 粤语搜索"
+  },
+  "dictLabelJyutping": {
+    "message": "粤拼:"
+  },
+  "dictLabelYale": {
+    "message": "耶鲁:"
+  },
+  "dictLabelSims": {
+    "message": "近义："
+  },
+  "dictLabelAnts": {
+    "message": "反义："
+  },
+  "dictLabelVariants": {
+    "message": "异体："
+  },
+  "dictBtnReport": {
+    "message": "报告"
+  },
+  "dictReportTitle": {
+    "message": "报告错误"
+  },
+  "dictReportWord": {
+    "message": "词语："
+  },
+  "dictReportPlaceholder": {
+    "message": "请描述具体的错误（例如读音不正确、释义有误等）..."
+  },
+  "dictReportSend": {
+    "message": "发送报告"
+  },
+  "dictReportSent": {
+    "message": "报告已送出"
+  },
+  "dictBookmarkAdd": {
+    "message": "加入生词本"
+  },
+  "dictBookmarkRemove": {
+    "message": "从生词本移除"
+  },
+  "wordbookSelectItem": {
+    "message": "点击选中"
+  },
+  "wordbookDeselectItem": {
+    "message": "点击取消选中"
   }
 }
+
