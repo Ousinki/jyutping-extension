@@ -148,7 +148,7 @@
     "description": "optAzureSettings"
   },
   "optAzureSettingsDesc": {
-    "message": "選擇使用預設 API 或自定義密鑰",
+    "message": "輸入您的 Azure 語音服務金鑰與區域（直連微軟官方）",
     "description": "optAzureSettingsDesc"
   },
   "optClickToSpeak": {
@@ -239,13 +239,13 @@
     "message": "在網頁上顯示粵語發音提示",
     "description": "optEnableDesc"
   },
-  "optEngineAzure": {
-    "message": "Azure Speech (官方雲端語音)",
-    "description": "optEngineAzure"
+  "optEngineGoogle": {
+    "message": "Google TTS",
+    "description": "optEngineGoogle"
   },
-  "optEngineBert": {
-    "message": "Bert-VITS2 (粵語神經語音)",
-    "description": "optEngineBert"
+  "optEngineAzure": {
+    "message": "Azure Speech (自定義密鑰)",
+    "description": "optEngineAzure"
   },
   "optFail": {
     "message": "❌ 連接失敗："
@@ -635,6 +635,12 @@
   "optTestTTS": {
     "message": "測試語音",
     "description": "optTestTTS"
+  },
+  "optTtsAccuracyTitle": {
+    "message": "語音發音準確度說明："
+  },
+  "optTtsAccuracyDesc": {
+    "message": "預設選用的 <strong>Edge TTS</strong> 屬於微軟雲端 AI 語音合成。受微軟伺服器多音字模型限制，少數詞彙可能存在讀音不完全準確的情況（此為微軟雲端演算法行為，擴充功能無法直接干預其輸出）。各 TTS 引擎的多音字演算法各有差異，若當前引擎讀音有誤，您可以<strong>切換為其他 TTS 引擎</strong>（例如 Edge TTS 讀音有誤時可切換為 Google TTS）嘗試正確讀音。<br />此外，我們在懸浮詞典中特別內置了 <strong>Words.hk 官方真人單字發音音庫</strong>。當您對 TTS 讀音存疑時，可直接在懸浮窗中<strong>點擊粵拼音標</strong>進行 100% 權威準確的單字真人朗讀。"
   },
   "optTestingAI": {
     "message": "正在測試..."

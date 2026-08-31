@@ -68,7 +68,7 @@ async function applyI18n(lang) {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
         el.placeholder = activeDict[key];
       } else {
-        if (el.children.length > 0 && !key.startsWith('clItem') && key !== 'optCompactExpandBtn') {
+        if (el.children.length > 0 && !key.startsWith('clItem') && key !== 'optCompactExpandBtn' && key !== 'optTtsAccuracyDesc') {
             for (let child of el.childNodes) {
                 if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length > 0) {
                     child.nodeValue = activeDict[key];
@@ -132,8 +132,6 @@ async function applyI18n(lang) {
   const edgeCustomSettings = document.getElementById('edgeCustomSettings');
   const edgeTtsUrlInput = document.getElementById('edgeTtsUrl');
   const azureTtsSettings = document.getElementById('azureTtsSettings');
-  const azureTtsModeSelect = document.getElementById('azureTtsMode');
-  const azureCustomSettings = document.getElementById('azureCustomSettings');
   const azureTtsKeyInput = document.getElementById('azureTtsKey');
   const azureTtsRegionInput = document.getElementById('azureTtsRegion');
   const azureTtsVoiceSelect = document.getElementById('azureTtsVoice');
@@ -152,54 +150,354 @@ async function applyI18n(lang) {
   const testAiBtn = document.getElementById('testAiBtn');
 
 
-  // 主題預覽配色數據
-  const THEME_PREVIEW = {
-    classic: { bg: '#ffffff', border: '#d0d0d0', text: '#333', word: '#1a1a1a', accent: '#8A1C1C', def: '#555', yue: '#b8860b', divider: '#eee', shadow: '0 2px 8px rgba(0,0,0,0.1)' },
-    academic: { bg: '#ffeaeb', border: '#fba5a8', text: '#8A1C1C', word: '#610c0c', accent: '#D83131', def: '#8A1C1C', yue: '#D83131', divider: '#fccacc', shadow: '0 4px 12px rgba(138,28,28,0.2)' },
-    night:   { bg: '#1a1a2e', border: '#16213e', text: '#e0e0e0', word: '#f0f0ff', accent: '#7c8cf8', def: '#c0c0d0', yue: '#e8b84e', divider: '#2a2a40', shadow: '0 2px 12px rgba(0,0,0,0.4)' },
-    ink:     { bg: '#2d2d2d', border: '#444', text: '#e0e0e0', word: '#f0f0f0', accent: '#64b5f6', def: '#ccc', yue: '#daa520', divider: '#3d3d3d', shadow: '0 2px 12px rgba(0,0,0,0.4)' },
-    ocean:   { bg: '#e3f2fd', border: '#90caf9', text: '#1565c0', word: '#0d47a1', accent: '#0d47a1', def: '#1976d2', yue: '#e65100', divider: '#bbdefb', shadow: '0 2px 8px rgba(21,101,192,0.2)' },
-    warm:    { bg: '#fff8e1', border: '#ffe082', text: '#5d4037', word: '#3e2723', accent: '#e65100', def: '#6d4c41', yue: '#c62828', divider: '#ffe0b2', shadow: '0 2px 8px rgba(230,81,0,0.15)' },
-    mint:    { bg: '#e8f5e9', border: '#a5d6a7', text: '#2e7d32', word: '#1b5e20', accent: '#1b5e20', def: '#388e3c', yue: '#bf360c', divider: '#c8e6c9', shadow: '0 2px 8px rgba(46,125,50,0.2)' },
-    glass:   { bg: 'rgba(255,255,255,0.78)', border: 'rgba(255,255,255,0.3)', text: '#333', word: '#1a1a1a', accent: '#8A1C1C', def: '#444', yue: '#b8860b', divider: 'rgba(0,0,0,0.08)', shadow: '0 4px 16px rgba(0,0,0,0.12)', glass: true },
+  // 主題預覽配色數據 (與 content script 完全同步)
+  const POPUP_THEMES = {
+    classic: {
+      '--popup-bg': '#ffffff',
+      '--popup-border': '#d0d0d0',
+      '--popup-text': '#333333',
+      '--popup-text-muted': '#666666',
+      '--popup-text-label': '#888888',
+      '--popup-accent': '#2196f3',
+      '--popup-accent-hover': '#1976d2',
+      '--popup-word-color': '#1a1a1a',
+      '--popup-def-color': '#555555',
+      '--popup-def-yue': '#b8860b',
+      '--popup-divider': 'rgba(0, 0, 0, 0.08)',
+      '--popup-divider-strong': '#eeeeee',
+      '--popup-example-bg': '#f9f9f9',
+      '--popup-btn-bg': '#f0f0f0',
+      '--popup-btn-hover': '#e0e0e0',
+      '--popup-btn-speaking': '#2196f3',
+      '--popup-btn-speaking-text': '#ffffff',
+      '--popup-shadow': '0 4px 12px rgba(0, 0, 0, 0.15)',
+      '--popup-active-bg': '#f0f7ff',
+    },
+    academic: {
+      '--popup-bg': '#ffeaeb',
+      '--popup-border': '#fba5a8',
+      '--popup-text': '#8A1C1C',
+      '--popup-text-muted': '#d46a6a',
+      '--popup-text-label': '#e38a8a',
+      '--popup-accent': '#D83131',
+      '--popup-accent-hover': '#8A1C1C',
+      '--popup-word-color': '#610c0c',
+      '--popup-def-color': '#8A1C1C',
+      '--popup-def-yue': '#D83131',
+      '--popup-divider': 'rgba(138, 28, 28, 0.12)',
+      '--popup-divider-strong': '#fccacc',
+      '--popup-example-bg': '#fce1e3',
+      '--popup-btn-bg': '#fce1e3',
+      '--popup-btn-hover': '#fba5a8',
+      '--popup-btn-speaking': '#D83131',
+      '--popup-btn-speaking-text': '#ffffff',
+      '--popup-shadow': '0 4px 12px rgba(138, 28, 28, 0.2)',
+      '--popup-active-bg': '#fce1e3',
+    },
+    night: {
+      '--popup-bg': '#1a1a2e',
+      '--popup-border': '#16213e',
+      '--popup-text': '#e0e0e0',
+      '--popup-text-muted': '#a0a0b0',
+      '--popup-text-label': '#8888a0',
+      '--popup-accent': '#7c8cf8',
+      '--popup-accent-hover': '#9aa6ff',
+      '--popup-word-color': '#f0f0ff',
+      '--popup-def-color': '#c0c0d0',
+      '--popup-def-yue': '#e8b84e',
+      '--popup-divider': 'rgba(255, 255, 255, 0.08)',
+      '--popup-divider-strong': '#2a2a40',
+      '--popup-example-bg': '#141425',
+      '--popup-btn-bg': '#2a2a40',
+      '--popup-btn-hover': '#3a3a55',
+      '--popup-btn-speaking': '#7c8cf8',
+      '--popup-btn-speaking-text': '#1a1a2e',
+      '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.4)',
+      '--popup-active-bg': '#222240',
+    },
+    ink: {
+      '--popup-bg': '#2d2d2d',
+      '--popup-border': '#444444',
+      '--popup-text': '#e0e0e0',
+      '--popup-text-muted': '#aaaaaa',
+      '--popup-text-label': '#999999',
+      '--popup-accent': '#64b5f6',
+      '--popup-accent-hover': '#90caf9',
+      '--popup-word-color': '#f0f0f0',
+      '--popup-def-color': '#cccccc',
+      '--popup-def-yue': '#daa520',
+      '--popup-divider': 'rgba(255, 255, 255, 0.08)',
+      '--popup-divider-strong': '#3d3d3d',
+      '--popup-example-bg': '#252525',
+      '--popup-btn-bg': '#444444',
+      '--popup-btn-hover': '#555555',
+      '--popup-btn-speaking': '#64b5f6',
+      '--popup-btn-speaking-text': '#1a1a1a',
+      '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.4)',
+      '--popup-active-bg': '#383838',
+    },
+    ocean: {
+      '--popup-bg': '#e3f2fd',
+      '--popup-border': '#90caf9',
+      '--popup-text': '#1565c0',
+      '--popup-text-muted': '#42a5f5',
+      '--popup-text-label': '#64b5f6',
+      '--popup-accent': '#0d47a1',
+      '--popup-accent-hover': '#1565c0',
+      '--popup-word-color': '#0d47a1',
+      '--popup-def-color': '#1976d2',
+      '--popup-def-yue': '#e65100',
+      '--popup-divider': 'rgba(13, 71, 161, 0.1)',
+      '--popup-divider-strong': '#bbdefb',
+      '--popup-example-bg': '#bbdefb',
+      '--popup-btn-bg': '#bbdefb',
+      '--popup-btn-hover': '#90caf9',
+      '--popup-btn-speaking': '#1565c0',
+      '--popup-btn-speaking-text': '#ffffff',
+      '--popup-shadow': '0 4px 12px rgba(21, 101, 192, 0.2)',
+      '--popup-active-bg': '#bbdefb',
+    },
+    warm: {
+      '--popup-bg': '#fff8e1',
+      '--popup-border': '#ffe082',
+      '--popup-text': '#5d4037',
+      '--popup-text-muted': '#8d6e63',
+      '--popup-text-label': '#a1887f',
+      '--popup-accent': '#e65100',
+      '--popup-accent-hover': '#f57c00',
+      '--popup-word-color': '#3e2723',
+      '--popup-def-color': '#6d4c41',
+      '--popup-def-yue': '#c62828',
+      '--popup-divider': 'rgba(93, 64, 55, 0.12)',
+      '--popup-divider-strong': '#ffe0b2',
+      '--popup-example-bg': '#ffecb3',
+      '--popup-btn-bg': '#ffe0b2',
+      '--popup-btn-hover': '#ffe082',
+      '--popup-btn-speaking': '#e65100',
+      '--popup-btn-speaking-text': '#ffffff',
+      '--popup-shadow': '0 4px 12px rgba(230, 81, 0, 0.15)',
+      '--popup-active-bg': '#ffecb3',
+    },
+    mint: {
+      '--popup-bg': '#e8f5e9',
+      '--popup-border': '#a5d6a7',
+      '--popup-text': '#2e7d32',
+      '--popup-text-muted': '#66bb6a',
+      '--popup-text-label': '#81c784',
+      '--popup-accent': '#1b5e20',
+      '--popup-accent-hover': '#2e7d32',
+      '--popup-word-color': '#1b5e20',
+      '--popup-def-color': '#388e3c',
+      '--popup-def-yue': '#bf360c',
+      '--popup-divider': 'rgba(46, 125, 50, 0.12)',
+      '--popup-divider-strong': '#c8e6c9',
+      '--popup-example-bg': '#c8e6c9',
+      '--popup-btn-bg': '#c8e6c9',
+      '--popup-btn-hover': '#a5d6a7',
+      '--popup-btn-speaking': '#1b5e20',
+      '--popup-btn-speaking-text': '#ffffff',
+      '--popup-shadow': '0 4px 12px rgba(46, 125, 50, 0.2)',
+      '--popup-active-bg': '#c8e6c9',
+    },
+    glass: {
+      '--popup-bg': 'rgba(255, 255, 255, 0.78)',
+      '--popup-border': 'rgba(255, 255, 255, 0.3)',
+      '--popup-text': '#333333',
+      '--popup-text-muted': '#666666',
+      '--popup-text-label': '#888888',
+      '--popup-accent': '#2196f3',
+      '--popup-accent-hover': '#1976d2',
+      '--popup-word-color': '#1a1a1a',
+      '--popup-def-color': '#444444',
+      '--popup-def-yue': '#b8860b',
+      '--popup-divider': 'rgba(0, 0, 0, 0.08)',
+      '--popup-divider-strong': 'rgba(0, 0, 0, 0.12)',
+      '--popup-example-bg': 'rgba(240, 240, 240, 0.6)',
+      '--popup-btn-bg': 'rgba(240, 240, 240, 0.6)',
+      '--popup-btn-hover': 'rgba(220, 220, 220, 0.8)',
+      '--popup-btn-speaking': '#2196f3',
+      '--popup-btn-speaking-text': '#ffffff',
+      '--popup-shadow': '0 4px 16px rgba(0, 0, 0, 0.12)',
+      '--popup-active-bg': 'rgba(240, 247, 255, 0.7)',
+    },
   };
 
   // 更新主題預覽
   function updateThemePreview(themeName) {
-    const t = THEME_PREVIEW[themeName] || THEME_PREVIEW.classic;
-    const preview = document.getElementById('themePreview');
-    if (!preview) return;
-    preview.style.background = t.bg;
-    preview.style.borderColor = t.border;
-    preview.style.color = t.text;
-    preview.style.boxShadow = t.shadow;
-    if (t.glass) {
-      preview.style.backdropFilter = 'blur(16px) saturate(180%)';
-    } else {
-      preview.style.backdropFilter = 'none';
+    const dict = document.getElementById('cantonese-popup-dict');
+    if (!dict) return;
+    const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
+    for (const [key, value] of Object.entries(theme)) {
+      dict.style.setProperty(key, value);
     }
-    const header = document.getElementById('previewHeader');
-    if (header) header.style.borderBottomColor = t.divider;
-    const word = document.getElementById('previewWord');
-    if (word) word.style.color = t.word;
-    const pinyin = document.getElementById('previewPinyin');
-    if (pinyin) pinyin.style.color = t.accent;
-    const def = document.getElementById('previewDef');
-    if (def) def.style.color = t.def;
-    const yue = document.getElementById('previewYue');
-    if (yue) yue.style.color = t.yue;
+    if (themeName === 'glass') {
+      dict.classList.add('popup-theme-glass');
+    } else {
+      dict.classList.remove('popup-theme-glass');
+    }
   }
 
   // 更新預覽字體
   function updatePreviewFont(type, font) {
-    const preview = document.getElementById('themePreview');
-    if (!preview) return;
+    const dict = document.getElementById('cantonese-popup-dict');
+    if (!dict) return;
     if (type === 'zh') {
-      preview.style.setProperty('--popup-font-zh', font || 'system-ui, -apple-system, sans-serif');
+      dict.style.setProperty('--popup-font-zh', font || 'system-ui, -apple-system, sans-serif');
     } else if (type === 'en') {
-      preview.style.setProperty('--popup-font-en', font || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace');
+      dict.style.setProperty('--popup-font-en', font || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace');
     }
   }
+
+  // 模擬預覽彈窗的完整交互（整詞 TTS、單字發音、例句展開、釋義翻譯）
+  function initThemePreviewInteractions() {
+    const wordSec = document.getElementById('previewWordSection');
+    const pinyinBtn = document.getElementById('previewPinyinBtn');
+    const defItem = document.getElementById('previewDefItem');
+    const badgeYue = document.getElementById('previewBadgeYue');
+    const exampleTtsBtn = document.getElementById('previewExampleTtsBtn');
+    const previewPopup = document.getElementById('cantonese-popup-dict');
+    const previewExamples = document.getElementById('previewPopupExamples');
+    const previewYue = document.getElementById('previewYue');
+
+    // 1. 點擊詞頭：調用 TTS 朗讀整詞「你好」
+    if (wordSec) {
+      wordSec.addEventListener('click', () => {
+        speakWithOptionsTTS('你好', wordSec);
+      });
+    }
+
+    // 2. 點擊粵拼：調用單字發音音檔 (nei5, hou2)，逐字卡拉OK點亮
+    if (pinyinBtn) {
+      pinyinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        playPreviewSyllables(['nei5', 'hou2'], pinyinBtn);
+      });
+    }
+
+    // 3. 點擊粵語釋義：展開/收起右側具體例句 (320px <-> 640px)
+    if (defItem) {
+      defItem.addEventListener('click', (e) => {
+        // 如果點擊的是 [粵 🌐] 徽章，不觸發例句折疊
+        if (e.target.closest('#previewBadgeYue')) return;
+        const arrowIcon = defItem.querySelector('.example-arrow-icon');
+        const isExpanded = previewPopup && previewPopup.classList.contains('expanded-mode');
+        if (isExpanded) {
+          previewPopup.classList.remove('expanded-mode');
+          previewPopup.style.width = '320px';
+          defItem.classList.remove('active');
+          if (previewExamples) previewExamples.style.display = 'none';
+          if (arrowIcon) arrowIcon.textContent = ' ▷';
+        } else {
+          previewPopup.classList.add('expanded-mode');
+          previewPopup.style.width = '640px';
+          defItem.classList.add('active');
+          if (previewExamples) previewExamples.style.display = 'block';
+          if (arrowIcon) arrowIcon.textContent = ' ▽';
+        }
+      });
+    }
+
+    // 4. 點擊 [粵 🌐] 徽章：切換普通話翻譯
+    if (badgeYue) {
+      let isTranslated = false;
+      const origText = '打招呼嘅問候語或者一般對話嘅開場白';
+      const transText = '打招呼的问候语或一般对话的开场白';
+      badgeYue.addEventListener('click', (e) => {
+        e.stopPropagation();
+        isTranslated = !isTranslated;
+        if (previewYue) previewYue.textContent = isTranslated ? transText : origText;
+        badgeYue.style.opacity = isTranslated ? '0.7' : '1';
+      });
+    }
+
+    // 5. 點擊例句右側喇叭：朗讀例句「你好，我叫陳大文。」
+    if (exampleTtsBtn) {
+      exampleTtsBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        speakWithOptionsTTS('你好，我叫陳大文。', exampleTtsBtn);
+      });
+    }
+
+    // 6. 點擊關聯詞（如 hi、嗨、hello、哈佬）：發音該詞
+    if (previewPopup) {
+      previewPopup.querySelectorAll('.see-also-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const word = link.dataset.word || link.textContent.trim();
+          speakWithOptionsTTS(word, link);
+        });
+      });
+    }
+  }
+
+  // 輔助：調用當前配置的 TTS 引擎朗讀文本
+  async function speakWithOptionsTTS(text, btn = null) {
+    if (btn) btn.classList.add('speaking');
+    const engine = ttsEngineSelect ? ttsEngineSelect.value : 'edgeTts';
+    const rate = ttsRateSlider ? parseFloat(ttsRateSlider.value) : 1.0;
+    try {
+      if (engine === 'webSpeech') {
+        await speakWithWebSpeech(text, rate);
+      } else if (engine === 'chromeTts') {
+        await speakWithChromeTts(text, rate);
+      } else if (engine === 'edgeTts') {
+        await speakWithEdgeTts(text, rate);
+      } else if (engine === 'googleTts') {
+        await speakWithGoogleTts(text, rate);
+      } else if (engine === 'azureTts') {
+        const voice = azureTtsVoiceSelect ? azureTtsVoiceSelect.value : 'zh-HK-HiuMaanNeural';
+        await speakWithAzureTts(text, rate, voice);
+      } else {
+        await speakWithEdgeTts(text, rate);
+      }
+    } catch (err) {
+      console.warn('TTS speak error, fallback to WebSpeech:', err);
+      await speakWithWebSpeech(text, rate).catch(() => {});
+    } finally {
+      if (btn) btn.classList.remove('speaking');
+    }
+  }
+
+  // 輔助：單字發音連續播放與音節點亮
+  let previewAudioCtx = null;
+  async function playPreviewSyllables(syllables, btn) {
+    if (!btn) return;
+    btn.classList.add('speaking');
+    const sylEls = btn.querySelectorAll('.syllable-item');
+    
+    try {
+      if (!previewAudioCtx) {
+        previewAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (previewAudioCtx.state === 'suspended') {
+        await previewAudioCtx.resume().catch(() => {});
+      }
+      for (let i = 0; i < syllables.length; i++) {
+        const syl = syllables[i];
+        const url = chrome.runtime.getURL(`audio/jyutping_female/${syl}.mp3`);
+        sylEls.forEach((el, idx) => el.classList.toggle('speaking-active', idx === i));
+        
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Audio file not found: ' + syl);
+        const arrayBuffer = await resp.arrayBuffer();
+        const audioBuffer = await previewAudioCtx.decodeAudioData(arrayBuffer);
+        const source = previewAudioCtx.createBufferSource();
+        source.buffer = audioBuffer;
+        source.connect(previewAudioCtx.destination);
+        source.start();
+        await new Promise(resolve => setTimeout(resolve, (audioBuffer.duration * 1000) / 1.15));
+      }
+    } catch (err) {
+      console.warn('Preview syllable fallback to TTS:', err);
+      await speakWithOptionsTTS('你好', btn);
+    } finally {
+      sylEls.forEach(el => el.classList.remove('speaking-active'));
+      btn.classList.remove('speaking');
+    }
+  }
+
+  // 初始化預覽交互事件
+  initThemePreviewInteractions();
 
   chrome.storage.sync.get([
     'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
@@ -457,9 +755,6 @@ async function applyI18n(lang) {
     updateEdgeModeUI(edgeMode);
     edgeTtsUrlInput.value = result.edgeTtsUrl || '';
     
-    const azureMode = result.azureTtsMode || 'default';
-    azureTtsModeSelect.value = azureMode;
-    updateAzureModeUI(azureMode);
     azureTtsKeyInput.value = result.azureTtsKey || '';
     azureTtsRegionInput.value = result.azureTtsRegion || '';
     azureTtsVoiceSelect.value = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
@@ -496,11 +791,6 @@ async function applyI18n(lang) {
   function updateEngineUI(engine) {
     edgeTtsSettings.style.display = engine === 'edgeTts' ? 'flex' : 'none';
     azureTtsSettings.style.display = engine === 'azureTts' ? 'flex' : 'none';
-  }
-
-  // 更新 Azure 模式 UI
-  function updateAzureModeUI(mode) {
-    azureCustomSettings.style.display = mode === 'custom' ? 'block' : 'none';
   }
 
   // 更新 Edge TTS 模式 UI
@@ -835,10 +1125,11 @@ async function applyI18n(lang) {
   }
 
   function updateDemoText() {
+    const isYale = displayModeSelect && displayModeSelect.value === 'yale';
     const demoCompactText = document.getElementById('demoCompactText');
     if (demoCompactText) {
-      let text = displayModeSelect.value === 'yale' ? 'tin1 hei3' : 'tin1 hei3'; // Default string with numbers
-      if (toneStyleToggle && toneStyleToggle.checked) {
+      let text = isYale ? 'tīn hei' : 'tin1 hei3';
+      if (!isYale && toneStyleToggle && toneStyleToggle.checked) {
         text = text.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
       }
       demoCompactText.innerHTML = text;
@@ -849,12 +1140,36 @@ async function applyI18n(lang) {
     rubyRts.forEach(rt => {
       let text = rt.getAttribute('data-text');
       if (text) {
-        if (toneStyleToggle && toneStyleToggle.checked) {
+        if (isYale) {
+          // 簡單模擬耶魯拼音
+          text = text.replace(/tin1/g, 'tīn').replace(/hei3/g, 'hei');
+        } else if (toneStyleToggle && toneStyleToggle.checked) {
           text = text.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
         }
         rt.innerHTML = text;
       }
     });
+    
+    // 同步更新外觀主題預覽懸浮窗中的發音標籤與拼音
+    const previewDict = document.getElementById('cantonese-popup-dict');
+    if (previewDict) {
+      const labelEl = previewDict.querySelector('.pronunciation-label');
+      const pinyinEl = document.getElementById('previewPinyin');
+      if (labelEl) {
+        labelEl.textContent = isYale ? 'Yale:' : '粵拼:';
+      }
+      if (pinyinEl) {
+        if (isYale) {
+          pinyinEl.innerHTML = '<span class="syllable-item">néih</span> <span class="syllable-item">hóu</span>';
+        } else {
+          if (toneStyleToggle && toneStyleToggle.checked) {
+            pinyinEl.innerHTML = '<span class="syllable-item">nei⁵</span> <span class="syllable-item">hou²</span>';
+          } else {
+            pinyinEl.innerHTML = '<span class="syllable-item">nei5</span> <span class="syllable-item">hou2</span>';
+          }
+        }
+      }
+    }
     
     const rubyDemo = document.getElementById('rubyDemo');
     if (rubyDemo) {
@@ -1203,35 +1518,41 @@ async function applyI18n(lang) {
   const highlightStylePicker = document.getElementById('highlightStylePicker');
   const highlightRadios = highlightStylePicker ? highlightStylePicker.querySelectorAll('input[name="highlightStyle"]') : [];
 
-  // 更新 Demo 高亮動畫顏色
+  // 更新 Demo 高亮動畫顏色（同時更新 compact demo 與 theme preview 中的選中詞）
   function updateDemoHighlightStyle(style) {
     const demoHL = document.querySelector('.demo-compact-highlight');
-    if (!demoHL) return;
-    // 重置所有樣式
-    demoHL.style.background = '';
-    demoHL.style.outline = '';
-    demoHL.style.outlineOffset = '';
-    demoHL.style.borderBottom = '';
+    const previewHL = document.querySelector('.preview-hl-word');
 
     const colors = {
-      yellow: 'rgba(255, 220, 80, 0.45)',
-      blue: 'rgba(96, 165, 250, 0.35)',
-      red: 'rgba(248, 113, 113, 0.35)',
-      green: 'rgba(74, 222, 128, 0.35)',
-      gray: 'rgba(156, 163, 175, 0.3)',
+      yellow: 'rgba(254, 240, 138, 0.9)',
+      blue: 'rgba(191, 219, 254, 0.9)',
+      red: 'rgba(254, 205, 211, 0.9)',
+      pink: 'rgba(254, 205, 211, 0.9)',
+      green: 'rgba(187, 247, 208, 0.9)',
+      gray: 'rgba(229, 231, 235, 0.9)',
     };
-    if (colors[style]) {
-      demoHL.style.background = colors[style];
-    } else if (style === 'underline-dashed') {
-      demoHL.style.background = 'transparent';
-      demoHL.style.borderBottom = '2px dashed #888';
-      demoHL.style.height = '100%';
-      demoHL.style.top = '0';
-    } else if (style === 'border-dashed') {
-      demoHL.style.background = 'transparent';
-      demoHL.style.outline = '1.5px dashed #888';
-      demoHL.style.outlineOffset = '2px';
-    }
+
+    [demoHL, previewHL].forEach(el => {
+      if (!el) return;
+      el.style.background = '';
+      el.style.outline = '';
+      el.style.outlineOffset = '';
+      el.style.borderBottom = '';
+      el.style.border = '';
+      el.style.color = '';
+
+      if (colors[style]) {
+        el.style.background = colors[style];
+        el.style.color = '#1e293b';
+      } else if (style === 'underline-dashed' || style === 'underline') {
+        el.style.background = 'transparent';
+        el.style.borderBottom = '2px dashed #888';
+      } else if (style === 'border-dashed') {
+        el.style.background = 'transparent';
+        el.style.outline = '1.5px dashed #888';
+        el.style.outlineOffset = '2px';
+      }
+    });
   }
 
   highlightRadios.forEach(radio => {
@@ -1345,14 +1666,6 @@ async function applyI18n(lang) {
     const region = azureTtsRegionInput.value.trim();
     chrome.storage.sync.set({ azureTtsRegion: region });
     notifyContentScripts({ action: 'changeAzureTtsRegion', azureTtsRegion: region });
-  });
-
-  // 監聽 Azure TTS 模式切換
-  azureTtsModeSelect.addEventListener('change', () => {
-    const mode = azureTtsModeSelect.value;
-    chrome.storage.sync.set({ azureTtsMode: mode });
-    updateAzureModeUI(mode);
-    notifyContentScripts({ action: 'changeAzureTtsMode', azureTtsMode: mode });
   });
 
   // 監聽 Azure TTS 音色切換
@@ -1540,16 +1853,11 @@ async function applyI18n(lang) {
         await speakWithChromeTts(testText, rate);
       } else if (engine === 'edgeTts') {
         await speakWithEdgeTts(testText, rate);
+      } else if (engine === 'googleTts') {
+        await speakWithGoogleTts(testText, rate);
       } else if (engine === 'azureTts') {
-        const azureMode = azureTtsModeSelect.value;
         const voice = azureTtsVoiceSelect.value;
-        if (azureMode === 'custom') {
-          await speakWithAzureTts(testText, rate, voice);
-        } else {
-          await speakWithAzureTtsProxy(testText, rate, voice);
-        }
-      } else if (engine === 'bertVits2') {
-        await speakWithBertVits2(testText, rate);
+        await speakWithAzureTts(testText, rate, voice);
       }
     } catch (error) {
       console.error('TTS error:', error);
@@ -1593,6 +1901,30 @@ async function applyI18n(lang) {
           if (event.type === 'error') reject(new Error(event.errorMessage));
         }
       });
+    });
+  }
+
+  // Google TTS (via Google Translate Cantonese API)
+  async function speakWithGoogleTts(text, rate) {
+    const encoded = encodeURIComponent(text.slice(0, 200));
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=yue&q=${encoded}`;
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Google TTS 錯誤: ${response.status}`);
+    }
+    const audioBlob = await response.blob();
+    const audioUrl = URL.createObjectURL(audioBlob);
+    const audio = new Audio(audioUrl);
+    if (rate && rate !== 1.0) {
+      audio.playbackRate = rate;
+    }
+    return new Promise((resolve, reject) => {
+      audio.onended = () => {
+        URL.revokeObjectURL(audioUrl);
+        resolve();
+      };
+      audio.onerror = () => reject(new Error('音頻播放失敗'));
+      audio.play().catch(reject);
     });
   }
 
@@ -1684,141 +2016,6 @@ async function applyI18n(lang) {
         URL.revokeObjectURL(audioUrl);
         resolve();
       };
-      audio.onerror = () => reject(new Error('音頻播放失敗'));
-      audio.play();
-    });
-  }
-
-  // Azure Speech TTS 代理模式（通過伺服器代理，密鑰在伺服器端）
-  async function speakWithAzureTtsProxy(text, rate, voice) {
-    const PROXY_URL = 'http://114.55.243.162:8090';
-    
-    const response = await fetch(`${PROXY_URL}/v1/azure/speech`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        input: text,
-        voice: voice || 'zh-HK-HiuMaanNeural',
-        speed: rate
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Azure TTS 代理錯誤: ${response.status}`);
-    }
-    
-    const audioBlob = await response.blob();
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-    
-    return new Promise((resolve, reject) => {
-      audio.onended = () => {
-        URL.revokeObjectURL(audioUrl);
-        resolve();
-      };
-      audio.onerror = () => reject(new Error('音頻播放失敗'));
-      audio.play();
-    });
-  }
-
-  // Bert-VITS2 (Hugging Face Gradio 4 API)
-  async function speakWithBertVits2(text, rate = 1.0) {
-    const BERT_VITS2_SPACE = 'https://naozumi0512-bert-vits2-cantonese-yue.hf.space';
-    
-    // Step 1: POST to /call/tts_fn to get event_id
-    const callResponse = await fetch(`${BERT_VITS2_SPACE}/call/tts_fn`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: [
-          text,                    // 1. 输入文本内容
-          "MK妹 (mkmui)",          // 2. Speaker
-          0.2,                     // 3. SDP Ratio
-          0.5,                     // 4. Noise
-          0.9,                     // 5. Noise_W
-          1.0 / rate,              // 6. Length (speed) - Inverse of rate
-          "ZH",                    // 7. Language
-          null,                    // 8. Audio prompt
-          text,                    // 9. Text prompt
-          "Text prompt",           // 10. Prompt Mode
-          "",                      // 11. 辅助文本
-          0                        // 12. Weight
-        ]
-      })
-    });
-    
-    if (!callResponse.ok) {
-      throw new Error(`Bert-VITS2 API 錯誤: ${callResponse.status}`);
-    }
-    
-    const callResult = await callResponse.json();
-    const eventId = callResult.event_id;
-    
-    if (!eventId) {
-      throw new Error('沒有收到 event_id');
-    }
-    
-    // Step 2: Poll the event endpoint for result
-    const resultResponse = await fetch(`${BERT_VITS2_SPACE}/call/tts_fn/${eventId}`);
-    const resultText = await resultResponse.text();
-    
-    console.log('Bert-VITS2 raw response:', resultText); // Debug
-    
-    // Parse SSE response - look for audio path
-    const lines = resultText.split('\n');
-    let audioPath = null;
-    
-    for (const line of lines) {
-      console.log('Parsing line:', line); // Debug
-      if (line.startsWith('data:')) {
-        const dataStr = line.substring(5).trim();
-        console.log('Data string:', dataStr); // Debug
-        try {
-          const data = JSON.parse(dataStr);
-          console.log('Parsed data:', data); // Debug
-          
-          // Try different positions in the array
-          if (Array.isArray(data)) {
-            for (let i = 0; i < data.length; i++) {
-              const item = data[i];
-              console.log(`Item ${i}:`, item); // Debug
-              if (item && typeof item === 'object') {
-                if (item.path) {
-                  audioPath = item.path;
-                  break;
-                } else if (item.url) {
-                  audioPath = item.url;
-                  break;
-                } else if (item.name) {
-                  // Sometimes it's stored as "name" instead of "path"
-                  audioPath = item.name;
-                  break;
-                }
-              }
-            }
-            if (audioPath) break;
-          }
-        } catch (e) {
-          console.log('JSON parse error:', e.message); // Debug
-        }
-      }
-    }
-    
-    if (!audioPath) {
-      throw new Error('沒有收到音頻路徑');
-    }
-    
-    // Step 3: Play the audio
-    let audioUrl;
-    if (audioPath.startsWith('http')) {
-      audioUrl = audioPath;
-    } else {
-      audioUrl = `${BERT_VITS2_SPACE}/file=${audioPath}`;
-    }
-    
-    return new Promise((resolve, reject) => {
-      const audio = new Audio(audioUrl);
-      audio.onended = resolve;
       audio.onerror = () => reject(new Error('音頻播放失敗'));
       audio.play();
     });

@@ -75,7 +75,7 @@
     }
 
     chrome.storage.sync.get([
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
     ], async (result) => {
       if (reqId !== currentTtsRequestId) return;
       const engine = result.ttsEngine || 'edgeTts';
@@ -145,31 +145,58 @@
             speechSynthesis.speak(u);
           } else { stopSpeaking(); }
         }
-      } else if (engine === 'bertVits2') {
+      } else if (engine === 'googleTts') {
+        const cacheKey = `${engine}:${rate}:${text}`;
+        if (ttsCache.has(cacheKey)) {
+          const cachedUrl = ttsCache.get(cacheKey);
+          ttsCache.delete(cacheKey);
+          ttsCache.set(cacheKey, cachedUrl);
+
+          const audio = new Audio(cachedUrl);
+          if (rate && rate !== 1.0) audio.playbackRate = rate;
+          currentAudio = audio;
+          audio.onended = () => { if (reqId === currentTtsRequestId) { currentAudio = null; stopSpeaking(); } };
+          audio.onerror = () => { if (reqId === currentTtsRequestId) { currentAudio = null; stopSpeaking(); } };
+          audio.play().catch(() => stopSpeaking());
+          return;
+        }
+
         try {
-          const resp = await fetch('http://127.0.0.1:5000/tts', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ text: text, speed: rate })
-          });
+          const encoded = encodeURIComponent(text.slice(0, 200));
+          const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=yue&q=${encoded}`;
+          const resp = await fetch(url);
           if (reqId !== currentTtsRequestId) return;
-          if (!resp.ok) throw new Error('BertVits2 error');
+          if (!resp.ok) throw new Error('Google TTS error: ' + resp.status);
           const blob = await resp.blob();
           if (reqId !== currentTtsRequestId) return;
-          const audio = new Audio(URL.createObjectURL(blob));
+          const blobUrl = URL.createObjectURL(blob);
+          cacheTtsAudio(cacheKey, blobUrl);
+          const audio = new Audio(blobUrl);
+          if (rate && rate !== 1.0) audio.playbackRate = rate;
           currentAudio = audio;
-          audio.onended = () => { if (reqId === currentTtsRequestId) { URL.revokeObjectURL(audio.src); currentAudio = null; stopSpeaking(); } };
+          audio.onended = () => { if (reqId === currentTtsRequestId) { currentAudio = null; stopSpeaking(); } };
           audio.onerror = () => { if (reqId === currentTtsRequestId) { currentAudio = null; stopSpeaking(); } };
           audio.play();
         } catch (e) {
           if (reqId !== currentTtsRequestId) return;
-          if (chrome.tts) { chrome.tts.speak(text, { lang: 'zh-HK', rate: rate, onEvent: (e) => { if (reqId === currentTtsRequestId && (e.type === 'end' || e.type === 'error')) stopSpeaking(); } }); }
-          else { stopSpeaking(); }
+          if (chrome.tts) {
+            chrome.tts.speak(text, { lang: 'zh-HK', rate: rate, onEvent: (e) => { if (reqId === currentTtsRequestId && (e.type === 'end' || e.type === 'error')) stopSpeaking(); } });
+          } else if ('speechSynthesis' in window) {
+            const u = new SpeechSynthesisUtterance(text); u.lang = 'zh-HK'; u.rate = rate;
+            u.onend = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+            u.onerror = () => { if (reqId === currentTtsRequestId) stopSpeaking(); };
+            speechSynthesis.speak(u);
+          } else { stopSpeaking(); }
         }
       } else if (engine === 'azureTts') {
-        const action = result.azureTtsMode === 'custom' ? 'azureTtsSpeak' : 'azureTtsProxySpeak';
-        const msg = { action, text, rate, azureVoice: result.azureTtsVoice || 'zh-HK-HiuMaanNeural' };
-        if (result.azureTtsMode === 'custom') { msg.azureKey = result.azureTtsKey; msg.azureRegion = result.azureTtsRegion; }
+        const msg = {
+          action: 'azureTtsSpeak',
+          text,
+          rate,
+          azureKey: result.azureTtsKey,
+          azureRegion: result.azureTtsRegion,
+          azureVoice: result.azureTtsVoice || 'zh-HK-HiuMaanNeural'
+        };
         chrome.runtime.sendMessage(msg, (response) => {
           if (reqId !== currentTtsRequestId) return;
           if (response && response.audioData) {

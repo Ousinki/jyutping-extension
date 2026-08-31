@@ -148,7 +148,7 @@
     "description": "optAzureSettings"
   },
   "optAzureSettingsDesc": {
-    "message": "デフォルトAPIまたはカスタムキーを選択",
+    "message": "Azure サービスキーとリージョンを入力してください（Microsoft Azure 直結）",
     "description": "optAzureSettingsDesc"
   },
   "optClickToSpeak": {
@@ -239,13 +239,13 @@
     "message": "ウェブページ上で広東語の発音ヒントを表示します",
     "description": "optEnableDesc"
   },
-  "optEngineAzure": {
-    "message": "Azure Speech (公式クラウド音声)",
-    "description": "optEngineAzure"
+  "optEngineGoogle": {
+    "message": "Google TTS",
+    "description": "optEngineGoogle"
   },
-  "optEngineBert": {
-    "message": "Bert-VITS2 (広東語ニューラル音声)",
-    "description": "optEngineBert"
+  "optEngineAzure": {
+    "message": "Azure Speech (カスタムキー)",
+    "description": "optEngineAzure"
   },
   "optFail": {
     "message": "❌ 接続失敗："
@@ -614,6 +614,12 @@
   "optTestTTS": {
     "message": " 音声をテスト",
     "description": "optTestTTS"
+  },
+  "optTtsAccuracyTitle": {
+    "message": "音声の正確性について："
+  },
+  "optTtsAccuracyDesc": {
+    "message": "デフォルトの <strong>Edge TTS</strong> はマイクロソフトのクラウド音声合成を使用しています。多音字モデルの制限により、一部の単語で発音が不正確になる場合があります。各 TTS エンジンで多音字の処理が異なるため、発音が正しくない場合は<strong>他の TTS エンジンに切り替える</strong>（例：Edge TTS で誤りがある場合は Google TTS に切り替える）ことで正しく発音される場合があります。<br />また、ポップアップ辞書には <strong>Words.hk 公式のネイティブ録音音声</strong>を内蔵しています。TTS の発音に疑問がある場合は、ポップアップ内の<strong>粤拼（イエップピン）音標をクリック</strong>して、100% 正確なネイティブ単字発音を再生できます。"
   },
   "optTestingAI": {
     "message": "テスト中..."

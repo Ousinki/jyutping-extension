@@ -12,8 +12,6 @@ addEventListener('unhandledrejection', async (event) => {
   });
 });
 
-const BERT_VITS2_SPACE = 'https://naozumi0512-bert-vits2-cantonese-yue.hf.space';
-const AZURE_TTS_PROXY = 'http://114.55.243.162:8090';
 
 // ── 除錯日誌開關 ──────────────────────────────────────────────
 // 預設關閉：正式版不輸出流水帳日誌。console.warn / console.error 不受此開關影響，
@@ -59,15 +57,12 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   } else if (request.action === 'edgeTtsSpeak') {
     GoogleAnalytics.fireEvent('tts_play', { engine: 'edgeTts' });
     handleEdgeTts(request.text, request.baseUrl, request.rate, sender.tab.id, request.jyutping, request.sessionId);
+  } else if (request.action === 'googleTtsSpeak') {
+    GoogleAnalytics.fireEvent('tts_play', { engine: 'googleTts' });
+    handleGoogleTts(request.text, request.rate, sender.tab.id, request.sessionId);
   } else if (request.action === 'azureTtsSpeak') {
     GoogleAnalytics.fireEvent('tts_play', { engine: 'azureTts' });
     handleAzureTts(request.text, request.azureKey, request.azureRegion, request.azureVoice, request.rate, sender.tab.id, request.jyutping, request.sessionId);
-  } else if (request.action === 'azureTtsProxySpeak') {
-    GoogleAnalytics.fireEvent('tts_play', { engine: 'azureTtsProxy' });
-    handleAzureTtsProxy(request.text, request.azureVoice, request.rate, sender.tab.id, request.jyutping, request.sessionId);
-  } else if (request.action === 'bertVits2Speak') {
-    GoogleAnalytics.fireEvent('tts_play', { engine: 'bertVits2' });
-    handleBertVits2(request.text, request.rate || 1.0, sender.tab.id, request.sessionId);
   } else if (request.action === 'translate') {
     GoogleAnalytics.fireEvent('translate', { type: 'bing' });
     handleTranslate(request, sender.tab.id);
@@ -137,6 +132,41 @@ async function handleEdgeTts(text, baseUrl, rate, tabId, jyutping, sessionId = 0
   }
 }
 
+// Google TTS 請求處理 (Google Translate Cantonese API)
+async function handleGoogleTts(text, rate, tabId, sessionId = 0) {
+  try {
+    const encodedText = encodeURIComponent(text.slice(0, 200));
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&client=gtx&tl=yue&q=${encodedText}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`Google TTS error: ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    const len = bytes.byteLength;
+    const chunkSize = 8192;
+    for (let i = 0; i < len; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)));
+    }
+    const base64 = btoa(binary);
+    const dataUrl = 'data:audio/mpeg;base64,' + base64;
+
+    chrome.tabs.sendMessage(tabId, {
+      action: 'playAudio',
+      audioData: dataUrl,
+      sessionId: sessionId
+    }).catch(err => {
+      console.warn('[Background] Failed to send playAudio to tab:', err);
+    });
+
+  } catch (error) {
+    console.error('Google TTS error:', error);
+  }
+}
+
 // Azure Speech TTS 請求處理
 async function handleAzureTts(text, apiKey, region, voice, rate, tabId, jyutping, sessionId = 0) {
   try {
@@ -184,155 +214,7 @@ async function handleAzureTts(text, apiKey, region, voice, rate, tabId, jyutping
   }
 }
 
-// Azure Speech TTS 代理請求處理（通過阿里雲代理，密鑰在伺服器端）
-async function handleAzureTtsProxy(text, voice, rate, tabId, jyutping, sessionId = 0) {
-  try {
-    const response = await fetch(`${AZURE_TTS_PROXY}/v1/azure/speech`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        input: text,
-        jyutping: jyutping || undefined,
-        voice: voice || 'zh-HK-HiuMaanNeural',
-        speed: rate
-      })
-    });
-    
-    if (!response.ok) {
-      throw new Error(`Azure TTS proxy error: ${response.status}`);
-    }
-    
-    const blob = await response.blob();
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      chrome.tabs.sendMessage(tabId, {
-        action: 'playAudio',
-        audioData: reader.result,
-        sessionId: sessionId
-      }).catch(() => {});
-    };
-    reader.readAsDataURL(blob);
-    
-  } catch (error) {
-    console.error('Azure TTS proxy error:', error);
-  }
-}
 
-// Bert-VITS2 請求處理 (Hugging Face Gradio 4 API)
-async function handleBertVits2(text, rate, tabId, sessionId = 0) {
-  try {
-    dlog('Bert-VITS2: Starting request for text:', text);
-    
-    // Step 1: POST to /call/tts_fn to get event_id
-    const callResponse = await fetch(`${BERT_VITS2_SPACE}/call/tts_fn`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        data: [
-          text,                    // 1. 输入文本内容
-          "MK妹 (mkmui)",          // 2. Speaker
-          0.2,                     // 3. SDP Ratio
-          0.5,                     // 4. Noise
-          0.9,                     // 5. Noise_W
-          1.0 / rate,              // 6. Length (speed) - Inverse of rate
-          "ZH",                    // 7. Language
-          null,                    // 8. Audio prompt
-          text,                    // 9. Text prompt
-          "Text prompt",           // 10. Prompt Mode
-          "",                      // 11. 辅助文本
-          0                        // 12. Weight
-        ]
-      })
-    });
-    
-    if (!callResponse.ok) {
-      throw new Error(`Bert-VITS2 /call error: ${callResponse.status}`);
-    }
-    
-    const callResult = await callResponse.json();
-    const eventId = callResult.event_id;
-    dlog('Bert-VITS2: Got event_id:', eventId);
-    
-    if (!eventId) {
-      throw new Error('No event_id received');
-    }
-    
-    // Step 2: Poll the event endpoint for result
-    const resultResponse = await fetch(`${BERT_VITS2_SPACE}/call/tts_fn/${eventId}`);
-    const resultText = await resultResponse.text();
-    dlog('Bert-VITS2: Raw response:', resultText);
-    
-    // Parse SSE response - look for "complete" event
-    const lines = resultText.split('\n');
-    let audioPath = null;
-    
-    for (let i = 0; i < lines.length; i++) {
-      const line = lines[i];
-      if (line.startsWith('data:')) {
-        const dataStr = line.substring(5).trim();
-        try {
-          const data = JSON.parse(dataStr);
-          // Try different positions in the array to find audio info
-          if (Array.isArray(data)) {
-            for (let j = 0; j < data.length; j++) {
-              const item = data[j];
-              if (item && typeof item === 'object') {
-                if (item.path) {
-                  audioPath = item.path;
-                  break;
-                } else if (item.url) {
-                  audioPath = item.url;
-                  break;
-                } else if (item.name) {
-                  audioPath = item.name;
-                  break;
-                }
-              }
-            }
-            if (audioPath) break;
-          }
-        } catch (e) {
-          // Not JSON, continue
-        }
-      }
-    }
-    
-    if (!audioPath) {
-      throw new Error('No audio path in response');
-    }
-    
-    dlog('Bert-VITS2: Audio path:', audioPath);
-    
-    // Step 3: Fetch the audio file
-    let audioUrl;
-    if (audioPath.startsWith('http')) {
-      audioUrl = audioPath;
-    } else {
-      audioUrl = `${BERT_VITS2_SPACE}/file=${audioPath}`;
-    }
-    
-    dlog('Bert-VITS2: Fetching audio from:', audioUrl);
-    
-    const audioResponse = await fetch(audioUrl);
-    if (!audioResponse.ok) {
-      throw new Error(`Failed to fetch audio: ${audioResponse.status}`);
-    }
-    
-    const blob = await audioResponse.blob();
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      chrome.tabs.sendMessage(tabId, {
-        action: 'playAudio',
-        audioData: reader.result,
-        sessionId: sessionId
-      }).catch(() => {});
-    };
-    reader.readAsDataURL(blob);
-    
-  } catch (error) {
-    console.error('Bert-VITS2 error:', error);
-  }
-}
 
 // ==================== 翻譯功能（免費 API，無需配置） ====================
 

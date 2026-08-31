@@ -148,7 +148,7 @@
     "description": "optAzureSettings"
   },
   "optAzureSettingsDesc": {
-    "message": "选择使用默认 API 或自定义密钥",
+    "message": "输入您的 Azure 语音服务密钥与区域（直连微软官方）",
     "description": "optAzureSettingsDesc"
   },
   "optClickToSpeak": {
@@ -239,13 +239,13 @@
     "message": "在网页上显示粤语发音提示",
     "description": "optEnableDesc"
   },
-  "optEngineAzure": {
-    "message": "Azure Speech (官方云端语音)",
-    "description": "optEngineAzure"
+  "optEngineGoogle": {
+    "message": "Google TTS",
+    "description": "optEngineGoogle"
   },
-  "optEngineBert": {
-    "message": "Bert-VITS2 (粤语神经语音)",
-    "description": "optEngineBert"
+  "optEngineAzure": {
+    "message": "Azure Speech (自定义密钥)",
+    "description": "optEngineAzure"
   },
   "optFail": {
     "message": "❌ 连接失败："
@@ -633,8 +633,14 @@
     "description": "optTestAI"
   },
   "optTestTTS": {
-    "message": " 测试语音",
+    "message": "测试语音",
     "description": "optTestTTS"
+  },
+  "optTtsAccuracyTitle": {
+    "message": "语音发音准确度说明："
+  },
+  "optTtsAccuracyDesc": {
+    "message": "默认选用的 <strong>Edge TTS</strong> 属于微软云端 AI 语音合成。受微软服务器多音字模型限制，少数词汇可能存在读音不完全准确的情况（此为微软云端算法行为，扩展无法直接干预其输出）。各 TTS 引擎的多音字算法各有差异，若当前引擎读音有误，您可以<strong>切换为其他 TTS 引擎</strong>（例如 Edge TTS 读音有误时可切换为 Google TTS）尝试正确读音。<br />此外，我们在悬浮词典中特别内置了 <strong>Words.hk 官方真人单字发音音库</strong>。当您对 TTS 读音存疑时，可直接在悬浮窗中<strong>点击粤拼音标</strong>进行 100% 权威准确的单字真人朗读。"
   },
   "optTestingAI": {
     "message": "正在测试..."

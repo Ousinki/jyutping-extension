@@ -260,6 +260,72 @@
     if (!str) return str;
     return str.replace(/\d/g, (match) => SUPERSCRIPT_MAP[match] || match);
   }
+  function jyutpingToYale(jp) {
+    if (!jp || typeof jp !== "string") return "";
+    const VOWEL_ACCENTS = {
+      "a": { 1: "ā", 2: "á", 3: "a", 4: "à", 5: "á", 6: "a" },
+      "e": { 1: "ē", 2: "é", 3: "e", 4: "è", 5: "é", 6: "e" },
+      "i": { 1: "ī", 2: "í", 3: "i", 4: "ì", 5: "í", 6: "i" },
+      "o": { 1: "ō", 2: "ó", 3: "o", 4: "ò", 5: "ó", 6: "o" },
+      "u": { 1: "ū", 2: "ú", 3: "u", 4: "ù", 5: "ú", 6: "u" },
+      "m": { 1: "m̄", 2: "ḿ", 3: "m", 4: "m̀", 5: "ḿ", 6: "m" },
+      "n": { 1: "n̄", 2: "ń", 3: "n", 4: "ǹ", 5: "ń", 6: "n" }
+    };
+    const syllables = jp.trim().toLowerCase().split(/\s+/);
+    const yaleSyllables = syllables.map((syl) => {
+      const match = syl.match(/^([a-z]+)([1-6])?$/);
+      if (!match) return syl;
+      let letters = match[1];
+      const tone = parseInt(match[2] || "3", 10);
+      const isLowTone = tone === 4 || tone === 5 || tone === 6;
+      if (letters === "m") {
+        const v = VOWEL_ACCENTS["m"][tone];
+        return isLowTone ? v + "h" : v;
+      }
+      if (letters === "ng") {
+        const v = VOWEL_ACCENTS["n"][tone] + "g";
+        return isLowTone ? v + "h" : v;
+      }
+      if (letters.startsWith("gw")) {
+        letters = "gw" + letters.slice(2);
+      } else if (letters.startsWith("kw")) {
+        letters = "kw" + letters.slice(2);
+      } else if (letters.startsWith("ng")) {
+        letters = "ng" + letters.slice(2);
+      } else if (letters.startsWith("c")) {
+        letters = "ch" + letters.slice(1);
+      } else if (letters.startsWith("z")) {
+        letters = "j" + letters.slice(1);
+      } else if (letters.startsWith("j")) {
+        letters = "y" + letters.slice(1);
+      }
+      letters = letters.replace(/oe([ngk])/, "eu$1").replace(/oe$/, "eu").replace(/eoi/, "eui").replace(/eon/, "eun").replace(/eot/, "eut");
+      letters = letters.replace(/aa$/, "a");
+      let targetVowelIdx = -1;
+      if (letters.includes("yu")) {
+        targetVowelIdx = letters.indexOf("u");
+      } else {
+        targetVowelIdx = letters.search(/[aeiou]/);
+      }
+      if (targetVowelIdx === -1) {
+        return isLowTone ? letters + "h" : letters;
+      }
+      const origVowel = letters[targetVowelIdx];
+      const accentedVowel = VOWEL_ACCENTS[origVowel] ? VOWEL_ACCENTS[origVowel][tone] : origVowel;
+      letters = letters.slice(0, targetVowelIdx) + accentedVowel + letters.slice(targetVowelIdx + 1);
+      if (isLowTone) {
+        const vowelMatch = letters.match(/[aeiouāēīōūáéíóúàèìòù]+/);
+        if (vowelMatch) {
+          const insertPos = vowelMatch.index + vowelMatch[0].length;
+          letters = letters.slice(0, insertPos) + "h" + letters.slice(insertPos);
+        } else {
+          letters += "h";
+        }
+      }
+      return letters;
+    });
+    return yaleSyllables.join(" ");
+  }
 
   // src/content/dom.js
   function isEditableElement(element) {
@@ -600,7 +666,6 @@
     let edgeTtsMode = "default";
     let edgeTtsUrl = "";
     const EDGE_TTS_DEFAULT_URL = "http://114.55.243.162:8090";
-    let azureTtsMode = "default";
     let azureTtsKey = "";
     let azureTtsRegion = "";
     let azureTtsVoice = "zh-HK-HiuMaanNeural";
@@ -1907,7 +1972,7 @@
           character: word,
           simplified: entry ? entry.simplified : word,
           jyutping: reading ? reading.jyutping : entry ? entry.jyutping : "",
-          yale: reading ? reading.yale || "" : entry ? entry.yale || "" : "",
+          yale: reading ? reading.yale || jyutpingToYale(reading.jyutping) : entry ? jyutpingToYale(entry.jyutping) : "",
           english: reading ? reading.english || [] : entry ? entry.english || [] : [],
           sourceUrl: window.location.href,
           sourceTitle: document.title
@@ -2227,7 +2292,6 @@ ${userDesc || "未提供具體描述"}`;
         "ttsEngine",
         "edgeTtsMode",
         "edgeTtsUrl",
-        "azureTtsMode",
         "azureTtsKey",
         "azureTtsRegion",
         "azureTtsVoice",
@@ -2275,7 +2339,6 @@ ${userDesc || "未提供具體描述"}`;
         ttsEngine = result.ttsEngine || "edgeTts";
         edgeTtsMode = result.edgeTtsMode || "default";
         edgeTtsUrl = result.edgeTtsUrl || "";
-        azureTtsMode = result.azureTtsMode || "default";
         azureTtsKey = result.azureTtsKey || "";
         azureTtsRegion = result.azureTtsRegion || "";
         azureTtsVoice = result.azureTtsVoice || "zh-HK-HiuMaanNeural";
@@ -2379,9 +2442,6 @@ ${userDesc || "未提供具體描述"}`;
         }
         if (changes.edgeTtsUrl) {
           edgeTtsUrl = changes.edgeTtsUrl.newValue || "";
-        }
-        if (changes.azureTtsMode) {
-          azureTtsMode = changes.azureTtsMode.newValue || "default";
         }
         if (changes.azureTtsKey) {
           azureTtsKey = changes.azureTtsKey.newValue || "";
@@ -2892,30 +2952,27 @@ ${userDesc || "未提供具體描述"}`;
           } else if (ttsEngine === "edgeTts") {
             const baseUrl = edgeTtsMode === "custom" ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
             await speakWithEdgeTts(textToSpeak, baseUrl, jyutpingHint, sessionId);
-          } else if (ttsEngine === "bertVits2") {
-            await speakWithBertVits2(textToSpeak, sessionId);
+          } else if (ttsEngine === "googleTts") {
+            chrome.runtime.sendMessage({
+              action: "googleTtsSpeak",
+              text: textToSpeak,
+              rate: ttsRate,
+              sessionId
+            });
           } else if (ttsEngine === "azureTts") {
-            if (azureTtsMode === "custom") {
-              chrome.runtime.sendMessage({
-                action: "azureTtsSpeak",
-                text: textToSpeak,
-                jyutping: jyutpingHint,
-                azureKey: azureTtsKey,
-                azureRegion: azureTtsRegion,
-                azureVoice: azureTtsVoice,
-                rate: ttsRate,
-                sessionId
-              });
-            } else {
-              chrome.runtime.sendMessage({
-                action: "azureTtsProxySpeak",
-                text: textToSpeak,
-                jyutping: jyutpingHint,
-                azureVoice: azureTtsVoice,
-                rate: ttsRate,
-                sessionId
-              });
+            if (!azureTtsKey || !azureTtsRegion) {
+              throw new Error("請先在設定中配置 Azure Speech API Key 和區域");
             }
+            chrome.runtime.sendMessage({
+              action: "azureTtsSpeak",
+              text: textToSpeak,
+              jyutping: jyutpingHint,
+              azureKey: azureTtsKey,
+              azureRegion: azureTtsRegion,
+              azureVoice: azureTtsVoice,
+              rate: ttsRate,
+              sessionId
+            });
           }
         } catch (error) {
           if (error && error.message && error.message.includes("Extension context invalidated")) {
@@ -2941,7 +2998,7 @@ ${userDesc || "未提供具體描述"}`;
         }
       }
       const cacheKey = `${ttsEngine}:${ttsRate}:${textToSpeak}:${jyutpingHint}`;
-      if (["edgeTts", "azureTts", "bertVits2"].includes(ttsEngine)) {
+      if (["edgeTts", "googleTts", "azureTts"].includes(ttsEngine)) {
         const cachedAudio = ttsCache.get(cacheKey);
         if (cachedAudio) {
           if (sessionId !== currentAudioSessionId) return;
@@ -3003,14 +3060,6 @@ ${userDesc || "未提供具體描述"}`;
         text,
         jyutping,
         baseUrl,
-        rate: ttsRate,
-        sessionId
-      });
-    }
-    async function speakWithBertVits2(text, sessionId = 0) {
-      chrome.runtime.sendMessage({
-        action: "bertVits2Speak",
-        text,
         rate: ttsRate,
         sessionId
       });
@@ -4308,8 +4357,8 @@ ${userDesc || "未提供具體描述"}`;
       activeQAContext.sentence = getSurroundingSentence(currentRange) || "";
       activeQAContext.originalTranslation = result.entry && result.entry.english ? result.entry.english.join("; ") : "";
       activeQAContext.history = [];
-      let pronunciation = displayMode === "yale" ? entry.yale || entry.jyutping : entry.jyutping;
-      if (pronunciation && toneStyle === "superscript") {
+      let pronunciation = displayMode === "yale" ? jyutpingToYale(entry.jyutping) : entry.jyutping;
+      if (pronunciation && toneStyle === "superscript" && displayMode !== "yale") {
         pronunciation = convertToSuperscriptTone(pronunciation);
       }
       if (popupDisplayStyle === "ruby" && !forceFull) {
@@ -4349,7 +4398,7 @@ ${userDesc || "未提供具體描述"}`;
         currentActiveReading = {
           word: result.word,
           jyutping: activePr.jyutping || entry.jyutping || "",
-          yale: activePr.yale || entry.yale || "",
+          yale: jyutpingToYale(activePr.jyutping || entry.jyutping || ""),
           english: activeEnglish
         };
         activeQAContext.originalTranslation = activeEnglish.join("; ");
@@ -4363,8 +4412,8 @@ ${userDesc || "未提供具體描述"}`;
         if (prs.length === 0) return "";
         const label = displayMode === "yale" ? "Yale" : "粵拼";
         const buttonsHtml = prs.map((pr, idx) => {
-          let p = displayMode === "yale" ? pr.yale || pr.jyutping : pr.jyutping;
-          if (p && toneStyle === "superscript") {
+          let p = displayMode === "yale" ? jyutpingToYale(pr.jyutping || entry.jyutping) : pr.jyutping;
+          if (p && toneStyle === "superscript" && displayMode !== "yale") {
             p = convertToSuperscriptTone(p);
           }
           return `
@@ -5146,8 +5195,6 @@ ${userDesc || "未提供具體描述"}`;
         azureTtsKey = request.azureTtsKey;
       } else if (request.action === "changeAzureTtsRegion") {
         azureTtsRegion = request.azureTtsRegion;
-      } else if (request.action === "changeAzureTtsMode") {
-        azureTtsMode = request.azureTtsMode;
       } else if (request.action === "changeAzureTtsVoice") {
         azureTtsVoice = request.azureTtsVoice;
       } else if (request.action === "changeTtsRate") {
@@ -5275,7 +5322,7 @@ ${userDesc || "未提供具體描述"}`;
             character: text,
             simplified: entry ? entry.simplified : text,
             jyutping: reading ? reading.jyutping : entry ? entry.jyutping : "",
-            yale: reading ? reading.yale || "" : entry ? entry.yale || "" : "",
+            yale: reading ? reading.yale || jyutpingToYale(reading.jyutping) : entry ? jyutpingToYale(entry.jyutping) : "",
             english: reading ? reading.english || [] : entry ? entry.english || [] : [],
             sourceUrl: window.location.href,
             sourceTitle: document.title
@@ -5609,7 +5656,8 @@ ${userDesc || "未提供具體描述"}`;
                 if (displayMode === "jyutping") {
                   jpString = entry.jyutping ? Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping : "";
                 } else {
-                  jpString = entry.yale ? Array.isArray(entry.yale) ? entry.yale[0] : entry.yale : "";
+                  const baseJp = entry.jyutping ? Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping : "";
+                  jpString = jyutpingToYale(baseJp);
                 }
                 if (jpString) {
                   if (toneDisplayStyle === "superscript") {

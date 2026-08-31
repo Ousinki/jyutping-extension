@@ -134,7 +134,7 @@
     "description": "optAzureSettings"
   },
   "optAzureSettingsDesc": {
-    "message": "기본 API 또는 사용자 정의 키 선택",
+    "message": "Azure 음성 서비스 키 및 리전 입력 (Microsoft Azure 직접 연결)",
     "description": "optAzureSettingsDesc"
   },
   "optClickToSpeak": {
@@ -220,13 +220,13 @@
   "optEnableDesc": {
     "message": "마우스를 올렸을 때 광둥어 발음 표시"
   },
-  "optEngineAzure": {
-    "message": "Azure Speech (공식 클라우드 음성)",
-    "description": "optEngineAzure"
+  "optEngineGoogle": {
+    "message": "Google TTS",
+    "description": "optEngineGoogle"
   },
-  "optEngineBert": {
-    "message": "Bert-VITS2 (광둥어 신경망 음성)",
-    "description": "optEngineBert"
+  "optEngineAzure": {
+    "message": "Azure Speech (사용자 지정 키)",
+    "description": "optEngineAzure"
   },
   "optFail": {
     "message": "❌ 연결 실패:"
@@ -578,6 +578,12 @@
   "optTestTTS": {
     "message": " 음성 테스트",
     "description": "optTestTTS"
+  },
+  "optTtsAccuracyTitle": {
+    "message": "발음 정확도 안내:"
+  },
+  "optTtsAccuracyDesc": {
+    "message": "기본 설정된 <strong>Edge TTS</strong>는 Microsoft 클라우드 신경망 음성 합성을 사용합니다. 다음자 모델의 한계로 인해 일부 단어의 발음이 정확하지 않을 수 있습니다. 각 TTS 엔진마다 알고리즘이 다르므로, 발음이 틀린 경우 <strong>다른 TTS 엔진으로 전환</strong>(예: Edge TTS 발음 오류 시 Google TTS로 전환)하여 정확한 발음을 시도할 수 있습니다.<br />또한 팝업 사전에는 <strong>Words.hk 공식 원어민 단자 녹음 음성</strong>이 내장되어 있어, TTS 발음이 의심스러울 경우 팝업 창에서 <strong>월병(Jyutping) 발음 기호를 클릭</strong>하여 100% 정확한 원어민 발음을 들을 수 있습니다."
   },
   "optTestingAI": {
     "message": "테스트 중..."

@@ -5,7 +5,7 @@
 
 import { renderMarkdown } from './markdown.js';
 import { getElementBackgroundColor, isElementOnDarkBackground } from './colors.js';
-import { convertToSuperscriptTone } from './text-utils.js';
+import { convertToSuperscriptTone, jyutpingToYale } from './text-utils.js';
 import { isEditableElement, hasEditableFocus, getCaretRangeFromPointInShadow, getAccurateOffset } from './dom.js';
 import { createBlobUrlFromDataUri } from './tts.js';
 import { sanitizeTranslatedHtml } from './paragraph-translate.js';
@@ -32,7 +32,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let edgeTtsMode = 'default'; // Edge TTS 模式: default (預設伺服器) / custom (自定義)
   let edgeTtsUrl = ''; // Edge TTS 伺服器地址
   const EDGE_TTS_DEFAULT_URL = 'http://114.55.243.162:8090';
-  let azureTtsMode = 'default'; // Azure TTS 模式: default (代理) / custom (直連)
   let azureTtsKey = ''; // Azure Speech API Key
   let azureTtsRegion = ''; // Azure Speech 區域
   let azureTtsVoice = 'zh-HK-HiuMaanNeural'; // Azure Speech 音色
@@ -1507,7 +1506,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         character: word,
         simplified: entry ? entry.simplified : word,
         jyutping: reading ? reading.jyutping : (entry ? entry.jyutping : ''),
-        yale: reading ? (reading.yale || '') : (entry ? (entry.yale || '') : ''),
+        yale: reading ? (reading.yale || jyutpingToYale(reading.jyutping)) : (entry ? jyutpingToYale(entry.jyutping) : ''),
         english: reading ? (reading.english || []) : (entry ? (entry.english || []) : []),
         sourceUrl: window.location.href,
         sourceTitle: document.title
@@ -1890,7 +1889,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   function loadSettings() {
     chrome.storage.sync.get([
       'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
@@ -1921,7 +1920,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       ttsEngine = result.ttsEngine || 'edgeTts';
       edgeTtsMode = result.edgeTtsMode || 'default';
       edgeTtsUrl = result.edgeTtsUrl || '';
-      azureTtsMode = result.azureTtsMode || 'default';
       azureTtsKey = result.azureTtsKey || '';
       azureTtsRegion = result.azureTtsRegion || '';
       azureTtsVoice = result.azureTtsVoice || 'zh-HK-HiuMaanNeural';
@@ -2030,9 +2028,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       }
       if (changes.edgeTtsUrl) {
         edgeTtsUrl = changes.edgeTtsUrl.newValue || '';
-      }
-      if (changes.azureTtsMode) {
-        azureTtsMode = changes.azureTtsMode.newValue || 'default';
       }
       if (changes.azureTtsKey) {
         azureTtsKey = changes.azureTtsKey.newValue || '';
@@ -2651,30 +2646,27 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         } else if (ttsEngine === 'edgeTts') {
           const baseUrl = edgeTtsMode === 'custom' ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
           await speakWithEdgeTts(textToSpeak, baseUrl, jyutpingHint, sessionId);
-        } else if (ttsEngine === 'bertVits2') {
-          await speakWithBertVits2(textToSpeak, sessionId);
+        } else if (ttsEngine === 'googleTts') {
+          chrome.runtime.sendMessage({
+            action: 'googleTtsSpeak',
+            text: textToSpeak,
+            rate: ttsRate,
+            sessionId: sessionId
+          });
         } else if (ttsEngine === 'azureTts') {
-          if (azureTtsMode === 'custom') {
-            chrome.runtime.sendMessage({
-              action: 'azureTtsSpeak',
-              text: textToSpeak,
-              jyutping: jyutpingHint,
-              azureKey: azureTtsKey,
-              azureRegion: azureTtsRegion,
-              azureVoice: azureTtsVoice,
-              rate: ttsRate,
-              sessionId: sessionId
-            });
-          } else {
-            chrome.runtime.sendMessage({
-              action: 'azureTtsProxySpeak',
-              text: textToSpeak,
-              jyutping: jyutpingHint,
-              azureVoice: azureTtsVoice,
-              rate: ttsRate,
-              sessionId: sessionId
-            });
+          if (!azureTtsKey || !azureTtsRegion) {
+            throw new Error('請先在設定中配置 Azure Speech API Key 和區域');
           }
+          chrome.runtime.sendMessage({
+            action: 'azureTtsSpeak',
+            text: textToSpeak,
+            jyutping: jyutpingHint,
+            azureKey: azureTtsKey,
+            azureRegion: azureTtsRegion,
+            azureVoice: azureTtsVoice,
+            rate: ttsRate,
+            sessionId: sessionId
+          });
         }
       } catch (error) {
         if (error && error.message && error.message.includes('Extension context invalidated')) {
@@ -2706,7 +2698,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
     // 檢查緩存（僅對需要 API 調用的引擎）
     const cacheKey = `${ttsEngine}:${ttsRate}:${textToSpeak}:${jyutpingHint}`;
-    if (['edgeTts', 'azureTts', 'bertVits2'].includes(ttsEngine)) {
+    if (['edgeTts', 'googleTts', 'azureTts'].includes(ttsEngine)) {
       const cachedAudio = ttsCache.get(cacheKey);
       if (cachedAudio) {
         if (sessionId !== currentAudioSessionId) return;
@@ -2790,15 +2782,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     });
   }
 
-  // Bert-VITS2 (via background script)
-  async function speakWithBertVits2(text, sessionId = 0) {
-    chrome.runtime.sendMessage({
-      action: 'bertVits2Speak',
-      text: text,
-      rate: ttsRate,
-      sessionId: sessionId
-    });
-  }
+
 
   // 設置事件監聽器
   function setupEventListeners() {
@@ -4458,10 +4442,10 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     
     // 選擇顯示的拼音格式
     let pronunciation = displayMode === 'yale' 
-      ? (entry.yale || entry.jyutping)
+      ? jyutpingToYale(entry.jyutping)
       : entry.jyutping;
 
-    if (pronunciation && toneStyle === 'superscript') {
+    if (pronunciation && toneStyle === 'superscript' && displayMode !== 'yale') {
       pronunciation = convertToSuperscriptTone(pronunciation);
     }
 
@@ -4511,7 +4495,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       currentActiveReading = {
         word: result.word,
         jyutping: activePr.jyutping || entry.jyutping || '',
-        yale: activePr.yale || entry.yale || '',
+        yale: jyutpingToYale(activePr.jyutping || entry.jyutping || ''),
         english: activeEnglish
       };
       activeQAContext.originalTranslation = activeEnglish.join('; ');
@@ -4528,8 +4512,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
       const label = displayMode === 'yale' ? 'Yale' : '粵拼';
       const buttonsHtml = prs.map((pr, idx) => {
-        let p = displayMode === 'yale' ? (pr.yale || pr.jyutping) : pr.jyutping;
-        if (p && toneStyle === 'superscript') {
+        let p = displayMode === 'yale' ? jyutpingToYale(pr.jyutping || entry.jyutping) : pr.jyutping;
+        if (p && toneStyle === 'superscript' && displayMode !== 'yale') {
           p = convertToSuperscriptTone(p);
         }
         return `
@@ -5500,8 +5484,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       azureTtsKey = request.azureTtsKey;
     } else if (request.action === 'changeAzureTtsRegion') {
       azureTtsRegion = request.azureTtsRegion;
-    } else if (request.action === 'changeAzureTtsMode') {
-      azureTtsMode = request.azureTtsMode;
     } else if (request.action === 'changeAzureTtsVoice') {
       azureTtsVoice = request.azureTtsVoice;
     } else if (request.action === 'changeTtsRate') {
@@ -5645,7 +5627,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           character: text,
           simplified: entry ? entry.simplified : text,
           jyutping: reading ? reading.jyutping : (entry ? entry.jyutping : ''),
-          yale: reading ? (reading.yale || '') : (entry ? (entry.yale || '') : ''),
+          yale: reading ? (reading.yale || jyutpingToYale(reading.jyutping)) : (entry ? jyutpingToYale(entry.jyutping) : ''),
           english: reading ? (reading.english || []) : (entry ? (entry.english || []) : []),
           sourceUrl: window.location.href,
           sourceTitle: document.title
@@ -6041,7 +6023,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
               if (displayMode === 'jyutping') {
                 jpString = entry.jyutping ? (Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping) : '';
               } else {
-                jpString = entry.yale ? (Array.isArray(entry.yale) ? entry.yale[0] : entry.yale) : '';
+                const baseJp = entry.jyutping ? (Array.isArray(entry.jyutping) ? entry.jyutping[0] : entry.jyutping) : '';
+                jpString = jyutpingToYale(baseJp);
               }
               
               if (jpString) {

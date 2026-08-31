@@ -148,7 +148,7 @@
     "description": "optAzureSettings"
   },
   "optAzureSettingsDesc": {
-    "message": "Choose default API or custom key",
+    "message": "Enter your Azure Speech Key and Region (direct connect to Microsoft Azure)",
     "description": "optAzureSettingsDesc"
   },
   "optClickToSpeak": {
@@ -239,13 +239,13 @@
     "message": "Show Cantonese pronunciation on hover",
     "description": "optEnableDesc"
   },
-  "optEngineAzure": {
-    "message": "Azure Speech (Official Cloud TTS)",
-    "description": "optEngineAzure"
+  "optEngineGoogle": {
+    "message": "Google TTS",
+    "description": "optEngineGoogle"
   },
-  "optEngineBert": {
-    "message": "Bert-VITS2 (Cantonese Neural TTS)",
-    "description": "optEngineBert"
+  "optEngineAzure": {
+    "message": "Azure Speech (Custom Key)",
+    "description": "optEngineAzure"
   },
   "optFail": {
     "message": "❌ Connection Failed: "
@@ -635,6 +635,12 @@
   "optTestTTS": {
     "message": "Test Pronunciation",
     "description": "optTestTTS"
+  },
+  "optTtsAccuracyTitle": {
+    "message": "Note on Pronunciation Accuracy:"
+  },
+  "optTtsAccuracyDesc": {
+    "message": "The default <strong>Edge TTS</strong> uses Microsoft cloud neural speech synthesis. Due to polyphone model limitations, some words may occasionally have inaccurate pronunciations. Since each TTS engine handles polyphones differently, you can <strong>switch to another TTS engine</strong> (e.g., switch from Edge TTS to Google TTS) if a pronunciation is inaccurate.<br />Additionally, we have integrated the <strong>official Words.hk human-recorded audio library</strong>. If you are unsure of a TTS pronunciation, simply <strong>click the Jyutping phonetic button</strong> in the popup to hear 100% accurate human pronunciation."
   },
   "optTestingAI": {
     "message": "Testing..."

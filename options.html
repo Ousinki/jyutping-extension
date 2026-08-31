@@ -12,6 +12,7 @@
       href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700&display=swap"
       rel="stylesheet"
     />
+    <link rel="stylesheet" href="popup.css" />
     <style>
       :root {
         --primary: #8A1C1C;
@@ -685,7 +686,7 @@
         border: 1px solid var(--border);
         border-radius: 8px;
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
-        z-index: 100;
+        z-index: 99999;
         opacity: 0;
         visibility: hidden;
         transform: translateY(-6px);
@@ -694,6 +695,9 @@
         overflow-y: auto;
         padding: 6px;
       }
+      .custom-select-wrapper.open {
+        z-index: 99999;
+      }
       :root[data-theme="dark"] .custom-select-panel {
         box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.5);
       }
@@ -701,6 +705,7 @@
         opacity: 1;
         visibility: visible;
         transform: translateY(0);
+        z-index: 99999;
       }
       .custom-select-item {
         padding: 8px 10px 8px 32px;
@@ -1513,62 +1518,106 @@
                 </select>
               </div>
             </div>
-            <!-- 主題預覽 -->
-            <div
-              id="themePreview"
-              style="
-                --popup-font-zh: system-ui, -apple-system, sans-serif;
-                --popup-font-en: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
-                font-family: var(--popup-font-zh);
-                border-radius: 8px;
-                border: 1px solid #d0d0d0;
-                padding: 12px 16px;
-                background: #ffffff;
-                box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-                transition: all 0.3s ease;
-              "
-            >
-              <div
-                style="
-                  display: flex;
-                  align-items: center;
-                  gap: 6px;
-                  margin-bottom: 6px;
-                  border-bottom: 1px solid;
-                  padding-bottom: 6px;
-                "
-                id="previewHeader"
-              >
-                <span id="previewWord" style="font-size: 18px; font-weight: 600"
-                  >你好</span
-                >
+            <!-- 主題預覽區 -->
+            <div class="theme-preview-wrapper" style="margin-top: 16px; display: flex; flex-direction: column; align-items: flex-start;">
+              <!-- 頂部模擬劃選句子 -->
+              <div class="preview-target-demo" style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary); font-family: var(--popup-font-zh, system-ui, sans-serif);">
+                <span class="preview-hl-word" style="background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;">你好</span>！ 很高興為你服務。
               </div>
+
+              <!-- 懸浮窗實體 -->
               <div
+                id="cantonese-popup-dict"
+                class="popup-preview-box expanded-mode"
                 style="
-                  display: flex;
-                  align-items: center;
-                  gap: 6px;
-                  margin-bottom: 6px;
+                  position: relative !important;
+                  left: 0 !important;
+                  top: 0 !important;
+                  display: block !important;
+                  width: 640px !important;
+                  max-width: 100% !important;
+                  margin: 0 !important;
+                  transform: none !important;
+                  animation: none !important;
+                  transition: width 0.2s ease-in-out;
+                  z-index: 1 !important;
                 "
               >
-                <span style="font-size: 11px; color: inherit; opacity: 0.6"
-                  >粵拼:</span
-                >
-                <span
-                  id="previewPinyin"
-                  style="
-                    font-size: 14px;
-                    font-family: var(--popup-font-en);
-                  "
-                  >nei5 hou2</span
-                >
-              </div>
-              <div id="previewDef" style="font-size: 12px; opacity: 0.85">
-                hello; how are you
-              </div>
-              <div style="font-size: 11px; margin-top: 4px">
-                <span style="opacity: 0.6">粵：</span>
-                <span id="previewYue">打招呼嘅用語</span>
+                <!-- 箭頭指向「你好」 -->
+                <div class="popup-arrow popup-arrow-up" style="left: 28px;"></div>
+                
+                <div class="popup-inner">
+                  <!-- 右上角小操作按鈕 -->
+                  <div class="popup-actions-wrapper" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; z-index: 10;">
+                    <div class="popup-settings-btn" title="設定" style="opacity: 0.4; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; cursor: pointer;">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                      </svg>
+                    </div>
+                  </div>
+
+                  <div class="popup-container">
+                    <div class="popup-main">
+                      <div class="word-section" id="previewWordSection" title="點擊發音 (整詞 TTS 朗讀)" style="cursor: pointer;">
+                        <span class="word-text" id="previewWord">你好</span>
+                      </div>
+                      <div class="pronunciation-section">
+                        <span class="pronunciation-label">粵拼:</span>
+                        <div class="reading-speaker-list">
+                          <button type="button" class="reading-speaker-btn" id="previewPinyinBtn" title="點擊逐字朗讀 (單字音檔)" style="cursor: pointer;">
+                            <span class="reading-pr-text" id="previewPinyin"><span class="syllable-item">nei5</span> <span class="syllable-item">hou2</span></span>
+                            <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                              <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                              <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="definition-section">
+                        <div class="def-item def-yue has-examples active" id="previewDefItem" style="cursor: pointer;" title="點擊展開/收起右側例句">
+                          <div class="def-main-row">
+                            <span class="badge-yue" id="previewBadgeYue" role="button" title="點擊翻譯此釋義" style="cursor: pointer;">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+                            <span class="def-content-text" id="previewYue">打招呼嘅問候語或者一般對話嘅開場白</span>
+                            <span class="example-arrow-icon"> ▽</span>
+                          </div>
+                          <div class="def-eng-row" id="previewEng">hello; a common greeting; literally "you be well"</div>
+                        </div>
+                      </div>
+                      <div class="see-also-section" style="margin-top: 8px;">
+                        <div class="ref-line">
+                          <span class="see-also-label">粵語說法：</span>
+                          <span class="see-also-link" data-word="hi" style="cursor: pointer;">hi</span>、<span class="see-also-link" data-word="嗨" style="cursor: pointer;">嗨</span>、<span class="see-also-link" data-word="hello" style="cursor: pointer;">hello</span>、<span class="see-also-link" data-word="哈佬" style="cursor: pointer;">哈佬</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- 右側例句區 -->
+                    <div class="popup-examples" id="previewPopupExamples" style="display: block;">
+                      <div class="example-title" style="display: flex; justify-content: space-between; align-items: center;">
+                        <span>例句</span>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;">
+                          <circle cx="12" cy="12" r="3"></circle>
+                          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                        </svg>
+                      </div>
+                      <div class="example-item">
+                        <div class="example-yue">
+                          <span class="example-yue-text">你好，我叫陳大文。</span>
+                          <button class="tts-speaker-btn example-tts-btn" id="previewExampleTtsBtn" title="播放例句 (TTS)" aria-label="播放例句" style="cursor: pointer;">
+                            <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                              <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                              <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                            </svg>
+                          </button>
+                        </div>
+                        <div class="example-eng">Hi, my name is Diamond Chan.</div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -3245,8 +3294,8 @@
               <select id="ttsEngine">
                 <option value="chromeTts">Chrome TTS</option>
                 <option value="edgeTts">Edge TTS</option>
-                <option value="azureTts" data-i18n="optEngineAzure">Azure Speech (官方雲端語音)</option>
-                <option value="bertVits2" data-i18n="optEngineBert">Bert-VITS2 (粵語神經語音)</option>
+                <option value="googleTts" data-i18n="optEngineGoogle">Google TTS</option>
+                <option value="azureTts" data-i18n="optEngineAzure">Azure Speech (自定義密鑰)</option>
               </select>
             </div>
           </div>
@@ -3283,34 +3332,25 @@
             id="azureTtsSettings"
             style="display: none; flex-direction: column; align-items: stretch"
           >
-            <div style="display: flex; align-items: center; justify-content: space-between;">
-              <div class="setting-info" style="margin-right: 16px">
-                <span class="setting-label" data-i18n="optAzureSettings">Azure Speech 設定</span>
-                <span class="setting-desc" data-i18n="optAzureSettingsDesc">選擇使用預設 API 或自定義密鑰</span>
-              </div>
-              <div class="select-wrapper">
-                <select id="azureTtsMode">
-                  <option value="default" data-i18n="optDefaultAPI">預設 API（免配置）</option>
-                  <option value="custom" data-i18n="optCustomKey">自定義密鑰（直連 Azure）</option>
-                </select>
-              </div>
+            <div class="setting-info" style="margin-bottom: 10px">
+              <span class="setting-label" data-i18n="optAzureSettings">Azure Speech 設定</span>
+              <span class="setting-desc" data-i18n="optAzureSettingsDesc">輸入您的 Azure 語音服務金鑰與區域（直連微軟官方）</span>
             </div>
-            <div id="azureCustomSettings" style="display: none; margin-top: 12px">
+            <div style="display: flex; flex-direction: column; gap: 8px">
               <input
                 type="password"
                 id="azureTtsKey"
                 class="text-input"
                 placeholder="API Key"
-                style="margin-bottom: 8px"
               />
               <input
                 type="text"
                 id="azureTtsRegion"
                 class="text-input"
-                placeholder="區域 (例如: koreacentral)"
+                placeholder="區域 (例如: eastasia, koreacentral, southeastasia)"
               />
             </div>
-            <div style="margin-top: 8px">
+            <div style="margin-top: 10px">
               <div class="setting-info" style="margin-bottom: 6px">
                 <span class="setting-label" data-i18n="optVoice">語音音色</span>
               </div>
@@ -3359,6 +3399,21 @@
               </svg>
               <span data-i18n="optTestTTS">測試語音</span>
             </button>
+          </div>
+
+          <!-- TTS 發音準確度與單字音檔說明 -->
+          <div style="margin-top: 16px; padding: 12px 14px; background: rgba(59, 130, 246, 0.06); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; font-size: 13px; line-height: 1.6; color: var(--text-secondary);">
+            <div style="display: flex; align-items: flex-start; gap: 8px;">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2563eb" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0; margin-top: 2.5px;">
+                <circle cx="12" cy="12" r="10"></circle>
+                <line x1="12" y1="16" x2="12" y2="12"></line>
+                <line x1="12" y1="8" x2="12.01" y2="8"></line>
+              </svg>
+              <div>
+                <strong style="color: var(--text-primary);" data-i18n="optTtsAccuracyTitle">語音發音準確度說明：</strong><br />
+                <span data-i18n="optTtsAccuracyDesc">預設選用的 <strong>Edge TTS</strong> 屬於微軟雲端 AI 語音合成。受微軟伺服器多音字模型限制，少數詞彙可能存在讀音不完全準確的情況（此為微軟雲端演算法行為，擴充功能無法直接干預其輸出）。各 TTS 引擎的多音字演算法各有差異，若當前引擎讀音有誤，您可以<strong>切換為其他 TTS 引擎</strong>（例如 Edge TTS 讀音有誤時可切換為 Google TTS）嘗試正確讀音。<br />此外，我們在懸浮詞典中特別內置了 <strong>Words.hk 官方真人單字發音音庫</strong>。當您對 TTS 讀音存疑時，可直接在懸浮窗中<strong>點擊粵拼音標</strong>進行 100% 權威準確的單字真人朗讀。</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>

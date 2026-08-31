@@ -11,7 +11,8 @@
     "contextMenus"
   ],
   "host_permissions": [
-    "*://*.bing.com/*"
+    "*://*.bing.com/*",
+    "*://*.google.com/*"
   ],
   "background": {
     "service_worker": "background.js",
