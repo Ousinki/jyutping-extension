@@ -7,13 +7,13 @@
     "message": "<b>Context Menu Collection</b>: Right-click any selected text to instantly add it to your wordbook."
   },
   "clItem11": {
-    "message": "<b>New Wordbook & AI Assistant</b>: Save vocabulary, search by Jyutping, export in multiple formats, and ask the built-in AI assistant for contextual explanations."
+    "message": "<b>Word Book, Spelling Quiz & Learning Hub</b>: Added Word Book, Spelling Quiz practice, and Cantonese Learning Hub."
   },
   "clItem12": {
-    "message": "<b>Cantonese Learning Roadmap & Hub</b>: Curated 33 authoritative phonetics tutorials, dictionaries, input methods, and media resources to supercharge your Cantonese learning."
+    "message": "<b>Lookup Popup Refactor & Google TTS</b>: Refactored lookup popup layout architecture and added official Google Cantonese TTS."
   },
   "clItem13": {
-    "message": "<b>Cantonese Colloquial Definition Translation</b>: Click-to-translate or auto-translate [粵] colloquial definitions (supports Bing, Google, or Custom AI)."
+    "message": "<b>Bug Fixes</b>: Other bug fixes."
   },
   "clItem5": {
     "message": "🎨 <b>New Ruby Background Styles</b>: Ruby annotation mode now supports 'Solid' and 'Fade' background options, ensuring clear readability on any webpage background.",
@@ -974,6 +974,40 @@
   "wordbookExportImport": {
     "message": "Import..."
   },
+  "wordbookImportTitle": {
+    "message": "Import Words"
+  },
+  "wordbookImportDropText": {
+    "message": "Drag & drop file here, or"
+  },
+  "wordbookImportChooseFile": {
+    "message": "Choose File"
+  },
+  "wordbookImportFormatHint": {
+    "message": "Supports JSON, CSV formats"
+  },
+  "wordbookConfirmImport": {
+    "message": "Confirm Import"
+  },
+  "wordbookImportTotalWords": {
+    "message": "Total Words: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "wordbookImportStats": {
+    "message": "New: $NEW$ | Duplicates (skipped): $SKIP$",
+    "placeholders": {
+      "new": {
+        "content": "$1"
+      },
+      "skip": {
+        "content": "$2"
+      }
+    }
+  },
   "wordbookSpeak": {
     "message": "Read"
   },
@@ -1163,6 +1197,9 @@
   "wordbookBackToSettings": {
     "message": "Back to Settings"
   },
+  "wordbookBackToWordbook": {
+    "message": "Back to Wordbook"
+  },
   "optRoadmapCount": {
     "message": "Total $COUNT$ curated resources",
     "placeholders": {
@@ -1238,43 +1275,31 @@
     "message": "Help Make the Extension Better 🚀"
   },
   "fbQ1Title": {
-    "message": "1. What is your primary purpose for using this extension?"
+    "message": "1. What is your primary language?"
   },
-  "fbQ1OptLearn": {
-    "message": "Learning Cantonese (I am a learner)"
+  "fbLangZhHant": {
+    "message": "Traditional Chinese (繁體中文)"
   },
-  "fbQ1OptRead": {
-    "message": "Web reading aid (Looking up unfamiliar characters)"
+  "fbLangZhHans": {
+    "message": "Simplified Chinese (簡體中文)"
   },
-  "fbQ1OptTranslate": {
-    "message": "Translation aid (Convert to standard written Chinese, etc.)"
+  "fbLangEn": {
+    "message": "English (英文)"
   },
-  "fbQ1OptEntertainment": {
-    "message": "Entertainment / Social (e.g. YouTube subtitles)"
+  "fbLangJa": {
+    "message": "Japanese (日本語)"
+  },
+  "fbLangKo": {
+    "message": "Korean (한국어)"
   },
   "fbOptOther": {
     "message": "Other: "
   },
   "fbQ2Title": {
-    "message": "2. Which feature would you like to see prioritized? (Multiple choice)"
-  },
-  "fbQ2OptSync": {
-    "message": "☁️ Multi-device cloud sync for Wordbook"
-  },
-  "fbQ2OptTranslate": {
-    "message": "🌐 Selected text / Full-sentence smart translation"
-  },
-  "fbQ2OptDicts": {
-    "message": "📚 Integration with more dictionary sources"
-  },
-  "fbQ2OptMobile": {
-    "message": "📱 Mobile browser support (iOS/Android)"
+    "message": "2. How would you rate the overall experience?"
   },
   "fbQ3Title": {
-    "message": "3. How would you rate your overall experience?"
-  },
-  "fbQ4Title": {
-    "message": "4. Suggestions, feedback, or bugs encountered? (Optional)"
+    "message": "3. Improvements, feature requests, or bug reports? (Optional)"
   },
   "fbCommentsPlaceholder": {
     "message": "Please share your thoughts with us..."
@@ -1338,6 +1363,9 @@
   },
   "wordbookDeletePermanentSingle": {
     "message": "Delete"
+  },
+  "wordbookColActions": {
+    "message": "Actions"
   },
   "wordbookTrashEmptyTitle": {
     "message": "Trash is Empty"

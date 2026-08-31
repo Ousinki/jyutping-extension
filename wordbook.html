@@ -1460,34 +1460,45 @@
       .trash-row-actions {
         display: flex;
         align-items: center;
-        justify-content: center;
+        justify-content: flex-start;
         gap: 6px;
+        width: 100%;
+        flex-wrap: nowrap;
       }
 
       .trash-action-btn {
         display: inline-flex;
         align-items: center;
-        gap: 3px;
-        padding: 3px 8px;
-        font-size: 11px;
-        font-weight: 500;
-        border-radius: 5px;
+        justify-content: center;
+        width: 26px;
+        height: 26px;
+        padding: 0;
+        border-radius: 6px;
         border: 1px solid var(--border);
         background: var(--bg-card);
         color: var(--text-secondary);
         cursor: pointer;
-        transition: all 0.15s ease;
+        transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
+        flex-shrink: 0;
+      }
+
+      .trash-action-btn svg {
+        pointer-events: none;
+        flex-shrink: 0;
       }
 
       .trash-action-btn:hover {
         border-color: var(--primary);
         color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        transform: scale(1.08);
       }
 
       .trash-action-btn.del-perm:hover {
         border-color: #ef4444;
         color: #ef4444;
-        background: color-mix(in srgb, #ef4444 8%, transparent);
+        background: color-mix(in srgb, #ef4444 12%, transparent);
+        transform: scale(1.08);
       }
 
       /* ========== Search & Toolbar ========== */
@@ -4130,7 +4141,7 @@
           <line x1="19" y1="12" x2="5" y2="12"></line>
           <polyline points="12 19 5 12 12 5"></polyline>
         </svg>
-        <span data-i18n="wordbookBackToSettings">返回設定</span>
+        <span id="backLinkText" data-i18n="wordbookBackToSettings">返回設定</span>
       </a>
 
       <!-- Collapsible Header Section -->
@@ -4642,8 +4653,8 @@
       <div class="modal">
         <h3 data-i18n="wordbookImportTitle">導入生詞</h3>
         <div class="drop-zone" id="dropZone">
-          <p>拖拽文件到此處，或<br><a href="#" id="chooseFileLink">選擇文件</a></p>
-          <p style="font-size: 12px; margin-top: 8px; opacity: 0.7;">支持 JSON、CSV 格式</p>
+          <p><span data-i18n="wordbookImportDropText">拖拽文件到此處，或</span><br><a href="#" id="chooseFileLink" data-i18n="wordbookImportChooseFile">選擇文件</a></p>
+          <p style="font-size: 12px; margin-top: 8px; opacity: 0.7;" data-i18n="wordbookImportFormatHint">支持 JSON、CSV 格式</p>
           <input type="file" id="importFileInput" accept=".json,.csv" />
         </div>
         <div id="importPreview" style="display: none; margin-bottom: 16px; font-size: 14px; color: var(--text-secondary);"></div>

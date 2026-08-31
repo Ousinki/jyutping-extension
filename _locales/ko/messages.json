@@ -6,13 +6,13 @@
     "message": "<b>우클릭 메뉴로 단어 저장</b>：임의의 중국어 텍스트를 선택하고 마우스 우클릭만으로 팝업창을 열지 않고도 빠르게 단어장에 추가할 수 있습니다."
   },
   "clItem11": {
-    "message": "<b>새로운 단어장 및 AI 어시스턴트</b>：단어 저장, 월병 검색, 다양한 형식 내보내기 및 문맥별 AI 설명 지원."
+    "message": "<b>단어장, 맞춤법 연습 및 학습 허브</b>：단어장, 맞춤법 빈칸 연습 및 광둥어 학습 허브 기능이 추가되었습니다."
   },
   "clItem12": {
-    "message": "<b>광둥어 학습 로드맵（Learning Hub）</b>：엄선된 33개의 권위 있는 발음 강좌, 사전, 입력기 및 미디어 리소스를 다국어로 지원."
+    "message": "<b>팝업 레이아웃 개편 및 Google TTS</b>：단어 검색 팝업 레이아웃 아키텍처를 개편하고 Google 공식 광둥어 TTS를 추가했습니다."
   },
   "clItem13": {
-    "message": "<b>광둥어 구어체 정의 번역 기능</b>：사전 내 [粵] 구어 정의를 원클릭 또는 자동 번역 지원 (Bing / Google / 사용자 정의 AI 지원)."
+    "message": "<b>버그 수정</b>：기타 버그 수정."
   },
   "clItem5": {
     "message": "🎨 <b>새로운 루비 배경 스타일</b>: 루비 주음 모드에서 '단색 배경' 및 '페이드 배경'을 지원하여 어떤 웹페이지 배경에서도 발음 기호가 선명하게 보이도록 개선했습니다.",
@@ -901,6 +901,40 @@
   "wordbookExportImport": {
     "message": "가져오기..."
   },
+  "wordbookImportTitle": {
+    "message": "단어 가져오기"
+  },
+  "wordbookImportDropText": {
+    "message": "파일을 여기로 드래그하거나,"
+  },
+  "wordbookImportChooseFile": {
+    "message": "파일 선택"
+  },
+  "wordbookImportFormatHint": {
+    "message": "JSON, CSV 형식 지원"
+  },
+  "wordbookConfirmImport": {
+    "message": "가져오기 확인"
+  },
+  "wordbookImportTotalWords": {
+    "message": "총 단어 수: $COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "wordbookImportStats": {
+    "message": "추가: $NEW$ | 중복(건너뜀): $SKIP$",
+    "placeholders": {
+      "new": {
+        "content": "$1"
+      },
+      "skip": {
+        "content": "$2"
+      }
+    }
+  },
   "wordbookSpeak": {
     "message": "낭독"
   },
@@ -1090,6 +1124,9 @@
   "wordbookBackToSettings": {
     "message": "설정으로 돌아가기"
   },
+  "wordbookBackToWordbook": {
+    "message": "단어장으로 돌아가기"
+  },
   "optRoadmapCount": {
     "message": "총 $COUNT$ 개의 엄선된 리소스",
     "placeholders": {
@@ -1183,43 +1220,31 @@
     "message": "확장 프로그램을 더 발전시켜 주세요 🚀"
   },
   "fbQ1Title": {
-    "message": "1. 이 확장 프로그램을 사용하는 주된 목적은 무엇인가요?"
+    "message": "1. 주로 사용하는 언어는 무엇입니까?"
   },
-  "fbQ1OptLearn": {
-    "message": "광둥어 학습 (광둥어 학습자)"
+  "fbLangZhHant": {
+    "message": "번체 중국어 (Traditional Chinese)"
   },
-  "fbQ1OptRead": {
-    "message": "웹 브라우징 보조 (어려운 한자/단어 조회)"
+  "fbLangZhHans": {
+    "message": "간체 중국어 (Simplified Chinese)"
   },
-  "fbQ1OptTranslate": {
-    "message": "번역 보조 (문어체 변환 등)"
+  "fbLangEn": {
+    "message": "영어 (English)"
   },
-  "fbQ1OptEntertainment": {
-    "message": "엔터테인먼트/SNS (YouTube 자막 등)"
+  "fbLangJa": {
+    "message": "일본어 (日本語)"
+  },
+  "fbLangKo": {
+    "message": "한국어 (Korean)"
   },
   "fbOptOther": {
     "message": "기타: "
   },
   "fbQ2Title": {
-    "message": "2. 향후 어떤 핵심 기능이 우선적으로 추가되길 바라시나요? (중복 선택 가능)"
-  },
-  "fbQ2OptSync": {
-    "message": "☁️ 단어장 다중 기기 클라우드 동기화"
-  },
-  "fbQ2OptTranslate": {
-    "message": "🌐 텍스트 드래그 / 전체 문장 스마트 번역"
-  },
-  "fbQ2OptDicts": {
-    "message": "📚 더 많은 사전 데이터 소스 연동"
-  },
-  "fbQ2OptMobile": {
-    "message": "📱 모바일 브라우저 지원"
+    "message": "2. 현재 확장 프로그램의 전반적인 만족도는 어떠신가요?"
   },
   "fbQ3Title": {
-    "message": "3. 현재 확장 프로그램에 대한 전반적인 평가는 어떠신가요?"
-  },
-  "fbQ4Title": {
-    "message": "4. 제안, 피드백 또는 발견한 버그가 있으신가요? (선택)"
+    "message": "3. 개선을 원하는 점, 기대하는 신기능 또는 버그 제보 (선택)"
   },
   "fbCommentsPlaceholder": {
     "message": "소중한 의견을 자유롭게 적어주세요..."
@@ -1283,6 +1308,9 @@
   },
   "wordbookDeletePermanentSingle": {
     "message": "영구 삭제"
+  },
+  "wordbookColActions": {
+    "message": "작업"
   },
   "wordbookTrashEmptyTitle": {
     "message": "휴지통이 비어 있습니다"

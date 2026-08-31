@@ -129,7 +129,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       wordbookSaved: "已加入生詞本",
       wordbookExists: "此詞已在生詞本中",
       wordbookRemoved: "已從生詞本移除",
-      wordbookSaveFailed: "收藏失敗，請重試"
+      wordbookSaveFailed: "收藏失敗，請重試",
+      jyutpingLabel: "粵拼",
+      seeAlsoCantonese: "粵語說法：",
+      seeAlsoMandarin: "普通話：",
+      seeAlsoSynonym: "近義：",
+      seeAlsoAntonym: "反義：",
+      seeAlsoVariant: "異體：",
+      aiInputPlaceholder: "輸入追問... (Enter 發送)",
+      speakThisPr: "點擊朗讀此讀音",
+      badgeClickToTranslate: "點擊翻譯此釋義",
+      retranslateAi: "點擊使用 AI 重新翻譯",
+      hoverSubwords: "懸停查看相關詞與單字",
+      sense: "釋義",
+      examples: "例句",
+      playExample: "播放例句"
     },
     "zh-CN": {
       translating: "翻译中...",
@@ -145,7 +159,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       wordbookSaved: "已加入生词本",
       wordbookExists: "此词已在生词本中",
       wordbookRemoved: "已从生词本移除",
-      wordbookSaveFailed: "收藏失败，请重试"
+      wordbookSaveFailed: "收藏失败，请重试",
+      jyutpingLabel: "粤拼",
+      seeAlsoCantonese: "粤语说法：",
+      seeAlsoMandarin: "普通话：",
+      seeAlsoSynonym: "近义：",
+      seeAlsoAntonym: "反义：",
+      seeAlsoVariant: "异体：",
+      aiInputPlaceholder: "输入追问... (Enter 发送)",
+      speakThisPr: "点击朗读此读音",
+      badgeClickToTranslate: "点击翻译此释义",
+      retranslateAi: "点击使用 AI 重新翻译",
+      hoverSubwords: "悬停查看相关词与单字",
+      sense: "释义",
+      examples: "例句",
+      playExample: "播放例句"
     },
     "en": {
       translating: "Translating...",
@@ -161,7 +189,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       wordbookSaved: "Saved to Word Book",
       wordbookExists: "Already in Word Book",
       wordbookRemoved: "Removed from Word Book",
-      wordbookSaveFailed: "Save failed, please retry"
+      wordbookSaveFailed: "Save failed, please retry",
+      jyutpingLabel: "Jyutping",
+      seeAlsoCantonese: "Cantonese:",
+      seeAlsoMandarin: "Mandarin:",
+      seeAlsoSynonym: "Synonyms:",
+      seeAlsoAntonym: "Antonyms:",
+      seeAlsoVariant: "Variants:",
+      aiInputPlaceholder: "Ask follow-up question... (Enter to send)",
+      speakThisPr: "Click to pronounce",
+      badgeClickToTranslate: "Click to translate definition",
+      retranslateAi: "Click to retranslate with AI",
+      hoverSubwords: "Hover to view related words",
+      sense: "Sense",
+      examples: "Examples",
+      playExample: "Play example audio"
     },
     "ja": {
       translating: "翻訳中...",
@@ -177,7 +219,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       wordbookSaved: "単語帳に保存しました",
       wordbookExists: "単語帳に登録済み",
       wordbookRemoved: "単語帳から削除しました",
-      wordbookSaveFailed: "保存に失敗しました"
+      wordbookSaveFailed: "保存に失敗しました",
+      jyutpingLabel: "広東語ピンイン",
+      seeAlsoCantonese: "広東語：",
+      seeAlsoMandarin: "普通話：",
+      seeAlsoSynonym: "類義語：",
+      seeAlsoAntonym: "対義語：",
+      seeAlsoVariant: "異体字：",
+      aiInputPlaceholder: "質問を入力... (Enter で送信)",
+      speakThisPr: "クリックして発音を聴く",
+      badgeClickToTranslate: "クリックして翻訳",
+      retranslateAi: "クリックして AI で再翻訳",
+      hoverSubwords: "ホバーして関連語句を表示",
+      sense: "語義",
+      examples: "例文",
+      playExample: "例文を再生"
     },
     "ko": {
       translating: "번역 중...",
@@ -193,15 +249,76 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       wordbookSaved: "단어장에 저장됨",
       wordbookExists: "이미 단어장에 있음",
       wordbookRemoved: "단어장에서 삭제됨",
-      wordbookSaveFailed: "저장 실패, 다시 시도해주세요"
+      wordbookSaveFailed: "저장 실패, 다시 시도해주세요",
+      jyutpingLabel: "쿳핑",
+      seeAlsoCantonese: "광둥어 표현:",
+      seeAlsoMandarin: "보통화:",
+      seeAlsoSynonym: "유의어:",
+      seeAlsoAntonym: "반의어:",
+      seeAlsoVariant: "이체자:",
+      aiInputPlaceholder: "추가 질문 입력... (Enter 전송)",
+      speakThisPr: "클릭하여 발음 듣기",
+      badgeClickToTranslate: "클릭하여 뜻 번역",
+      retranslateAi: "클릭하여 AI 재번역",
+      hoverSubwords: "마우스를 올려 관련 어휘 보기",
+      sense: "의미",
+      examples: "예문",
+      playExample: "예문 재생"
     }
   };
+
+  const POS_TRANSLATIONS = {
+    '名詞': { 'en': 'Noun', 'ja': '名詞', 'ko': '명사', 'zh-CN': '名词', 'zh-HK': '名詞' },
+    '動詞': { 'en': 'Verb', 'ja': '動詞', 'ko': '동사', 'zh-CN': '动词', 'zh-HK': '動詞' },
+    '形容詞': { 'en': 'Adj', 'ja': '形容詞', 'ko': '형용사', 'zh-CN': '形容词', 'zh-HK': '形容詞' },
+    '副詞': { 'en': 'Adv', 'ja': '副詞', 'ko': '부사', 'zh-CN': '副词', 'zh-HK': '副詞' },
+    '數詞': { 'en': 'Num', 'ja': '数詞', 'ko': '수사', 'zh-CN': '数词', 'zh-HK': '數詞' },
+    '量詞': { 'en': 'Clf', 'ja': '量詞', 'ko': '양사', 'zh-CN': '量词', 'zh-HK': '量詞' },
+    '代詞': { 'en': 'Pron', 'ja': '代名詞', 'ko': '대명사', 'zh-CN': '代词', 'zh-HK': '代詞' },
+    '介詞': { 'en': 'Prep', 'ja': '前置詞', 'ko': '전치사', 'zh-CN': '介词', 'zh-HK': '介詞' },
+    '連詞': { 'en': 'Conj', 'ja': '接続詞', 'ko': '접속사', 'zh-CN': '连词', 'zh-HK': '連詞' },
+    '助詞': { 'en': 'Part', 'ja': '助詞', 'ko': '조사', 'zh-CN': '助词', 'zh-HK': '助詞' },
+    '嘆詞': { 'en': 'Interj', 'ja': '感嘆詞', 'ko': '감탄사', 'zh-CN': '叹词', 'zh-HK': '嘆詞' },
+    '擬聲詞': { 'en': 'Onom', 'ja': '擬声語', 'ko': '의성어', 'zh-CN': '拟声词', 'zh-HK': '擬聲詞' },
+    '語素': { 'en': 'Morph', 'ja': '形態素', 'ko': '형태소', 'zh-CN': '语素', 'zh-HK': '語素' },
+    '成語': { 'en': 'Idiom', 'ja': '成句', 'ko': '성어', 'zh-CN': '成语', 'zh-HK': '成語' },
+    '慣用語': { 'en': 'Phrase', 'ja': '慣用句', 'ko': '관용구', 'zh-CN': '惯用语', 'zh-HK': '慣用語' },
+    '熟語': { 'en': 'Idiom', 'ja': '熟語', 'ko': '숙어', 'zh-CN': '熟语', 'zh-HK': '熟語' },
+    '詞綴': { 'en': 'Affix', 'ja': '接辞', 'ko': '접사', 'zh-CN': '词缀', 'zh-HK': '詞綴' },
+    '人名': { 'en': 'Name', 'ja': '人名', 'ko': '인명', 'zh-CN': '人名', 'zh-HK': '人名' },
+    '地名': { 'en': 'Place', 'ja': '地名', 'ko': '지명', 'zh-CN': '地名', 'zh-HK': '地名' }
+  };
+
   let currentLang = 'zh-HK';
-  chrome.storage.local.get(['extensionLang'], (res) => {
-    if (res.extensionLang) currentLang = res.extensionLang;
+
+  function normalizeUiLang(lang) {
+    if (!lang) return 'zh-HK';
+    if (lang === 'zh-CN' || lang === 'zh_CN' || lang === 'zh-Hans') return 'zh-CN';
+    if (lang === 'zh-TW' || lang === 'zh_TW' || lang === 'zh-HK' || lang === 'zh-Hant') return 'zh-HK';
+    if (String(lang).startsWith('en')) return 'en';
+    if (String(lang).startsWith('ja')) return 'ja';
+    if (String(lang).startsWith('ko')) return 'ko';
+    return 'zh-HK';
+  }
+
+  function translatePos(posStr) {
+    if (!posStr) return pt('sense') || '釋義';
+    const trimmed = String(posStr).trim();
+    if (POS_TRANSLATIONS[trimmed] && POS_TRANSLATIONS[trimmed][currentLang]) {
+      return POS_TRANSLATIONS[trimmed][currentLang];
+    }
+    return trimmed;
+  }
+
+  chrome.storage.local.get(['extensionLang', 'uiLang'], (res) => {
+    const raw = res.extensionLang || res.uiLang;
+    if (raw) currentLang = normalizeUiLang(raw);
   });
-  chrome.storage.onChanged.addListener((changes) => {
-    if (changes.extensionLang) currentLang = changes.extensionLang.newValue;
+  chrome.storage.onChanged.addListener((changes, area) => {
+    if (area === 'local' && (changes.extensionLang || changes.uiLang)) {
+      const nextRaw = (changes.extensionLang || changes.uiLang).newValue;
+      if (nextRaw) currentLang = normalizeUiLang(nextRaw);
+    }
   });
   const pt = (key) => (popupI18n[currentLang] || popupI18n['zh-HK'])[key] || key;
 
@@ -4710,14 +4827,14 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       }
       if (prs.length === 0) return '';
 
-      const label = displayMode === 'yale' ? 'Yale' : '粵拼';
+      const label = displayMode === 'yale' ? 'Yale' : (pt('jyutpingLabel') || '粵拼');
       const buttonsHtml = prs.map((pr, idx) => {
         let p = displayMode === 'yale' ? jyutpingToYale(pr.jyutping || entry.jyutping) : pr.jyutping;
         if (p && toneStyle === 'superscript' && displayMode !== 'yale') {
           p = convertToSuperscriptTone(p);
         }
         return `
-          <button type="button" class="reading-speaker-btn" data-jyutping="${pr.jyutping}" data-pr-index="${idx}" title="點擊朗讀此讀音">
+          <button type="button" class="reading-speaker-btn" data-jyutping="${pr.jyutping}" data-pr-index="${idx}" title="${pt('speakThisPr') || '點擊朗讀此讀音'}">
             <span class="reading-pr-text">${wrapSyllablesInSpans(p)}</span>
             <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
@@ -4740,7 +4857,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
     function generateDefinitionHtml(entryObj) {
       if (!entryObj || !entryObj.defs || entryObj.defs.length === 0) return '';
-      const badgeTitle = chrome.i18n.getMessage('badgeClickToTranslate') || '點擊翻譯此釋義';
+      const badgeTitle = pt('badgeClickToTranslate') || '點擊翻譯此釋義';
       const defItems = entryObj.defs.slice(0, 8).map((d, index) => {
         let className = 'def-item';
         const hasExamples = Boolean(d.egs && Array.isArray(d.egs) && d.egs.length > 0);
@@ -4777,7 +4894,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     function generatePosTabsHtml(entries, activeIdx) {
       if (!entries || entries.length <= 1) return '';
       const pillsHtml = entries.map((e, idx) => {
-        const posLabel = e.pos ? `${idx + 1} ${e.pos}` : `${idx + 1} 釋義`;
+        const posLabel = `${idx + 1} ${translatePos(e.pos)}`;
         return `
           <button type="button" class="pos-tab-pill ${idx === activeIdx ? 'active' : ''}" data-entry-index="${idx}">
             ${posLabel}
@@ -4796,7 +4913,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
     let html = `
       <div class="word-section ${hasSubwords ? 'has-subwords' : ''}">
-        <span class="word-text">${entry.traditional}${hasSubwords ? '<span class="word-subwords-hint" title="懸停查看相關詞與單字">◂</span>' : ''}</span>
+        <span class="word-text">${entry.traditional}${hasSubwords ? `<span class="word-subwords-hint" title="${pt('hoverSubwords') || '懸停查看相關詞與單字'}">◂</span>` : ''}</span>
         ${entry.simplified !== entry.traditional ? 
           `<span class="word-simplified">${entry.simplified}</span>` : ''}
       </div>
@@ -4811,33 +4928,33 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const simLinks = entry.sims.map(w => 
         `<span class="see-also-link" data-word="${w}">${w}</span>`
       ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">近義：</span>${simLinks}</div>`);
+      refLines.push(`<div class="ref-line"><span class="see-also-label">${pt('seeAlsoSynonym')}</span>${simLinks}</div>`);
     }
 
     if (entry.ants && entry.ants.length > 0) {
       const antLinks = entry.ants.map(w => 
         `<span class="see-also-link" data-word="${w}">${w}</span>`
       ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">反義：</span>${antLinks}</div>`);
+      refLines.push(`<div class="ref-line"><span class="see-also-label">${pt('seeAlsoAntonym')}</span>${antLinks}</div>`);
     }
 
     if (entry.see_also && entry.see_also.length > 0) {
       const seeLinks = entry.see_also.map(w => 
         `<span class="see-also-link" data-word="${w}">${w}</span>`
       ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">異體：</span>${seeLinks}</div>`);
+      refLines.push(`<div class="ref-line"><span class="see-also-label">${pt('seeAlsoVariant')}</span>${seeLinks}</div>`);
     }
 
     if (entry.cantonese && entry.cantonese.length > 0) {
       const yueLinks = entry.cantonese.map(w => 
         `<span class="see-also-link" data-word="${w}">${w}</span>`
       ).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">粵語說法：</span>${yueLinks}</div>`);
+      refLines.push(`<div class="ref-line"><span class="see-also-label">${pt('seeAlsoCantonese')}</span>${yueLinks}</div>`);
     }
 
     if (entry.mandarin && entry.mandarin.length > 0) {
       const manTexts = entry.mandarin.slice(0, 8).join('、');
-      refLines.push(`<div class="ref-line"><span class="see-also-label">普通話：</span>${manTexts}</div>`);
+      refLines.push(`<div class="ref-line"><span class="see-also-label">${pt('seeAlsoMandarin')}</span>${manTexts}</div>`);
     }
 
     if (refLines.length > 0) {
@@ -5090,20 +5207,42 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         if (wordSection) {
           wordSection.addEventListener('mouseenter', () => {
             cancelHideFlyout();
-            // 優先保持在左側，僅在極限貼合屏幕左邊緣 (< 65px) 時才翻轉到右側
-            const popupRect = popup.getBoundingClientRect();
-            if (popupRect.left < 65) {
-              popupSubwordsFlyout.classList.add('flyout-right');
-            } else {
-              popupSubwordsFlyout.classList.remove('flyout-right');
-            }
             popupSubwordsFlyout.style.display = 'block';
+            popupSubwordsFlyout.classList.remove('flyout-right');
+
+            // 測量實際側欄寬度與當前彈窗位置
+            const flyoutWidth = popupSubwordsFlyout.offsetWidth || 80;
+            const popupRect = popup.getBoundingClientRect();
+            const viewportWidth = window.innerWidth;
+            const popupWidth = popup.offsetWidth;
+            const requiredLeftSpace = flyoutWidth + 6 + 10; // 6px 浮窗間隔 + 10px 屏幕安全邊距
+
+            // 如果左側空間不足以容納側欄，大懸浮窗向右移動適當距離保持適宜空間
+            if (popupRect.left < requiredLeftSpace) {
+              const shiftX = requiredLeftSpace - popupRect.left;
+              const maxAllowedLeft = viewportWidth - popupWidth - 10;
+              const newClientLeft = Math.min(popupRect.left + shiftX, maxAllowedLeft);
+
+              // 只要向右移動後左側能放下側欄，就平移大懸浮窗並同步更新箭頭位置
+              if (newClientLeft >= requiredLeftSpace) {
+                popup.style.left = (newClientLeft + window.scrollX) + 'px';
+                const targetRect = rect || lastPopupRect;
+                if (popupArrow && targetRect) {
+                  const highlightCenterX = targetRect.left + targetRect.width / 2;
+                  let arrowCenter = highlightCenterX - newClientLeft;
+                  arrowCenter = Math.max(16, Math.min(arrowCenter, popupWidth - 16));
+                  popupArrow.style.left = arrowCenter + 'px';
+                }
+              } else if (newClientLeft < 60) {
+                // 如果屏幕極度狹窄，向右移到極限也放不下，則翻轉到右側展示
+                popupSubwordsFlyout.classList.add('flyout-right');
+              }
+            }
           });
           wordSection.addEventListener('mouseleave', () => {
             scheduleHideFlyout();
           });
         }
-
         popupSubwordsFlyout.addEventListener('mouseenter', () => {
           cancelHideFlyout();
           isMouseOverPopup = true;
@@ -5156,8 +5295,13 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const highlightCenterX = rect.left + rect.width / 2;
       left = highlightCenterX - popupWidth / 2;
 
-      // 邊界檢查（若有子詞列表，預留左側 75px 空間確保子詞面板始終在左側優雅展現）
-      const minLeftMargin = hasSubwords ? 75 : 5;
+      // 邊界檢查（若有子詞列表，預留左側充足空間確保子詞面板始終在左側優雅展現）
+      let estimatedFlyoutWidth = 75;
+      if (hasSubwords && currentSubwordCandidates) {
+        const maxLen = Math.max(...currentSubwordCandidates.map(w => w.length), 2);
+        estimatedFlyoutWidth = Math.max(80, maxLen * 16 + 36);
+      }
+      const minLeftMargin = hasSubwords ? (estimatedFlyoutWidth + 16) : 5;
       if (left < minLeftMargin) {
         left = minLeftMargin;
       }
@@ -5211,7 +5355,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   function renderExamples(examples) {
     const popupExamples = popup.querySelector('.popup-examples');
     const loadingText = paragraphTransEngine === 'bing' ? '使用 Bing 翻譯中…' : '使用 AI 翻譯中…';
-    let html = '<div class="example-title">例句</div>';
+    let html = `<div class="example-title">${pt('examples') || '例句'}</div>`;
     
     examples.forEach((eg, i) => {
       const engPart = eg.eng ? `<div class="example-eng">${eg.eng}</div>` : '';
@@ -5219,7 +5363,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         <div class="example-item">
           <div class="example-yue">
             <span class="example-yue-text">${eg.yue}</span>
-            <button class="tts-speaker-btn example-tts-btn" data-index="${i}" title="播放例句" aria-label="播放例句">
+            <button class="tts-speaker-btn example-tts-btn" data-index="${i}" title="${pt('playExample') || '播放例句'}" aria-label="${pt('playExample') || '播放例句'}">
               <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
                 <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
@@ -6515,7 +6659,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     
     qaContainer.innerHTML = `
       <div class="qa-input-wrapper" style="display: flex; width: 100%; margin: 0;">
-        <textarea class="qa-input-textarea" placeholder="輸入追問... (Enter 發送)" rows="1" style="width: 100%; min-height: 38px; max-height: 100px; padding: 10px ${paddingLeft}; border: none; background: transparent; color: var(--popup-text); font-size: 13px; resize: none; outline: none; box-sizing: border-box; font-family: inherit; line-height: 1.4; margin: 0; display: block;"></textarea>
+        <textarea class="qa-input-textarea" placeholder="${pt('aiInputPlaceholder') || '輸入追問... (Enter 發送)'}" rows="1" style="width: 100%; min-height: 38px; max-height: 100px; padding: 10px ${paddingLeft}; border: none; background: transparent; color: var(--popup-text); font-size: 13px; resize: none; outline: none; box-sizing: border-box; font-family: inherit; line-height: 1.4; margin: 0; display: block;"></textarea>
       </div>
       <div class="qa-loading-wrapper" style="display: none; width: 100%; margin: 0; padding: 14px ${paddingLeft}; box-sizing: border-box; min-height: 38px; align-items: center; justify-content: flex-start;">
         <div class="qa-loading-dots">

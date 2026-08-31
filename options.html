@@ -3659,9 +3659,9 @@
       <div class="changelog-content">
         <p data-i18n="clDesc">本次更新帶來了以下優化：</p>
         <ul class="changelog-list">
-          <li data-i18n="clItem11"><b>全新生詞本與 AI 助手</b>：支援詞彙收藏、拼音檢索與多格式匯出，並內建 AI 懸浮助手深度解析詞義與例句。</li>
-          <li data-i18n="clItem12"><b>粵語學習導航（Learning Hub）</b>：精選收錄 33 個權威拼音教學、辭書、輸入法與影視資源，全方位助力粵語學習。</li>
-          <li data-i18n="clItem13"><b>粵語本地詞典口語釋義翻譯</b>：詞典中 [粵] 口語標籤釋義支援一鍵點擊或自動翻譯（支援 Bing / Google / 自定義 AI）。</li>
+          <li data-i18n="clItem11"><b>生詞本、拼寫練習與學習導航</b>：新增生詞本、粵語拼寫填空練習及學習導航功能。</li>
+          <li data-i18n="clItem12"><b>查詞懸浮窗重構與 Google 語音</b>：重構了查詞懸浮窗佈局架構，並新增 Google 官方粵語 TTS 發音。</li>
+          <li data-i18n="clItem13"><b>問題修復</b>：其他 Bug 修復。</li>
         </ul>
       </div>
     </div>
@@ -3679,31 +3679,21 @@
       </div>
       
       <div id="feedbackWizard" style="position: relative; width: 100%; height: 220px; overflow: hidden;">
-        <!-- Step 1 -->
+        <!-- Step 1: User Language -->
         <div class="feedback-step" data-step="0" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ1Title">1. 您使用本插件的主要目的是什麼？</div>
-          <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;">
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="learn"><span data-i18n="fbQ1OptLearn">學習粵語（我是粵語學習者）</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="read"><span data-i18n="fbQ1OptRead">日常網頁閱讀輔助（查生僻字）</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="translate"><span data-i18n="fbQ1OptTranslate">翻譯輔助（轉為書面語等）</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="entertainment"><span data-i18n="fbQ1OptEntertainment">娛樂/社交（如 YouTube 字幕等）</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_purpose" value="other"><span data-i18n="fbOptOther">其他：</span><input type="text" id="fb_purpose_other" style="flex: 1; min-width: 0; border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--text-primary); outline: none; font-size: 13px; padding-left: 4px;"></label>
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ1Title">1. 您最常使用的語言是什麼？</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto;">
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_language" value="zh-TW"><span data-i18n="fbLangZhHant">繁體中文 (Traditional Chinese)</span></label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_language" value="zh-CN"><span data-i18n="fbLangZhHans">簡體中文 (Simplified Chinese)</span></label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_language" value="en"><span data-i18n="fbLangEn">English (英文)</span></label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_language" value="ja"><span data-i18n="fbLangJa">日本語 (日文)</span></label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_language" value="ko"><span data-i18n="fbLangKo">한국어 (韓文)</span></label>
+            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="radio" name="fb_language" value="other"><span data-i18n="fbOptOther">其他：</span><input type="text" id="fb_lang_other" style="flex: 1; min-width: 0; border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--text-primary); outline: none; font-size: 13px; padding-left: 4px;"></label>
           </div>
         </div>
-        <!-- Step 2 -->
+        <!-- Step 2: Rating (1-5 stars) -->
         <div class="feedback-step" data-step="1" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ2Title">2. 您希望未來優先增加哪項核心功能？(可多選)</div>
-          <div style="display: flex; flex-direction: column; gap: 8px; flex: 1; overflow-y: auto;">
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="sync"><span data-i18n="fbQ2OptSync">☁️ 生詞本多設備雲端同步</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="translate"><span data-i18n="fbQ2OptTranslate">🌐 網頁劃詞 / 整句智能翻譯</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="dicts"><span data-i18n="fbQ2OptDicts">📚 接入更多詞典源數據</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="mobile"><span data-i18n="fbQ2OptMobile">📱 推出手機端瀏覽器支持</span></label>
-            <label style="font-size: 13px; color: var(--text-secondary); display: flex; align-items: center; gap: 6px; cursor: pointer;"><input type="checkbox" name="fb_feature" value="other"><span data-i18n="fbOptOther">其他：</span><input type="text" id="fb_feature_other" style="flex: 1; min-width: 0; border: none; border-bottom: 1px solid var(--border); background: transparent; color: var(--text-primary); outline: none; font-size: 13px; padding-left: 4px;"></label>
-          </div>
-        </div>
-        <!-- Step 3 -->
-        <div class="feedback-step" data-step="2" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ3Title">3. 您對當前插件的整體評價如何？</div>
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ2Title">2. 您對當前插件的整體評價如何？</div>
           <div style="display: flex; justify-content: center; align-items: center; flex: 1;">
             <div id="fb_stars" style="display: flex; gap: 8px; cursor: pointer;">
               <!-- 5 stars -->
@@ -3715,19 +3705,15 @@
             </div>
           </div>
         </div>
-        <!-- Step 4 -->
-        <div class="feedback-step" data-step="3" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
-          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ4Title">4. 您的建議、反饋或遇到的 Bug？(選填)</div>
-          <textarea id="fb_comments" placeholder="請告訴我們您的想法..." data-i18n="fbCommentsPlaceholder" style="flex: 1; resize: none; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); font-size: 13px; outline: none; margin-bottom: 8px;"></textarea>
-          <label style="font-size: 12px; color: var(--text-secondary); display: flex; align-items: flex-start; gap: 6px; cursor: pointer;">
-            <input type="checkbox" id="fb_include_sys" checked style="margin-top: 2px;">
-            <span data-i18n="fbPrivacyDesc">允許附加基本環境資訊 (介面語言與作業系統) 以協助我們更好地優化體驗。</span>
-          </label>
+        <!-- Step 3: Improvements / Features / Bug -->
+        <div class="feedback-step" data-step="2" style="position: absolute; top: 0; left: 100%; width: 100%; height: 100%; padding: 16px; display: flex; flex-direction: column; transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-sizing: border-box;">
+          <div style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px;" data-i18n="fbQ3Title">3. 想要改進的內容、期待的新功能或 Bug 反饋？(選填)</div>
+          <textarea id="fb_comments" placeholder="請告訴我們您的想法..." data-i18n="fbCommentsPlaceholder" style="flex: 1; resize: none; padding: 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); font-size: 13px; outline: none;"></textarea>
         </div>
       </div>
       
       <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-top: 1px solid var(--border); background: var(--bg-card);">
-        <div style="font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums;" id="fb_progress">1 / 4</div>
+        <div style="font-size: 12px; color: var(--text-muted); font-variant-numeric: tabular-nums;" id="fb_progress">1 / 3</div>
         <div style="display: flex; gap: 8px;">
           <button id="fb_prevBtn" data-i18n="btnPrevStep" style="padding: 6px 12px; border-radius: 6px; border: 1px solid var(--border); background: transparent; color: var(--text-primary); cursor: pointer; font-size: 13px; opacity: 0.5; pointer-events: none; transition: 0.2s;">上一步</button>
           <button id="fb_nextBtn" data-i18n="btnNextStep" style="padding: 6px 12px; border-radius: 6px; border: none; background: var(--primary); color: white; cursor: pointer; font-size: 13px; font-weight: 500; transition: 0.2s;">下一步</button>

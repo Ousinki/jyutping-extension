@@ -7,13 +7,13 @@
     "message": "<b>右键菜单收藏</b>：选中任意中文文字，右键即可快速加入生词本，无需打开悬浮窗。"
   },
   "clItem11": {
-    "message": "<b>全新生词本与 AI 助手</b>：支持词汇收藏、拼音检索与多格式导出，并内置 AI 悬浮助手深度解析词义与例句。"
+    "message": "<b>生词本、拼写练习与学习导航</b>：新增生词本、粤语拼写填空练习及学习导航功能。"
   },
   "clItem12": {
-    "message": "<b>粤语学习导航（Learning Hub）</b>：精选收录 33 个权威拼音教学、辞书、输入法与影视资源，全方位助力粤语学习。"
+    "message": "<b>查词悬浮窗重构与 Google 语音</b>：重构了查词悬浮窗布局架构，并新增 Google 官方粤语 TTS 发音。"
   },
   "clItem13": {
-    "message": "<b>粤语本地词典口语释义翻译</b>：词典中 [粤] 口语标签释义支持一键点击或自动翻译（支持 Bing / Google / 自定义 AI）。"
+    "message": "<b>问题修复</b>：其他 Bug 修复。"
   },
   "clItem5": {
     "message": "🎨 <b>新增注音背景样式</b>：Ruby 内嵌注音模式现已支持“实色背景”与“消散背景”，在任何网页背景下都能保证音标清晰可见。",
@@ -974,6 +974,40 @@
   "wordbookExportImport": {
     "message": "导入..."
   },
+  "wordbookImportTitle": {
+    "message": "导入生词"
+  },
+  "wordbookImportDropText": {
+    "message": "拖拽文件到此处，或"
+  },
+  "wordbookImportChooseFile": {
+    "message": "选择文件"
+  },
+  "wordbookImportFormatHint": {
+    "message": "支持 JSON、CSV 格式"
+  },
+  "wordbookConfirmImport": {
+    "message": "确认导入"
+  },
+  "wordbookImportTotalWords": {
+    "message": "总词数：$COUNT$",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "wordbookImportStats": {
+    "message": "新增：$NEW$ | 重复（跳过）：$SKIP$",
+    "placeholders": {
+      "new": {
+        "content": "$1"
+      },
+      "skip": {
+        "content": "$2"
+      }
+    }
+  },
   "wordbookSpeak": {
     "message": "朗读"
   },
@@ -1163,6 +1197,9 @@
   "wordbookBackToSettings": {
     "message": "返回设定"
   },
+  "wordbookBackToWordbook": {
+    "message": "返回生词本"
+  },
   "optRoadmapCount": {
     "message": "共 $COUNT$ 个精选资源",
     "placeholders": {
@@ -1238,43 +1275,31 @@
     "message": "助力插件做得更好 🚀"
   },
   "fbQ1Title": {
-    "message": "1. 您使用本插件的主要目的是什么？"
+    "message": "1. 您最常使用的语言是什么？"
   },
-  "fbQ1OptLearn": {
-    "message": "学习粤语（我是粤语学习者）"
+  "fbLangZhHant": {
+    "message": "繁体中文 (Traditional Chinese)"
   },
-  "fbQ1OptRead": {
-    "message": "日常网页阅读辅助（查生僻字）"
+  "fbLangZhHans": {
+    "message": "简体中文 (Simplified Chinese)"
   },
-  "fbQ1OptTranslate": {
-    "message": "翻译辅助（转为书面语等）"
+  "fbLangEn": {
+    "message": "English (英文)"
   },
-  "fbQ1OptEntertainment": {
-    "message": "娱乐/社交（如 YouTube 字幕等）"
+  "fbLangJa": {
+    "message": "日本語 (日文)"
+  },
+  "fbLangKo": {
+    "message": "한국어 (韩文)"
   },
   "fbOptOther": {
     "message": "其他："
   },
   "fbQ2Title": {
-    "message": "2. 您希望未来优先增加哪项核心功能？(可多选)"
-  },
-  "fbQ2OptSync": {
-    "message": "☁️ 生词本多设备云端同步"
-  },
-  "fbQ2OptTranslate": {
-    "message": "🌐 网页划词 / 整句智能翻译"
-  },
-  "fbQ2OptDicts": {
-    "message": "📚 接入更多词典源数据"
-  },
-  "fbQ2OptMobile": {
-    "message": "📱 推出手机端浏览器支持"
+    "message": "2. 您对当前插件的整体评价如何？"
   },
   "fbQ3Title": {
-    "message": "3. 您对当前插件的整体评价如何？"
-  },
-  "fbQ4Title": {
-    "message": "4. 您的建议、反馈或遇到的 Bug？(选填)"
+    "message": "3. 想要改进的内容、期待的新功能或 Bug 反馈？(选填)"
   },
   "fbCommentsPlaceholder": {
     "message": "请告诉我们您的想法..."
@@ -1338,6 +1363,9 @@
   },
   "wordbookDeletePermanentSingle": {
     "message": "彻底删除"
+  },
+  "wordbookColActions": {
+    "message": "操作"
   },
   "wordbookTrashEmptyTitle": {
     "message": "废纸篓为空"

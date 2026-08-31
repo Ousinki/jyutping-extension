@@ -196,6 +196,7 @@
       wordbookTitle: '我的生詞本',
       wordbookSubtitle: 'My Cantonese Word Book',
       wordbookBackToSettings: '返回設定',
+      wordbookBackToWordbook: '返回生詞本',
       wordbookWarning: '生詞本數據僅保存在本機，不會上傳雲端。卸載插件或清除瀏覽數據可能導致生詞丟失。建議定期',
       wordbookWarningExport: '導出備份',
       wordbookWarningEnd: '以防數據遺失。',
@@ -214,6 +215,11 @@
       wordbookCancel: '取消',
       wordbookConfirmImport: '確認導入',
       wordbookImportTitle: '導入生詞',
+      wordbookImportDropText: '拖拽文件到此處，或',
+      wordbookImportChooseFile: '選擇文件',
+      wordbookImportFormatHint: '支持 JSON、CSV 格式',
+      wordbookImportTotalWords: '總詞數：{count}',
+      wordbookImportStats: '新增：{new} | 重複（跳過）：{skip}',
       wordbookEmptyTitle: '尚無生詞',
       wordbookEmptyDesc: '在網頁上懸停查詞時，點擊懸浮窗中的 ⭐ 按鈕即可收藏。<br>也可以在任何模式下按 <kbd class="kbd">S</kbd> 鍵快速收藏當前高亮詞。',
       wordbookDeleteConfirm: '確定要刪除選中的 {n} 個詞嗎？',
@@ -279,6 +285,7 @@
       wordbookDeletePermanentConfirm: '確定要永久刪除選中的生詞嗎？此操作無法撤銷。',
       wordbookRestoreSingle: '還原',
       wordbookDeletePermanentSingle: '徹底刪除',
+      wordbookColActions: '操作',
       wordbookTrashEmptyTitle: '廢紙簍為空',
       wordbookTrashEmptyDesc: '沒有已刪除的生詞',
       wordbookMovedToTrash: '已移至廢紙簍',
@@ -401,6 +408,7 @@
       wordbookTitle: '我的生词本',
       wordbookSubtitle: 'My Cantonese Word Book',
       wordbookBackToSettings: '返回设定',
+      wordbookBackToWordbook: '返回生词本',
       wordbookWarning: '生词本数据仅保存在本机，不会上传云端。卸载插件或清除浏览数据可能导致生词丢失。建议定期',
       wordbookWarningExport: '导出备份',
       wordbookWarningEnd: '以防数据遗失。',
@@ -419,6 +427,11 @@
       wordbookCancel: '取消',
       wordbookConfirmImport: '确认导入',
       wordbookImportTitle: '导入生词',
+      wordbookImportDropText: '拖拽文件到此处，或',
+      wordbookImportChooseFile: '选择文件',
+      wordbookImportFormatHint: '支持 JSON、CSV 格式',
+      wordbookImportTotalWords: '总词数：{count}',
+      wordbookImportStats: '新增：{new} | 重复（跳过）：{skip}',
       wordbookEmptyTitle: '暂无生词',
       wordbookEmptyDesc: '在网页上悬停查词时，点击悬浮窗中的 ⭐ 按钮即可收藏。<br>也可以在任何模式下按 <kbd class="kbd">S</kbd> 键快速收藏当前高亮词。',
       wordbookDeleteConfirm: '确定要删除选中的 {n} 个词吗？',
@@ -486,6 +499,7 @@
       wordbookDeletePermanentConfirm: '确定要永久删除选中的生词吗？此操作无法撤销。',
       wordbookRestoreSingle: '还原',
       wordbookDeletePermanentSingle: '彻底删除',
+      wordbookColActions: '操作',
       wordbookTrashEmptyTitle: '废纸篓为空',
       wordbookTrashEmptyDesc: '没有已删除的生词',
       wordbookMovedToTrash: '已移至废纸篓',
@@ -631,6 +645,7 @@
       wordbookTitle: 'My Word Book',
       wordbookSubtitle: 'Cantonese Vocabulary',
       wordbookBackToSettings: 'Back to Settings',
+      wordbookBackToWordbook: 'Back to Wordbook',
       wordbookWarning: 'Word Book data is stored locally only, not synced to cloud. Uninstalling the extension or clearing browser data may delete your words. Please',
       wordbookWarningExport: 'export a backup',
       wordbookWarningEnd: 'regularly to prevent data loss.',
@@ -649,6 +664,11 @@
       wordbookCancel: 'Cancel',
       wordbookConfirmImport: 'Confirm Import',
       wordbookImportTitle: 'Import Words',
+      wordbookImportDropText: 'Drag & drop file here, or',
+      wordbookImportChooseFile: 'Choose File',
+      wordbookImportFormatHint: 'Supports JSON, CSV formats',
+      wordbookImportTotalWords: 'Total Words: {count}',
+      wordbookImportStats: 'New: {new} | Duplicates (skipped): {skip}',
       wordbookEmptyTitle: 'No words saved',
       wordbookEmptyDesc: 'Hover over Chinese text on any page and click the ⭐ button to save.<br>You can also press <kbd class="kbd">S</kbd> to quickly save the highlighted word in any mode.',
       wordbookDeleteConfirm: 'Delete {n} selected words?',
@@ -716,6 +736,7 @@
       wordbookDeletePermanentConfirm: 'Are you sure you want to permanently delete the selected word(s)? This action cannot be undone.',
       wordbookRestoreSingle: 'Restore',
       wordbookDeletePermanentSingle: 'Delete',
+      wordbookColActions: 'Actions',
       wordbookTrashEmptyTitle: 'Trash is Empty',
       wordbookTrashEmptyDesc: 'No deleted words found',
       wordbookMovedToTrash: 'Moved to Trash',
@@ -861,6 +882,7 @@
       wordbookTitle: '単語帳',
       wordbookSubtitle: '広東語ボキャブラリー',
       wordbookBackToSettings: '設定に戻る',
+      wordbookBackToWordbook: '単語帳に戻る',
       wordbookWarning: '単語帳データはローカルにのみ保存され、クラウドには同期されません。拡張機能のアンインストールやブラウザデータの消去により、データが失われる可能性があります。定期的に',
       wordbookWarningExport: 'バックアップをエクスポート',
       wordbookWarningEnd: 'することをお勧めします。',
@@ -879,6 +901,11 @@
       wordbookCancel: 'キャンセル',
       wordbookConfirmImport: 'インポート確認',
       wordbookImportTitle: '単語のインポート',
+      wordbookImportDropText: 'ファイルをここにドラッグ＆ドロップ、または',
+      wordbookImportChooseFile: 'ファイルを選択',
+      wordbookImportFormatHint: 'JSON、CSV 形式に対応',
+      wordbookImportTotalWords: '合計単語数：{count}',
+      wordbookImportStats: '新規：{new} | 重複（スキップ）：{skip}',
       wordbookEmptyTitle: '単語がありません',
       wordbookEmptyDesc: 'ウェブページで漢字にホバーし、⭐ ボタンをクリックして保存できます。<br>任意のモードで <kbd class="kbd">S</kbd> キーを押すと素早く保存できます。',
       wordbookDeleteConfirm: '選択した {n} 個の単語を削除しますか？',
@@ -946,6 +973,7 @@
       wordbookDeletePermanentConfirm: '選択した単語を完全に削除してもよろしいですか？この操作は元に戻せません。',
       wordbookRestoreSingle: '復元',
       wordbookDeletePermanentSingle: '完全削除',
+      wordbookColActions: '操作',
       wordbookTrashEmptyTitle: 'ゴミ箱は空です',
       wordbookTrashEmptyDesc: '削除された単語はありません',
       wordbookMovedToTrash: 'ゴミ箱に移動しました',
@@ -1091,6 +1119,7 @@
       wordbookTitle: '단어장',
       wordbookSubtitle: '광둥어 어휘',
       wordbookBackToSettings: '설정으로 돌아가기',
+      wordbookBackToWordbook: '단어장으로 돌아가기',
       wordbookWarning: '단어장 데이터는 로컬에만 저장되며 클라우드에 동기화되지 않습니다. 확장 프로그램 제거 또는 브라우저 데이터 삭제 시 데이터가 손실될 수 있습니다. 정기적으로',
       wordbookWarningExport: '백업 내보내기',
       wordbookWarningEnd: '를 권장합니다.',
@@ -1109,6 +1138,11 @@
       wordbookCancel: '취소',
       wordbookConfirmImport: '가져오기 확인',
       wordbookImportTitle: '단어 가져오기',
+      wordbookImportDropText: '파일을 여기로 드래그하거나,',
+      wordbookImportChooseFile: '파일 선택',
+      wordbookImportFormatHint: 'JSON, CSV 형식 지원',
+      wordbookImportTotalWords: '총 단어 수: {count}',
+      wordbookImportStats: '추가: {new} | 중복(건너뜀): {skip}',
       wordbookEmptyTitle: '저장된 단어 없음',
       wordbookEmptyDesc: '웹페이지에서 한자에 마우스를 올리고 ⭐ 버튼을 클릭하여 저장하세요.<br>어떤 모드에서든 <kbd class="kbd">S</kbd> 키를 눌러 선택한 단어를 빠르게 저장할 수도 있습니다.',
       wordbookDeleteConfirm: '선택한 {n}개의 단어를 삭제하시겠습니까?',
@@ -1175,6 +1209,7 @@
       wordbookDeletePermanentConfirm: '선택한 단어를 영구 삭제하시겠습니까? 이 작업은 취소할 수 없습니다.',
       wordbookRestoreSingle: '복원',
       wordbookDeletePermanentSingle: '영구 삭제',
+      wordbookColActions: '작업',
       wordbookTrashEmptyTitle: '휴지통이 비어 있습니다',
       wordbookTrashEmptyDesc: '삭제된 단어가 없습니다',
       wordbookMovedToTrash: '휴지통으로 이동되었습니다',
@@ -1521,10 +1556,17 @@
     }
   });
 
-  function t(key) {
-    const localString = (i18nStrings[currentLang] || i18nStrings['zh-HK'])[key];
-    if (localString) return localString;
-    return chrome.i18n.getMessage(key) || key;
+  function t(key, params) {
+    let localString = (i18nStrings[currentLang] || i18nStrings['zh-HK'])[key];
+    if (!localString) {
+      localString = chrome.i18n.getMessage(key) || key;
+    }
+    if (params && typeof params === 'object') {
+      Object.keys(params).forEach(p => {
+        localString = localString.replace(new RegExp('\\{' + p + '\\}|\\$' + p.toUpperCase() + '\\$|\\$' + p + '\\$', 'g'), params[p]);
+      });
+    }
+    return localString;
   }
 
   function applyI18n() {
@@ -1557,6 +1599,9 @@
     }
     if (typeof updateSpellingQuizBtn === 'function') {
       updateSpellingQuizBtn();
+    }
+    if (typeof updateBackLink === 'function') {
+      updateBackLink();
     }
   }
 
@@ -1733,6 +1778,8 @@
   const trashToggleBtn = document.getElementById('trashToggleBtn');
   const btnBackToAll = document.getElementById('btnBackToAll');
   const badgeTrash = document.getElementById('badgeTrash');
+  const backLink = document.getElementById('backLink');
+  const backLinkText = document.getElementById('backLinkText');
   const trashBanner = document.getElementById('trashBanner');
   const restoreAllBtn = document.getElementById('restoreAllBtn');
   const emptyTrashBtn = document.getElementById('emptyTrashBtn');
@@ -1750,6 +1797,7 @@
   const selectAllCheckbox = document.getElementById('selectAll');
   const selectAllLabel = document.getElementById('selectAllLabel');
   const bulkActions = document.getElementById('bulkActions');
+  const bulkAiWrapper = document.getElementById('bulkAiWrapper');
   const bulkAiBtn = document.getElementById('bulkAiBtn');
   const bulkAiText = document.getElementById('bulkAiText');
   const linkSelectUnannotated = document.getElementById('linkSelectUnannotated');
@@ -1934,6 +1982,14 @@
   function renderList() {
     filterAndSort();
 
+    // Prune selectedIds to ensure only valid items in current view/folder are selected
+    const validIds = new Set(filteredWords.map(w => w.id));
+    for (const id of selectedIds) {
+      if (!validIds.has(id)) {
+        selectedIds.delete(id);
+      }
+    }
+
     const isTrash = currentView === 'trash';
     const sourceTotal = wordbook.filter(w => isTrash ? !!w.deletedAt : !w.deletedAt).length;
 
@@ -1991,15 +2047,22 @@
         bulkActions.style.display = 'flex';
         if (selectAllLabel) selectAllLabel.style.display = 'none';
         if (bulkDeleteBtn) bulkDeleteBtn.style.display = 'none';
+        if (bulkAiWrapper) bulkAiWrapper.style.display = 'none';
+        if (bulkBtnsAll) bulkBtnsAll.style.display = 'flex';
+        if (bulkBtnsTrash) bulkBtnsTrash.style.display = 'none';
       } else {
         bulkActions.style.display = 'none';
       }
+      updateSelectionUI();
       return;
     }
 
     bulkActions.style.display = 'flex';
     if (selectAllLabel) selectAllLabel.style.display = '';
     if (bulkDeleteBtn) bulkDeleteBtn.style.display = '';
+    if (bulkAiWrapper) bulkAiWrapper.style.display = '';
+    if (bulkBtnsAll) bulkBtnsAll.style.display = isTrash ? 'none' : 'flex';
+    if (bulkBtnsTrash) bulkBtnsTrash.style.display = isTrash ? 'flex' : 'none';
 
     // Build chronological ID mapping for the current view and folder scope (1 = earliest created, N = newest)
     const currentScopeWords = wordbook.filter(w => {
@@ -2018,7 +2081,7 @@
 
     const headerColsHTML = colOrder.map(c => {
       if (c === 'col-date' && isTrash) {
-        return `<div class="col-date"><span>操作</span><div class="col-resizer" data-col="col-date" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`;
+        return `<div class="col-date"><span>${t('wordbookColActions') || '操作'}</span><div class="col-resizer" data-col="col-date" title="拖動調整寬度 / 雙擊恢復默認"></div></div>`;
       }
       return HEADER_COL_TEMPLATES[c] || '';
     }).join('');
@@ -2049,8 +2112,20 @@
           return `
             <div class="col-date">
               <div class="trash-row-actions">
-                <button class="trash-action-btn restore-single-btn" data-id="${word.id}" title="${t('wordbookRestoreSingle') || '還原'}">${t('wordbookRestoreSingle') || '還原'}</button>
-                <button class="trash-action-btn del-perm delete-single-perm-btn" data-id="${word.id}" title="${t('wordbookDeletePermanentSingle') || '徹底刪除'}">${t('wordbookDeletePermanentSingle') || '徹底刪除'}</button>
+                <button class="trash-action-btn restore-single-btn" data-id="${word.id}" title="${t('wordbookRestoreSingle') || '還原'}" aria-label="${t('wordbookRestoreSingle') || '還原'}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="1 4 1 10 7 10"></polyline>
+                    <path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"></path>
+                  </svg>
+                </button>
+                <button class="trash-action-btn del-perm delete-single-perm-btn" data-id="${word.id}" title="${t('wordbookDeletePermanentSingle') || '徹底刪除'}" aria-label="${t('wordbookDeletePermanentSingle') || '徹底刪除'}">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6"></polyline>
+                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                  </svg>
+                </button>
               </div>
             </div>
           `;
@@ -3415,6 +3490,33 @@
     renderList();
   });
 
+  function updateBackLink() {
+    if (!backLink) return;
+    const textEl = backLinkText || backLink.querySelector('span');
+    if (currentView === 'trash') {
+      backLink.href = '#';
+      if (textEl) {
+        textEl.setAttribute('data-i18n', 'wordbookBackToWordbook');
+        textEl.textContent = t('wordbookBackToWordbook') || '返回生詞本';
+      }
+    } else {
+      backLink.href = 'options.html';
+      if (textEl) {
+        textEl.setAttribute('data-i18n', 'wordbookBackToSettings');
+        textEl.textContent = t('wordbookBackToSettings') || '返回設定';
+      }
+    }
+  }
+
+  if (backLink) {
+    backLink.addEventListener('click', (e) => {
+      if (currentView === 'trash') {
+        e.preventDefault();
+        switchView('all');
+      }
+    });
+  }
+
   // View Switcher (All vs Trash)
   function switchView(view) {
     if (currentView === view) return;
@@ -3431,6 +3533,7 @@
       bulkBtnsTrash.style.display = currentView === 'trash' ? 'flex' : 'none';
     }
 
+    updateBackLink();
     renderList();
   }
 
@@ -3483,7 +3586,7 @@
       bulkAiBtn.classList.add('loading');
       if (bulkAiText) bulkAiText.textContent = `${t('wordbookAiGenerating') || '生成中...'} (0/${totalCount})`;
 
-      const selectedWords = wordbook.filter(w => selectedIds.has(w.id));
+      const selectedWords = filteredWords.filter(w => selectedIds.has(w.id));
       let doneCount = 0;
 
       async function processWord(w) {
@@ -3723,10 +3826,12 @@
 
   chooseFileLink.addEventListener('click', (e) => {
     e.preventDefault();
+    e.stopPropagation();
     importFileInput.click();
   });
 
-  dropZone.addEventListener('click', () => {
+  dropZone.addEventListener('click', (e) => {
+    if (e.target === importFileInput || e.target === chooseFileLink) return;
     importFileInput.click();
   });
 
@@ -3792,8 +3897,8 @@
     dropZone.style.display = 'none';
     importPreview.innerHTML = `
       <p>📄 <strong>${file.name}</strong></p>
-      <p>總詞數：${data.length}</p>
-      <p>新增：<strong>${newCount}</strong> | 重複（跳過）：${skipCount}</p>
+      <p>${t('wordbookImportTotalWords', { count: data.length })}</p>
+      <p>${t('wordbookImportStats', { new: `<strong>${newCount}</strong>`, skip: skipCount })}</p>
     `;
     importPreview.style.display = 'block';
     importConfirmBtn.style.display = 'inline-flex';
@@ -3804,6 +3909,7 @@
 
     const existingChars = new Set(wordbook.map(w => w.character));
     let added = 0, skipped = 0;
+    const targetFolder = (currentFolderId && currentFolderId !== 'all') ? currentFolderId : (defaultFolderId || 'default');
 
     for (const item of pendingImportData) {
       if (!item.character || existingChars.has(item.character)) {
@@ -3822,7 +3928,8 @@
         sourceUrl: item.sourceUrl || '',
         sourceTitle: item.sourceTitle || '',
         tags: item.tags || [],
-        notes: item.notes || ''
+        notes: item.notes || '',
+        folderId: item.folderId || targetFolder
       });
       existingChars.add(item.character);
       added++;
@@ -3830,7 +3937,9 @@
 
     await saveWordbook(wordbook);
     importModal.classList.remove('show');
+    document.body.classList.remove('modal-open');
     resetImportUI();
+    renderFolderTabs();
     renderList();
     updateStats();
     updateStorage();

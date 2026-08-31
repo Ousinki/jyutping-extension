@@ -2601,7 +2601,7 @@ async function applyI18n(lang) {
   const fbSteps = document.querySelectorAll('.feedback-step');
   const fbStars = document.querySelectorAll('.fb-star');
   let fbCurrentStep = 0;
-  const fbTotalSteps = 4;
+  const fbTotalSteps = 3;
   let selectedRating = 0;
 
   if (feedbackWidget) {
@@ -2684,42 +2684,29 @@ async function applyI18n(lang) {
 
     async function submitFeedbackWidget() {
       // Gather data
-      const purposeInput = document.querySelector('input[name="fb_purpose"]:checked');
-      let purpose = purposeInput ? purposeInput.value : '';
-      if (purpose === 'learn') purpose = '學習粵語';
-      if (purpose === 'read') purpose = '日常網頁閱讀輔助';
-      if (purpose === 'translate') purpose = '翻譯輔助';
-      if (purpose === 'entertainment') purpose = '娛樂/社交';
-      const purposeOther = document.getElementById('fb_purpose_other').value;
+      const langInput = document.querySelector('input[name="fb_language"]:checked');
+      let chosenLang = langInput ? langInput.value : '';
+      if (chosenLang === 'zh-TW') chosenLang = '繁體中文 (Traditional Chinese)';
+      if (chosenLang === 'zh-CN') chosenLang = '簡體中文 (Simplified Chinese)';
+      if (chosenLang === 'en') chosenLang = 'English (英文)';
+      if (chosenLang === 'ja') chosenLang = '日本語 (日文)';
+      if (chosenLang === 'ko') chosenLang = '한국어 (韓文)';
+      const langOther = document.getElementById('fb_lang_other')?.value || '';
 
-      const featureInputs = document.querySelectorAll('input[name="fb_feature"]:checked');
-      const features = Array.from(featureInputs).map(i => {
-        if (i.value === 'sync') return '雲端同步';
-        if (i.value === 'translate') return '智能翻譯';
-        if (i.value === 'dicts') return '更多詞典';
-        if (i.value === 'mobile') return '手機版';
-        return i.value;
-      });
-      const featureOther = document.getElementById('fb_feature_other').value;
-
-      const comments = document.getElementById('fb_comments').value;
-      const includeSys = document.getElementById('fb_include_sys').checked;
-      const osInfo = includeSys ? navigator.userAgent : '未授權提供';
-      const langInfo = includeSys ? navigator.language : '未授權提供';
-
-      const finalPurpose = purpose === 'other' ? purposeOther : purpose;
-      const finalFeatures = features.map(f => f === 'other' ? featureOther : f).join(', ');
+      const finalLang = chosenLang === 'other' ? langOther : chosenLang;
+      const comments = document.getElementById('fb_comments')?.value || '';
+      const osInfo = navigator.userAgent || '未知';
+      const uiLang = navigator.language || '未知';
 
       const messageBody = `
 === Jyutping Extension v1.5.7 反饋 ===
 
-1. 使用目的: ${finalPurpose || '未填寫'}
-2. 期望功能: ${finalFeatures || '未填寫'}
-3. 整體評分: ${selectedRating} 顆星
-4. 建議/Bug: ${comments || '無'}
+1. 常用語言: ${finalLang || '未選擇'}
+2. 整體評分: ${selectedRating > 0 ? selectedRating + ' 顆星' : '未評分'}
+3. 建議/新功能/Bug: ${comments || '無'}
 
 --- 系統資訊 ---
-語言: ${langInfo}
+介面語言: ${uiLang}
 環境: ${osInfo}
 `.trim();
 
@@ -2729,12 +2716,9 @@ async function applyI18n(lang) {
 
       try {
         const formData = new FormData();
-        // 使用與底部反饋表單相同的 Web3Forms Access Key
         formData.append("access_key", "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c");
-        formData.append("subject", `[懸浮窗問卷] ${selectedRating}星反饋 - 粵語詞典`);
+        formData.append("subject", `[懸浮窗問卷] ${selectedRating > 0 ? selectedRating + '星' : ''}反饋 - 粵語詞典`);
         formData.append("message", messageBody);
-        
-        // 可選：可以偽造一個 from_name 讓信箱顯示得更好看
         formData.append("from_name", "插件問卷系統");
 
         const response = await fetch("https://api.web3forms.com/submit", {
