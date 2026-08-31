@@ -691,6 +691,10 @@
     const EXPAND_GRACE_MS = 400;
     let expandGraceUntil = 0;
     let rubyFadeMask = null;
+    let _currentSubwordRoot = "";
+    let currentSubwordCandidates = [];
+    let popupSubwordsFlyout = null;
+    let flyoutHideTimeout = null;
     let lastPopupResult = null;
     let lastPopupRect = null;
     let lastTranslateRect = null;
@@ -2066,6 +2070,10 @@
       </div>
     `;
       popup.appendChild(popupArrow);
+      popupSubwordsFlyout = document.createElement("div");
+      popupSubwordsFlyout.className = "popup-subwords-flyout";
+      popupSubwordsFlyout.style.display = "none";
+      popup.appendChild(popupSubwordsFlyout);
       shadowRoot.appendChild(popup);
       const actionsWrapper = popup.querySelector(".popup-actions-wrapper");
       const settingsBtn = popup.querySelector(".popup-settings-btn");
@@ -3732,6 +3740,41 @@ ${userDesc || "未提供具體描述"}`;
       }
       return null;
     }
+    function getSubwordCandidates(word) {
+      if (!word || typeof word !== "string" || word.length <= 1 || !dictionary) return [];
+      const candidates = [word];
+      const seen = /* @__PURE__ */ new Set([word]);
+      for (let len = word.length - 1; len >= 2; len--) {
+        for (let i = 0; i <= word.length - len; i++) {
+          const sub = word.substr(i, len);
+          if (!seen.has(sub) && dictionary[sub]) {
+            seen.add(sub);
+            candidates.push(sub);
+          }
+        }
+      }
+      for (let i = 0; i < word.length; i++) {
+        const char = word[i];
+        if (!seen.has(char) && dictionary[char]) {
+          seen.add(char);
+          candidates.push(char);
+        }
+      }
+      return candidates;
+    }
+    function scheduleHideFlyout() {
+      if (flyoutHideTimeout) clearTimeout(flyoutHideTimeout);
+      flyoutHideTimeout = setTimeout(() => {
+        if (popupSubwordsFlyout) popupSubwordsFlyout.style.display = "none";
+        flyoutHideTimeout = null;
+      }, 200);
+    }
+    function cancelHideFlyout() {
+      if (flyoutHideTimeout) {
+        clearTimeout(flyoutHideTimeout);
+        flyoutHideTimeout = null;
+      }
+    }
     function showSelectionSpeakerPopup(rect, textToSpeak) {
       if (!popup) return null;
       const popupMain = popup.querySelector(".popup-main");
@@ -4353,6 +4396,10 @@ ${userDesc || "未提供具體描述"}`;
       hideTranslatePopup();
       lastPopupResult = result;
       if (rect) lastPopupRect = rect;
+      if (!justNavigated || !currentSubwordCandidates.includes(result.word)) {
+        _currentSubwordRoot = result.word;
+        currentSubwordCandidates = getSubwordCandidates(result.word);
+      }
       activeQAContext.word = result.word || (result.entry ? result.entry.traditional : "");
       activeQAContext.sentence = getSurroundingSentence(currentRange) || "";
       activeQAContext.originalTranslation = result.entry && result.entry.english ? result.entry.english.join("; ") : "";
@@ -4484,9 +4531,10 @@ ${userDesc || "未提供具體描述"}`;
         </div>
       `;
       }
+      const hasSubwords = currentSubwordCandidates && currentSubwordCandidates.length > 1;
       let html = `
-      <div class="word-section">
-        <span class="word-text">${entry.traditional}</span>
+      <div class="word-section ${hasSubwords ? "has-subwords" : ""}">
+        <span class="word-text">${entry.traditional}${hasSubwords ? '<span class="word-subwords-hint" title="懸停查看相關詞與單字">◂</span>' : ""}</span>
         ${entry.simplified !== entry.traditional ? `<span class="word-simplified">${entry.simplified}</span>` : ""}
       </div>
       ${generatePronunciationHtml(currentEntryObj)}
@@ -4699,6 +4747,60 @@ ${userDesc || "未提供具體描述"}`;
           });
         });
       }
+      if (popupSubwordsFlyout) {
+        if (hasSubwords) {
+          popupSubwordsFlyout.innerHTML = currentSubwordCandidates.map((w) => `
+          <div class="subword-item ${w === result.word ? "active" : ""}" data-word="${w}">${w}</div>
+        `).join("");
+          popupSubwordsFlyout.querySelectorAll(".subword-item").forEach((item) => {
+            item.addEventListener("click", (e) => {
+              e.stopPropagation();
+              const targetWord = item.dataset.word;
+              if (dictionary[targetWord] && targetWord !== currentWord) {
+                isMouseOverPopup = true;
+                justNavigated = true;
+                currentWord = targetWord;
+                showPopup({ word: targetWord, entry: dictionary[targetWord], length: targetWord.length }, null);
+                isMouseOverPopup = true;
+                if (popupSubwordsFlyout) {
+                  popupSubwordsFlyout.querySelectorAll(".subword-item").forEach((el) => {
+                    if (el.dataset.word === targetWord) {
+                      el.classList.add("active");
+                    } else {
+                      el.classList.remove("active");
+                    }
+                  });
+                  popupSubwordsFlyout.style.display = "block";
+                }
+              }
+            });
+          });
+          if (wordSection) {
+            wordSection.addEventListener("mouseenter", () => {
+              cancelHideFlyout();
+              const popupRect = popup.getBoundingClientRect();
+              if (popupRect.left < 65) {
+                popupSubwordsFlyout.classList.add("flyout-right");
+              } else {
+                popupSubwordsFlyout.classList.remove("flyout-right");
+              }
+              popupSubwordsFlyout.style.display = "block";
+            });
+            wordSection.addEventListener("mouseleave", () => {
+              scheduleHideFlyout();
+            });
+          }
+          popupSubwordsFlyout.addEventListener("mouseenter", () => {
+            cancelHideFlyout();
+            isMouseOverPopup = true;
+          });
+          popupSubwordsFlyout.addEventListener("mouseleave", () => {
+            scheduleHideFlyout();
+          });
+        } else {
+          popupSubwordsFlyout.style.display = "none";
+        }
+      }
       popup.querySelectorAll(".see-also-link").forEach((link) => {
         link.addEventListener("click", (e) => {
           e.preventDefault();
@@ -4726,11 +4828,12 @@ ${userDesc || "未提供具體描述"}`;
         const GAP = 2;
         const highlightCenterX = rect.left + rect.width / 2;
         left = highlightCenterX - popupWidth / 2;
+        const minLeftMargin = hasSubwords ? 75 : 5;
+        if (left < minLeftMargin) {
+          left = minLeftMargin;
+        }
         if (left + popupWidth > viewportWidth - 5) {
           left = viewportWidth - popupWidth - 5;
-        }
-        if (left < 5) {
-          left = 5;
         }
         if (rect.bottom + GAP + ARROW_HEIGHT + popupHeight <= viewportHeight) {
           top = rect.bottom + GAP + ARROW_HEIGHT;
@@ -4855,6 +4958,12 @@ ${userDesc || "未提供具體描述"}`;
         activePopupRubyElement.classList.remove("jyutping-popup-active");
         activePopupRubyElement = null;
       }
+      if (popupSubwordsFlyout) {
+        popupSubwordsFlyout.style.display = "none";
+      }
+      cancelHideFlyout();
+      _currentSubwordRoot = "";
+      currentSubwordCandidates = [];
       if (popup) {
         popup.classList.remove("jyutping-popup-pinned");
         popup.style.display = "none";

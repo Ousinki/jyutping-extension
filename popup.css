@@ -1415,3 +1415,144 @@ ruby.jyutping-ruby-injected rt {
   transform: scale(0.9);
   transform-origin: center bottom;
 }
+
+/* ========== 左側子詞與單字浮出面板 (Subwords Flyout) ========== */
+#cantonese-popup-dict .popup-subwords-flyout {
+  position: absolute;
+  top: 0;
+  right: calc(100% + 6px);
+  min-width: 64px;
+  max-width: 140px;
+  background: var(--popup-bg) !important;
+  border: 1px solid var(--popup-border) !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12) !important;
+  padding: 4px !important;
+  z-index: 2147483646;
+  user-select: none;
+  box-sizing: border-box;
+  animation: subwords-fade-in 0.15s ease-out;
+}
+
+#cantonese-popup-dict .popup-subwords-flyout.flyout-right {
+  right: auto;
+  left: calc(100% + 6px);
+  animation: subwords-fade-in-right 0.15s ease-out;
+}
+
+/* 隱形鼠標捕獲橋，防止鼠標從詞頭移到側欄時意外掉出 */
+#cantonese-popup-dict .popup-subwords-flyout::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 100%;
+  width: 12px;
+}
+
+#cantonese-popup-dict .popup-subwords-flyout.flyout-right::before {
+  left: auto;
+  right: 100%;
+}
+
+/* 指向主懸浮窗的小三角箭頭 (Arrow pointing to the main popup) */
+#cantonese-popup-dict .popup-subwords-flyout::after {
+  content: '';
+  position: absolute;
+  top: 13px;
+  right: -5px;
+  width: 8px;
+  height: 8px;
+  background: var(--popup-bg) !important;
+  border-top: 1px solid var(--popup-border) !important;
+  border-right: 1px solid var(--popup-border) !important;
+  border-bottom: none !important;
+  border-left: none !important;
+  transform: rotate(45deg);
+  z-index: 1;
+  pointer-events: none;
+}
+
+#cantonese-popup-dict .popup-subwords-flyout.flyout-right::after {
+  right: auto;
+  left: -5px;
+  border-top: none !important;
+  border-right: none !important;
+  border-bottom: 1px solid var(--popup-border) !important;
+  border-left: 1px solid var(--popup-border) !important;
+  transform: rotate(45deg);
+}
+
+@keyframes subwords-fade-in {
+  from {
+    opacity: 0;
+    transform: translateX(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes subwords-fade-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+#cantonese-popup-dict .subword-item {
+  display: block;
+  padding: 5px 10px;
+  margin: 1px 0;
+  border-radius: 5px;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--popup-text);
+  cursor: pointer;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: center;
+  transition: background-color 0.12s ease, color 0.12s ease;
+  line-height: 1.4;
+}
+
+#cantonese-popup-dict .subword-item:hover {
+  background-color: var(--popup-btn-hover);
+  color: var(--popup-accent);
+}
+
+#cantonese-popup-dict .subword-item.active {
+  background-color: var(--popup-active-bg);
+  color: var(--popup-accent);
+  font-weight: 600;
+}
+
+/* 詞頭右側的子詞引導指示 */
+#cantonese-popup-dict .word-section.has-subwords .word-text {
+  position: relative;
+}
+
+#cantonese-popup-dict .word-section.has-subwords .word-subwords-hint {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  margin-left: 5px;
+  color: var(--popup-text-label);
+  opacity: 0.6;
+  vertical-align: middle;
+  transform: translateY(-1px);
+  transition: opacity 0.15s ease, color 0.15s ease;
+}
+
+#cantonese-popup-dict .word-section.has-subwords:hover .word-subwords-hint {
+  opacity: 1;
+  color: var(--popup-accent);
+}
+

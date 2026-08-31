@@ -59,6 +59,10 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   const EXPAND_GRACE_MS = 400; // 展開後的隱藏/重繪寬限時長
   let expandGraceUntil = 0; // 展開寬限截止時間戳（performance.now()），期間不自動隱藏或重繪
   let rubyFadeMask = null; // 消散模式：主 DOM 中的隱形遮罩層
+  let _currentSubwordRoot = ''; // 記錄當前子詞家族的根詞（如 "標準音"）
+  let currentSubwordCandidates = []; // 當前根詞拆分出的子詞與單字列表
+  let popupSubwordsFlyout = null; // 左側子詞懸浮面板 DOM
+  let flyoutHideTimeout = null; // 延遲隱藏子詞面板計時器
 
   let lastPopupResult = null;
   let lastPopupRect = null;
@@ -1616,6 +1620,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       </div>
     `;
     popup.appendChild(popupArrow);
+
+    // 子詞浮出面板（純文字列表）
+    popupSubwordsFlyout = document.createElement('div');
+    popupSubwordsFlyout.className = 'popup-subwords-flyout';
+    popupSubwordsFlyout.style.display = 'none';
+    popup.appendChild(popupSubwordsFlyout);
     
     shadowRoot.appendChild(popup);
 
@@ -3657,6 +3667,50 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     return null;
   }
 
+  // 提取子詞與單字候選列表（保持純文字，從長到短子詞 + 各個單字）
+  function getSubwordCandidates(word) {
+    if (!word || typeof word !== 'string' || word.length <= 1 || !dictionary) return [];
+    const candidates = [word];
+    const seen = new Set([word]);
+
+    // 1. 先提取長度 >= 2 的子詞（從長到短）
+    for (let len = word.length - 1; len >= 2; len--) {
+      for (let i = 0; i <= word.length - len; i++) {
+        const sub = word.substr(i, len);
+        if (!seen.has(sub) && dictionary[sub]) {
+          seen.add(sub);
+          candidates.push(sub);
+        }
+      }
+    }
+
+    // 2. 提取單字（按從左到右順序）
+    for (let i = 0; i < word.length; i++) {
+      const char = word[i];
+      if (!seen.has(char) && dictionary[char]) {
+        seen.add(char);
+        candidates.push(char);
+      }
+    }
+
+    return candidates;
+  }
+
+  function scheduleHideFlyout() {
+    if (flyoutHideTimeout) clearTimeout(flyoutHideTimeout);
+    flyoutHideTimeout = setTimeout(() => {
+      if (popupSubwordsFlyout) popupSubwordsFlyout.style.display = 'none';
+      flyoutHideTimeout = null;
+    }, 200);
+  }
+
+  function cancelHideFlyout() {
+    if (flyoutHideTimeout) {
+      clearTimeout(flyoutHideTimeout);
+      flyoutHideTimeout = null;
+    }
+  }
+
 
   // ========== 選區發音彈窗：僅顯示喇叭 ==========
   function showSelectionSpeakerPopup(rect, textToSpeak) {
@@ -4433,6 +4487,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     // 儲存最後一次的彈窗數據與位置（供展開/Q&A使用）
     lastPopupResult = result;
     if (rect) lastPopupRect = rect;
+
+    // 子詞候選列表維護（若非內部子詞導航或詞條不在候選集中，則重新計算根詞候選）
+    if (!justNavigated || !currentSubwordCandidates.includes(result.word)) {
+      _currentSubwordRoot = result.word;
+      currentSubwordCandidates = getSubwordCandidates(result.word);
+    }
     
     // 更新 Q&A 內容緩存
     activeQAContext.word = result.word || (result.entry ? result.entry.traditional : '');
@@ -4592,9 +4652,11 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       `;
     }
 
+    const hasSubwords = currentSubwordCandidates && currentSubwordCandidates.length > 1;
+
     let html = `
-      <div class="word-section">
-        <span class="word-text">${entry.traditional}</span>
+      <div class="word-section ${hasSubwords ? 'has-subwords' : ''}">
+        <span class="word-text">${entry.traditional}${hasSubwords ? '<span class="word-subwords-hint" title="懸停查看相關詞與單字">◂</span>' : ''}</span>
         ${entry.simplified !== entry.traditional ? 
           `<span class="word-simplified">${entry.simplified}</span>` : ''}
       </div>
@@ -4854,6 +4916,66 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       });
     }
 
+    // 子詞側邊浮出面板渲染與事件綁定
+    if (popupSubwordsFlyout) {
+      if (hasSubwords) {
+        popupSubwordsFlyout.innerHTML = currentSubwordCandidates.map(w => `
+          <div class="subword-item ${w === result.word ? 'active' : ''}" data-word="${w}">${w}</div>
+        `).join('');
+
+        popupSubwordsFlyout.querySelectorAll('.subword-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const targetWord = item.dataset.word;
+            if (dictionary[targetWord] && targetWord !== currentWord) {
+              isMouseOverPopup = true;
+              justNavigated = true;
+              currentWord = targetWord;
+              showPopup({ word: targetWord, entry: dictionary[targetWord], length: targetWord.length }, null);
+              isMouseOverPopup = true;
+              if (popupSubwordsFlyout) {
+                popupSubwordsFlyout.querySelectorAll('.subword-item').forEach(el => {
+                  if (el.dataset.word === targetWord) {
+                    el.classList.add('active');
+                  } else {
+                    el.classList.remove('active');
+                  }
+                });
+                popupSubwordsFlyout.style.display = 'block';
+              }
+            }
+          });
+        });
+
+        if (wordSection) {
+          wordSection.addEventListener('mouseenter', () => {
+            cancelHideFlyout();
+            // 優先保持在左側，僅在極限貼合屏幕左邊緣 (< 65px) 時才翻轉到右側
+            const popupRect = popup.getBoundingClientRect();
+            if (popupRect.left < 65) {
+              popupSubwordsFlyout.classList.add('flyout-right');
+            } else {
+              popupSubwordsFlyout.classList.remove('flyout-right');
+            }
+            popupSubwordsFlyout.style.display = 'block';
+          });
+          wordSection.addEventListener('mouseleave', () => {
+            scheduleHideFlyout();
+          });
+        }
+
+        popupSubwordsFlyout.addEventListener('mouseenter', () => {
+          cancelHideFlyout();
+          isMouseOverPopup = true;
+        });
+        popupSubwordsFlyout.addEventListener('mouseleave', () => {
+          scheduleHideFlyout();
+        });
+      } else {
+        popupSubwordsFlyout.style.display = 'none';
+      }
+    }
+
     // 綁定近義、反義、異體鏈接的點擊事件
     popup.querySelectorAll('.see-also-link').forEach(link => {
       link.addEventListener('click', (e) => {
@@ -4894,12 +5016,13 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const highlightCenterX = rect.left + rect.width / 2;
       left = highlightCenterX - popupWidth / 2;
 
-      // 邊界檢查
+      // 邊界檢查（若有子詞列表，預留左側 75px 空間確保子詞面板始終在左側優雅展現）
+      const minLeftMargin = hasSubwords ? 75 : 5;
+      if (left < minLeftMargin) {
+        left = minLeftMargin;
+      }
       if (left + popupWidth > viewportWidth - 5) {
         left = viewportWidth - popupWidth - 5;
-      }
-      if (left < 5) {
-        left = 5;
       }
 
       // 垂直位置：優先顯示在文字下方
@@ -5075,6 +5198,13 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       activePopupRubyElement.classList.remove('jyutping-popup-active');
       activePopupRubyElement = null;
     }
+
+    if (popupSubwordsFlyout) {
+      popupSubwordsFlyout.style.display = 'none';
+    }
+    cancelHideFlyout();
+    _currentSubwordRoot = '';
+    currentSubwordCandidates = [];
 
     if (popup) {
       popup.classList.remove('jyutping-popup-pinned');
