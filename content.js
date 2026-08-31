@@ -660,7 +660,12 @@
     let displayMode = "jyutping";
     let toneStyle = "superscript";
     let popupDisplayStyle = "full";
+    let popupThemeMode = "manual";
     let popupTheme = "classic";
+    let popupThemeDay = "classic";
+    let popupThemeNight = "night";
+    let popupThemeDayStart = "07:00";
+    let popupThemeNightStart = "19:00";
     let ttsEnabled = true;
     let ttsEngine = "edgeTts";
     let edgeTtsMode = "default";
@@ -1060,16 +1065,44 @@
         }
       }
     };
-    function applyPopupTheme(themeName) {
+    function resolveEffectivePopupTheme(targetElement = null) {
+      if (popupThemeMode === "auto_time") {
+        const now = /* @__PURE__ */ new Date();
+        const curMins = now.getHours() * 60 + now.getMinutes();
+        const [dH, dM] = (popupThemeDayStart || "07:00").split(":").map(Number);
+        const [nH, nM] = (popupThemeNightStart || "19:00").split(":").map(Number);
+        const dayStart = (dH || 7) * 60 + (dM || 0);
+        const nightStart = (nH || 19) * 60 + (nM || 0);
+        let isDay = false;
+        if (dayStart < nightStart) {
+          isDay = curMins >= dayStart && curMins < nightStart;
+        } else {
+          isDay = curMins >= dayStart || curMins < nightStart;
+        }
+        return isDay ? popupThemeDay || "classic" : popupThemeNight || "night";
+      }
+      if (popupThemeMode === "follow_system") {
+        const isDark = window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+        return isDark ? popupThemeNight || "night" : popupThemeDay || "classic";
+      }
+      if (popupThemeMode === "follow_page") {
+        const el = targetElement || (currentRange && currentRange.startContainer ? currentRange.startContainer.nodeType === Node.TEXT_NODE ? currentRange.startContainer.parentElement : currentRange.startContainer : document.body);
+        const isDark = isElementOnDarkBackground(el);
+        return isDark ? popupThemeNight || "night" : popupThemeDay || "classic";
+      }
+      return popupTheme || "classic";
+    }
+    function applyPopupTheme(themeName = null, targetElement = null) {
       if (!popup) return;
-      const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
+      const activeThemeName = themeName || resolveEffectivePopupTheme(targetElement);
+      const theme = POPUP_THEMES[activeThemeName] || POPUP_THEMES.classic;
       for (const [prop, value] of Object.entries(theme.vars)) {
         popup.style.setProperty(prop, value);
         if (translatePopup) translatePopup.style.setProperty(prop, value);
       }
       popup.classList.remove("popup-theme-glass");
       if (translatePopup) translatePopup.classList.remove("popup-theme-glass");
-      if (themeName === "glass") {
+      if (activeThemeName === "glass") {
         popup.classList.add("popup-theme-glass");
         if (translatePopup) translatePopup.classList.add("popup-theme-glass");
       }
@@ -2274,7 +2307,6 @@ ${userDesc || "未提供具體描述"}`;
     }
     let toneDisplayStyle = "normal";
     let rubyTextOpacity = "0.85";
-    let rubyTextFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
     let rubyTextStyle = "default";
     let rubyDictionaryColor = "#999999";
     let enableAutoTranslateYueDefs = false;
@@ -2291,6 +2323,11 @@ ${userDesc || "未提供具體描述"}`;
         "hoverModifier",
         "popupDisplayStyle",
         "popupTheme",
+        "popupThemeMode",
+        "popupThemeDay",
+        "popupThemeNight",
+        "popupThemeDayStart",
+        "popupThemeNightStart",
         "customZhFont",
         "customEnFont",
         "highlightStyle",
@@ -2306,7 +2343,6 @@ ${userDesc || "未提供具體描述"}`;
         "ttsRate",
         "toneDisplayStyle",
         "rubyTextOpacity",
-        "rubyTextFont",
         "rubyTextStyle",
         "rubyDictionaryColor",
         "transLang",
@@ -2335,13 +2371,18 @@ ${userDesc || "未提供具體描述"}`;
         paragraphTransEngine = result.paragraphTransEngine || "bing";
         paragraphTransDirection = result.paragraphTransDirection || "yue_to_target";
         popupDisplayStyle = result.popupDisplayStyle || "full";
+        popupThemeMode = result.popupThemeMode || "manual";
         popupTheme = result.popupTheme || "classic";
+        popupThemeDay = result.popupThemeDay || "classic";
+        popupThemeNight = result.popupThemeNight || "night";
+        popupThemeDayStart = result.popupThemeDayStart || "07:00";
+        popupThemeNightStart = result.popupThemeNightStart || "19:00";
         customZhFont = result.customZhFont || "";
         customEnFont = result.customEnFont || "";
         highlightStyle = result.highlightStyle || "yellow";
         rubyHoverStyle = result.rubyHoverStyle || "ruby-red";
         compactExpandBtn = result.compactExpandBtn !== false;
-        applyPopupTheme(popupTheme);
+        applyPopupTheme();
         ttsEnabled = result.ttsEnabled !== false;
         if (!ttsEnabled) detachAudioUnlockListeners();
         ttsEngine = result.ttsEngine || "edgeTts";
@@ -2353,7 +2394,6 @@ ${userDesc || "未提供具體描述"}`;
         ttsRate = result.ttsRate || 0.9;
         toneDisplayStyle = result.toneDisplayStyle || "normal";
         rubyTextOpacity = result.rubyTextOpacity || "0.85";
-        rubyTextFont = result.rubyTextFont || "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
         rubyTextStyle = result.rubyTextStyle || "default";
         rubyDictionaryColor = result.rubyDictionaryColor || "#999999";
         enableAutoTranslateYueDefs = result.enableAutoTranslateYueDefs === true;
@@ -2377,8 +2417,8 @@ ${userDesc || "未提供具體描述"}`;
           document.documentElement.style.setProperty("--jyutping-rt-font-weight", "normal", "important");
           document.documentElement.style.setProperty("-webkit-font-smoothing", "antialiased", "important");
         } else {
-          if (rubyTextFont) {
-            document.documentElement.style.setProperty("--jyutping-rt-font", rubyTextFont, "important");
+          if (customEnFont) {
+            document.documentElement.style.setProperty("--jyutping-rt-font", customEnFont, "important");
           } else {
             document.documentElement.style.removeProperty("--jyutping-rt-font");
           }
@@ -2416,17 +2456,44 @@ ${userDesc || "未提供具體描述"}`;
         if (changes.hoverModifier) {
           hoverModifier = changes.hoverModifier.newValue || "none";
         }
+        if (changes.popupThemeMode) {
+          popupThemeMode = changes.popupThemeMode.newValue || "manual";
+          applyPopupTheme();
+        }
         if (changes.popupTheme) {
           popupTheme = changes.popupTheme.newValue || "classic";
-          applyPopupTheme(popupTheme);
+          applyPopupTheme();
+        }
+        if (changes.popupThemeDay) {
+          popupThemeDay = changes.popupThemeDay.newValue || "classic";
+          applyPopupTheme();
+        }
+        if (changes.popupThemeNight) {
+          popupThemeNight = changes.popupThemeNight.newValue || "night";
+          applyPopupTheme();
+        }
+        if (changes.popupThemeDayStart) {
+          popupThemeDayStart = changes.popupThemeDayStart.newValue || "07:00";
+          applyPopupTheme();
+        }
+        if (changes.popupThemeNightStart) {
+          popupThemeNightStart = changes.popupThemeNightStart.newValue || "19:00";
+          applyPopupTheme();
         }
         if (changes.customZhFont) {
           customZhFont = changes.customZhFont.newValue || "";
-          applyPopupTheme(popupTheme);
+          applyPopupTheme();
         }
         if (changes.customEnFont) {
           customEnFont = changes.customEnFont.newValue || "";
-          applyPopupTheme(popupTheme);
+          applyPopupTheme();
+          if (rubyTextStyle !== "dictionary") {
+            if (customEnFont) {
+              document.documentElement.style.setProperty("--jyutping-rt-font", customEnFont, "important");
+            } else {
+              document.documentElement.style.removeProperty("--jyutping-rt-font");
+            }
+          }
         }
         if (changes.highlightStyle) {
           highlightStyle = changes.highlightStyle.newValue || "yellow";
@@ -2488,14 +2555,6 @@ ${userDesc || "未提供具體描述"}`;
             document.documentElement.style.setProperty("--jyutping-rt-color", rubyDictionaryColor, "important");
           }
         }
-        if (changes.rubyTextFont) {
-          rubyTextFont = changes.rubyTextFont.newValue;
-          if (rubyTextFont) {
-            document.documentElement.style.setProperty("--jyutping-rt-font", rubyTextFont, "important");
-          } else {
-            document.documentElement.style.removeProperty("--jyutping-rt-font");
-          }
-        }
         if (changes.rubyTextStyle) {
           rubyTextStyle = changes.rubyTextStyle.newValue;
           document.documentElement.style.setProperty("--jyutping-rt-opacity", rubyTextStyle === "dictionary" ? "1" : rubyTextOpacity, "important");
@@ -2506,8 +2565,8 @@ ${userDesc || "未提供具體描述"}`;
             document.documentElement.style.setProperty("--jyutping-rt-font-weight", "normal", "important");
             document.documentElement.style.setProperty("-webkit-font-smoothing", "antialiased", "important");
           } else {
-            if (rubyTextFont) {
-              document.documentElement.style.setProperty("--jyutping-rt-font", rubyTextFont, "important");
+            if (customEnFont) {
+              document.documentElement.style.setProperty("--jyutping-rt-font", customEnFont, "important");
             } else {
               document.documentElement.style.removeProperty("--jyutping-rt-font");
             }
@@ -3111,7 +3170,7 @@ ${userDesc || "未提供具體描述"}`;
           return;
         }
         const targetElement = document.elementFromPoint(e.clientX, e.clientY);
-        if (isEditableElement(targetElement)) {
+        if (isEditableElement2(targetElement)) {
           return;
         }
         if (isThrottled) return;
@@ -3522,21 +3581,32 @@ ${userDesc || "未提供具體描述"}`;
         document.addEventListener("mousemove", onMove);
         document.addEventListener("mouseup", onUp, true);
       }, true);
+      function isEditableElement2(target) {
+        if (!target) return false;
+        const tagName = target.tagName;
+        if (tagName === "INPUT" || tagName === "TEXTAREA" || tagName === "SELECT") return true;
+        if (target.isContentEditable) return true;
+        const active = document.activeElement;
+        if (active && (active.tagName === "INPUT" || active.tagName === "TEXTAREA" || active.isContentEditable)) {
+          return true;
+        }
+        return false;
+      }
+      const lastParaKeyTapTime = {};
+      let hadNonModifierKeyPressed = false;
       document.addEventListener("keydown", (e) => {
-        console.log("[Debug] keydown triggered:", e.key);
+        if (e.key !== "Shift" && e.key !== "Alt" && e.key !== "Control" && e.key !== "Meta") {
+          hadNonModifierKeyPressed = true;
+        } else if (!e.repeat) {
+          hadNonModifierKeyPressed = false;
+        }
         if (e.key === "Escape") {
           hidePopup();
           hideTranslatePopup();
           hasUserSelection = false;
         }
-        if (isEnabled && paragraphTransKey !== "off" && paragraphTransKey !== "longpress" && !e.repeat) {
-          const paraKeyMap = { "shift": "Shift", "alt": "Alt", "ctrl": "Control", "meta": "Meta" };
-          if (e.key === paraKeyMap[paragraphTransKey]) {
-            translateBlockAtPoint(currentMouseX, currentMouseY);
-          }
-        }
         const keyMap = { "alt": "Alt", "ctrl": "Control", "shift": "Shift", "meta": "Meta" };
-        if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+        if (!isEditableElement2(e.target) && e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
           console.log("[Debug] Trigger key pressed! Key:", e.key, "mouseX:", currentMouseX, "mouseY:", currentMouseY);
           lastX = currentMouseX;
           lastY = currentMouseY;
@@ -3551,6 +3621,57 @@ ${userDesc || "未提供具體描述"}`;
           });
           if (popupDisplayStyle === "full" && ttsEnabled && currentWord && dictionary[currentWord]) {
             speakCantonese(dictionary[currentWord].traditional || currentWord);
+          }
+        }
+      });
+      document.addEventListener("keyup", (e) => {
+        if (!isEnabled || paragraphTransKey === "off" || paragraphTransKey === "longpress") return;
+        if (isEditableElement2(e.target)) return;
+        if (hadNonModifierKeyPressed) return;
+        const now = Date.now();
+        const key = e.key;
+        if (paragraphTransKey === "double_shift" && key === "Shift") {
+          if (e.ctrlKey || e.altKey || e.metaKey) return;
+          const last = lastParaKeyTapTime["Shift"] || 0;
+          if (now - last < 350) {
+            lastParaKeyTapTime["Shift"] = 0;
+            translateBlockAtPoint(currentMouseX, currentMouseY);
+          } else {
+            lastParaKeyTapTime["Shift"] = now;
+          }
+        } else if (paragraphTransKey === "double_alt" && key === "Alt") {
+          if (e.ctrlKey || e.shiftKey || e.metaKey) return;
+          const last = lastParaKeyTapTime["Alt"] || 0;
+          if (now - last < 350) {
+            lastParaKeyTapTime["Alt"] = 0;
+            translateBlockAtPoint(currentMouseX, currentMouseY);
+          } else {
+            lastParaKeyTapTime["Alt"] = now;
+          }
+        } else if (paragraphTransKey === "double_ctrl" && key === "Control") {
+          if (e.altKey || e.shiftKey || e.metaKey) return;
+          const last = lastParaKeyTapTime["Control"] || 0;
+          if (now - last < 350) {
+            lastParaKeyTapTime["Control"] = 0;
+            translateBlockAtPoint(currentMouseX, currentMouseY);
+          } else {
+            lastParaKeyTapTime["Control"] = now;
+          }
+        } else if (paragraphTransKey === "shift" && key === "Shift") {
+          if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+            translateBlockAtPoint(currentMouseX, currentMouseY);
+          }
+        } else if (paragraphTransKey === "alt" && key === "Alt") {
+          if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
+            translateBlockAtPoint(currentMouseX, currentMouseY);
+          }
+        } else if (paragraphTransKey === "ctrl" && key === "Control") {
+          if (!e.altKey && !e.shiftKey && !e.metaKey) {
+            translateBlockAtPoint(currentMouseX, currentMouseY);
+          }
+        } else if (paragraphTransKey === "meta" && key === "Meta") {
+          if (!e.altKey && !e.shiftKey && !e.ctrlKey) {
+            translateBlockAtPoint(currentMouseX, currentMouseY);
           }
         }
       });
@@ -4416,6 +4537,11 @@ ${userDesc || "未提供具體描述"}`;
         showCompactPopup(result, entry, pronunciation, rect);
         return;
       }
+      let parentElem = null;
+      if (currentRange && currentRange.startContainer) {
+        parentElem = currentRange.startContainer.nodeType === Node.TEXT_NODE ? currentRange.startContainer.parentElement : currentRange.startContainer;
+      }
+      applyPopupTheme(null, parentElem);
       const posEntries = entry.entries && Array.isArray(entry.entries) && entry.entries.length > 0 ? entry.entries : [
         {
           id: 0,
@@ -5286,10 +5412,34 @@ ${userDesc || "未提供具體描述"}`;
       } else if (request.action === "changePopupTheme") {
         popupTheme = request.theme;
         applyPopupTheme(popupTheme);
+      } else if (request.action === "changePopupThemeMode") {
+        popupThemeMode = request.mode;
+        applyPopupTheme();
+      } else if (request.action === "changePopupThemeDay") {
+        popupThemeDay = request.theme;
+        applyPopupTheme();
+      } else if (request.action === "changePopupThemeNight") {
+        popupThemeNight = request.theme;
+        applyPopupTheme();
+      } else if (request.action === "changePopupThemeDayStart") {
+        popupThemeDayStart = request.val;
+        applyPopupTheme();
+      } else if (request.action === "changePopupThemeNightStart") {
+        popupThemeNightStart = request.val;
+        applyPopupTheme();
       } else if (request.action === "changeCustomFont") {
         if (request.customZhFont !== void 0) customZhFont = request.customZhFont;
-        if (request.customEnFont !== void 0) customEnFont = request.customEnFont;
-        applyPopupTheme(popupTheme);
+        if (request.customEnFont !== void 0) {
+          customEnFont = request.customEnFont;
+          if (rubyTextStyle !== "dictionary") {
+            if (customEnFont) {
+              document.documentElement.style.setProperty("--jyutping-rt-font", customEnFont, "important");
+            } else {
+              document.documentElement.style.removeProperty("--jyutping-rt-font");
+            }
+          }
+        }
+        applyPopupTheme();
       } else if (request.action === "changeTtsEnabled") {
         ttsEnabled = request.ttsEnabled;
         if (ttsEnabled) attachAudioUnlockListeners();

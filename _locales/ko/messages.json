@@ -209,10 +209,10 @@
     "message": "클래식 고정폭 (Courier)"
   },
   "optEnFontModern": {
-    "message": "모던 고정폭 (SF Mono / Consolas / 기본)"
+    "message": "모던 고정폭"
   },
   "optEnFontSystem": {
-    "message": "시스템 산세리프"
+    "message": "시스템 산세리프 (System UI)"
   },
   "optEnable": {
     "message": "사전 사용"
@@ -257,19 +257,19 @@
     "description": "optFeedbackTitle"
   },
   "optFontCustom": {
-    "message": "사용자 정의 입력..."
+    "message": "직접 입력..."
   },
   "optFontHei": {
-    "message": "사전 고딕 (Chiron Hei / YaHei)"
+    "message": "사전 고딕체"
   },
   "optFontMono": {
-    "message": "기본 고정폭 (Consolas / SF Mono / ui-monospace)"
+    "message": "모던 고정폭"
   },
   "optFontSans": {
-    "message": "시스템 산세리프 (System UI / Arial)"
+    "message": "시스템 산세리프"
   },
   "optFontSerif": {
-    "message": "우아한 세리프 (Georgia / Times)"
+    "message": "명조 / 세리프"
   },
   "optFooterData": {
     "message": "데이터 출처:",
@@ -303,7 +303,8 @@
     "description": "optHighlightStyleDesc"
   },
   "optHoverModifier": {
-    "message": "호버 트리거 키"
+    "message": "호버 트리거 키",
+    "description": "optHoverModifier"
   },
   "optHoverModifierDesc": {
     "message": "특정 키를 누르고 있을 때만 팝업 표시 (일상적인 간섭 방지)"
@@ -379,7 +380,28 @@
     "message": "없음 (끄기)"
   },
   "optKeyShift": {
-    "message": "Shift (⇧)"
+    "message": "Shift 키"
+  },
+  "optKeyDoubleShift": {
+    "message": "Shift 키 더블 탭"
+  },
+  "optKeyShiftSingle": {
+    "message": "Shift 키 단일 탭"
+  },
+  "optKeyDoubleAlt": {
+    "message": "Alt / Option 키 더블 탭"
+  },
+  "optKeyAltSingle": {
+    "message": "Alt / Option 키 단일 탭"
+  },
+  "optKeyDoubleCtrl": {
+    "message": "Ctrl 키 더블 탭"
+  },
+  "optKeyCtrlSingle": {
+    "message": "Ctrl 키 단일 탭"
+  },
+  "optKeyMetaSingle": {
+    "message": "Command / Win 키 단일 탭"
   },
   "optModelName": {
     "message": "모델명",
@@ -591,6 +613,70 @@
   "optTheme": {
     "message": "테마",
     "description": "optTheme"
+  },
+  "optThemeMode": {
+    "message": "테마 전환 모드",
+    "description": "optThemeMode"
+  },
+  "optThemeModeDesc": {
+    "message": "고정 테마, 또는 시스템/웹페이지 외관에 맞춤 선택",
+    "description": "optThemeModeDesc"
+  },
+  "optThemeModeManual": {
+    "message": "고정 테마",
+    "description": "optThemeModeManual"
+  },
+  "optThemeModeAutoTime": {
+    "message": "시간대별 자동 전환 (주간 / 야간)",
+    "description": "optThemeModeAutoTime"
+  },
+  "optThemeModeFollowSystem": {
+    "message": "시스템 외관에 맞춤",
+    "description": "optThemeModeFollowSystem"
+  },
+  "optThemeModeFollowPage": {
+    "message": "웹페이지 배경 밝기에 맞춤",
+    "description": "optThemeModeFollowPage"
+  },
+  "optThemeDay": {
+    "message": "주간",
+    "description": "optThemeDay"
+  },
+  "optThemeNight": {
+    "message": "야간",
+    "description": "optThemeNight"
+  },
+  "optThemeSchedule": {
+    "message": "시간대",
+    "description": "optThemeSchedule"
+  },
+  "optThemeSingleSelect": {
+    "message": "색상 테마",
+    "description": "optThemeSingleSelect"
+  },
+  "optThemeDayStart": {
+    "message": "주간 시작",
+    "description": "optThemeDayStart"
+  },
+  "optThemeNightStart": {
+    "message": "야간 시작",
+    "description": "optThemeNightStart"
+  },
+  "optThemePreviewDay": {
+    "message": "☀️ 주간 미리보기",
+    "description": "optThemePreviewDay"
+  },
+  "optThemePreviewNight": {
+    "message": "🌙 야간 미리보기",
+    "description": "optThemePreviewNight"
+  },
+  "optThemeActiveStatusDay": {
+    "message": "☀️ 현재 적용 중: 주간 테마",
+    "description": "optThemeActiveStatusDay"
+  },
+  "optThemeActiveStatusNight": {
+    "message": "🌙 현재 적용 중: 야간 테마",
+    "description": "optThemeActiveStatusNight"
   },
   "optThemeAuto": {
     "message": "자동",

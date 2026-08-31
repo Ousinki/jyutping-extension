@@ -115,9 +115,18 @@ async function applyI18n(lang) {
 
   const displayModeSelect = document.getElementById('displayMode');
   const hoverModifierSelect = document.getElementById('hoverModifier');
-  const toneStyleToggle = document.getElementById('toneStyleToggle');
   const popupDisplayStyleSelect = document.getElementById('popupDisplayStyle');
+  const popupThemeModeSelect = document.getElementById('popupThemeMode');
+  const manualThemeWrapper = document.getElementById('manualThemeWrapper');
+  const multiThemeWrapper = document.getElementById('multiThemeWrapper');
   const popupThemeSelect = document.getElementById('popupTheme');
+  const popupThemeDaySelect = document.getElementById('popupThemeDay');
+  const popupThemeNightSelect = document.getElementById('popupThemeNight');
+  const themeScheduleRow = document.getElementById('themeScheduleRow');
+  const popupThemeDayStartInput = document.getElementById('popupThemeDayStart');
+  const popupThemeNightStartInput = document.getElementById('popupThemeNightStart');
+  const previewSunIcon = document.getElementById('previewSunIcon');
+  const previewMoonIcon = document.getElementById('previewMoonIcon');
   
   // 字體設定
   const zhFontSelect = document.getElementById('zhFontSelect');
@@ -340,11 +349,15 @@ async function applyI18n(lang) {
   // 更新預覽字體
   function updatePreviewFont(type, font) {
     const dict = document.getElementById('cantonese-popup-dict');
-    if (!dict) return;
-    if (type === 'zh') {
-      dict.style.setProperty('--popup-font-zh', font || 'system-ui, -apple-system, sans-serif');
-    } else if (type === 'en') {
-      dict.style.setProperty('--popup-font-en', font || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace');
+    if (dict) {
+      if (type === 'zh') {
+        dict.style.setProperty('--popup-font-zh', font || 'system-ui, -apple-system, sans-serif');
+      } else if (type === 'en') {
+        dict.style.setProperty('--popup-font-en', font || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace');
+      }
+    }
+    if (typeof updateInspectDemoTones === 'function') {
+      updateInspectDemoTones();
     }
   }
 
@@ -500,7 +513,7 @@ async function applyI18n(lang) {
   initThemePreviewInteractions();
 
   chrome.storage.sync.get([
-    'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
+    'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'popupThemeMode', 'popupThemeDay', 'popupThemeNight', 'popupThemeDayStart', 'popupThemeNightStart', 'customZhFont', 'customEnFont', 'highlightStyle', 'compactExpandBtn', 'ttsEnabled', 
     'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsMode', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate'
   , 'toneDisplayStyle', 'rubyTextFont', 'rubyTextStyle', 'rubyTextOpacity', 'rubyDictionaryColor', 'transLangs', 'transTrigger', 'transHoverEngine', 'uiTheme', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode' ], (result) => {
 
@@ -581,8 +594,6 @@ async function applyI18n(lang) {
 
 
     const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
-    const rubyTextFontSelect = document.getElementById('rubyTextFontSelect');
-    const rubyTextFontInput = document.getElementById('rubyTextFont');
     const rubyTextStyleSelect = document.getElementById('rubyTextStyle');
     const rubyTextOpacitySelect = document.getElementById('rubyTextOpacity');
     const rubyDictionaryColorSelect = document.getElementById('rubyDictionaryColor');
@@ -593,20 +604,6 @@ async function applyI18n(lang) {
     const transHoverEngineRadios = document.querySelectorAll('input[name="transHoverEngineRadio"]');
 
     if (toneDisplayStyleSelect) toneDisplayStyleSelect.value = result.toneDisplayStyle || 'normal';
-    
-    if (rubyTextFontSelect) {
-      const savedFont = result.rubyTextFont || '';
-      if (['', 'sans-serif', 'serif', 'Chiron Hei HK, sans-serif'].includes(savedFont)) {
-        rubyTextFontSelect.value = savedFont;
-        if (rubyTextFontInput) rubyTextFontInput.style.display = 'none';
-      } else {
-        rubyTextFontSelect.value = 'custom';
-        if (rubyTextFontInput) {
-          rubyTextFontInput.style.display = 'block';
-          rubyTextFontInput.value = savedFont;
-        }
-      }
-    }
 
     if (rubyTextStyleSelect) {
       const savedStyle = result.rubyTextStyle || 'default';
@@ -616,6 +613,7 @@ async function applyI18n(lang) {
 
     if (rubyTextOpacitySelect) rubyTextOpacitySelect.value = result.rubyTextOpacity || '0.85';
     if (rubyDictionaryColorSelect) rubyDictionaryColorSelect.value = result.rubyDictionaryColor || '#999999';
+    if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
 
     const savedTransLangs = result.transLangs || ['zh-Hans', 'en'];
     if (transLangsCheckboxes) {
@@ -681,9 +679,16 @@ async function applyI18n(lang) {
     const hlRadio = document.querySelector(`input[name="highlightStyle"][value="${savedHL}"]`);
     if (hlRadio) hlRadio.checked = true;
     
-    const theme = result.popupTheme || 'classic';
-    popupThemeSelect.value = theme;
-    updateThemePreview(theme);
+    // 載入主題模式與配色配置
+    const themeMode = result.popupThemeMode || 'manual';
+    if (popupThemeModeSelect) popupThemeModeSelect.value = themeMode;
+    if (popupThemeSelect) popupThemeSelect.value = result.popupTheme || 'classic';
+    if (popupThemeDaySelect) popupThemeDaySelect.value = result.popupThemeDay || 'classic';
+    if (popupThemeNightSelect) popupThemeNightSelect.value = result.popupThemeNight || 'night';
+    if (popupThemeDayStartInput) popupThemeDayStartInput.value = result.popupThemeDayStart || '07:00';
+    if (popupThemeNightStartInput) popupThemeNightStartInput.value = result.popupThemeNightStart || '19:00';
+
+    updateThemeSettingsUI(result);
     
     const setupFontUI = (selectElem, inputElem, savedValue) => {
       let matchFound = false;
@@ -809,8 +814,6 @@ async function applyI18n(lang) {
 
   
   const toneDisplayStyleSelect = document.getElementById('toneDisplayStyle');
-  const rubyTextFontSelect = document.getElementById('rubyTextFontSelect');
-  const rubyTextFontInput = document.getElementById('rubyTextFont');
   const rubyTextStyleSelect = document.getElementById('rubyTextStyle');
   const rubyTextOpacitySelect = document.getElementById('rubyTextOpacity');
   const rubyDictionaryColorSelect = document.getElementById('rubyDictionaryColor');
@@ -1043,30 +1046,7 @@ async function applyI18n(lang) {
     });
   }
 
-  if (rubyTextFontSelect) {
-    rubyTextFontSelect.addEventListener('change', () => {
-      if (rubyTextFontSelect.value === 'custom') {
-        if (rubyTextFontInput) {
-          rubyTextFontInput.style.display = 'block';
-          rubyTextFontInput.focus();
-        }
-      } else {
-        if (rubyTextFontInput) {
-          rubyTextFontInput.style.display = 'none';
-          rubyTextFontInput.value = rubyTextFontSelect.value;
-        }
-        chrome.storage.sync.set({ rubyTextFont: rubyTextFontSelect.value });
-        if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
-      }
-    });
-  }
 
-  if (rubyTextFontInput) {
-    rubyTextFontInput.addEventListener('input', () => {
-      chrome.storage.sync.set({ rubyTextFont: rubyTextFontInput.value });
-      if (typeof updateInspectDemoTones === 'function') updateInspectDemoTones();
-    });
-  }
 
   if (rubyTextStyleSelect) {
     rubyTextStyleSelect.addEventListener('change', () => {
@@ -1096,11 +1076,112 @@ async function applyI18n(lang) {
     const rubyDictionaryColorContainer = document.getElementById('rubyDictionaryColorContainer');
     if (style === 'dictionary') {
       if (rubyTextOpacityContainer) rubyTextOpacityContainer.style.display = 'none';
-      if (rubyDictionaryColorContainer) rubyDictionaryColorContainer.style.display = '';
+      if (rubyDictionaryColorContainer) rubyDictionaryColorContainer.style.display = 'flex';
     } else {
-      if (rubyTextOpacityContainer) rubyTextOpacityContainer.style.display = '';
+      if (rubyTextOpacityContainer) rubyTextOpacityContainer.style.display = 'flex';
       if (rubyDictionaryColorContainer) rubyDictionaryColorContainer.style.display = 'none';
     }
+  }
+
+  function updateInspectDemoTones() {
+    const rubiesEl = document.getElementById('demoRubyRubies');
+    const demoBlockEl = document.getElementById('inspectDemo');
+    if (!rubiesEl) return;
+
+    const toneSelect = document.getElementById('toneDisplayStyle');
+    const toneVal = toneSelect ? toneSelect.value : 'normal';
+
+    const styleSelect = document.getElementById('rubyTextStyle');
+    const styleVal = styleSelect ? styleSelect.value : 'default';
+
+    const opacitySelect = document.getElementById('rubyTextOpacity');
+    const opacityVal = opacitySelect ? opacitySelect.value : '0.85';
+
+    const colorSelect = document.getElementById('rubyDictionaryColor');
+    const colorVal = colorSelect ? colorSelect.value : '#999999';
+
+    const customEnInput = document.getElementById('customEnFont');
+    const enSelect = document.getElementById('enFontSelect');
+    const enFont = (customEnInput && customEnInput.value.trim()) || (enSelect && enSelect.value) || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace';
+
+    // 1. 生成對應音調顯示格式的音節
+    const syllables = [
+      { base: 'cyun', tone: '4' },
+      { base: 'man',  tone: '4' },
+      { base: 'zyu',  tone: '3' },
+      { base: 'jam',  tone: '1' },
+      { base: 'si',   tone: '6' },
+      { base: 'faan', tone: '6' }
+    ];
+
+    rubiesEl.innerHTML = syllables.map(s => {
+      let text = s.base + s.tone;
+      if (toneVal === 'superscript') {
+        text = `${s.base}<sup style="font-size: 0.75em; vertical-align: super; line-height: 0;">${s.tone}</sup>`;
+      } else if (toneVal === 'hidden') {
+        text = s.base;
+      }
+      return `<span style="flex: 1; text-align: center;">${text}</span>`;
+    }).join('');
+
+    // 2. 套用排版風格、字體、顏色與不透明度
+    if (styleVal === 'dictionary') {
+      rubiesEl.style.setProperty('--demo-ruby-target-font-family', '"Chiron Hei HK WS", "Microsoft YaHei", sans-serif');
+      rubiesEl.style.setProperty('--demo-ruby-target-font-style', 'italic');
+      rubiesEl.style.setProperty('--demo-ruby-target-color', colorVal);
+      rubiesEl.style.setProperty('--demo-ruby-target-opacity', '1');
+      if (demoBlockEl) demoBlockEl.style.setProperty('--demo-ruby-target-opacity', '1');
+    } else {
+      rubiesEl.style.setProperty('--demo-ruby-target-font-family', enFont);
+      rubiesEl.style.setProperty('--demo-ruby-target-font-style', 'normal');
+      rubiesEl.style.setProperty('--demo-ruby-target-color', 'var(--primary)');
+      rubiesEl.style.setProperty('--demo-ruby-target-opacity', opacityVal);
+      if (demoBlockEl) demoBlockEl.style.setProperty('--demo-ruby-target-opacity', opacityVal);
+    }
+  }
+
+  function updateDemoRubyKeys(shortcutStr) {
+    const keysContainer = document.querySelector('.demo-ruby-keys');
+    if (!keysContainer) return;
+    const isMac = (typeof navigator !== 'undefined') && (
+      (navigator.userAgentData && navigator.userAgentData.platform === 'macOS') ||
+      (navigator.platform && navigator.platform.toUpperCase().indexOf('MAC') >= 0) ||
+      (navigator.userAgent && navigator.userAgent.toUpperCase().indexOf('MAC') >= 0)
+    );
+    if (!shortcutStr) {
+      shortcutStr = isMac ? '⇧+⌘+F' : 'Ctrl+Shift+F';
+    }
+
+    const raw = String(shortcutStr).trim();
+    const symbolTokens = ['⇧', '⌘', '⌥', '⌃', '⎇'];
+    let tokenized = '';
+    for (let i = 0; i < raw.length; i++) {
+      const ch = raw[i];
+      if (symbolTokens.includes(ch)) {
+        if (tokenized.length > 0 && !tokenized.endsWith('+') && !tokenized.endsWith(' ')) tokenized += '+';
+        tokenized += ch + '+';
+      } else {
+        tokenized += ch;
+      }
+    }
+    tokenized = tokenized.replace(/\++/g, '+').replace(/^\+|\+$/g, '');
+
+    const parts = tokenized.split(/[+\s]+/).map(p => p.trim()).filter(Boolean);
+    const keySymbolMap = {
+      'Shift': '⇧',
+      'Command': '⌘',
+      'Cmd': '⌘',
+      'MacCtrl': '⌃',
+      'Ctrl': isMac ? '⌃' : 'Ctrl',
+      'Control': isMac ? '⌃' : 'Ctrl',
+      'Alt': isMac ? '⌥' : 'Alt',
+      'Option': isMac ? '⌥' : 'Alt'
+    };
+
+    keysContainer.innerHTML = parts.map(part => {
+      const displayKey = keySymbolMap[part] || part;
+      return `<div class="demo-key">${displayKey}</div>`;
+    }).join('');
   }
 
   if (toneStyleToggle) {
@@ -1324,9 +1405,12 @@ async function applyI18n(lang) {
     }
 
     const keyMap = {
-      'alt': 'Alt ⌥',
-      'ctrl': 'Ctrl ⌃',
+      'double_shift': 'Shift ⇧⇧',
       'shift': 'Shift ⇧',
+      'double_alt': 'Alt ⌥⌥',
+      'alt': 'Alt ⌥',
+      'double_ctrl': 'Ctrl ⌃⌃',
+      'ctrl': 'Ctrl ⌃',
       'meta': 'Cmd ⌘'
     };
     
@@ -1565,14 +1649,131 @@ async function applyI18n(lang) {
     });
   });
 
-  // 監聽主題切換
-  popupThemeSelect.addEventListener('change', () => {
-    const theme = popupThemeSelect.value;
-    chrome.storage.sync.set({ popupTheme: theme });
-    GoogleAnalytics.fireEvent('change_setting', { setting: 'popupTheme', value: theme });
-    updateThemePreview(theme);
-    notifyContentScripts({ action: 'changePopupTheme', theme });
-  });
+  // 輔助函數：解析當前生效的主題
+  function getEffectivePopupTheme(settings = {}) {
+    const mode = settings.popupThemeMode || (popupThemeModeSelect ? popupThemeModeSelect.value : 'manual');
+    if (mode === 'auto_time') {
+      const now = new Date();
+      const curMins = now.getHours() * 60 + now.getMinutes();
+      const dVal = settings.popupThemeDayStart || (popupThemeDayStartInput ? popupThemeDayStartInput.value : '07:00');
+      const nVal = settings.popupThemeNightStart || (popupThemeNightStartInput ? popupThemeNightStartInput.value : '19:00');
+      const [dH, dM] = dVal.split(':').map(Number);
+      const [nH, nM] = nVal.split(':').map(Number);
+      const dayStart = (dH || 7) * 60 + (dM || 0);
+      const nightStart = (nH || 19) * 60 + (nM || 0);
+      let isDay = false;
+      if (dayStart < nightStart) {
+        isDay = curMins >= dayStart && curMins < nightStart;
+      } else {
+        isDay = curMins >= dayStart || curMins < nightStart;
+      }
+      const activeTheme = isDay 
+        ? (settings.popupThemeDay || (popupThemeDaySelect ? popupThemeDaySelect.value : 'classic'))
+        : (settings.popupThemeNight || (popupThemeNightSelect ? popupThemeNightSelect.value : 'night'));
+      return { theme: activeTheme, isDay, mode };
+    }
+    if (mode === 'follow_system') {
+      const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const activeTheme = isDark 
+        ? (settings.popupThemeNight || (popupThemeNightSelect ? popupThemeNightSelect.value : 'night'))
+        : (settings.popupThemeDay || (popupThemeDaySelect ? popupThemeDaySelect.value : 'classic'));
+      return { theme: activeTheme, isDay: !isDark, mode };
+    }
+    if (mode === 'follow_page') {
+      const activeTheme = settings.popupThemeDay || (popupThemeDaySelect ? popupThemeDaySelect.value : 'classic');
+      return { theme: activeTheme, isDay: true, mode };
+    }
+    return {
+      theme: settings.popupTheme || (popupThemeSelect ? popupThemeSelect.value : 'classic'),
+      isDay: true,
+      mode: 'manual'
+    };
+  }
+
+  // 刷新主題配置面板 UI 與預覽
+  function updateThemeSettingsUI(settings = {}) {
+    const mode = settings.popupThemeMode || (popupThemeModeSelect ? popupThemeModeSelect.value : 'manual');
+    if (manualThemeWrapper) manualThemeWrapper.style.display = mode === 'manual' ? 'flex' : 'none';
+    if (multiThemeWrapper) multiThemeWrapper.style.display = mode !== 'manual' ? 'flex' : 'none';
+    if (themeScheduleRow) themeScheduleRow.style.display = mode === 'auto_time' ? 'flex' : 'none';
+
+    const eff = getEffectivePopupTheme(settings);
+    updateThemePreview(eff.theme);
+  }
+
+  // 監聽主題模式切換
+  if (popupThemeModeSelect) {
+    popupThemeModeSelect.addEventListener('change', () => {
+      const mode = popupThemeModeSelect.value;
+      chrome.storage.sync.set({ popupThemeMode: mode });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'popupThemeMode', value: mode });
+      updateThemeSettingsUI();
+      notifyContentScripts({ action: 'changePopupThemeMode', mode });
+    });
+  }
+
+  // 監聽固定主題切換
+  if (popupThemeSelect) {
+    popupThemeSelect.addEventListener('change', () => {
+      const theme = popupThemeSelect.value;
+      chrome.storage.sync.set({ popupTheme: theme });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'popupTheme', value: theme });
+      updateThemePreview(theme);
+      notifyContentScripts({ action: 'changePopupTheme', theme });
+    });
+  }
+
+  // 監聽白天主題切換
+  if (popupThemeDaySelect) {
+    popupThemeDaySelect.addEventListener('change', () => {
+      const theme = popupThemeDaySelect.value;
+      chrome.storage.sync.set({ popupThemeDay: theme });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'popupThemeDay', value: theme });
+      updateThemePreview(theme);
+      notifyContentScripts({ action: 'changePopupThemeDay', theme });
+    });
+  }
+
+  // 監聽夜間主題切換
+  if (popupThemeNightSelect) {
+    popupThemeNightSelect.addEventListener('change', () => {
+      const theme = popupThemeNightSelect.value;
+      chrome.storage.sync.set({ popupThemeNight: theme });
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'popupThemeNight', value: theme });
+      updateThemePreview(theme);
+      notifyContentScripts({ action: 'changePopupThemeNight', theme });
+    });
+  }
+
+  // 監聽時段輸入變更
+  if (popupThemeDayStartInput) {
+    popupThemeDayStartInput.addEventListener('change', () => {
+      const val = popupThemeDayStartInput.value || '07:00';
+      chrome.storage.sync.set({ popupThemeDayStart: val });
+      updateThemeSettingsUI();
+      notifyContentScripts({ action: 'changePopupThemeDayStart', val });
+    });
+  }
+  if (popupThemeNightStartInput) {
+    popupThemeNightStartInput.addEventListener('change', () => {
+      const val = popupThemeNightStartInput.value || '19:00';
+      chrome.storage.sync.set({ popupThemeNightStart: val });
+      updateThemeSettingsUI();
+      notifyContentScripts({ action: 'changePopupThemeNightStart', val });
+    });
+  }
+
+  // 點擊太陽/月亮圖標快速預覽白天/夜間主題
+  if (previewSunIcon) {
+    previewSunIcon.addEventListener('click', () => {
+      if (popupThemeDaySelect) updateThemePreview(popupThemeDaySelect.value);
+    });
+  }
+  if (previewMoonIcon) {
+    previewMoonIcon.addEventListener('click', () => {
+      if (popupThemeNightSelect) updateThemePreview(popupThemeNightSelect.value);
+    });
+  }
 
   // 監聽中文字體下拉選單
   zhFontSelect.addEventListener('change', () => {
@@ -2165,13 +2366,16 @@ async function applyI18n(lang) {
           const formattedShortcut = currentShortcut.replace(/Command/g, '⌘').replace(/Ctrl/g, 'Ctrl');
           const separator = (lang === 'en' || lang === 'ko') ? '. ' : '。';
           descEl.innerHTML = `${prefix}<kbd>${formattedShortcut}</kbd>${separator}${hint}`;
+          updateDemoRubyKeys(currentShortcut);
         } else {
           const space = (lang === 'en' || lang === 'ko') ? ' ' : '';
           descEl.innerHTML = `${none}${space}${hint}`;
+          updateDemoRubyKeys('');
         }
       });
     } else {
       descEl.innerText = "";
+      updateDemoRubyKeys('');
     }
   }
 

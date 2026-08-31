@@ -223,13 +223,13 @@
     "description": "optEnFont"
   },
   "optEnFontCourier": {
-    "message": "经典等宽字体 (Courier)"
+    "message": "经典等宽 (Courier)"
   },
   "optEnFontModern": {
-    "message": "现代等宽字体 (SF Mono / Consolas / 默认)"
+    "message": "现代等宽"
   },
   "optEnFontSystem": {
-    "message": "系统无衬线体 (System UI)"
+    "message": "系统无衬线 (System UI)"
   },
   "optEnable": {
     "message": "启用词典",
@@ -281,16 +281,16 @@
     "message": "自定义输入..."
   },
   "optFontHei": {
-    "message": "字典黑体 (Chiron Hei / 雅黑)"
+    "message": "字典黑体"
   },
   "optFontMono": {
-    "message": "默认等宽字体 (Consolas / SF Mono / ui-monospace)"
+    "message": "现代等宽"
   },
   "optFontSans": {
-    "message": "系统无衬线体 (System UI / Arial)"
+    "message": "系统无衬线"
   },
   "optFontSerif": {
-    "message": "优雅衬线体 (Georgia / Times)"
+    "message": "衬线体"
   },
   "optFooterData": {
     "message": "数据来源：",
@@ -415,8 +415,36 @@
     "message": "无 (关闭)"
   },
   "optKeyShift": {
-    "message": "Shift (⇧)",
+    "message": "Shift 键",
     "description": "optKeyShift"
+  },
+  "optKeyDoubleShift": {
+    "message": "双击 Shift 键",
+    "description": "optKeyDoubleShift"
+  },
+  "optKeyShiftSingle": {
+    "message": "单按 Shift 键",
+    "description": "optKeyShiftSingle"
+  },
+  "optKeyDoubleAlt": {
+    "message": "双击 Alt / Option 键",
+    "description": "optKeyDoubleAlt"
+  },
+  "optKeyAltSingle": {
+    "message": "单按 Alt / Option 键",
+    "description": "optKeyAltSingle"
+  },
+  "optKeyDoubleCtrl": {
+    "message": "双击 Ctrl 键",
+    "description": "optKeyDoubleCtrl"
+  },
+  "optKeyCtrlSingle": {
+    "message": "单按 Ctrl 键",
+    "description": "optKeyCtrlSingle"
+  },
+  "optKeyMetaSingle": {
+    "message": "单按 Command / Win 键",
+    "description": "optKeyMetaSingle"
   },
   "optModelName": {
     "message": "模型名称",
@@ -648,6 +676,70 @@
   "optTheme": {
     "message": "外观主题",
     "description": "optTheme"
+  },
+  "optThemeMode": {
+    "message": "主题切换模式",
+    "description": "optThemeMode"
+  },
+  "optThemeModeDesc": {
+    "message": "选择固定使用单一主题，或跟随系统/网页外观自动切换",
+    "description": "optThemeModeDesc"
+  },
+  "optThemeModeManual": {
+    "message": "固定主题",
+    "description": "optThemeModeManual"
+  },
+  "optThemeModeAutoTime": {
+    "message": "定时自动切换（白天 / 夜间）",
+    "description": "optThemeModeAutoTime"
+  },
+  "optThemeModeFollowSystem": {
+    "message": "跟随系统外观",
+    "description": "optThemeModeFollowSystem"
+  },
+  "optThemeModeFollowPage": {
+    "message": "跟随网页明暗度",
+    "description": "optThemeModeFollowPage"
+  },
+  "optThemeDay": {
+    "message": "白天",
+    "description": "optThemeDay"
+  },
+  "optThemeNight": {
+    "message": "夜间",
+    "description": "optThemeNight"
+  },
+  "optThemeSchedule": {
+    "message": "时段",
+    "description": "optThemeSchedule"
+  },
+  "optThemeSingleSelect": {
+    "message": "配色主题",
+    "description": "optThemeSingleSelect"
+  },
+  "optThemeDayStart": {
+    "message": "白天开始",
+    "description": "optThemeDayStart"
+  },
+  "optThemeNightStart": {
+    "message": "夜间开始",
+    "description": "optThemeNightStart"
+  },
+  "optThemePreviewDay": {
+    "message": "☀️ 预览白天",
+    "description": "optThemePreviewDay"
+  },
+  "optThemePreviewNight": {
+    "message": "🌙 预览夜间",
+    "description": "optThemePreviewNight"
+  },
+  "optThemeActiveStatusDay": {
+    "message": "☀️ 当前生效：白天主题",
+    "description": "optThemeActiveStatusDay"
+  },
+  "optThemeActiveStatusNight": {
+    "message": "🌙 当前生效：夜间主题",
+    "description": "optThemeActiveStatusNight"
   },
   "optThemeAuto": {
     "message": "跟随系统",

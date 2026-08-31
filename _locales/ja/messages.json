@@ -226,10 +226,10 @@
     "message": "クラシック等幅 (Courier)"
   },
   "optEnFontModern": {
-    "message": "モダン等幅フォント (SF Mono / Consolas / デフォルト)"
+    "message": "モダン等幅"
   },
   "optEnFontSystem": {
-    "message": "システムサンセリフ"
+    "message": "システムサンセリフ (System UI)"
   },
   "optEnable": {
     "message": "辞書を有効にする",
@@ -281,16 +281,16 @@
     "message": "カスタム入力..."
   },
   "optFontHei": {
-    "message": "辞書ゴシック (Chiron Hei / YaHei)"
+    "message": "辞書ゴシック体"
   },
   "optFontMono": {
-    "message": "デフォルト等幅 (Consolas / SF Mono / ui-monospace)"
+    "message": "モダン等幅"
   },
   "optFontSans": {
-    "message": "システムサンセリフ (System UI / Arial)"
+    "message": "システムサンセリフ"
   },
   "optFontSerif": {
-    "message": "エレガントセリフ (Georgia / Times)"
+    "message": "明朝・セリフ体"
   },
   "optFooterData": {
     "message": "データソース：",
@@ -409,8 +409,36 @@
     "message": "なし (オフ)"
   },
   "optKeyShift": {
-    "message": "Shift (⇧)",
+    "message": "Shift キー",
     "description": "optKeyShift"
+  },
+  "optKeyDoubleShift": {
+    "message": "Shift キーをダブルタップ",
+    "description": "optKeyDoubleShift"
+  },
+  "optKeyShiftSingle": {
+    "message": "Shift キーをシングルタップ",
+    "description": "optKeyShiftSingle"
+  },
+  "optKeyDoubleAlt": {
+    "message": "Alt / Option キーをダブルタップ",
+    "description": "optKeyDoubleAlt"
+  },
+  "optKeyAltSingle": {
+    "message": "Alt / Option キーをシングルタップ",
+    "description": "optKeyAltSingle"
+  },
+  "optKeyDoubleCtrl": {
+    "message": "Ctrl キーをダブルタップ",
+    "description": "optKeyDoubleCtrl"
+  },
+  "optKeyCtrlSingle": {
+    "message": "Ctrl キーをシングルタップ",
+    "description": "optKeyCtrlSingle"
+  },
+  "optKeyMetaSingle": {
+    "message": "Command / Win キーをシングルタップ",
+    "description": "optKeyMetaSingle"
   },
   "optModelName": {
     "message": "モデル名",
@@ -627,6 +655,70 @@
   "optTheme": {
     "message": "テーマ",
     "description": "optTheme"
+  },
+  "optThemeMode": {
+    "message": "テーマ切り替えモード",
+    "description": "optThemeMode"
+  },
+  "optThemeModeDesc": {
+    "message": "固定テーマ、またはシステム/ページ外観に追従を選択",
+    "description": "optThemeModeDesc"
+  },
+  "optThemeModeManual": {
+    "message": "固定テーマ",
+    "description": "optThemeModeManual"
+  },
+  "optThemeModeAutoTime": {
+    "message": "時間帯で自動切り替え (昼 / 夜)",
+    "description": "optThemeModeAutoTime"
+  },
+  "optThemeModeFollowSystem": {
+    "message": "システム外観に追従",
+    "description": "optThemeModeFollowSystem"
+  },
+  "optThemeModeFollowPage": {
+    "message": "ページ背景の明暗に追従",
+    "description": "optThemeModeFollowPage"
+  },
+  "optThemeDay": {
+    "message": "昼",
+    "description": "optThemeDay"
+  },
+  "optThemeNight": {
+    "message": "夜",
+    "description": "optThemeNight"
+  },
+  "optThemeSchedule": {
+    "message": "時間帯",
+    "description": "optThemeSchedule"
+  },
+  "optThemeSingleSelect": {
+    "message": "テーマ配色",
+    "description": "optThemeSingleSelect"
+  },
+  "optThemeDayStart": {
+    "message": "昼の開始",
+    "description": "optThemeDayStart"
+  },
+  "optThemeNightStart": {
+    "message": "夜の開始",
+    "description": "optThemeNightStart"
+  },
+  "optThemePreviewDay": {
+    "message": "☀️ 昼プレビュー",
+    "description": "optThemePreviewDay"
+  },
+  "optThemePreviewNight": {
+    "message": "🌙 夜プレビュー",
+    "description": "optThemePreviewNight"
+  },
+  "optThemeActiveStatusDay": {
+    "message": "☀️ 現在有効：昼テーマ",
+    "description": "optThemeActiveStatusDay"
+  },
+  "optThemeActiveStatusNight": {
+    "message": "🌙 現在有効：夜テーマ",
+    "description": "optThemeActiveStatusNight"
   },
   "optThemeAuto": {
     "message": "システム",

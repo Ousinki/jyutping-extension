@@ -226,7 +226,7 @@
     "message": "Classic Monospace (Courier)"
   },
   "optEnFontModern": {
-    "message": "Modern Monospace (SF Mono / Consolas / Default)"
+    "message": "Modern Monospace"
   },
   "optEnFontSystem": {
     "message": "System Sans-Serif (System UI)"
@@ -278,19 +278,19 @@
     "description": "optFeedbackTitle"
   },
   "optFontCustom": {
-    "message": "Custom input..."
+    "message": "Custom..."
   },
   "optFontHei": {
-    "message": "Dictionary Sans (Chiron Hei / YaHei)"
+    "message": "Dictionary Gothic"
   },
   "optFontMono": {
-    "message": "Default Monospace (Consolas / SF Mono / ui-monospace)"
+    "message": "Modern Monospace"
   },
   "optFontSans": {
-    "message": "System Sans-serif (System UI / Arial)"
+    "message": "System Sans-Serif"
   },
   "optFontSerif": {
-    "message": "Elegant Serif (Georgia / Times)"
+    "message": "Serif"
   },
   "optFooterData": {
     "message": "Data Source: ",
@@ -415,8 +415,36 @@
     "message": "None (Off)"
   },
   "optKeyShift": {
-    "message": "Shift (⇧)",
+    "message": "Shift key",
     "description": "optKeyShift"
+  },
+  "optKeyDoubleShift": {
+    "message": "Double-tap Shift key",
+    "description": "optKeyDoubleShift"
+  },
+  "optKeyShiftSingle": {
+    "message": "Single-tap Shift key",
+    "description": "optKeyShiftSingle"
+  },
+  "optKeyDoubleAlt": {
+    "message": "Double-tap Alt / Option key",
+    "description": "optKeyDoubleAlt"
+  },
+  "optKeyAltSingle": {
+    "message": "Single-tap Alt / Option key",
+    "description": "optKeyAltSingle"
+  },
+  "optKeyDoubleCtrl": {
+    "message": "Double-tap Ctrl key",
+    "description": "optKeyDoubleCtrl"
+  },
+  "optKeyCtrlSingle": {
+    "message": "Single-tap Ctrl key",
+    "description": "optKeyCtrlSingle"
+  },
+  "optKeyMetaSingle": {
+    "message": "Single-tap Command / Win key",
+    "description": "optKeyMetaSingle"
   },
   "optModelName": {
     "message": "Model Name",
@@ -648,6 +676,70 @@
   "optTheme": {
     "message": "Theme",
     "description": "optTheme"
+  },
+  "optThemeMode": {
+    "message": "Theme Mode",
+    "description": "optThemeMode"
+  },
+  "optThemeModeDesc": {
+    "message": "Choose fixed theme, or follow system/page appearance",
+    "description": "optThemeModeDesc"
+  },
+  "optThemeModeManual": {
+    "message": "Fixed Theme",
+    "description": "optThemeModeManual"
+  },
+  "optThemeModeAutoTime": {
+    "message": "Scheduled Auto-switch (Day / Night)",
+    "description": "optThemeModeAutoTime"
+  },
+  "optThemeModeFollowSystem": {
+    "message": "Follow System Appearance",
+    "description": "optThemeModeFollowSystem"
+  },
+  "optThemeModeFollowPage": {
+    "message": "Follow Page Background",
+    "description": "optThemeModeFollowPage"
+  },
+  "optThemeDay": {
+    "message": "Day",
+    "description": "optThemeDay"
+  },
+  "optThemeNight": {
+    "message": "Night",
+    "description": "optThemeNight"
+  },
+  "optThemeSchedule": {
+    "message": "Time",
+    "description": "optThemeSchedule"
+  },
+  "optThemeSingleSelect": {
+    "message": "Color Theme",
+    "description": "optThemeSingleSelect"
+  },
+  "optThemeDayStart": {
+    "message": "Day Starts",
+    "description": "optThemeDayStart"
+  },
+  "optThemeNightStart": {
+    "message": "Night Starts",
+    "description": "optThemeNightStart"
+  },
+  "optThemePreviewDay": {
+    "message": "☀️ Preview Day",
+    "description": "optThemePreviewDay"
+  },
+  "optThemePreviewNight": {
+    "message": "🌙 Preview Night",
+    "description": "optThemePreviewNight"
+  },
+  "optThemeActiveStatusDay": {
+    "message": "☀️ Currently active: Day Theme",
+    "description": "optThemeActiveStatusDay"
+  },
+  "optThemeActiveStatusNight": {
+    "message": "🌙 Currently active: Night Theme",
+    "description": "optThemeActiveStatusNight"
   },
   "optThemeAuto": {
     "message": "Auto",

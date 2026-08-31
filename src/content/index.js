@@ -26,7 +26,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let displayMode = 'jyutping';
   let toneStyle = 'superscript'; // 'superscript' 數字為上標 或 'inline' 數字跟在後方
   let popupDisplayStyle = 'full'; // 'full' 完整彈窗 或 'compact' 僅顯示音標
-  let popupTheme = 'classic'; // 懸浮窗主題
+  let popupThemeMode = 'manual'; // 主題模式: 'manual' | 'auto_time' | 'follow_system' | 'follow_page'
+  let popupTheme = 'classic'; // 懸浮窗主題 (固定模式)
+  let popupThemeDay = 'classic'; // 白天主題
+  let popupThemeNight = 'night'; // 夜間主題
+  let popupThemeDayStart = '07:00'; // 白天開始時間
+  let popupThemeNightStart = '19:00'; // 夜間開始時間
   let ttsEnabled = true; // TTS 開關
   let ttsEngine = 'edgeTts'; // TTS 引擎: webSpeech, chromeTts, edgeTts, azureTts
   let edgeTtsMode = 'default'; // Edge TTS 模式: default (預設伺服器) / custom (自定義)
@@ -449,13 +454,42 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
 
 
+  // 根據當前模式、時間或網頁背景動態解析生效的主題
+  function resolveEffectivePopupTheme(targetElement = null) {
+    if (popupThemeMode === 'auto_time') {
+      const now = new Date();
+      const curMins = now.getHours() * 60 + now.getMinutes();
+      const [dH, dM] = (popupThemeDayStart || '07:00').split(':').map(Number);
+      const [nH, nM] = (popupThemeNightStart || '19:00').split(':').map(Number);
+      const dayStart = (dH || 7) * 60 + (dM || 0);
+      const nightStart = (nH || 19) * 60 + (nM || 0);
+      let isDay = false;
+      if (dayStart < nightStart) {
+        isDay = curMins >= dayStart && curMins < nightStart;
+      } else {
+        isDay = curMins >= dayStart || curMins < nightStart;
+      }
+      return isDay ? (popupThemeDay || 'classic') : (popupThemeNight || 'night');
+    }
+    if (popupThemeMode === 'follow_system') {
+      const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+      return isDark ? (popupThemeNight || 'night') : (popupThemeDay || 'classic');
+    }
+    if (popupThemeMode === 'follow_page') {
+      const el = targetElement || (currentRange && currentRange.startContainer ? (currentRange.startContainer.nodeType === Node.TEXT_NODE ? currentRange.startContainer.parentElement : currentRange.startContainer) : document.body);
+      const isDark = isElementOnDarkBackground(el);
+      return isDark ? (popupThemeNight || 'night') : (popupThemeDay || 'classic');
+    }
+    return popupTheme || 'classic';
+  }
+
   // 應用主題到彈窗
-  function applyPopupTheme(themeName) {
+  function applyPopupTheme(themeName = null, targetElement = null) {
     if (!popup) return;
     
-    const theme = POPUP_THEMES[themeName] || POPUP_THEMES.classic;
+    const activeThemeName = themeName || resolveEffectivePopupTheme(targetElement);
+    const theme = POPUP_THEMES[activeThemeName] || POPUP_THEMES.classic;
 
-    
     // 設定 CSS 變量
     for (const [prop, value] of Object.entries(theme.vars)) {
       popup.style.setProperty(prop, value);
@@ -465,7 +499,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     // 處理毛玻璃特殊 class
     popup.classList.remove('popup-theme-glass');
     if (translatePopup) translatePopup.classList.remove('popup-theme-glass');
-    if (themeName === 'glass') {
+    if (activeThemeName === 'glass') {
       popup.classList.add('popup-theme-glass');
       if (translatePopup) translatePopup.classList.add('popup-theme-glass');
     }
@@ -1887,7 +1921,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   // 載入用戶設定
   let toneDisplayStyle = 'normal';
   let rubyTextOpacity = '0.85';
-  let rubyTextFont = "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
   let rubyTextStyle = 'default';
   let rubyDictionaryColor = '#999999';
   let enableAutoTranslateYueDefs = false;
@@ -1898,8 +1931,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
-      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextFont', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
+      'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'popupThemeMode', 'popupThemeDay', 'popupThemeNight', 'popupThemeDayStart', 'popupThemeNightStart', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
+      'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
@@ -1917,13 +1950,18 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       paragraphTransEngine = result.paragraphTransEngine || 'bing';
       paragraphTransDirection = result.paragraphTransDirection || 'yue_to_target';
       popupDisplayStyle = result.popupDisplayStyle || 'full';
+      popupThemeMode = result.popupThemeMode || 'manual';
       popupTheme = result.popupTheme || 'classic';
+      popupThemeDay = result.popupThemeDay || 'classic';
+      popupThemeNight = result.popupThemeNight || 'night';
+      popupThemeDayStart = result.popupThemeDayStart || '07:00';
+      popupThemeNightStart = result.popupThemeNightStart || '19:00';
       customZhFont = result.customZhFont || '';
       customEnFont = result.customEnFont || '';
       highlightStyle = result.highlightStyle || 'yellow';
       rubyHoverStyle = result.rubyHoverStyle || 'ruby-red';
       compactExpandBtn = result.compactExpandBtn !== false;
-      applyPopupTheme(popupTheme);
+      applyPopupTheme();
       ttsEnabled = result.ttsEnabled !== false;
       // 讀到「發音已關閉」時卸載預熱監聽，避免白白建立播放器
       if (!ttsEnabled) detachAudioUnlockListeners();
@@ -1936,7 +1974,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       ttsRate = result.ttsRate || 0.9;
       toneDisplayStyle = result.toneDisplayStyle || 'normal';
       rubyTextOpacity = result.rubyTextOpacity || '0.85';
-      rubyTextFont = result.rubyTextFont || "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif";
       rubyTextStyle = result.rubyTextStyle || 'default';
       rubyDictionaryColor = result.rubyDictionaryColor || '#999999';
       enableAutoTranslateYueDefs = result.enableAutoTranslateYueDefs === true;
@@ -1962,8 +1999,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         document.documentElement.style.setProperty('--jyutping-rt-font-weight', 'normal', 'important');
         document.documentElement.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
       } else {
-        if (rubyTextFont) {
-          document.documentElement.style.setProperty('--jyutping-rt-font', rubyTextFont, 'important');
+        if (customEnFont) {
+          document.documentElement.style.setProperty('--jyutping-rt-font', customEnFont, 'important');
         } else {
           document.documentElement.style.removeProperty('--jyutping-rt-font');
         }
@@ -2004,17 +2041,44 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       if (changes.hoverModifier) {
         hoverModifier = changes.hoverModifier.newValue || 'none';
       }
+      if (changes.popupThemeMode) {
+        popupThemeMode = changes.popupThemeMode.newValue || 'manual';
+        applyPopupTheme();
+      }
       if (changes.popupTheme) {
         popupTheme = changes.popupTheme.newValue || 'classic';
-        applyPopupTheme(popupTheme);
+        applyPopupTheme();
+      }
+      if (changes.popupThemeDay) {
+        popupThemeDay = changes.popupThemeDay.newValue || 'classic';
+        applyPopupTheme();
+      }
+      if (changes.popupThemeNight) {
+        popupThemeNight = changes.popupThemeNight.newValue || 'night';
+        applyPopupTheme();
+      }
+      if (changes.popupThemeDayStart) {
+        popupThemeDayStart = changes.popupThemeDayStart.newValue || '07:00';
+        applyPopupTheme();
+      }
+      if (changes.popupThemeNightStart) {
+        popupThemeNightStart = changes.popupThemeNightStart.newValue || '19:00';
+        applyPopupTheme();
       }
       if (changes.customZhFont) {
         customZhFont = changes.customZhFont.newValue || '';
-        applyPopupTheme(popupTheme);
+        applyPopupTheme();
       }
       if (changes.customEnFont) {
         customEnFont = changes.customEnFont.newValue || '';
-        applyPopupTheme(popupTheme);
+        applyPopupTheme();
+        if (rubyTextStyle !== 'dictionary') {
+          if (customEnFont) {
+            document.documentElement.style.setProperty('--jyutping-rt-font', customEnFont, 'important');
+          } else {
+            document.documentElement.style.removeProperty('--jyutping-rt-font');
+          }
+        }
       }
       if (changes.highlightStyle) {
         highlightStyle = changes.highlightStyle.newValue || 'yellow';
@@ -2079,14 +2143,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           document.documentElement.style.setProperty('--jyutping-rt-color', rubyDictionaryColor, 'important');
         }
       }
-      if (changes.rubyTextFont) {
-        rubyTextFont = changes.rubyTextFont.newValue;
-        if (rubyTextFont) {
-          document.documentElement.style.setProperty('--jyutping-rt-font', rubyTextFont, 'important');
-        } else {
-          document.documentElement.style.removeProperty('--jyutping-rt-font');
-        }
-      }
       if (changes.rubyTextStyle) {
         rubyTextStyle = changes.rubyTextStyle.newValue;
         document.documentElement.style.setProperty('--jyutping-rt-opacity', rubyTextStyle === 'dictionary' ? '1' : rubyTextOpacity, 'important');
@@ -2097,8 +2153,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           document.documentElement.style.setProperty('--jyutping-rt-font-weight', 'normal', 'important');
           document.documentElement.style.setProperty('-webkit-font-smoothing', 'antialiased', 'important');
         } else {
-          if (rubyTextFont) {
-            document.documentElement.style.setProperty('--jyutping-rt-font', rubyTextFont, 'important');
+          if (customEnFont) {
+            document.documentElement.style.setProperty('--jyutping-rt-font', customEnFont, 'important');
           } else {
             document.documentElement.style.removeProperty('--jyutping-rt-font');
           }
@@ -3360,26 +3416,41 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       document.addEventListener('mouseup', onUp, true);
     }, true);
 
-    // 監聽按鍵
+    // 判斷是否處於文本輸入/編輯區域（防止輸入框打字時誤觸發）
+    function isEditableElement(target) {
+      if (!target) return false;
+      const tagName = target.tagName;
+      if (tagName === 'INPUT' || tagName === 'TEXTAREA' || tagName === 'SELECT') return true;
+      if (target.isContentEditable) return true;
+      const active = document.activeElement;
+      if (active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA' || active.isContentEditable)) {
+        return true;
+      }
+      return false;
+    }
+
+    // 段落翻譯按鍵狀態跟蹤（防止組合鍵誤觸與支持雙擊觸發）
+    const lastParaKeyTapTime = {};
+    let hadNonModifierKeyPressed = false;
+
+    // 監聽按鍵按下
     document.addEventListener('keydown', (e) => {
-      console.log('[Debug] keydown triggered:', e.key);
+      // 標記是否伴隨了其他非修飾按鍵（如字母、數字、方向鍵等）
+      if (e.key !== 'Shift' && e.key !== 'Alt' && e.key !== 'Control' && e.key !== 'Meta') {
+        hadNonModifierKeyPressed = true;
+      } else if (!e.repeat) {
+        hadNonModifierKeyPressed = false;
+      }
+
       if (e.key === 'Escape') {
         hidePopup();
         hideTranslatePopup();
         hasUserSelection = false;
       }
 
-      // 段落整段粵語翻譯：按下設定的觸發鍵即翻譯鼠標下的段落（再按一次移除）
-      if (isEnabled && paragraphTransKey !== 'off' && paragraphTransKey !== 'longpress' && !e.repeat) {
-        const paraKeyMap = { 'shift': 'Shift', 'alt': 'Alt', 'ctrl': 'Control', 'meta': 'Meta' };
-        if (e.key === paraKeyMap[paragraphTransKey]) {
-          translateBlockAtPoint(currentMouseX, currentMouseY);
-        }
-      }
-
-      // 如果按下了設定的修飾鍵，立刻觸發懸停查詞
+      // 如果按下了設定的修飾鍵，立刻觸發懸停查詞（僅在非編輯區域時）
       const keyMap = { 'alt': 'Alt', 'ctrl': 'Control', 'shift': 'Shift', 'meta': 'Meta' };
-      if (e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
+      if (!isEditableElement(e.target) && e.key === keyMap[hoverModifier] && currentMouseX !== 0 && currentMouseY !== 0) {
         console.log('[Debug] Trigger key pressed! Key:', e.key, 'mouseX:', currentMouseX, 'mouseY:', currentMouseY);
         // 模擬滑鼠移動觸發查詞，強制更新最後已知坐標以通過防抖
         lastX = currentMouseX;
@@ -3396,6 +3467,66 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         // 完整模式下按修飾鍵觸發時，自動發音
         if (popupDisplayStyle === 'full' && ttsEnabled && currentWord && dictionary[currentWord]) {
           speakCantonese(dictionary[currentWord].traditional || currentWord);
+        }
+      }
+    });
+
+    // 監聽按鍵抬起（段落翻譯觸發：在 keyup 時精確判定乾淨的單擊或雙擊，徹底杜絕組合鍵誤觸）
+    document.addEventListener('keyup', (e) => {
+      if (!isEnabled || paragraphTransKey === 'off' || paragraphTransKey === 'longpress') return;
+      if (isEditableElement(e.target)) return;
+
+      // 如果按下期間伴隨了其他非修飾鍵（如 Cmd+Shift+C / Shift+A 等組合鍵），直接忽略
+      if (hadNonModifierKeyPressed) return;
+
+      const now = Date.now();
+      const key = e.key;
+
+      // 1. 雙擊模式判定 (350ms 內連續兩次單獨敲擊)
+      if (paragraphTransKey === 'double_shift' && key === 'Shift') {
+        if (e.ctrlKey || e.altKey || e.metaKey) return;
+        const last = lastParaKeyTapTime['Shift'] || 0;
+        if (now - last < 350) {
+          lastParaKeyTapTime['Shift'] = 0;
+          translateBlockAtPoint(currentMouseX, currentMouseY);
+        } else {
+          lastParaKeyTapTime['Shift'] = now;
+        }
+      } else if (paragraphTransKey === 'double_alt' && key === 'Alt') {
+        if (e.ctrlKey || e.shiftKey || e.metaKey) return;
+        const last = lastParaKeyTapTime['Alt'] || 0;
+        if (now - last < 350) {
+          lastParaKeyTapTime['Alt'] = 0;
+          translateBlockAtPoint(currentMouseX, currentMouseY);
+        } else {
+          lastParaKeyTapTime['Alt'] = now;
+        }
+      } else if (paragraphTransKey === 'double_ctrl' && key === 'Control') {
+        if (e.altKey || e.shiftKey || e.metaKey) return;
+        const last = lastParaKeyTapTime['Control'] || 0;
+        if (now - last < 350) {
+          lastParaKeyTapTime['Control'] = 0;
+          translateBlockAtPoint(currentMouseX, currentMouseY);
+        } else {
+          lastParaKeyTapTime['Control'] = now;
+        }
+      }
+      // 2. 單按抬起模式判定（需嚴格排他其他修飾鍵）
+      else if (paragraphTransKey === 'shift' && key === 'Shift') {
+        if (!e.ctrlKey && !e.altKey && !e.metaKey) {
+          translateBlockAtPoint(currentMouseX, currentMouseY);
+        }
+      } else if (paragraphTransKey === 'alt' && key === 'Alt') {
+        if (!e.ctrlKey && !e.shiftKey && !e.metaKey) {
+          translateBlockAtPoint(currentMouseX, currentMouseY);
+        }
+      } else if (paragraphTransKey === 'ctrl' && key === 'Control') {
+        if (!e.altKey && !e.shiftKey && !e.metaKey) {
+          translateBlockAtPoint(currentMouseX, currentMouseY);
+        }
+      } else if (paragraphTransKey === 'meta' && key === 'Meta') {
+        if (!e.altKey && !e.shiftKey && !e.ctrlKey) {
+          translateBlockAtPoint(currentMouseX, currentMouseY);
         }
       }
     });
@@ -4521,6 +4652,15 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       return;
     }
 
+    // 判斷是否處於暗色網頁背景，並動態應用對應主題
+    let parentElem = null;
+    if (currentRange && currentRange.startContainer) {
+      parentElem = currentRange.startContainer.nodeType === Node.TEXT_NODE 
+        ? currentRange.startContainer.parentElement 
+        : currentRange.startContainer;
+    }
+    applyPopupTheme(null, parentElem);
+
     // 構建 POS 原生條目內容
     const posEntries = (entry.entries && Array.isArray(entry.entries) && entry.entries.length > 0)
       ? entry.entries
@@ -5596,10 +5736,34 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     } else if (request.action === 'changePopupTheme') {
       popupTheme = request.theme;
       applyPopupTheme(popupTheme);
+    } else if (request.action === 'changePopupThemeMode') {
+      popupThemeMode = request.mode;
+      applyPopupTheme();
+    } else if (request.action === 'changePopupThemeDay') {
+      popupThemeDay = request.theme;
+      applyPopupTheme();
+    } else if (request.action === 'changePopupThemeNight') {
+      popupThemeNight = request.theme;
+      applyPopupTheme();
+    } else if (request.action === 'changePopupThemeDayStart') {
+      popupThemeDayStart = request.val;
+      applyPopupTheme();
+    } else if (request.action === 'changePopupThemeNightStart') {
+      popupThemeNightStart = request.val;
+      applyPopupTheme();
     } else if (request.action === 'changeCustomFont') {
       if (request.customZhFont !== undefined) customZhFont = request.customZhFont;
-      if (request.customEnFont !== undefined) customEnFont = request.customEnFont;
-      applyPopupTheme(popupTheme);
+      if (request.customEnFont !== undefined) {
+        customEnFont = request.customEnFont;
+        if (rubyTextStyle !== 'dictionary') {
+          if (customEnFont) {
+            document.documentElement.style.setProperty('--jyutping-rt-font', customEnFont, 'important');
+          } else {
+            document.documentElement.style.removeProperty('--jyutping-rt-font');
+          }
+        }
+      }
+      applyPopupTheme();
     } else if (request.action === 'changeTtsEnabled') {
       ttsEnabled = request.ttsEnabled;
       if (ttsEnabled) attachAudioUnlockListeners();

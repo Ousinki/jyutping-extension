@@ -368,6 +368,48 @@
         display: none !important;
       }
 
+      /* 緊湊微縮直角下拉欄 (用於主題預覽切換) */
+      .theme-flat-select {
+        height: 24px;
+        line-height: 22px;
+        min-width: 88px;
+        padding: 0 20px 0 8px;
+        font-size: 12px;
+        font-family: inherit;
+        color: var(--text-primary);
+        background-color: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 0px !important; /* 矮小純正直角 */
+        appearance: none;
+        -webkit-appearance: none;
+        background-image: url('data:image/svg+xml;utf8,<svg width="8" height="5" viewBox="0 0 8 5" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M1 1L4 4L7 1" stroke="%23888888" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg>');
+        background-repeat: no-repeat;
+        background-position: right 6px center;
+        cursor: pointer;
+        outline: none;
+        transition: border-color 0.15s ease, background-color 0.15s ease;
+        box-shadow: none;
+      }
+
+      .theme-flat-select:hover {
+        border-color: var(--primary);
+      }
+
+      .theme-flat-select:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 15%, transparent);
+      }
+
+      .theme-preview-icon {
+        cursor: pointer;
+        transition: transform 0.15s ease, opacity 0.15s ease;
+      }
+
+      .theme-preview-icon:hover {
+        transform: scale(1.2);
+        opacity: 0.85;
+      }
+
       /* Range Slider */
       .range-container {
         width: 100%;
@@ -1099,9 +1141,9 @@
                 <span class="setting-label" data-i18n="optEnFont">拼音字體</span>
               </div>
               <select id="enFontSelect" class="select-input" style="margin-bottom: 8px;">
-                <option value="" data-i18n="optEnFontModern">現代等寬字體 (SF Mono / Consolas / 預設)</option>
-                <option value="'Courier New', Courier, monospace" data-i18n="optEnFontCourier">經典等寬字體 (Courier)</option>
-                <option value="system-ui, -apple-system, sans-serif" data-i18n="optEnFontSystem">系統無襯線體 (System UI)</option>
+                <option value="" data-i18n="optEnFontModern">現代等寬</option>
+                <option value="'Courier New', Courier, monospace" data-i18n="optEnFontCourier">經典等寬 (Courier)</option>
+                <option value="system-ui, -apple-system, sans-serif" data-i18n="optEnFontSystem">系統無襯線 (System UI)</option>
                 <option value="custom" data-i18n="optCustomInput">自定義輸入...</option>
               </select>
               <input
@@ -1124,6 +1166,19 @@
                 <option value="full" data-i18n="optStyleFull">完整模式</option>
                 <option value="compact" data-i18n="optStyleCompact">精簡音標</option>
                 <option value="ruby" data-i18n="optStyleRuby">網頁內嵌 Ruby</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="setting-item" id="hoverModifierContainer" style="display: flex; justify-content: flex-end; align-items: center; padding-top: 0; padding-bottom: 12px; margin-top: -6px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px;">
+              <span class="setting-label" data-i18n="optHoverModifier" style="font-size: 13px; font-weight: normal; color: var(--text-secondary); margin-bottom: 0;">懸停觸發按鍵</span>
+              <select id="hoverModifier" class="theme-flat-select native-only" style="min-width: 140px;">
+                <option value="none" data-i18n="optKeyNone">無 (直接懸停)</option>
+                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
+                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
+                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
+                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
               </select>
             </div>
           </div>
@@ -1241,23 +1296,6 @@
           </div>
 
 
-          <div class="setting-item" id="hoverModifierContainer">
-            <div class="setting-info">
-              <span class="setting-label" data-i18n="optHoverModifier">懸停觸發按鍵</span>
-              <span class="setting-desc" data-i18n="optHoverModifierDesc">按住特定按鍵時才顯示完整詞典，避免日常干擾</span>
-            </div>
-            <div class="select-wrapper">
-              <select id="hoverModifier">
-                <option value="none" data-i18n="optKeyNone">無 (直接懸停)</option>
-                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
-                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
-                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
-                <option value="meta" data-i18n="optKeyMeta">Command (⌘) / Win</option>
-              </select>
-            </div>
-          </div>
-
-
 
           <!-- Compact Mode Animation Demo -->
           <div id="compactDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">
@@ -1353,7 +1391,6 @@
           <div id="rubyDemo" style="display: none; margin-bottom: 16px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 50px 24px 30px 24px; position: relative; justify-content: center; align-items: center; min-height: 80px; overflow: hidden;">
             <div style="font-size: 18px; color: var(--text-primary); font-weight: 500; position: relative; z-index: 1; display: inline-block; letter-spacing: 0.05em; margin: 0 auto;">
               <!-- Characters with ruby annotations -->
-              <span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
               <span class="demo-ruby-char" style="display: inline-block; position: relative; text-align: center;">
                 <span class="demo-ruby-rt" data-text="gam1" style="position: absolute; bottom: 100%; left: 50%; transform: translate(-50%, -0.2em); font-size: 0.5em; color: #1890ff; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; opacity: 0; letter-spacing: -0.5px; white-space: nowrap; text-align: center;">gam1</span>
                 今
@@ -1489,11 +1526,8 @@
 
           <!-- 懸浮窗主題（僅完整模式顯示） -->
           <div id="themeSection">
-          <div
-            class="setting-item"
-            style="flex-direction: column; align-items: stretch"
-          >
             <div
+              class="setting-item"
               style="
                 display: flex;
                 align-items: center;
@@ -1502,27 +1536,72 @@
               "
             >
               <div class="setting-info" style="margin-right: 16px">
-                <span class="setting-label" data-i18n="optTheme">懸浮窗主題</span>
-                <span class="setting-desc" data-i18n="optThemeDesc">選擇詞典彈窗的配色風格</span>
+                <span class="setting-label" data-i18n="optTheme">外觀主題</span>
+                <span class="setting-desc" data-i18n="optThemeModeDesc">選擇固定使用單一主題，或跟隨系統/網頁外觀自動切換</span>
               </div>
               <div class="select-wrapper">
-                <select id="popupTheme">
-                  <option value="classic" data-i18n="optThemeClassic">經典</option>
-                  <option value="academic" data-i18n="optThemeHK">香港紅</option>
-                  <option value="night" data-i18n="optThemeDark">深邃夜色</option>
-                  <option value="ink" data-i18n="optThemeInk">墨韻</option>
-                  <option value="ocean" data-i18n="optThemeOcean">海洋藍</option>
-                  <option value="warm" data-i18n="optThemeWarm">暖陽</option>
-                  <option value="mint" data-i18n="optThemeMint">薄荷綠</option>
-                  <option value="glass" data-i18n="optThemeGlass">毛玻璃</option>
+                <select id="popupThemeMode">
+                  <option value="manual" data-i18n="optThemeModeManual">固定主題</option>
+                  <option value="follow_system" data-i18n="optThemeModeFollowSystem">跟隨系統外觀</option>
+                  <option value="follow_page" data-i18n="optThemeModeFollowPage">跟隨網頁明暗度</option>
                 </select>
               </div>
             </div>
+
             <!-- 主題預覽區 -->
-            <div class="theme-preview-wrapper" style="margin-top: 16px; display: flex; flex-direction: column; align-items: flex-start;">
-              <!-- 頂部模擬劃選句子 -->
-              <div class="preview-target-demo" style="font-size: 15px; margin-bottom: 12px; color: var(--text-primary); font-family: var(--popup-font-zh, system-ui, sans-serif);">
-                <span class="preview-hl-word" style="background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;">你好</span>！ 很高興為你服務。
+            <div class="theme-preview-wrapper" style="margin-top: 4px; display: flex; flex-direction: column; align-items: flex-start; width: 100%;">
+              <!-- 頂部：模擬劃選句子 + 右側嵌入主題下拉欄 -->
+              <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 640px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
+                <div class="preview-target-demo" style="font-size: 15px; color: var(--text-primary); font-family: var(--popup-font-zh, system-ui, sans-serif); margin-bottom: 0;">
+                  <span class="preview-hl-word" style="background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;">你好</span>！ 很高興為你服務。
+                </div>
+
+                <!-- 固定模式下的單一主題選擇 -->
+                <div id="manualThemeWrapper" style="display: flex; align-items: center;">
+                  <select id="popupTheme" class="theme-flat-select native-only">
+                    <option value="classic" data-i18n="optThemeClassic">經典</option>
+                    <option value="academic" data-i18n="optThemeHK">香港紅</option>
+                    <option value="night" data-i18n="optThemeDark">深邃夜色</option>
+                    <option value="ink" data-i18n="optThemeInk">墨韻</option>
+                    <option value="ocean" data-i18n="optThemeOcean">海洋藍</option>
+                    <option value="warm" data-i18n="optThemeWarm">暖陽</option>
+                    <option value="mint" data-i18n="optThemeMint">薄荷綠</option>
+                    <option value="glass" data-i18n="optThemeGlass">毛玻璃</option>
+                  </select>
+                </div>
+
+                <!-- 跟隨模式下的白天/夜間雙主題選擇 -->
+                <div id="multiThemeWrapper" style="display: none; align-items: center; gap: 8px;">
+                  <!-- 白天主題 -->
+                  <div style="display: inline-flex; align-items: center; gap: 4px;">
+                    <svg id="previewSunIcon" class="theme-preview-icon" title="預覽白天主題" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #f59e0b; flex-shrink: 0;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                    <select id="popupThemeDay" class="theme-flat-select native-only">
+                      <option value="classic" data-i18n="optThemeClassic">經典</option>
+                      <option value="academic" data-i18n="optThemeHK">香港紅</option>
+                      <option value="ocean" data-i18n="optThemeOcean">海洋藍</option>
+                      <option value="warm" data-i18n="optThemeWarm">暖陽</option>
+                      <option value="mint" data-i18n="optThemeMint">薄荷綠</option>
+                      <option value="ink" data-i18n="optThemeInk">墨韻</option>
+                      <option value="night" data-i18n="optThemeDark">深邃夜色</option>
+                      <option value="glass" data-i18n="optThemeGlass">毛玻璃</option>
+                    </select>
+                  </div>
+
+                  <!-- 夜間主題 -->
+                  <div style="display: inline-flex; align-items: center; gap: 4px;">
+                    <svg id="previewMoonIcon" class="theme-preview-icon" title="預覽夜間主題" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: #6366f1; flex-shrink: 0;"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                    <select id="popupThemeNight" class="theme-flat-select native-only">
+                      <option value="night" data-i18n="optThemeDark">深邃夜色</option>
+                      <option value="ink" data-i18n="optThemeInk">墨韻</option>
+                      <option value="glass" data-i18n="optThemeGlass">毛玻璃</option>
+                      <option value="classic" data-i18n="optThemeClassic">經典</option>
+                      <option value="academic" data-i18n="optThemeHK">香港紅</option>
+                      <option value="ocean" data-i18n="optThemeOcean">海洋藍</option>
+                      <option value="warm" data-i18n="optThemeWarm">暖陽</option>
+                      <option value="mint" data-i18n="optThemeMint">薄荷綠</option>
+                    </select>
+                  </div>
+                </div>
               </div>
 
               <!-- 懸浮窗實體 -->
@@ -1621,7 +1700,6 @@
               </div>
             </div>
           </div>
-          </div>
         </div>
       </div>
 
@@ -1657,12 +1735,15 @@
             </div>
             <div class="select-wrapper">
               <select id="paragraphTransKey">
-                <option value="off" data-i18n="optKeyOff">無 (關閉)</option>
-                <option value="alt" data-i18n="optKeyAlt">Alt / Option (⌥)</option>
-                <option value="ctrl" data-i18n="optKeyCtrl">Ctrl (⌃)</option>
-                <option value="shift" data-i18n="optKeyShift">Shift (⇧)</option>
-                <option value="meta" data-i18n="optKeyMeta">Command (⌘)</option>
+                <option value="double_shift" data-i18n="optKeyDoubleShift">雙擊 Shift 鍵</option>
+                <option value="shift" data-i18n="optKeyShiftSingle">單按 Shift 鍵</option>
+                <option value="double_alt" data-i18n="optKeyDoubleAlt">雙擊 Alt / Option 鍵</option>
+                <option value="alt" data-i18n="optKeyAltSingle">單按 Alt / Option 鍵</option>
+                <option value="double_ctrl" data-i18n="optKeyDoubleCtrl">雙擊 Ctrl 鍵</option>
+                <option value="ctrl" data-i18n="optKeyCtrlSingle">單按 Ctrl 鍵</option>
+                <option value="meta" data-i18n="optKeyMetaSingle">單按 Command / Win 鍵</option>
                 <option value="longpress" data-i18n="optParaTransKeyLongPress">長按滑鼠左鍵</option>
+                <option value="off" data-i18n="optKeyOff">無 (關閉)</option>
               </select>
             </div>
           </div>
@@ -1920,20 +2001,7 @@
             </select>
           </div>
 
-          <div class="setting-item" style="flex-direction: column; align-items: stretch;">
-            <div class="setting-info" style="margin-bottom: 8px;">
-              <span class="setting-label" data-i18n="optInspectFontTitle">上標拼音字體</span>
-              <span class="setting-desc" data-i18n="optInspectFontDesc">自定義注音文本的字體，留空則使用預設等寬字體。</span>
-            </div>
-            <select id="rubyTextFontSelect" class="setting-select" style="margin-bottom: 8px;">
-              <option value="" data-i18n="optFontMono">預設等寬字體 (Consolas / SF Mono / ui-monospace)</option>
-              <option value="system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" data-i18n="optFontSans">系統無襯線體 (System UI / Arial)</option>
-              <option value="Georgia, 'Times New Roman', Times, serif" data-i18n="optFontSerif">優雅襯線體 (Georgia / Times)</option>
-              <option value="'Chiron Hei HK WS', 'Microsoft YaHei', sans-serif" data-i18n="optFontHei">字典黑體 (Chiron Hei / 雅黑)</option>
-              <option value="custom" data-i18n="optFontCustom" data-i18n="optCustomInput">自定義輸入...</option>
-            </select>
-            <input type="text" id="rubyTextFont" class="setting-input" placeholder="如: Arial, sans-serif" style="display: none; width: 100%;">
-          </div>
+
 
           <div class="setting-item">
             <div class="setting-info">
@@ -1946,37 +2014,35 @@
             </select>
           </div>
 
-          <div class="setting-item" id="rubyTextOpacityContainer">
-            <div class="setting-info">
-              <span class="setting-label" data-i18n="optInspectOpacityTitle">音標不透明度</span>
-              <span class="setting-desc" data-i18n="optInspectOpacityDesc">調整上方注音的透明度。</span>
+          <div class="setting-item" id="rubyTextOpacityContainer" style="display: flex; justify-content: flex-end; align-items: center; padding-top: 0; padding-bottom: 12px; margin-top: -6px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px;">
+              <span class="setting-label" data-i18n="optInspectOpacityTitle" style="font-size: 13px; font-weight: normal; color: var(--text-secondary); margin-bottom: 0;">音標不透明度</span>
+              <select id="rubyTextOpacity" class="theme-flat-select native-only" style="min-width: 140px;">
+                <option value="1" data-i18n="optOpacity100">100% (完全不透明)</option>
+                <option value="0.85" data-i18n="optOpacity85">85% (預設微透)</option>
+                <option value="0.6" data-i18n="optOpacity60">60% (半透明)</option>
+                <option value="0.4" data-i18n="optOpacity40">40% (較淡)</option>
+              </select>
             </div>
-            <select id="rubyTextOpacity" class="setting-select">
-              <option value="1" data-i18n="optOpacity100">100% (完全不透明)</option>
-              <option value="0.85" data-i18n="optOpacity85">85% (預設微透)</option>
-              <option value="0.6" data-i18n="optOpacity60">60% (半透明)</option>
-              <option value="0.4" data-i18n="optOpacity40">40% (較淡)</option>
-            </select>
           </div>
 
-          <div class="setting-item" id="rubyDictionaryColorContainer" style="display: none;">
-            <div class="setting-info">
-              <span class="setting-label" data-i18n="optInspectDictColorTitle">字典風格顏色</span>
-              <span class="setting-desc" data-i18n="optInspectDictColorDesc">調整字典風格下的音標顏色深度。</span>
+          <div class="setting-item" id="rubyDictionaryColorContainer" style="display: none; justify-content: flex-end; align-items: center; padding-top: 0; padding-bottom: 12px; margin-top: -6px;">
+            <div style="display: inline-flex; align-items: center; gap: 8px;">
+              <span class="setting-label" data-i18n="optInspectDictColorTitle" style="font-size: 13px; font-weight: normal; color: var(--text-secondary); margin-bottom: 0;">字典風格顏色</span>
+              <select id="rubyDictionaryColor" class="theme-flat-select native-only" style="min-width: 140px;">
+                <option value="#777777" data-i18n="optColorDarkGray">深灰 (#777)</option>
+                <option value="#999999" data-i18n="optColorLightGray">淺灰 (#999)</option>
+              </select>
             </div>
-            <select id="rubyDictionaryColor" class="setting-select">
-              <option value="#777777" data-i18n="optColorDarkGray">深灰 (#777)</option>
-              <option value="#999999" data-i18n="optColorLightGray">淺灰 (#999)</option>
-            </select>
           </div>
 
           <!-- Full-text Ruby Animation Demo -->
           <div id="inspectDemo" style="margin-top: 12px; margin-bottom: 8px; background: var(--bg-input); border-radius: 8px; border: 1px solid var(--border); padding: 0 24px; position: relative; display: flex; justify-content: center; align-items: center; height: 140px; overflow: hidden;">
             
-            <div class="demo-ruby-block" style="position: relative; padding: 8px 12px; border-radius: 6px; color: var(--text-primary); font-weight: 500; font-size: 16px; transition: all 0.2s ease;">
+            <div class="demo-ruby-block" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 4px 12px;">
               
               <!-- The Ruby annotations that fade in -->
-              <div class="demo-ruby-rubies" style="position: absolute; top: 6px; left: 0; right: 0; display: flex; justify-content: center; gap: 0px; opacity: 0; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; font-size: 9px; color: var(--primary); letter-spacing: -0.5px; transform: scale(0.9); transform-origin: center bottom;">
+              <div class="demo-ruby-rubies" id="demoRubyRubies" style="width: 100%; display: flex; justify-content: space-between; gap: 4px; opacity: 0; margin-bottom: 4px;">
                 <span style="flex: 1; text-align: center;">cyun4</span>
                 <span style="flex: 1; text-align: center;">man4</span>
                 <span style="flex: 1; text-align: center;">zyu3</span>
@@ -1985,14 +2051,14 @@
                 <span style="flex: 1; text-align: center;">faan6</span>
               </div>
 
-              <span style="position: relative; z-index: 1;">全文注音示範</span>
+              <span class="demo-ruby-text" style="font-size: 20px; font-weight: 600; color: var(--text-primary); letter-spacing: 4px; padding-left: 4px;">全文注音示範</span>
             </div>
 
             <!-- Simulated Keyboard Shortcut -->
             <div class="demo-ruby-keys" style="position: absolute; bottom: 12px; right: 16px; display: flex; gap: 4px; z-index: 5; opacity: 0;">
               <div class="demo-key">⇧</div>
               <div class="demo-key">⌘</div>
-              <div class="demo-key">X</div>
+              <div class="demo-key">F</div>
             </div>
 
             <style>
@@ -2000,13 +2066,19 @@
                 background: var(--bg-card);
                 border: 1px solid var(--border);
                 border-radius: 4px;
-                padding: 2px 5px;
+                padding: 3px 6px;
                 font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
                 font-size: 11px;
                 font-weight: 500;
                 color: var(--text-secondary);
                 box-shadow: 0 2px 0 var(--border);
                 transition: all 0.1s ease;
+                line-height: 1;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 18px;
+                box-sizing: border-box;
               }
 
               :root[data-theme="dark"] .demo-key {
@@ -2045,26 +2117,19 @@
                 85%, 100% { box-shadow: 0 2px 0 rgba(0,0,0,0.5); transform: translateY(0); }
               }
 
-              .demo-ruby-block {
-                animation: rubyBlockAnim 5s infinite;
-              }
-
-              /* Text makes room for rubies */
-              @keyframes rubyBlockAnim {
-                0%, 25% { font-size: 16px; padding-top: 8px; }
-                30%, 80% { font-size: 20px; padding-top: 20px; color: var(--primary); }
-                85%, 100% { font-size: 16px; padding-top: 8px; }
-              }
-
               .demo-ruby-rubies {
                 animation: rubyRubiesAnim 5s infinite;
+                font-family: var(--demo-ruby-target-font-family, ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace);
+                font-style: var(--demo-ruby-target-font-style, normal);
+                font-size: 10px;
+                color: var(--demo-ruby-target-color, var(--primary));
               }
 
-              /* Rubies fade in */
+              /* Rubies fade in without scaling the Chinese text */
               @keyframes rubyRubiesAnim {
-                0%, 28% { opacity: 0; transform: scale(0.9) translateY(4px); }
-                32%, 78% { opacity: 1; transform: scale(0.9) translateY(0); }
-                82%, 100% { opacity: 0; transform: scale(0.9) translateY(4px); }
+                0%, 28% { opacity: 0; transform: translateY(3px); }
+                32%, 78% { opacity: var(--demo-ruby-target-opacity, 0.85); transform: translateY(0); }
+                82%, 100% { opacity: 0; transform: translateY(3px); }
               }
             </style>
           </div>
@@ -3139,8 +3204,6 @@
               </button>
             </div>
           </div>
-        </div>
-        
         </div>
       </div>
 
