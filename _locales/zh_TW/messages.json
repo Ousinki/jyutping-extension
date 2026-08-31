@@ -1177,6 +1177,36 @@
   "optRoadmapEmptyDesc": {
     "message": "請嘗試使用其他關鍵字或切換分類篩選標籤"
   },
+  "optRoadmapRecommendBtn": {
+    "message": "推薦優質資源"
+  },
+  "optRoadmapRecommendModalTitle": {
+    "message": "推薦粵語學習資源"
+  },
+  "optRoadmapRecommendModalDesc": {
+    "message": "直接貼上網站網址（URL）即可，我們審核後將收錄進導航庫！"
+  },
+  "optRoadmapRecSinglePlaceholder": {
+    "message": "請在此貼上網站網址（如 https://example.com）~\n若有想補充的網站名稱或推薦理由也可以寫在這裡："
+  },
+  "optRoadmapRecSuccess": {
+    "message": "🎉 感謝推薦！我們已收到您的投稿，審核後將收錄進導航庫。"
+  },
+  "optRoadmapRecError": {
+    "message": "發送失敗，請檢查網絡後重試。"
+  },
+  "optRoadmapRecSubmitBtn": {
+    "message": "發送推薦"
+  },
+  "optRoadmapRecSubmitting": {
+    "message": "發送中..."
+  },
+  "optCancel": {
+    "message": "取消"
+  },
+  "optConfirm": {
+    "message": "確定"
+  },
   "optAILangAuto": {
     "message": "跟隨介面語言 (Auto)"
   },

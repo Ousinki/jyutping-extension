@@ -1177,6 +1177,36 @@
   "optRoadmapEmptyDesc": {
     "message": "请尝试使用其他关键字或切换分类筛选标签"
   },
+  "optRoadmapRecommendBtn": {
+    "message": "推荐优质资源"
+  },
+  "optRoadmapRecommendModalTitle": {
+    "message": "推荐粤语学习资源"
+  },
+  "optRoadmapRecommendModalDesc": {
+    "message": "直接粘贴网站网址（URL）即可，我们审核后将收录进导航库！"
+  },
+  "optRoadmapRecSinglePlaceholder": {
+    "message": "请在此粘贴网站网址（如 https://example.com）~\n若有想补充的网站名称或推荐理由也可以写在这里："
+  },
+  "optRoadmapRecSuccess": {
+    "message": "🎉 感谢推荐！我们已收到您的投稿，审核后将收录进导航库。"
+  },
+  "optRoadmapRecError": {
+    "message": "发送失败，请检查网络后重试。"
+  },
+  "optRoadmapRecSubmitBtn": {
+    "message": "发送推荐"
+  },
+  "optRoadmapRecSubmitting": {
+    "message": "发送中..."
+  },
+  "optCancel": {
+    "message": "取消"
+  },
+  "optConfirm": {
+    "message": "确定"
+  },
   "optAILangAuto": {
     "message": "跟随界面语言 (Auto)"
   },

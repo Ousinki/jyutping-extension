@@ -1156,6 +1156,36 @@
   "optRoadmapEmptyDesc": {
     "message": "別のキーワードで検索するか、カテゴリフィルタを切り替えてください"
   },
+  "optRoadmapRecommendBtn": {
+    "message": "リソースを推薦"
+  },
+  "optRoadmapRecommendModalTitle": {
+    "message": "広東語学習リソースを推薦"
+  },
+  "optRoadmapRecommendModalDesc": {
+    "message": "ウェブサイトのURLを貼り付けるだけでOKです。確認後ナビに追加します！"
+  },
+  "optRoadmapRecSinglePlaceholder": {
+    "message": "ここにウェブサイトのURLを貼り付けてください（例：https://example.com）~\nサイト名やおすすめ理由を書き添えてもOKです："
+  },
+  "optRoadmapRecSuccess": {
+    "message": "🎉 ご推薦ありがとうございます！確認後、ナビに追加いたします。"
+  },
+  "optRoadmapRecError": {
+    "message": "送信に失敗しました。ネットワークを確認して再試行してください。"
+  },
+  "optRoadmapRecSubmitBtn": {
+    "message": "推薦を送信"
+  },
+  "optRoadmapRecSubmitting": {
+    "message": "送信中..."
+  },
+  "optCancel": {
+    "message": "キャンセル"
+  },
+  "optConfirm": {
+    "message": "OK"
+  },
   "optAILangAuto": {
     "message": "UI言語に合わせる (Auto)"
   },

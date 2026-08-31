@@ -152,6 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
 
+    document.querySelectorAll('[data-i18n-placeholder]').forEach((el) => {
+      const key = el.getAttribute('data-i18n-placeholder');
+      if (activeDict[key]) {
+        el.placeholder = activeDict[key];
+      }
+    });
+
     // Re-render resource cards in the selected language
     renderCards(lang);
     updateResults();
@@ -275,6 +282,176 @@ document.addEventListener('DOMContentLoaded', () => {
       currentSearchQuery = '';
       searchClearBtn.style.display = 'none';
       updateResults();
+    });
+  }
+
+  // === 4. Resource Recommendation Modal & Web3Forms Submission ===
+  const openRecommendModalBtn = document.getElementById('openRecommendModalBtn');
+  const recommendModal = document.getElementById('recommendModal');
+  const closeRecommendModalBtn = document.getElementById('closeRecommendModalBtn');
+  const cancelRecommendBtn = document.getElementById('cancelRecommendBtn');
+  const recommendForm = document.getElementById('recommendForm');
+  const recContentInput = document.getElementById('recContentInput');
+  const submitRecommendBtn = document.getElementById('submitRecommendBtn');
+  const submitBtnText = document.getElementById('submitBtnText');
+  const recommendFormBody = document.getElementById('recommendFormBody');
+  const originalFormBodyHTML = recommendFormBody ? recommendFormBody.innerHTML : '';
+  const recommendFormFooter = document.getElementById('recommendFormFooter');
+  const originalFormFooterHTML = recommendFormFooter ? recommendFormFooter.innerHTML : '';
+
+  function openModal() {
+    if (!recommendModal) return;
+    recommendModal.classList.add('show');
+    recommendModal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+    const inputEl = document.getElementById('recContentInput');
+    if (inputEl) inputEl.focus();
+  }
+
+  function closeModal() {
+    if (!recommendModal) return;
+    recommendModal.classList.remove('show');
+    recommendModal.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
+  }
+
+  function resetFormToInitial() {
+    if (recommendFormBody && originalFormBodyHTML) {
+      recommendFormBody.innerHTML = originalFormBodyHTML;
+    }
+    if (recommendFormFooter && originalFormFooterHTML) {
+      recommendFormFooter.innerHTML = originalFormFooterHTML;
+      document.getElementById('cancelRecommendBtn')?.addEventListener('click', closeModal);
+    }
+    if (recommendForm) {
+      recommendForm.reset();
+    }
+    applyI18n(currentLang);
+  }
+
+  if (openRecommendModalBtn) {
+    openRecommendModalBtn.addEventListener('click', openModal);
+  }
+
+  if (closeRecommendModalBtn) {
+    closeRecommendModalBtn.addEventListener('click', closeModal);
+  }
+
+  if (cancelRecommendBtn) {
+    cancelRecommendBtn.addEventListener('click', closeModal);
+  }
+
+  // Close on backdrop click
+  if (recommendModal) {
+    recommendModal.addEventListener('click', (e) => {
+      if (e.target === recommendModal) {
+        closeModal();
+      }
+    });
+  }
+
+  // Close on Escape key
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && recommendModal && recommendModal.classList.contains('show')) {
+      closeModal();
+    }
+  });
+
+  // Handle Form Submission
+  if (recommendForm) {
+    recommendForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const inputEl = document.getElementById('recContentInput');
+      const currentSubmitBtn = document.getElementById('submitRecommendBtn');
+      const currentSubmitText = document.getElementById('submitBtnText');
+
+      const content = inputEl ? inputEl.value.trim() : '';
+
+      if (!content) {
+        alert(activeDict['optRoadmapRecSinglePlaceholder'] || '請填寫網站網址或推薦內容');
+        return;
+      }
+
+      // Try to detect URL for a clean subject
+      const urlMatch = content.match(/https?:\/\/[^\s]+/) || content.match(/[a-zA-Z0-9-]+\.[a-zA-Z]{2,}[^\s]*/);
+      const subjectPreview = urlMatch ? urlMatch[0].slice(0, 40) : content.slice(0, 30);
+
+      // Format structured email message
+      const messageBody = `
+【粵語學習導航 - 用戶推薦資源投稿】
+=======================================
+用戶提交內容：
+${content}
+=======================================
+客戶端環境：
+擴展版本：1.5.7
+提交時間：${new Date().toLocaleString()}
+瀏覽器語言：${navigator.language}
+用戶界面語言：${currentLang}
+      `.trim();
+
+      // Set Loading State
+      if (currentSubmitBtn) {
+        currentSubmitBtn.disabled = true;
+        if (currentSubmitText) {
+          currentSubmitText.textContent = activeDict['optRoadmapRecSubmitting'] || '發送中...';
+        }
+      }
+
+      try {
+        const formData = new FormData();
+        formData.append('access_key', 'd19a0594-b64b-4593-b0e1-baf1cbeb6a4c');
+        formData.append('subject', `[學習導航推薦] ${subjectPreview} - 粵語資源投稿`);
+        formData.append('message', messageBody);
+        formData.append('from_name', '粵語學習導航推薦系統');
+
+        const response = await fetch('https://api.web3forms.com/submit', {
+          method: 'POST',
+          body: formData
+        });
+
+        if (response.ok) {
+          const successMsg = activeDict['optRoadmapRecSuccess'] || '🎉 感謝推薦！我們已收到您的投稿，審核後將收錄進導航庫。';
+          
+          if (recommendFormBody && recommendFormFooter) {
+            recommendFormBody.innerHTML = `
+              <div class="rec-success-box">
+                <div class="rec-success-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"></polyline>
+                  </svg>
+                </div>
+                <div style="font-size: 15px; font-weight: 600; color: var(--text-primary); margin-top: 4px; line-height: 1.5;">${successMsg}</div>
+              </div>
+            `;
+            const okText = activeDict['optConfirm'] || '確定';
+            recommendFormFooter.innerHTML = `
+              <button type="button" class="btn-cancel" id="okRecommendBtn" style="padding: 8px 24px; font-weight: 600;">${okText}</button>
+            `;
+            document.getElementById('okRecommendBtn')?.addEventListener('click', () => {
+              closeModal();
+              setTimeout(resetFormToInitial, 300);
+            });
+          }
+
+          setTimeout(() => {
+            closeModal();
+            setTimeout(resetFormToInitial, 300);
+          }, 2800);
+        } else {
+          throw new Error('網絡請求失敗');
+        }
+      } catch (err) {
+        console.error('Failed to submit resource recommendation:', err);
+        alert(activeDict['optRoadmapRecError'] || '發送失敗，請檢查網絡後重試。');
+        if (currentSubmitBtn) {
+          currentSubmitBtn.disabled = false;
+          if (currentSubmitText) {
+            currentSubmitText.textContent = activeDict['optRoadmapRecSubmitBtn'] || '發送推薦';
+          }
+        }
+      }
     });
   }
 });

@@ -1177,6 +1177,36 @@
   "optRoadmapEmptyDesc": {
     "message": "Please try searching with different keywords or change category filter"
   },
+  "optRoadmapRecommendBtn": {
+    "message": "Submit Resource"
+  },
+  "optRoadmapRecommendModalTitle": {
+    "message": "Recommend Cantonese Resource"
+  },
+  "optRoadmapRecommendModalDesc": {
+    "message": "Simply paste the website URL, and we'll add it after review!"
+  },
+  "optRoadmapRecSinglePlaceholder": {
+    "message": "Paste the website URL here (e.g. https://example.com)~\nYou can also include any resource name or comments:"
+  },
+  "optRoadmapRecSuccess": {
+    "message": "🎉 Thank you! Your recommendation has been received and will be added after review."
+  },
+  "optRoadmapRecError": {
+    "message": "Submission failed, please check your connection and try again."
+  },
+  "optRoadmapRecSubmitBtn": {
+    "message": "Submit Recommendation"
+  },
+  "optRoadmapRecSubmitting": {
+    "message": "Submitting..."
+  },
+  "optCancel": {
+    "message": "Cancel"
+  },
+  "optConfirm": {
+    "message": "OK"
+  },
   "optAILangAuto": {
     "message": "Follow UI Language (Auto)"
   },

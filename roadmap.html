@@ -407,13 +407,262 @@
         font-size: 13px;
         color: var(--text-muted);
       }
+      /* ========== Modal Dialog Styles ========== */
+      .modal-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.45);
+        backdrop-filter: blur(4px);
+        -webkit-backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        padding: 20px;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+      }
+
+      .modal-overlay.show {
+        display: flex;
+        opacity: 1;
+      }
+
+      .modal-card {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        max-width: 500px;
+        width: 100%;
+        box-shadow: var(--shadow-lg);
+        overflow: hidden;
+        transform: scale(0.95) translateY(10px);
+        transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        display: flex;
+        flex-direction: column;
+      }
+
+      .modal-overlay.show .modal-card {
+        transform: scale(1) translateY(0);
+      }
+
+      .modal-header {
+        padding: 20px 24px 16px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .modal-header-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .modal-icon-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 10px;
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+
+      .modal-title {
+        font-size: 17px;
+        font-weight: 700;
+        color: var(--text-primary);
+        line-height: 1.3;
+        margin-bottom: 3px;
+      }
+
+      .modal-subtitle {
+        font-size: 12px;
+        color: var(--text-secondary);
+        line-height: 1.4;
+      }
+
+      .modal-close-btn {
+        background: none;
+        border: none;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all var(--transition);
+        flex-shrink: 0;
+      }
+
+      .modal-close-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+
+      .modal-body {
+        padding: 20px 24px;
+        overflow-y: auto;
+        max-height: calc(85vh - 140px);
+        display: flex;
+        flex-direction: column;
+        gap: 14px;
+      }
+
+      .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+
+      .form-label-row {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .form-label {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+
+      .badge-req {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: color-mix(in srgb, var(--primary) 12%, transparent);
+        color: var(--primary);
+        font-weight: 500;
+      }
+
+      .badge-opt {
+        font-size: 11px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: var(--bg-input);
+        color: var(--text-muted);
+        font-weight: 500;
+      }
+
+      .form-input, .form-select, .form-textarea {
+        width: 100%;
+        padding: 10px 14px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        background: var(--bg-input);
+        color: var(--text-primary);
+        font-family: inherit;
+        font-size: 13.5px;
+        outline: none;
+        transition: all var(--transition);
+        box-sizing: border-box;
+      }
+
+      .form-input:focus, .form-select:focus, .form-textarea:focus {
+        border-color: var(--primary);
+        background: var(--bg-card);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 15%, transparent);
+      }
+
+      .form-textarea {
+        resize: vertical;
+        min-height: 68px;
+      }
+
+      .modal-footer {
+        padding: 14px 24px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 10px;
+        background: color-mix(in srgb, var(--bg-input) 30%, var(--bg-card));
+      }
+
+      .btn-cancel {
+        padding: 8px 16px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        border: 1px solid var(--border);
+        background: var(--bg-card);
+        color: var(--text-secondary);
+        transition: all var(--transition);
+      }
+
+      .btn-cancel:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+      }
+
+      .btn-submit {
+        padding: 8px 18px;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        background: var(--primary);
+        color: #ffffff;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        transition: all var(--transition);
+        box-shadow: 0 2px 6px color-mix(in srgb, var(--primary) 30%, transparent);
+      }
+
+      .btn-submit:hover:not(:disabled) {
+        background: var(--primary-light);
+        transform: translateY(-1px);
+        box-shadow: 0 4px 10px color-mix(in srgb, var(--primary) 40%, transparent);
+      }
+
+      .btn-submit:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+      }
+
+      .rec-success-box {
+        text-align: center;
+        padding: 32px 16px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .rec-success-icon {
+        width: 52px;
+        height: 52px;
+        border-radius: 50%;
+        background: color-mix(in srgb, #22c55e 15%, transparent);
+        color: #22c55e;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: recScaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      }
+
+      @keyframes recScaleIn {
+        0% { transform: scale(0.4); opacity: 0; }
+        100% { transform: scale(1); opacity: 1; }
+      }
 
       /* Responsive */
       @media (max-width: 768px) {
         body { padding: 16px 12px 40px; }
         .hero-title { font-size: 26px; }
         .resources-grid { grid-template-columns: 1fr; }
-      .timeline-steps { grid-template-columns: 1fr; }
+        .timeline-steps { grid-template-columns: 1fr; }
       }
     </style>
   </head>
@@ -432,19 +681,28 @@
           </a>
         </div>
 
-        <button class="theme-toggle" id="themeToggle" title="切換主題">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        </button>
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <button class="nav-btn recommend-nav-btn" id="openRecommendModalBtn" style="background: color-mix(in srgb, var(--primary) 8%, var(--bg-card)); color: var(--primary); border-color: color-mix(in srgb, var(--primary) 28%, var(--border));">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 5v14M5 12h14"></path>
+            </svg>
+            <span data-i18n="optRoadmapRecommendBtn">推薦優質資源</span>
+          </button>
+
+          <button class="theme-toggle" id="themeToggle" title="切換主題">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="12" cy="12" r="5"></circle>
+              <line x1="12" y1="1" x2="12" y2="3"></line>
+              <line x1="12" y1="21" x2="12" y2="23"></line>
+              <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+              <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+              <line x1="1" y1="12" x2="3" y2="12"></line>
+              <line x1="21" y1="12" x2="23" y2="12"></line>
+              <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+              <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+          </button>
+        </div>
       </nav>
 
       <!-- Hero Header -->
@@ -499,6 +757,65 @@
 
       </main>
 
+    </div>
+
+    <!-- Recommend Learning Resource Modal -->
+    <div class="modal-overlay" id="recommendModal" aria-hidden="true">
+      <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="recommendModalTitle">
+        
+        <div class="modal-header">
+          <div class="modal-header-left">
+            <div class="modal-icon-badge">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M12 2v1"></path>
+                <path d="M12 21v1"></path>
+                <path d="M4.22 4.22l.71.71"></path>
+                <path d="M19.07 19.07l.71.71"></path>
+                <path d="M2 12h1"></path>
+                <path d="M21 12h1"></path>
+                <path d="M4.22 19.78l.71-.71"></path>
+                <path d="M19.07 4.93l.71-.71"></path>
+                <circle cx="12" cy="12" r="6"></circle>
+              </svg>
+            </div>
+            <div>
+              <h3 class="modal-title" id="recommendModalTitle" data-i18n="optRoadmapRecommendModalTitle">推薦粵語學習資源</h3>
+              <p class="modal-subtitle" data-i18n="optRoadmapRecommendModalDesc">分享你發現的優質網站或工具，我們審核後將收錄進導航庫！</p>
+            </div>
+          </div>
+          <button class="modal-close-btn" id="closeRecommendModalBtn" title="關閉" aria-label="關閉">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+
+        <form id="recommendForm">
+          <div class="modal-body" id="recommendFormBody">
+            <textarea
+              id="recContentInput"
+              class="form-textarea"
+              required
+              style="min-height: 140px; font-size: 14px; line-height: 1.6; padding: 14px; border-radius: 10px;"
+              placeholder="請在此貼上網站網址（如 https://example.com）~&#10;若有想補充的網站名稱或推薦理由也可以寫在這裡："
+              data-i18n-placeholder="optRoadmapRecSinglePlaceholder"
+            ></textarea>
+          </div>
+
+          <div class="modal-footer" id="recommendFormFooter">
+            <button type="button" class="btn-cancel" id="cancelRecommendBtn" data-i18n="optCancel">取消</button>
+            <button type="submit" class="btn-submit" id="submitRecommendBtn">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+              </svg>
+              <span id="submitBtnText" data-i18n="optRoadmapRecSubmitBtn">發送推薦</span>
+            </button>
+          </div>
+        </form>
+
+      </div>
     </div>
 
     <script src="roadmap-data.js"></script>

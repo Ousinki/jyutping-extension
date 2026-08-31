@@ -1104,6 +1104,36 @@
   "optRoadmapEmptyDesc": {
     "message": "다른 키워드로 검색하거나 카테고리 필터를 변경해 보세요"
   },
+  "optRoadmapRecommendBtn": {
+    "message": "학습 자료 추천"
+  },
+  "optRoadmapRecommendModalTitle": {
+    "message": "광둥어 학습 자료 추천"
+  },
+  "optRoadmapRecommendModalDesc": {
+    "message": "웹사이트 URL만 바로 붙여넣어 주시면 검토 후 자료실에 추가됩니다!"
+  },
+  "optRoadmapRecSinglePlaceholder": {
+    "message": "여기에 웹사이트 URL을 붙여넣어 주세요 (예: https://example.com)~\n자료 이름이나 추천 이유를 함께 적어주셔도 좋습니다:"
+  },
+  "optRoadmapRecSuccess": {
+    "message": "🎉 추천 감사합니다! 접수되었으며 검토 후 자료실에 추가됩니다."
+  },
+  "optRoadmapRecError": {
+    "message": "전송에 실패했습니다. 네트워크를 확인하고 다시 시도해주세요."
+  },
+  "optRoadmapRecSubmitBtn": {
+    "message": "추천 제출"
+  },
+  "optRoadmapRecSubmitting": {
+    "message": "전송 중..."
+  },
+  "optCancel": {
+    "message": "취소"
+  },
+  "optConfirm": {
+    "message": "확인"
+  },
   "optAILangAuto": {
     "message": "인터페이스 언어 따름 (Auto)"
   },
