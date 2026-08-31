@@ -223,10 +223,10 @@
     "description": "optEnFont"
   },
   "optEnFontCourier": {
-    "message": "Classic Monospace (Courier / Default)"
+    "message": "Classic Monospace (Courier)"
   },
   "optEnFontModern": {
-    "message": "Modern Monospace (SF Mono / Consolas)"
+    "message": "Modern Monospace (SF Mono / Consolas / Default)"
   },
   "optEnFontSystem": {
     "message": "System Sans-Serif (System UI)"
@@ -1066,15 +1066,12 @@
     "message": "Back to Settings"
   },
   "optRoadmapCount": {
-    "message": "$COUNT$ Curated Resources",
+    "message": "Total $COUNT$ curated resources",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
-  },
-  "optRoadmapVisit": {
-    "message": "Visit ↗"
   },
   "optRoadmapEmptyTitle": {
     "message": "No matching learning resources found"
@@ -1363,6 +1360,89 @@
   },
   "wordbookDeselectItem": {
     "message": "Click to deselect"
+  },
+  "folderAll": {
+    "message": "All Words"
+  },
+  "folderDefault": {
+    "message": "Wordbook"
+  },
+  "folderNew": {
+    "message": "New Folder"
+  },
+  "folderEdit": {
+    "message": "Edit Folder"
+  },
+  "folderDelete": {
+    "message": "Delete Folder"
+  },
+  "folderSetDefault": {
+    "message": "Set as Default Wordbook"
+  },
+  "folderDefaultBadge": {
+    "message": "Default"
+  },
+  "folderMoveTo": {
+    "message": "Move to Folder"
+  },
+  "folderMoveHere": {
+    "message": "Move $1 selected words here"
+  },
+  "folderMovedSuccess": {
+    "message": "Moved $1 words to \"$2\""
+  },
+  "folderNameLabel": {
+    "message": "Folder Name"
+  },
+  "folderNamePlaceholder": {
+    "message": "Enter folder name (e.g. Daily, Food)..."
+  },
+  "folderColorLabel": {
+    "message": "Color Tag"
+  },
+  "folderDeleteConfirmTitle": {
+    "message": "Delete Folder"
+  },
+  "folderDeleteConfirmDesc": {
+    "message": "Folder \"$1\" contains $2 words. Please choose an action:"
+  },
+  "folderDeleteMoveOption": {
+    "message": "Keep words (Move to Default folder)"
+  },
+  "folderDeleteMoveOptionDesc": {
+    "message": "Words will be preserved and automatically moved to the default folder."
+  },
+  "folderDeletePurgeOption": {
+    "message": "Move words in this folder to Trash"
+  },
+  "folderDeletePurgeOptionDesc": {
+    "message": "Words will be moved to trash and can be restored within 30 days."
+  },
+  "folderDeleteEmptyConfirm": {
+    "message": "Are you sure you want to delete folder \"$1\"?"
+  },
+  "quizFolderScope": {
+    "message": "Word Scope"
+  },
+  "quizFolderAll": {
+    "message": "All Words"
+  },
+  "quizFolderInsufficient": {
+    "message": "Not enough words in this folder (at least 3 words required)"
+  },
+  "folderUncategorized": {
+    "message": "Uncategorized"
+  },
+  "folderBelongsTo": {
+    "message": "Folder"
+  },
+  "wordbookSave": {
+    "message": "Save"
+  },
+  "folderSetDefaultDesc": {
+    "message": "Newly saved words will automatically go into this wordbook."
+  },
+  "folderDeleted": {
+    "message": "Folder \"$1\" deleted"
   }
 }
-

@@ -1094,8 +1094,8 @@
                 <span class="setting-label" data-i18n="optEnFont">拼音字體</span>
               </div>
               <select id="enFontSelect" class="select-input" style="margin-bottom: 8px;">
-                <option value="" data-i18n="optEnFontCourier">經典等寬字體 (Courier / 預設)</option>
-                <option value="ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace" data-i18n="optEnFontModern">現代等寬字體 (SF Mono / Consolas)</option>
+                <option value="" data-i18n="optEnFontModern">現代等寬字體 (SF Mono / Consolas / 預設)</option>
+                <option value="'Courier New', Courier, monospace" data-i18n="optEnFontCourier">經典等寬字體 (Courier)</option>
                 <option value="system-ui, -apple-system, sans-serif" data-i18n="optEnFontSystem">系統無襯線體 (System UI)</option>
                 <option value="custom" data-i18n="optCustomInput">自定義輸入...</option>
               </select>
@@ -1518,7 +1518,7 @@
               id="themePreview"
               style="
                 --popup-font-zh: system-ui, -apple-system, sans-serif;
-                --popup-font-en: 'Courier New', monospace;
+                --popup-font-en: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace;
                 font-family: var(--popup-font-zh);
                 border-radius: 8px;
                 border: 1px solid #d0d0d0;

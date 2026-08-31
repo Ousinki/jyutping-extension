@@ -223,10 +223,10 @@
     "description": "optEnFont"
   },
   "optEnFontCourier": {
-    "message": "经典等宽字体 (Courier / 默认)"
+    "message": "经典等宽字体 (Courier)"
   },
   "optEnFontModern": {
-    "message": "现代等宽字体 (SF Mono / Consolas)"
+    "message": "现代等宽字体 (SF Mono / Consolas / 默认)"
   },
   "optEnFontSystem": {
     "message": "系统无衬线体 (System UI)"
@@ -1073,9 +1073,6 @@
       }
     }
   },
-  "optRoadmapVisit": {
-    "message": "立即访问 ↗"
-  },
   "optRoadmapEmptyTitle": {
     "message": "未找到匹配的学习资源"
   },
@@ -1363,6 +1360,90 @@
   },
   "wordbookDeselectItem": {
     "message": "点击取消选中"
+  },
+  "folderAll": {
+    "message": "全部生词"
+  },
+  "folderDefault": {
+    "message": "生词本"
+  },
+  "folderNew": {
+    "message": "新建文件夹"
+  },
+  "folderEdit": {
+    "message": "编辑文件夹"
+  },
+  "folderDelete": {
+    "message": "删除文件夹"
+  },
+  "folderSetDefault": {
+    "message": "设为默认生词本"
+  },
+  "folderDefaultBadge": {
+    "message": "默认"
+  },
+  "folderMoveTo": {
+    "message": "移动到文件夹"
+  },
+  "folderMoveHere": {
+    "message": "移动选中的 $1 个生词到此"
+  },
+  "folderMovedSuccess": {
+    "message": "已移动 $1 个生词至「$2」"
+  },
+  "folderNameLabel": {
+    "message": "文件夹名称"
+  },
+  "folderNamePlaceholder": {
+    "message": "请输入文件夹名称（如：日常口语、餐饮）…"
+  },
+  "folderColorLabel": {
+    "message": "标签颜色"
+  },
+  "folderDeleteConfirmTitle": {
+    "message": "删除文件夹"
+  },
+  "folderDeleteConfirmDesc": {
+    "message": "文件夹「$1」内含有 $2 个生词，请选择处理方式："
+  },
+  "folderDeleteMoveOption": {
+    "message": "保留生词（移至默认文件夹）"
+  },
+  "folderDeleteMoveOptionDesc": {
+    "message": "生词不会丢失，自动移至默认文件夹中。"
+  },
+  "folderDeletePurgeOption": {
+    "message": "同时将文件夹内的生词移至废纸篓"
+  },
+  "folderDeletePurgeOptionDesc": {
+    "message": "生词将移入废纸篓，可在 30 天内还原。"
+  },
+  "folderDeleteEmptyConfirm": {
+    "message": "确定要删除文件夹「$1」吗？"
+  },
+  "quizFolderScope": {
+    "message": "练习生词范围"
+  },
+  "quizFolderAll": {
+    "message": "全部生词"
+  },
+  "quizFolderInsufficient": {
+    "message": "该文件夹内可用生词不足（至少需要 3 词）"
+  },
+  "folderUncategorized": {
+    "message": "未分类"
+  },
+  "folderBelongsTo": {
+    "message": "所属文件夹"
+  },
+  "wordbookSave": {
+    "message": "保存"
+  },
+  "folderSetDefaultDesc": {
+    "message": "新收藏的生词将自动存入此生词本。"
+  },
+  "folderDeleted": {
+    "message": "已删除文件夹「$1」"
   }
 }
 

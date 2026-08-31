@@ -115,6 +115,50 @@ window.ROADMAP_RESOURCES = [
       'ko': '공식 제작 인기 강의 영상. 52분 동안 성모, 운모, 9성 6조와 철자 규칙을 체계적으로 마스터.'
     }
   },
+  {
+    id: 'zidou',
+    url: 'https://chaaklau.github.io/zidou/',
+    category: 'phonetics',
+    domain: 'chaaklau.github.io/zidou',
+    icon: 'https://www.google.com/s2/favicons?domain=github.io&sz=128',
+    keywords: '字豆 zidou 粤拼 wordle 猜词 游戏 声母 韵母 声调 拼音 chaaklau 趣味 互动',
+    title: {
+      'zh-HK': '字豆 (粵拼 Wordle)',
+      'zh-CN': '字豆 (粤拼 Wordle)',
+      'en': 'Zidou (Jyutping Wordle)',
+      'ja': '字豆 (粤拼 Wordle)',
+      'ko': '자두 (월병 Wordle)'
+    },
+    desc: {
+      'zh-HK': '《粵典》創始人研發的粵拼猜詞益智遊戲，結合 Wordle 玩法與聲韻調回饋，趣味鞏固九聲六調與拼讀直覺。',
+      'zh-CN': '《粤典》创始人研发的粤拼猜词益智游戏，结合 Wordle 玩法与声韵调回馈，趣味巩固九声六调与拼读直觉。',
+      'en': 'A Wordle-style Cantonese word-guessing game developed by the creator of words.hk, training your Jyutping tone and syllable intuition.',
+      'ja': 'words.hkの創設者が開発した粤拼版Wordleゲーム。声母・韻母・声調のフィードバックで直感的に発音を習得。',
+      'ko': 'words.hk 제작자가 개발한 월병 기반 Wordle 퍼즐 게임. 성모, 운모, 성조 피드백을 통해 직관적인 발음 감각 훈련.'
+    }
+  },
+  {
+    id: 'cantolounge-chart',
+    url: 'https://baggiowonghk.github.io/jyutping-chart/',
+    category: 'phonetics',
+    domain: 'baggiowonghk.github.io',
+    icon: 'https://www.google.com/s2/favicons?domain=github.io&sz=128',
+    keywords: 'cantolounge jyutping chart 发音表 音节 声调 拼音表 互动 发音 听音',
+    title: {
+      'zh-HK': 'CantoLounge 互動粵拼表',
+      'zh-CN': 'CantoLounge 互动粤拼表',
+      'en': 'CantoLounge Interactive Jyutping Chart',
+      'ja': 'CantoLounge 対話型粤拼チャート',
+      'ko': 'CantoLounge 대화형 월병 차트'
+    },
+    desc: {
+      'zh-HK': '由知名粵語導師 Baggio Wong 製作的經典互動粵拼發音矩陣表，點擊任意音節即可聆聽清晰標準的九聲調真人發音。',
+      'zh-CN': '由知名粤语导师 Baggio Wong 制作的经典互动粤拼发音矩阵表，点击任意音节即可聆听清晰标准的人声发音。',
+      'en': 'Interactive Jyutping phonetic matrix by Baggio Wong, allowing learners to click any syllable to hear native audio across all tones.',
+      'ja': 'Baggio Wongによる対話型の粤拼音節表。クリック一つで全声調のクリアなネイティブ音声を再生可能。',
+      'ko': 'Baggio Wong이 제작한 인터랙티브 월병 음절 매트릭스. 모든 성조의 원어민 음성을 즉시 청취 가능.'
+    }
+  },
 
   // ========== 2. 權威辭書 (Dictionaries) ==========
   {
@@ -249,6 +293,50 @@ window.ROADMAP_RESOURCES = [
       'ko': '여러 권위 있는 사전과 인터넷 어휘를 통합한 모던하고 빠른 오픈소스 광둥어 사전 포털.'
     }
   },
+  {
+    id: 'forvo-cantonese',
+    url: 'https://forvo.com/languages/yue/',
+    category: 'dictionary',
+    domain: 'forvo.com/languages/yue',
+    icon: 'https://www.google.com/s2/favicons?domain=forvo.com&sz=128',
+    keywords: 'forvo 粤语发音 真人发音 听音 众包 母语者 香港 广州 录音 词典',
+    title: {
+      'zh-HK': 'Forvo 粵語真人發音庫',
+      'zh-CN': 'Forvo 粤语真人发音库',
+      'en': 'Forvo Cantonese Pronunciation',
+      'ja': 'Forvo 広東語ネイティブ発音辞書',
+      'ko': 'Forvo 광둥어 원어민 발음 사전'
+    },
+    desc: {
+      'zh-HK': '全球最大的真人發音數據庫粵語專區，收錄數萬條由香港及廣州母語者親口錄製的字詞、地名與日常短語音頻。',
+      'zh-CN': '全球最大的真人发音数据库粤语专区，收录数万条由香港及广州母语者亲口录制的字词、地名与日常短语音频。',
+      'en': 'World\'s largest crowd-sourced pronunciation guide with tens of thousands of Cantonese words recorded by native speakers from HK and GZ.',
+      'ja': '世界最大のクラウドソーシング発音辞書。香港や広州のネイティブスピーカーが録音した何万もの広東語単語を収録。',
+      'ko': '세계 최대의 원어민 발음 가이드. 홍콩과 광저우의 현지인이 직접 녹음한 수만 개의 단어 및 지명 발음 수록.'
+    }
+  },
+  {
+    id: 'eduhk-corpus',
+    url: 'https://corpus.eduhk.hk/cantonese/',
+    category: 'dictionary',
+    domain: 'corpus.eduhk.hk',
+    icon: 'https://www.google.com/s2/favicons?domain=eduhk.hk&sz=128',
+    keywords: '香港教育大学 教大 语料库 常用字 电影对白 读音表 学术 语言学 eduhk corpus',
+    title: {
+      'zh-HK': '教大粵語語料庫 (EdUHK)',
+      'zh-CN': '教大粤语语料库 (EdUHK)',
+      'en': 'EdUHK Cantonese Corpus',
+      'ja': '香港教育大学 広東語コーパス',
+      'ko': '홍콩교육대 광둥어 말뭉치 (코퍼스)'
+    },
+    desc: {
+      'zh-HK': '香港教育大學語言學系研發，收錄二十世紀中葉香港粵語電影對白語料庫、常用字廣州話讀音表及權威音韻檢索工具。',
+      'zh-CN': '香港教育大学语言学系研发，收录二十世纪中叶香港粤语电影对白语料库、常用字广州话读音表及权威音韵检索工具。',
+      'en': 'Academic linguistic corpus developed by EdUHK, featuring mid-20th century HK movie dialogues, word frequencies, and phonetic charts.',
+      'ja': '香港教育大学言語学科開発。20世紀半ばの香港映画対話コーパス、常用字発音表、学術検索ツールを提供。',
+      'ko': '홍콩교육대학교 언어학과 제작. 20세기 중반 홍콩 영화 대사 코퍼스, 상용한자 발음표 및 학술 음운 검색 제공.'
+    }
+  },
 
   // ========== 3. 實用工具 (Tools) ==========
   {
@@ -339,6 +427,28 @@ window.ROADMAP_RESOURCES = [
       'ko': '본명조 기반의 오픈소스 월병 폰트. 9성 6조 부호 및 광둥어 고유 한자 완벽 지원.'
     }
   },
+  {
+    id: 'konghub',
+    url: 'https://konghub.net/',
+    category: 'tool',
+    domain: 'konghub.net',
+    icon: 'https://www.google.com/s2/favicons?domain=konghub.net&sz=128',
+    keywords: 'konghub 港语学 粤语资源 教材 课程 词汇 播客 文化 学习导航',
+    title: {
+      'zh-HK': 'KongHub 粵語資源庫',
+      'zh-CN': 'KongHub 粤语资源库',
+      'en': 'KongHub Cantonese Portal',
+      'ja': 'KongHub 広東語ポータル',
+      'ko': 'KongHub 광둥어 포털'
+    },
+    desc: {
+      'zh-HK': '致力於保存與推廣粵語文化的綜合資源平台，彙整教材目錄、詞彙對照表、粵拼輸入工具與海外粵語學習資訊。',
+      'zh-CN': '致力于保存与推广粤语文化的综合资源平台，汇整教材目录、词汇对照表、粤拼输入工具与海外粤语学习资讯。',
+      'en': 'Comprehensive platform dedicated to preserving and promoting Cantonese, curating textbooks, vocabulary charts, and learning directories.',
+      'ja': '広東語の保存と普及を目指す総合ポータル。教材リスト、語彙対照表、学習ツールを包括的に提供。',
+      'ko': '광둥어 보존과 보급을 위한 종합 포털. 교재 디렉터리, 어휘 대조표 및 학습 도구 집대성.'
+    }
+  },
 
   // ========== 4. 粵拼輸入 (Input Methods) ==========
   {
@@ -365,11 +475,11 @@ window.ROADMAP_RESOURCES = [
   },
   {
     id: 'cantoboard',
-    url: 'https://apps.apple.com/app/id6752963850',
+    url: 'https://github.com/Cantoboard/Cantoboard',
     category: 'input',
-    domain: 'apps.apple.com',
-    icon: 'https://www.google.com/s2/favicons?domain=apple.com&sz=128',
-    keywords: 'cantoboard 粤拼 键盘 输入法 ios ipad app store 仓颉 九宫格 开源',
+    domain: 'github.com/Cantoboard',
+    icon: 'https://www.google.com/s2/favicons?domain=github.com&sz=128',
+    keywords: 'cantoboard 粤拼 键盘 输入法 ios ipad app store 仓颉 九宫格 开源 github',
     title: {
       'zh-HK': 'Cantoboard 粵語鍵盤',
       'zh-CN': 'Cantoboard 粤语键盘',
@@ -539,6 +649,50 @@ window.ROADMAP_RESOURCES = [
       'en': 'Official Radio Television Hong Kong podcast directory featuring culture, history, talk shows, and current affairs in pristine Cantonese.',
       'ja': '香港公共放送(RTHK)公式ポッドキャスト。文化、歴史、時事など本場のネイティブ音声を多数配信。',
       'ko': '홍콩 공영 방송(RTHK) 공식 팟캐스트 포털. 문화, 역사, 시사 등 생생한 원어민 음성 자료 풍부.'
+    }
+  },
+  {
+    id: 'tatoeba-cantonese',
+    url: 'https://tatoeba.org/zh-cn/sentences/show_all_in/yue/none',
+    category: 'reading',
+    domain: 'tatoeba.org',
+    icon: 'https://www.google.com/s2/favicons?domain=tatoeba.org&sz=128',
+    keywords: 'tatoeba 粤语 例句 会话 翻译 双语 真实语料 anki 口语 句子',
+    title: {
+      'zh-HK': 'Tatoeba 粵語例句庫',
+      'zh-CN': 'Tatoeba 粤语例句库',
+      'en': 'Tatoeba Cantonese Sentences',
+      'ja': 'Tatoeba 広東語例文データベース',
+      'ko': 'Tatoeba 광둥어 예문 데이터베이스'
+    },
+    desc: {
+      'zh-HK': '開源多語言例句庫的粵語專區，收錄海量地道日常口語會話例句，附帶中英多語種對照翻譯與部分原聲朗讀。',
+      'zh-CN': '开源多语言例句库的粤语专区，收录海量地道日常口语会话例句，附带中英多语种对照翻译与部分原声朗读。',
+      'en': 'Open-source collaborative sentence database with thousands of authentic spoken Cantonese sentences and multilingual translations.',
+      'ja': 'オープンソースの例文データベース。日常会話に役立つ豊富な広東語例文と多言語対訳を収録。',
+      'ko': '오픈소스 다국어 예문 데이터베이스의 광둥어 섹션. 생생한 일상 구어 예문과 다국어 번역 제공.'
+    }
+  },
+  {
+    id: 'reddit-cantonese',
+    url: 'https://www.reddit.com/r/Cantonese/',
+    category: 'reading',
+    domain: 'reddit.com/r/Cantonese',
+    icon: 'https://www.google.com/s2/favicons?domain=reddit.com&sz=128',
+    keywords: 'reddit cantonese 论坛 社区 问答 讨论 交流 学习伙伴 语法 资源',
+    title: {
+      'zh-HK': 'Reddit r/Cantonese 社區',
+      'zh-CN': 'Reddit r/Cantonese 社区',
+      'en': 'Reddit r/Cantonese Community',
+      'ja': 'Reddit r/Cantonese コミュニティ',
+      'ko': 'Reddit r/Cantonese 커뮤니티'
+    },
+    desc: {
+      'zh-HK': '全球最大、最活躍的國際粵語學習與文化討論社區，匯聚海量學習者與母語者，提供答疑互助、資源分享與學習心得交流。',
+      'zh-CN': '全球最大、最活跃的国际粤语学习与文化讨论社区，汇聚海量学习者与母语者，提供答疑互助、资源分享与学习心得交流。',
+      'en': 'The largest global online Cantonese learning and cultural forum, connecting learners and native speakers for Q&A and resource sharing.',
+      'ja': '世界最大の国際広東語学習・文化コミュニティ。世界中の学習者とネイティブが質問や学習教材を活発に共有。',
+      'ko': '세계 최대의 광둥어 학습 및 문화 토론 커뮤니티. 전 세계 학습자와 원어민이 모여 질의응답 및 학습 자료 공유.'
     }
   },
 
@@ -739,6 +893,50 @@ window.ROADMAP_RESOURCES = [
       'en': 'Comprehensive Cantopop lyrics database with standard Jyutping and romanization annotations, artist profiles, and album info—an ideal companion for learning Cantonese through music.',
       'ja': '膨大な名曲・最新広東語ポップス（Cantopop）の歌詞データベース。ピンイン表記付きで、音楽を通じた広東語学習に最適。',
       'ko': '방대한 캔토팝(광둥어 가요) 가사 데이터베이스. 표준 월병 및 발음 표기를 제공하여 음악을 통한 광둥어 학습에 탁월.'
+    }
+  },
+  {
+    id: 'lihkg',
+    url: 'https://lihkg.com/',
+    category: 'media',
+    domain: 'lihkg.com',
+    icon: 'https://www.google.com/s2/favicons?domain=lihkg.com&sz=128',
+    keywords: 'lihkg 连登 讨论区 香港 论坛 潮语 流行口语 市井 时事 网络用语 纯粤文',
+    title: {
+      'zh-HK': 'LIHKG 連登討論區',
+      'zh-CN': 'LIHKG 连登讨论区',
+      'en': 'LIHKG Discussion Forum',
+      'ja': 'LIHKG 連登オンライン掲示板',
+      'ko': 'LIHKG 연등 토론방'
+    },
+    desc: {
+      'zh-HK': '香港本土最具影響力與人氣的綜合網絡論壇，匯聚最新鮮的本土日常口語、潮語俚語與實時話題，是進階感受純正粵文書面交流的窗口。',
+      'zh-CN': '香港本土最具影响力与人气的综合网络论坛，汇聚最新鲜的本土日常口语、潮语俚语与实时话题，是进阶感受纯正粤文书面交流的窗口。',
+      'en': 'Hong Kong\'s most popular and iconic online forum, bursting with current local internet slang, written Cantonese culture, and youth memes.',
+      'ja': '香港で最も人気のある総合オンライン掲示板。最新のネットスラングや流行語、生きた広東語の書き言葉を体感可能。',
+      'ko': '홍콩에서 가장 활발한 온라인 커뮤니티. 최신 인터넷 유행어, 신조어 및 생생한 현지 구어체 문화를 경험할 수 있는 창구.'
+    }
+  },
+  {
+    id: 'cantolounge-youtube',
+    url: 'https://www.youtube.com/@Cantolounge',
+    category: 'media',
+    domain: 'youtube.com/@Cantolounge',
+    icon: 'https://www.google.com/s2/favicons?domain=youtube.com&sz=128',
+    keywords: 'cantolounge baggio 语法 助词 教程 视频 发音 youtube 教学',
+    title: {
+      'zh-HK': 'CantoLounge 教學頻道',
+      'zh-CN': 'CantoLounge 教学频道',
+      'en': 'CantoLounge Video Channel',
+      'ja': 'CantoLounge 広東語講座',
+      'ko': 'CantoLounge 광둥어 강의 채널'
+    },
+    desc: {
+      'zh-HK': '由名師 Baggio 創立的知名粵語教學頻道，專注於粵語核心語法、九聲六調發音技巧與常用語氣助詞（喇、㗎、喎）深度解析。',
+      'zh-CN': '由名师 Baggio 创立的知名粤语教学频道，专注于粤语核心语法、九声六调发音技巧与常用语气助词（喇、㗎、喎）深度解析。',
+      'en': 'Popular YouTube channel by Baggio Wong breaking down essential Cantonese grammar, tones, and conversational final particles step by step.',
+      'ja': '人気講師Baggioによる広東語動画チャンネル。基本文法、声調のコツ、語気助詞（喇、㗎など）を分かりやすく解説。',
+      'ko': 'Baggio 강사의 광둥어 유튜브 채널. 핵심 문법, 9성 6조 발음 팁 및 어기조사(喇, 㗎 등)의 명쾌한 해설 제공.'
     }
   }
 ];

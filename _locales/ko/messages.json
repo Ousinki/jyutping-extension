@@ -206,10 +206,10 @@
     "description": "optEnFont"
   },
   "optEnFontCourier": {
-    "message": "고정폭 글꼴 (Courier)"
+    "message": "클래식 고정폭 (Courier)"
   },
   "optEnFontModern": {
-    "message": "모던 고정폭 (SF Mono / Consolas)"
+    "message": "모던 고정폭 (SF Mono / Consolas / 기본)"
   },
   "optEnFontSystem": {
     "message": "시스템 산세리프"
@@ -999,15 +999,12 @@
     "message": "설정으로 돌아가기"
   },
   "optRoadmapCount": {
-    "message": "$COUNT$개 엄선된 리소스",
+    "message": "총 $COUNT$ 개의 엄선된 리소스",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
-  },
-  "optRoadmapVisit": {
-    "message": "방문하기 ↗"
   },
   "optRoadmapEmptyTitle": {
     "message": "일치하는 학습 리소스를 찾을 수 없습니다"
@@ -1314,6 +1311,90 @@
   },
   "wordbookDeselectItem": {
     "message": "클릭하여 선택 해제"
+  },
+  "folderAll": {
+    "message": "모든 단어"
+  },
+  "folderDefault": {
+    "message": "단어장"
+  },
+  "folderNew": {
+    "message": "새 폴더"
+  },
+  "folderEdit": {
+    "message": "폴더 편집"
+  },
+  "folderDelete": {
+    "message": "폴더 삭제"
+  },
+  "folderSetDefault": {
+    "message": "기본 단어장으로 설정"
+  },
+  "folderDefaultBadge": {
+    "message": "기본"
+  },
+  "folderMoveTo": {
+    "message": "폴더로 이동"
+  },
+  "folderMoveHere": {
+    "message": "선택한 단어 $1개를 여기로 이동"
+  },
+  "folderMovedSuccess": {
+    "message": "$1개의 단어를 '$2'(으)로 이동했습니다"
+  },
+  "folderNameLabel": {
+    "message": "폴더 이름"
+  },
+  "folderNamePlaceholder": {
+    "message": "폴더 이름을 입력하세요 (예: 일상 회화, 음식 등)…"
+  },
+  "folderColorLabel": {
+    "message": "태그 색상"
+  },
+  "folderDeleteConfirmTitle": {
+    "message": "폴더 삭제"
+  },
+  "folderDeleteConfirmDesc": {
+    "message": "'$1' 폴더에 $2개의 단어가 있습니다. 처리 방식을 선택하세요:"
+  },
+  "folderDeleteMoveOption": {
+    "message": "단어 유지 (기본 폴더로 이동)"
+  },
+  "folderDeleteMoveOptionDesc": {
+    "message": "단어가 삭제되지 않고 기본 폴더로 자동 이동됩니다."
+  },
+  "folderDeletePurgeOption": {
+    "message": "폴더 내 단어도 함께 휴지통으로 이동"
+  },
+  "folderDeletePurgeOptionDesc": {
+    "message": "단어가 휴지통으로 이동하며 30일 이내에 복원할 수 있습니다."
+  },
+  "folderDeleteEmptyConfirm": {
+    "message": "'$1' 폴더를 삭제하시겠습니까?"
+  },
+  "quizFolderScope": {
+    "message": "연습 단어 범위"
+  },
+  "quizFolderAll": {
+    "message": "모든 단어"
+  },
+  "quizFolderInsufficient": {
+    "message": "이 폴더에 연습 가능한 단어가 부족합니다 (최소 3개 필요)"
+  },
+  "folderUncategorized": {
+    "message": "미분류"
+  },
+  "folderBelongsTo": {
+    "message": "소속 폴더"
+  },
+  "wordbookSave": {
+    "message": "저장"
+  },
+  "folderSetDefaultDesc": {
+    "message": "새로 추가한 단어는 이 단어장에 자동 저장됩니다."
+  },
+  "folderDeleted": {
+    "message": "'$1' 폴더를 삭제했습니다"
   }
 }
 

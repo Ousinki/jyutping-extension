@@ -1,10 +1,21 @@
 /**
  * 生詞本存儲模塊
- * 使用 chrome.storage.local 存儲用戶收藏的粵語詞彙
+ * 使用 chrome.storage.local 存儲用戶收藏的粵語詞彙與資料夾
  */
 
 const WORDBOOK_KEY = 'wordbook';
+const WORDBOOK_FOLDERS_KEY = 'wordbook_folders';
+const WORDBOOK_DEFAULT_FOLDER_KEY = 'wordbook_default_folder_id';
 const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
+
+const DEFAULT_FOLDER = {
+  id: 'default',
+  name: '生詞本',
+  nameI18nKey: 'folderDefault',
+  color: 'default',
+  createdAt: 0,
+  isDefault: true
+};
 
 /**
  * 生成唯一 ID
@@ -12,6 +23,199 @@ const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
 function generateId() {
   return 'w_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
 }
+
+// ==================== 資料夾管理 (Folder Management) ====================
+
+/**
+ * 獲取所有資料夾列表（若不存在則初始化預設資料夾）
+ * @returns {Promise<Array>}
+ */
+export async function getFolders() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([WORDBOOK_FOLDERS_KEY, WORDBOOK_DEFAULT_FOLDER_KEY], (res) => {
+      let folders = res[WORDBOOK_FOLDERS_KEY];
+      let defaultId = res[WORDBOOK_DEFAULT_FOLDER_KEY] || 'default';
+      if (!Array.isArray(folders) || folders.length === 0) {
+        folders = [{ ...DEFAULT_FOLDER }];
+        chrome.storage.local.set({
+          [WORDBOOK_FOLDERS_KEY]: folders,
+          [WORDBOOK_DEFAULT_FOLDER_KEY]: 'default'
+        });
+      }
+      let hasDefault = false;
+      folders.forEach(f => {
+        if (f.id === defaultId) {
+          f.isDefault = true;
+          hasDefault = true;
+        } else {
+          f.isDefault = false;
+        }
+      });
+      if (!hasDefault && folders.length > 0) {
+        folders[0].isDefault = true;
+        defaultId = folders[0].id;
+        chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: defaultId });
+      }
+      resolve(folders);
+    });
+  });
+}
+
+/**
+ * 獲取當前預設資料夾 ID
+ * @returns {Promise<string>}
+ */
+export async function getDefaultFolderId() {
+  return new Promise((resolve) => {
+    chrome.storage.local.get([WORDBOOK_DEFAULT_FOLDER_KEY], (res) => {
+      resolve(res[WORDBOOK_DEFAULT_FOLDER_KEY] || 'default');
+    });
+  });
+}
+
+/**
+ * 設置某個資料夾為預設資料夾
+ * @param {string} folderId
+ * @returns {Promise<boolean>}
+ */
+export async function setDefaultFolderId(folderId) {
+  const folders = await getFolders();
+  const target = folders.find(f => f.id === folderId);
+  if (!target) return false;
+
+  folders.forEach(f => { f.isDefault = (f.id === folderId); });
+  return new Promise((resolve) => {
+    chrome.storage.local.set({
+      [WORDBOOK_FOLDERS_KEY]: folders,
+      [WORDBOOK_DEFAULT_FOLDER_KEY]: folderId
+    }, () => resolve(true));
+  });
+}
+
+/**
+ * 保存資料夾列表
+ * @param {Array} folders
+ * @returns {Promise<boolean>}
+ */
+export async function saveFolders(folders) {
+  return new Promise((resolve) => {
+    chrome.storage.local.set({ [WORDBOOK_FOLDERS_KEY]: folders }, () => resolve(true));
+  });
+}
+
+/**
+ * 創建新資料夾
+ * @param {string} name - 資料夾名稱
+ * @param {string} [color='default'] - 標籤顏色
+ * @returns {Promise<Object>}
+ */
+export async function createFolder(name, color = 'default') {
+  if (!name || !name.trim()) return null;
+  const folders = await getFolders();
+  const newFolder = {
+    id: 'folder_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+    name: name.trim(),
+    color: color,
+    createdAt: Date.now(),
+    isDefault: false
+  };
+  folders.push(newFolder);
+  await saveFolders(folders);
+  return newFolder;
+}
+
+/**
+ * 更新資料夾信息
+ * @param {string} id - 資料夾 ID
+ * @param {Object} updates - 更新內容 { name, color, isDefault }
+ * @returns {Promise<boolean>}
+ */
+export async function updateFolder(id, updates) {
+  const folders = await getFolders();
+  const folder = folders.find(f => f.id === id);
+  if (!folder) return false;
+
+  if (updates.name && updates.name.trim()) folder.name = updates.name.trim();
+  if (updates.color) folder.color = updates.color;
+  if (updates.isDefault) {
+    folders.forEach(f => { f.isDefault = (f.id === id); });
+    await chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: id });
+  }
+  await saveFolders(folders);
+  return true;
+}
+
+/**
+ * 刪除資料夾
+ * @param {string} id - 資料夾 ID
+ * @param {boolean} [moveToDefault=true] - 是否將其內部生詞轉移到預設資料夾
+ * @returns {Promise<boolean>}
+ */
+export async function deleteFolder(id, moveToDefault = true) {
+  if (id === 'default') return false;
+  const folders = await getFolders();
+  const defaultFolderId = await getDefaultFolderId();
+
+  let nextDefaultId = defaultFolderId;
+  if (id === defaultFolderId) {
+    nextDefaultId = 'default';
+    await setDefaultFolderId('default');
+  }
+
+  const filteredFolders = folders.filter(f => f.id !== id);
+  await saveFolders(filteredFolders);
+
+  const wordbook = await getWordbook();
+  let modified = false;
+  const now = Date.now();
+
+  for (const w of wordbook) {
+    if (w.folderId === id) {
+      if (moveToDefault) {
+        w.folderId = nextDefaultId;
+      } else {
+        w.deletedAt = now;
+      }
+      modified = true;
+    }
+  }
+
+  if (modified) {
+    await new Promise(resolve => {
+      chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, resolve);
+    });
+  }
+
+  return true;
+}
+
+/**
+ * 批量移動生詞至指定資料夾
+ * @param {Array<string>} wordIds - 生詞 ID 數組
+ * @param {string} targetFolderId - 目標資料夾 ID
+ * @returns {Promise<number>} 移動的生詞數
+ */
+export async function moveWordsToFolder(wordIds, targetFolderId) {
+  const idSet = new Set(wordIds);
+  const wordbook = await getWordbook();
+  let count = 0;
+
+  for (const w of wordbook) {
+    if (idSet.has(w.id)) {
+      w.folderId = targetFolderId;
+      count++;
+    }
+  }
+
+  if (count > 0) {
+    await new Promise(resolve => {
+      chrome.storage.local.set({ [WORDBOOK_KEY]: wordbook }, resolve);
+    });
+  }
+  return count;
+}
+
+// ==================== 生詞管理 (Word Management) ====================
 
 /**
  * 獲取完整生詞列表（自動清除超過 30 天的廢紙簍詞條）
@@ -53,10 +257,12 @@ export async function getWordbook() {
  * @param {Array<string>} [wordData.english] - 英文釋義
  * @param {string} [wordData.sourceUrl] - 來源網頁 URL
  * @param {string} [wordData.sourceTitle] - 來源網頁標題
+ * @param {string} [wordData.folderId] - 所屬資料夾 ID
  * @returns {Promise<{success: boolean, isNew: boolean, entry: Object}>}
  */
 export async function addWord(wordData) {
   const wordbook = await getWordbook();
+  const defaultFolderId = await getDefaultFolderId();
 
   // 檢查是否已存在
   const existingIndex = wordbook.findIndex(w => w.character === wordData.character);
@@ -69,6 +275,7 @@ export async function addWord(wordData) {
       if (wordData.jyutping) existing.jyutping = wordData.jyutping;
       if (wordData.yale) existing.yale = wordData.yale;
       if (wordData.english && wordData.english.length > 0) existing.english = wordData.english;
+      if (!existing.folderId) existing.folderId = wordData.folderId || defaultFolderId || 'default';
       wordbook.splice(existingIndex, 1);
       wordbook.unshift(existing);
       return new Promise((resolve) => {
@@ -91,6 +298,7 @@ export async function addWord(wordData) {
     sourceUrl: wordData.sourceUrl || '',
     sourceTitle: wordData.sourceTitle || '',
     tags: [],
+    folderId: wordData.folderId || defaultFolderId || 'default',
     notes: ''
   };
 
@@ -223,7 +431,7 @@ export async function emptyTrash() {
 }
 
 /**
- * 更新一個詞條的備注或標籤
+ * 更新一個詞條的備注、標籤或所屬資料夾
  * @param {string} id - 詞條 ID
  * @param {Object} updates - 要更新的字段
  * @returns {Promise<boolean>}
@@ -234,7 +442,7 @@ export async function updateWord(id, updates) {
   if (index === -1) return false;
 
   // 只允許更新安全的字段
-  const safeFields = ['notes', 'tags'];
+  const safeFields = ['notes', 'tags', 'folderId'];
   for (const key of safeFields) {
     if (key in updates) {
       wordbook[index][key] = updates[key];
@@ -311,19 +519,27 @@ export async function getStorageUsage() {
 export async function exportWordbook(format) {
   const allWords = await getWordbook();
   const wordbook = allWords.filter(w => !w.deletedAt);
+  const folders = await getFolders();
+  const defaultFolderId = await getDefaultFolderId();
+  const folderMap = new Map(folders.map(f => [f.id, f.name]));
 
   switch (format) {
     case 'json':
       return {
-        content: JSON.stringify(wordbook, null, 2),
+        content: JSON.stringify({
+          version: 2,
+          defaultFolderId,
+          folders,
+          words: wordbook
+        }, null, 2),
         mimeType: 'application/json',
         ext: 'json'
       };
 
     case 'csv': {
-      const header = '漢字,粵拼,Yale,英文釋義,添加日期,來源\n';
+      const header = '漢字,粵拼,Yale,英文釋義,資料夾,添加日期,來源\n';
       const rows = wordbook.map(w =>
-        `"${w.character}","${w.jyutping}","${w.yale || ''}","${(w.english || []).join('; ')}","${new Date(w.timestamp).toLocaleDateString()}","${w.sourceUrl || ''}"`
+        `"${w.character}","${w.jyutping}","${w.yale || ''}","${(w.english || []).join('; ')}","${folderMap.get(w.folderId) || '預設生詞'}","${new Date(w.timestamp).toLocaleDateString()}","${w.sourceUrl || ''}"`
       ).join('\n');
       return {
         content: '\uFEFF' + header + rows,  // BOM for Excel UTF-8
@@ -333,9 +549,9 @@ export async function exportWordbook(format) {
     }
 
     case 'markdown': {
-      const mdHeader = '| 漢字 | 粵拼 | 英文 | 日期 |\n|------|------|------|------|\n';
+      const mdHeader = '| 漢字 | 粵拼 | 英文 | 資料夾 | 日期 |\n|------|------|------|--------|------|\n';
       const mdRows = wordbook.map(w =>
-        `| ${w.character} | ${w.jyutping} | ${(w.english || []).join('; ')} | ${new Date(w.timestamp).toLocaleDateString()} |`
+        `| ${w.character} | ${w.jyutping} | ${(w.english || []).join('; ')} | ${folderMap.get(w.folderId) || '預設生詞'} | ${new Date(w.timestamp).toLocaleDateString()} |`
       ).join('\n');
       return {
         content: `# 我的粵語生詞本\n\n共 ${wordbook.length} 詞\n\n${mdHeader}${mdRows}\n`,
@@ -346,7 +562,7 @@ export async function exportWordbook(format) {
 
     case 'txt': {
       const txtRows = wordbook.map(w =>
-        `${w.character}\t${w.jyutping}\t${(w.english || []).join('; ')}`
+        `${w.character}\t${w.jyutping}\t${(w.english || []).join('; ')}\t${folderMap.get(w.folderId) || '預設生詞'}`
       ).join('\n');
       return {
         content: txtRows,
@@ -362,19 +578,38 @@ export async function exportWordbook(format) {
 
 /**
  * 導入生詞本（合併去重）
- * @param {Array} data - 要導入的詞條數組
+ * @param {Array|Object} data - 要導入的詞條數組或包含 folders 的對象
  * @returns {Promise<{added: number, skipped: number}>}
  */
 export async function importWordbook(data) {
-  if (!Array.isArray(data)) throw new Error('Invalid data format');
+  let wordsData = [];
+  if (Array.isArray(data)) {
+    wordsData = data;
+  } else if (data && typeof data === 'object') {
+    wordsData = Array.isArray(data.words) ? data.words : [];
+    if (Array.isArray(data.folders)) {
+      const existingFolders = await getFolders();
+      const existingNames = new Set(existingFolders.map(f => f.name));
+      for (const f of data.folders) {
+        if (f.name && !existingNames.has(f.name) && f.id !== 'default') {
+          existingFolders.push(f);
+          existingNames.add(f.name);
+        }
+      }
+      await saveFolders(existingFolders);
+    }
+  } else {
+    throw new Error('Invalid data format');
+  }
 
   const wordbook = await getWordbook();
+  const defaultFolderId = await getDefaultFolderId();
   const existingChars = new Set(wordbook.map(w => w.character));
 
   let added = 0;
   let skipped = 0;
 
-  for (const item of data) {
+  for (const item of wordsData) {
     if (!item.character) continue;
 
     if (existingChars.has(item.character)) {
@@ -393,6 +628,7 @@ export async function importWordbook(data) {
       sourceUrl: item.sourceUrl || '',
       sourceTitle: item.sourceTitle || '',
       tags: item.tags || [],
+      folderId: item.folderId || defaultFolderId || 'default',
       notes: item.notes || ''
     };
 

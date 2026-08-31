@@ -340,7 +340,6 @@
         color: var(--text-muted);
         font-weight: 400;
       }
-      .ai-response-content {}
       .ai-response-bubble p { margin: 0 0 8px 0; }
       .ai-response-bubble p:last-child { margin-bottom: 0; }
       .ai-response-bubble ol,
@@ -2629,10 +2628,18 @@
       }
 
       .empty-state p {
-        font-size: 14px;
-        max-width: 360px;
+        font-size: 13.5px;
+        max-width: 480px;
         margin: 0 auto;
         line-height: 1.8;
+      }
+
+      .empty-star-icon {
+        display: inline-flex;
+        align-items: center;
+        vertical-align: -2px;
+        line-height: 1;
+        margin: 0 1px;
       }
 
       .empty-state .empty-state-action-btn {
@@ -3492,6 +3499,34 @@
         transition: all var(--transition);
       }
 
+      .spelling-quiz-header-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 6px;
+        text-decoration: none;
+        transition: border-color var(--transition), color var(--transition), background-color var(--transition), box-shadow var(--transition);
+        white-space: nowrap;
+        cursor: pointer;
+        min-width: 104px;
+        box-sizing: border-box;
+      }
+
+      .spelling-quiz-header-btn span {
+        display: inline-block;
+        max-width: 140px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        vertical-align: middle;
+        text-align: center;
+      }
+
+      .spelling-quiz-header-btn:hover {
+        border-color: var(--primary);
+        color: var(--primary);
+      }
+
       .detail-mode-icon-btn.active {
         width: 36px;
         height: 36px;
@@ -3512,6 +3547,542 @@
         height: 16px;
       }
 
+      /* ========== Folder Tabs Bar & Multi-Row Expand ========== */
+      .folder-tabs-wrapper {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 10px;
+        position: relative;
+        gap: 6px;
+        width: 100%;
+      }
+
+      .folder-tabs-bar {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px 8px;
+        height: 42px;
+        overflow: hidden;
+        padding: 3px 2px 5px 2px;
+        flex: 1;
+        min-width: 0;
+        transition: height 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+        box-sizing: border-box;
+        will-change: height;
+      }
+
+      .folder-bar-actions {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        flex-shrink: 0;
+        margin-top: 3px;
+        height: 34px;
+      }
+
+      .folder-overflow-wrapper {
+        position: relative;
+        display: flex;
+        align-items: center;
+      }
+
+      .folder-overflow-trigger {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 28px;
+        height: 28px;
+        padding: 0;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        border-radius: 6px;
+        transition: color 0.15s ease, background-color 0.15s ease;
+        box-sizing: border-box;
+      }
+      .folder-overflow-trigger:hover {
+        color: var(--text-primary);
+        background: var(--bg-hover);
+      }
+      .folder-tabs-wrapper.is-expanded .folder-overflow-trigger {
+        color: var(--primary);
+        background: var(--bg-hover);
+      }
+
+      .folder-overflow-arrow {
+        transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.15s ease;
+        transform: rotate(0deg);
+        color: inherit;
+        display: block;
+        transform-origin: center center;
+      }
+      .folder-tabs-wrapper.is-expanded .folder-overflow-arrow {
+        transform: rotate(90deg);
+      }
+
+      .folder-tab-item {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        gap: 7px;
+        padding: 6px 12px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-secondary);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+        user-select: none;
+        position: relative;
+        box-sizing: border-box;
+      }
+
+      .folder-tab-item:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        border-color: color-mix(in srgb, var(--primary) 35%, var(--border));
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+      }
+
+      .folder-tab-item.active {
+        background: color-mix(in srgb, var(--primary) 8%, var(--bg-card));
+        color: var(--text-primary);
+        border-color: color-mix(in srgb, var(--primary) 45%, var(--border));
+        font-weight: 600;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+      }
+
+      .folder-tab-icon {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: transform 0.15s ease;
+      }
+      .folder-tab-item:hover .folder-tab-icon {
+        transform: scale(1.06);
+      }
+
+      .folder-pill-count {
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 6px;
+        background: var(--bg-input);
+        color: var(--text-muted);
+        font-weight: 600;
+        min-width: 16px;
+        text-align: center;
+        transition: background-color 0.15s ease, color 0.15s ease;
+      }
+      .folder-tab-item.active .folder-pill-count {
+        background: color-mix(in srgb, var(--primary) 15%, var(--bg-input));
+        color: var(--primary);
+      }
+
+      .folder-default-star {
+        display: inline-flex;
+        align-items: center;
+        flex-shrink: 0;
+        color: #f59e0b;
+      }
+
+      .folder-add-btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        height: 32px;
+        padding: 0 8px;
+        background: transparent;
+        border: none;
+        border-radius: 8px;
+        font-size: 12.5px;
+        font-weight: 500;
+        color: var(--text-muted);
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background-color 0.2s ease, color 0.2s ease, padding 0.25s cubic-bezier(0.16, 1, 0.3, 1), transform 0.1s ease;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+      .folder-add-icon {
+        flex-shrink: 0;
+        transition: transform 0.2s ease, color 0.2s ease;
+      }
+      .folder-add-label {
+        max-width: 0;
+        opacity: 0;
+        overflow: hidden;
+        white-space: nowrap;
+        margin-left: 0;
+        transition: max-width 0.28s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, margin-left 0.25s ease;
+      }
+      .folder-add-btn:hover {
+        background: var(--bg-hover);
+        color: var(--text-primary);
+        padding: 0 10px;
+      }
+      .folder-add-btn:hover .folder-add-icon {
+        color: var(--primary);
+        transform: scale(1.05);
+      }
+      .folder-add-btn:hover .folder-add-label {
+        max-width: 100px;
+        opacity: 1;
+        margin-left: 6px;
+      }
+      .folder-add-btn:active {
+        transform: scale(0.96);
+      }
+
+      /* Folder Global Context Menu */
+      .folder-global-context-menu {
+        position: fixed;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18), 0 2px 8px rgba(0, 0, 0, 0.08);
+        padding: 5px;
+        min-width: 185px;
+        z-index: 10000;
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        animation: folderCtxMenuIn 0.12s cubic-bezier(0.16, 1, 0.3, 1);
+        transform-origin: top left;
+      }
+      @keyframes folderCtxMenuIn {
+        from {
+          opacity: 0;
+          transform: scale(0.96);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+      .folder-context-menu-header {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 6px 8px 4px 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--text-primary);
+      }
+      .folder-context-menu-title {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        max-width: 140px;
+      }
+      .folder-context-menu-divider {
+        height: 1px;
+        background: var(--border);
+        margin: 3px 0;
+      }
+      .folder-menu-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 12.5px;
+        color: var(--text-primary);
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.12s ease, color 0.12s ease;
+        font-family: inherit;
+        user-select: none;
+      }
+      .folder-menu-item:hover {
+        background: var(--bg-hover);
+        color: var(--primary);
+      }
+      .folder-menu-item.danger {
+        color: #ef4444;
+      }
+      .folder-menu-item.danger:hover {
+        background: rgba(239, 68, 68, 0.1);
+        color: #dc2626;
+      }
+
+      /* Folder Color Palette in Modal */
+      .folder-color-palette {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+      .folder-color-option {
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        cursor: pointer;
+        border: 2px solid transparent;
+        position: relative;
+        transition: all 0.15s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .folder-color-option:hover {
+        transform: scale(1.15);
+      }
+      .folder-color-option.active {
+        border-color: var(--text-primary);
+        transform: scale(1.1);
+      }
+
+      /* Folder Modal Inputs & Checkbox */
+      .folder-name-input {
+        width: 100%;
+        height: 38px;
+        padding: 8px 12px;
+        border-radius: 8px;
+        border: 1.5px solid var(--folder-accent-color, var(--border));
+        background: var(--bg-input);
+        color: var(--text-primary);
+        font-size: 13px;
+        font-family: inherit;
+        outline: none;
+        box-sizing: border-box;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+      .folder-name-input:focus {
+        border-color: var(--folder-accent-color, var(--primary));
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--folder-accent-color, var(--primary)) 18%, transparent);
+      }
+
+      .folder-default-checkbox-wrapper {
+        margin-top: 2px;
+        padding: 2px 0;
+      }
+      .folder-checkbox-label {
+        display: flex;
+        align-items: flex-start;
+        gap: 9px;
+        cursor: pointer;
+        user-select: none;
+      }
+      .folder-checkbox-input {
+        accent-color: var(--primary);
+        width: 16px;
+        height: 16px;
+        margin-top: 2px;
+        cursor: pointer;
+        flex-shrink: 0;
+      }
+      .folder-checkbox-input:disabled {
+        cursor: not-allowed;
+        opacity: 0.6;
+      }
+      .folder-checkbox-text {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+      }
+      .folder-checkbox-title {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+      }
+      .folder-checkbox-desc {
+        font-size: 11.5px;
+        color: var(--text-muted);
+      }
+
+      /* Folder Delete Option in Modal */
+      .folder-delete-option {
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        padding: 11px 14px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 9px;
+        cursor: pointer;
+        transition: border-color 0.15s ease, background-color 0.15s ease, box-shadow 0.15s ease;
+        position: relative;
+        user-select: none;
+      }
+      .folder-delete-option:hover {
+        border-color: color-mix(in srgb, var(--primary) 40%, var(--border));
+        background: var(--bg-hover);
+      }
+      .folder-delete-option.active {
+        border-color: var(--primary);
+        background: color-mix(in srgb, var(--primary) 6%, var(--bg-card));
+      }
+
+      .folder-delete-radio-input {
+        position: absolute;
+        opacity: 0;
+        width: 0;
+        height: 0;
+        pointer-events: none;
+      }
+
+      .folder-delete-radio-indicator {
+        width: 16px;
+        height: 16px;
+        border-radius: 50%;
+        border: 1.5px solid var(--border);
+        background: var(--bg-input);
+        position: relative;
+        flex-shrink: 0;
+        margin-top: 2px;
+        transition: border-color 0.18s ease, background-color 0.18s ease, box-shadow 0.18s ease;
+        box-sizing: border-box;
+      }
+
+      .folder-delete-option:hover .folder-delete-radio-indicator {
+        border-color: var(--primary);
+      }
+
+      .folder-delete-option.active .folder-delete-radio-indicator {
+        border-color: var(--primary);
+        background: var(--primary);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary) 20%, transparent);
+      }
+
+      .folder-delete-radio-indicator::after {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%) scale(0);
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #ffffff;
+        transition: transform 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+      }
+
+      .folder-delete-option.active .folder-delete-radio-indicator::after {
+        transform: translate(-50%, -50%) scale(1);
+      }
+
+      .folder-delete-option-content {
+        flex: 1;
+        min-width: 0;
+      }
+
+      .folder-delete-option-title {
+        font-weight: 600;
+        font-size: 13px;
+        color: var(--text-primary);
+        line-height: 1.4;
+      }
+
+      .folder-delete-option-desc {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        margin-top: 2px;
+        line-height: 1.4;
+      }
+
+      /* Word Card Folder Badge */
+      .word-folder-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 11px;
+        font-weight: 500;
+        color: var(--text-muted);
+        background: var(--bg-input);
+        padding: 2px 7px;
+        border-radius: 4px;
+        border: 1px solid var(--border);
+        cursor: pointer;
+        transition: all 0.15s ease;
+        margin-left: 6px;
+      }
+      .word-folder-tag:hover {
+        color: var(--text-primary);
+        border-color: var(--primary);
+      }
+
+      /* Bulk Move Wrapper */
+      .bulk-move-wrapper {
+        position: relative;
+        display: inline-flex;
+      }
+      .bulk-move-menu {
+        position: absolute;
+        bottom: calc(100% + 6px);
+        left: 0;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        box-shadow: 0 6px 24px rgba(0, 0, 0, 0.18);
+        padding: 6px;
+        min-width: 170px;
+        z-index: 1000;
+        display: none;
+        flex-direction: column;
+        gap: 2px;
+        max-height: 220px;
+        overflow-y: auto;
+      }
+      .bulk-move-menu.open {
+        display: flex;
+      }
+      .bulk-move-item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 5px;
+        font-size: 12.5px;
+        color: var(--text-primary);
+        background: transparent;
+        border: none;
+        width: 100%;
+        text-align: left;
+        cursor: pointer;
+        transition: background 0.15s ease;
+        font-family: inherit;
+      }
+      .bulk-move-item:hover {
+        background: var(--bg-hover);
+      }
+
+      /* Detail Pane Folder Switcher */
+      .detail-folder-selector-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 8px 12px;
+        background: var(--bg-input);
+        border-radius: 8px;
+        border: 1px solid var(--border);
+        font-size: 12.5px;
+        margin-bottom: 12px;
+      }
+      .detail-folder-select {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        padding: 4px 8px;
+        font-size: 12.5px;
+        color: var(--text-primary);
+        outline: none;
+        cursor: pointer;
+        font-family: inherit;
+        font-weight: 500;
+      }
+
       /* ========== Responsive ========== */
       @media (max-width: 600px) {
         body { padding: 20px 12px; }
@@ -3524,12 +4095,12 @@
   <body>
     <div class="container">
       <div class="top-right-actions">
-        <a href="spelling.html" class="btn detail-mode-icon-btn" title="拼寫練習">
+        <a href="spelling.html" class="btn detail-mode-icon-btn spelling-quiz-header-btn" id="spellingQuizLink" title="拼寫練習">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M12 20h9"></path>
             <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
           </svg>
-          <span data-i18n="spellingQuizBtn">拼寫練習</span>
+          <span id="spellingQuizBtnText" data-i18n="spellingQuizBtn">拼寫練習</span>
         </a>
         <button class="btn detail-mode-icon-btn" id="detailModeToggleBtn" title="詞典模式">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -3616,6 +4187,29 @@
         <div class="trash-banner-actions">
           <button class="btn btn-sm btn-outline" id="restoreAllBtn" data-i18n="wordbookRestoreAll">全部還原</button>
           <button class="btn btn-sm btn-danger" id="emptyTrashBtn" data-i18n="wordbookEmptyTrash">清空廢紙簍</button>
+        </div>
+      </div>
+
+      <!-- Folder Tabs Wrapper with Overflow Dropdown -->
+      <div class="folder-tabs-wrapper" id="folderTabsWrapper">
+        <div class="folder-tabs-bar" id="folderTabsBar">
+          <!-- Dynamically populated by wordbook.js -->
+        </div>
+        <div class="folder-bar-actions" id="folderBarActions">
+          <button class="folder-add-btn" id="btnNewFolder" title="新建資料夾">
+            <svg class="folder-add-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 10v6m-3-3h6M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+            </svg>
+            <span class="folder-add-label" data-i18n="folderNew">新建資料夾</span>
+          </button>
+
+          <div class="folder-overflow-wrapper" id="folderOverflowWrapper" style="display: none;">
+            <button class="folder-overflow-trigger" id="folderOverflowBtn" title="展開 / 收起更多資料夾">
+              <svg class="folder-overflow-arrow" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
         </div>
       </div>
 
@@ -4110,7 +4704,113 @@
       </div>
     </div>
 
+    <!-- Folder Global Context Menu -->
+    <div class="folder-global-context-menu" id="folderGlobalContextMenu" style="display: none;">
+      <div class="folder-context-menu-header">
+        <span class="folder-context-menu-icon" id="folderCtxHeaderIcon"></span>
+        <span class="folder-context-menu-title" id="folderCtxHeaderTitle"></span>
+      </div>
+      <div class="folder-context-menu-divider" id="folderCtxMoveDivider" style="display: none;"></div>
+      <button class="folder-menu-item" id="folderCtxMoveHereBtn" style="display: none;">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M5 12h14"></path>
+          <path d="m12 5 7 7-7 7"></path>
+        </svg>
+        <span id="folderCtxMoveHereText" data-i18n="folderMoveHere">移動選中的生詞至此</span>
+      </button>
+      <div class="folder-context-menu-divider"></div>
+      <button class="folder-menu-item" id="folderCtxSetDefaultBtn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        <span id="folderCtxSetDefaultText" data-i18n="folderSetDefault">設為預設生詞本</span>
+      </button>
+      <button class="folder-menu-item" id="folderCtxEditBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>
+        <span id="folderCtxEditText" data-i18n="folderEdit">編輯資料夾</span>
+      </button>
+      <div class="folder-context-menu-divider" id="folderCtxDeleteDivider"></div>
+      <button class="folder-menu-item danger" id="folderCtxDeleteBtn">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+        <span id="folderCtxDeleteText" data-i18n="folderDelete">刪除資料夾</span>
+      </button>
+    </div>
 
+    <!-- Folder Create / Edit Modal -->
+    <div class="modal-overlay" id="folderModal">
+      <div class="modal" style="max-width: 420px;">
+        <div class="ai-modal-header">
+          <h3 id="folderModalTitle" data-i18n="folderNew">新建資料夾</h3>
+          <button class="ai-modal-close-btn" id="closeFolderModalBtn" title="關閉">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 14px; margin-bottom: 20px;">
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 6px; color: var(--text-primary);" data-i18n="folderNameLabel">資料夾名稱</label>
+            <input type="text" id="folderNameInput" class="folder-name-input" data-i18n-placeholder="folderNamePlaceholder" placeholder="請輸入資料夾名稱（如：日常口語、餐飲）…" maxlength="30" autocomplete="off" />
+          </div>
+          <div>
+            <label style="display: block; font-size: 13px; font-weight: 500; margin-bottom: 8px; color: var(--text-primary);" data-i18n="folderColorLabel">標籤顏色</label>
+            <div class="folder-color-palette" id="folderColorPalette"></div>
+          </div>
+          <div class="folder-default-checkbox-wrapper">
+            <label class="folder-checkbox-label" for="folderIsDefaultToggle">
+              <input type="checkbox" id="folderIsDefaultToggle" class="folder-checkbox-input" />
+              <div class="folder-checkbox-text">
+                <div class="folder-checkbox-title" data-i18n="folderSetDefault">設為預設生詞本</div>
+                <div class="folder-checkbox-desc" data-i18n="folderSetDefaultDesc">新收藏的生詞將自動存入此生詞本。</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top: 0;">
+          <button class="btn" id="folderCancelBtn" data-i18n="wordbookCancel">取消</button>
+          <button class="btn btn-primary" id="folderSaveBtn" data-i18n="wordbookSave">保存</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Folder Delete Confirm Modal -->
+    <div class="modal-overlay" id="folderDeleteModal">
+      <div class="modal" style="max-width: 440px;">
+        <div class="ai-modal-header">
+          <h3 data-i18n="folderDeleteConfirmTitle">刪除資料夾</h3>
+          <button class="ai-modal-close-btn" id="closeFolderDeleteModalBtn" title="關閉">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </button>
+        </div>
+        <div style="margin-bottom: 18px;">
+          <p id="folderDeleteDesc" style="font-size: 13.5px; color: var(--text-secondary); margin-top: 0; margin-bottom: 14px;"></p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            <label class="folder-delete-option active" id="folderDeleteOptionMove">
+              <input type="radio" name="folderDeleteChoice" value="move" class="folder-delete-radio-input" checked>
+              <span class="folder-delete-radio-indicator"></span>
+              <div class="folder-delete-option-content">
+                <div class="folder-delete-option-title" data-i18n="folderDeleteMoveOption">保留生詞（移至預設資料夾）</div>
+                <div class="folder-delete-option-desc" data-i18n="folderDeleteMoveOptionDesc">生詞不會丟失，自動移至預設資料夾中。</div>
+              </div>
+            </label>
+            <label class="folder-delete-option" id="folderDeleteOptionPurge">
+              <input type="radio" name="folderDeleteChoice" value="purge" class="folder-delete-radio-input">
+              <span class="folder-delete-radio-indicator"></span>
+              <div class="folder-delete-option-content">
+                <div class="folder-delete-option-title" data-i18n="folderDeletePurgeOption">同時將資料夾內的生詞移至廢紙簍</div>
+                <div class="folder-delete-option-desc" data-i18n="folderDeletePurgeOptionDesc">生詞將移入廢紙簍，可在 30 天內還原。</div>
+              </div>
+            </label>
+          </div>
+        </div>
+        <div class="modal-actions" style="margin-top: 0;">
+          <button class="btn" id="folderDeleteCancelBtn" data-i18n="wordbookCancel">取消</button>
+          <button class="btn btn-danger" id="folderDeleteConfirmBtn" data-i18n="folderDelete">確認刪除</button>
+        </div>
+      </div>
+    </div>
 
     <script src="marked.min.js"></script>
     <script src="wordbook.js"></script>

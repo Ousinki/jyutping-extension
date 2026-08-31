@@ -223,10 +223,10 @@
     "description": "optEnFont"
   },
   "optEnFontCourier": {
-    "message": "經典等寬字體 (Courier / 預設)"
+    "message": "經典等寬字體 (Courier)"
   },
   "optEnFontModern": {
-    "message": "現代等寬字體 (SF Mono / Consolas)"
+    "message": "現代等寬字體 (SF Mono / Consolas / 預設)"
   },
   "optEnFontSystem": {
     "message": "系統無襯線體 (System UI)"
@@ -1073,9 +1073,6 @@
       }
     }
   },
-  "optRoadmapVisit": {
-    "message": "立即訪問 ↗"
-  },
   "optRoadmapEmptyTitle": {
     "message": "未找到匹配的學習資源"
   },
@@ -1363,6 +1360,90 @@
   },
   "wordbookDeselectItem": {
     "message": "點擊取消選中"
+  },
+  "folderAll": {
+    "message": "全部生詞"
+  },
+  "folderDefault": {
+    "message": "生詞本"
+  },
+  "folderNew": {
+    "message": "新建資料夾"
+  },
+  "folderEdit": {
+    "message": "編輯資料夾"
+  },
+  "folderDelete": {
+    "message": "刪除資料夾"
+  },
+  "folderSetDefault": {
+    "message": "設為預設生詞本"
+  },
+  "folderDefaultBadge": {
+    "message": "預設"
+  },
+  "folderMoveTo": {
+    "message": "移動至資料夾"
+  },
+  "folderMoveHere": {
+    "message": "移動選中的 $1 個生詞至此"
+  },
+  "folderMovedSuccess": {
+    "message": "已移動 $1 個生詞至「$2」"
+  },
+  "folderNameLabel": {
+    "message": "資料夾名稱"
+  },
+  "folderNamePlaceholder": {
+    "message": "請輸入資料夾名稱（如：日常口語、餐飲）…"
+  },
+  "folderColorLabel": {
+    "message": "標籤顏色"
+  },
+  "folderDeleteConfirmTitle": {
+    "message": "刪除資料夾"
+  },
+  "folderDeleteConfirmDesc": {
+    "message": "資料夾「$1」內含有 $2 個生詞，請選擇處理方式："
+  },
+  "folderDeleteMoveOption": {
+    "message": "保留生詞（移至預設資料夾）"
+  },
+  "folderDeleteMoveOptionDesc": {
+    "message": "生詞不會丟失，自動移至預設資料夾中。"
+  },
+  "folderDeletePurgeOption": {
+    "message": "同時將資料夾內的生詞移至廢紙簍"
+  },
+  "folderDeletePurgeOptionDesc": {
+    "message": "生詞將移入廢紙簍，可在 30 天內還原。"
+  },
+  "folderDeleteEmptyConfirm": {
+    "message": "確定要刪除資料夾「$1」嗎？"
+  },
+  "quizFolderScope": {
+    "message": "練習生詞範圍"
+  },
+  "quizFolderAll": {
+    "message": "全部生詞"
+  },
+  "quizFolderInsufficient": {
+    "message": "該資料夾內可用生詞不足（至少需要 3 詞）"
+  },
+  "folderUncategorized": {
+    "message": "未分類"
+  },
+  "folderBelongsTo": {
+    "message": "所屬資料夾"
+  },
+  "wordbookSave": {
+    "message": "保存"
+  },
+  "folderSetDefaultDesc": {
+    "message": "新收藏的生詞將自動存入此生詞本。"
+  },
+  "folderDeleted": {
+    "message": "已刪除資料夾「$1」"
   }
 }
 

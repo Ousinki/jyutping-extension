@@ -27,7 +27,14 @@
   ],
   "web_accessible_resources": [
     {
-      "resources": ["dictionary.json", "fonts/HanaMinB.ttf", "icon16.png", "icon_favicon.svg", "popup.css"],
+      "resources": [
+        "dictionary.json",
+        "fonts/HanaMinB.ttf",
+        "icon16.png",
+        "icon_favicon.svg",
+        "popup.css",
+        "audio/jyutping_female/*"
+      ],
       "matches": ["<all_urls>"]
     }
   ],

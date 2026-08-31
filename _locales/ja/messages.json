@@ -223,10 +223,10 @@
     "description": "optEnFont"
   },
   "optEnFontCourier": {
-    "message": "等幅フォント (Courier)"
+    "message": "クラシック等幅 (Courier)"
   },
   "optEnFontModern": {
-    "message": "モダン等幅フォント (SF Mono / Consolas)"
+    "message": "モダン等幅フォント (SF Mono / Consolas / デフォルト)"
   },
   "optEnFontSystem": {
     "message": "システムサンセリフ"
@@ -1045,15 +1045,12 @@
     "message": "設定に戻る"
   },
   "optRoadmapCount": {
-    "message": "$COUNT$ 件の厳選リソース",
+    "message": "合計 $COUNT$ 件の厳選リソース",
     "placeholders": {
       "count": {
         "content": "$1"
       }
     }
-  },
-  "optRoadmapVisit": {
-    "message": "アクセス ↗"
   },
   "optRoadmapEmptyTitle": {
     "message": "一致する学習リソースが見つかりませんでした"
@@ -1360,6 +1357,90 @@
   },
   "wordbookDeselectItem": {
     "message": "クリックして選択解除"
+  },
+  "folderAll": {
+    "message": "すべての単語"
+  },
+  "folderDefault": {
+    "message": "単語帳"
+  },
+  "folderNew": {
+    "message": "新規フォルダ"
+  },
+  "folderEdit": {
+    "message": "フォルダの編集"
+  },
+  "folderDelete": {
+    "message": "フォルダを削除"
+  },
+  "folderSetDefault": {
+    "message": "デフォルト単語帳に設定"
+  },
+  "folderDefaultBadge": {
+    "message": "デフォルト"
+  },
+  "folderMoveTo": {
+    "message": "フォルダへ移動"
+  },
+  "folderMoveHere": {
+    "message": "選択した $1 個の単語をここに移動"
+  },
+  "folderMovedSuccess": {
+    "message": "$1 個の単語を「$2」に移動しました"
+  },
+  "folderNameLabel": {
+    "message": "フォルダ名"
+  },
+  "folderNamePlaceholder": {
+    "message": "フォルダ名を入力（例：日常会話、グルメなど）…"
+  },
+  "folderColorLabel": {
+    "message": "タグカラー"
+  },
+  "folderDeleteConfirmTitle": {
+    "message": "フォルダの削除"
+  },
+  "folderDeleteConfirmDesc": {
+    "message": "フォルダ「$1」には $2 個の単語が含まれています。処理方法を選択してください："
+  },
+  "folderDeleteMoveOption": {
+    "message": "単語を保持（デフォルトフォルダへ移動）"
+  },
+  "folderDeleteMoveOptionDesc": {
+    "message": "単語は保持され、デフォルトフォルダに自動移動します。"
+  },
+  "folderDeletePurgeOption": {
+    "message": "フォルダ内の単語もゴミ箱へ移動"
+  },
+  "folderDeletePurgeOptionDesc": {
+    "message": "単語はごみ箱に移動し、30日以内であれば復元できます。"
+  },
+  "folderDeleteEmptyConfirm": {
+    "message": "フォルダ「$1」を削除してもよろしいですか？"
+  },
+  "quizFolderScope": {
+    "message": "出題範囲"
+  },
+  "quizFolderAll": {
+    "message": "すべての単語"
+  },
+  "quizFolderInsufficient": {
+    "message": "このフォルダには問題生成に必要な単語が不足しています（最低3単語必要）"
+  },
+  "folderUncategorized": {
+    "message": "未分類"
+  },
+  "folderBelongsTo": {
+    "message": "フォルダ"
+  },
+  "wordbookSave": {
+    "message": "保存"
+  },
+  "folderSetDefaultDesc": {
+    "message": "新しくブックマークした単語はこの単語帳に保存されます。"
+  },
+  "folderDeleted": {
+    "message": "フォルダ「$1」を削除しました"
   }
 }
 

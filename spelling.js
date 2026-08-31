@@ -247,7 +247,11 @@
       tone3: '3聲',
       tone4: '4聲',
       tone5: '5聲',
-      tone6: '6聲'
+      tone6: '6聲',
+      quizFolderScope: '練習生詞範圍',
+      quizFolderAll: '全部生詞',
+      quizFolderInsufficient: '該資料夾內可用生詞不足（至少需要 3 詞）',
+      folderDefault: '生詞本'
     },
     'zh-CN': {
       spellingQuizTitle: '练习模式',
@@ -306,7 +310,11 @@
       tone3: '3声',
       tone4: '4声',
       tone5: '5声',
-      tone6: '6声'
+      tone6: '6声',
+      quizFolderScope: '练习生词范围',
+      quizFolderAll: '全部生词',
+      quizFolderInsufficient: '该文件夹内可用生词不足（至少需要 3 词）',
+      folderDefault: '生词本'
     },
     'en': {
       spellingQuizTitle: 'Study & Quiz',
@@ -365,7 +373,11 @@
       tone3: 'Tone 3',
       tone4: 'Tone 4',
       tone5: 'Tone 5',
-      tone6: 'Tone 6'
+      tone6: 'Tone 6',
+      quizFolderScope: 'Word Scope',
+      quizFolderAll: 'All Words',
+      quizFolderInsufficient: 'Not enough words in this folder (at least 3 words required)',
+      folderDefault: 'Wordbook'
     },
     'ja': {
       spellingQuizTitle: '練習モード',
@@ -424,7 +436,11 @@
       tone3: '第3声',
       tone4: '第4声',
       tone5: '第5声',
-      tone6: '第6声'
+      tone6: '第6声',
+      quizFolderScope: '出題範囲',
+      quizFolderAll: 'すべての単語',
+      quizFolderInsufficient: 'このフォルダには問題生成に必要な単語が不足しています（最低3単語必要）',
+      folderDefault: '単語帳'
     },
     'ko': {
       spellingQuizTitle: '연습 모드',
@@ -483,7 +499,11 @@
       tone3: '3성',
       tone4: '4성',
       tone5: '5성',
-      tone6: '6성'
+      tone6: '6성',
+      quizFolderScope: '연습 단어 범위',
+      quizFolderAll: '모든 단어',
+      quizFolderInsufficient: '이 폴더에 연습 가능한 단어가 부족합니다 (최소 3개 필요)',
+      folderDefault: '단어장'
     }
   };
 
@@ -557,12 +577,18 @@
   // ==================== Settings State ====================
 
   const SETTINGS_KEY = 'jyutping_quiz_settings';
+  const WORDBOOK_FOLDERS_KEY = 'wordbook_folders';
+  const WORDBOOK_DEFAULT_FOLDER_KEY = 'wordbook_default_folder_id';
   const ALL_QUIZ_TYPES = ['sentence_cloze', 'word_spelling', 'definition_choice', 'listening_choice'];
+
+  let folders = [];
+  let defaultFolderId = 'default';
 
   let quizSettings = {
     types: ['sentence_cloze', 'word_spelling', 'definition_choice', 'listening_choice'], // array of enabled types
     count: '10',        // '10' | '20' | 'all'
-    clozeTts: 'sentence' // 'sentence' | 'word' | 'off'
+    clozeTts: 'sentence', // 'sentence' | 'word' | 'off'
+    folderId: 'all'     // 'all' | folder ID
   };
 
   function loadSettings() {
@@ -583,6 +609,15 @@
         }
       }
     } catch (e) {}
+
+    // Check URL parameters for folder override
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlFolder = urlParams.get('folder') || urlParams.get('folderId');
+      if (urlFolder) {
+        quizSettings.folderId = urlFolder;
+      }
+    } catch (e) {}
   }
 
   function saveSettings(newSettings) {
@@ -593,6 +628,14 @@
     try {
       localStorage.setItem(SETTINGS_KEY, JSON.stringify(quizSettings));
     } catch (e) {}
+  }
+
+  function getWordbookBackUrl() {
+    const targetFolder = quizSettings.folderId || 'all';
+    if (targetFolder && targetFolder !== 'all') {
+      return `wordbook.html?folder=${encodeURIComponent(targetFolder)}`;
+    }
+    return 'wordbook.html';
   }
 
   // ==================== Data Loading & Bottom Bar ====================
@@ -645,23 +688,17 @@
       }
     });
 
-    const extName = currentLang === 'zh-CN' ? '粤语悬浮词典' :
-                    currentLang === 'en' ? 'Cantonese Hover Dictionary' :
-                    currentLang === 'ja' ? '広東語ポップアップ辞書' :
-                    currentLang === 'ko' ? '광둥어 팝업 사전' :
-                    '粵語懸浮詞典';
-    document.title = t('spellingQuizTitle') + ' - ' + extName;
-
-    // Load wordbook
-    wordbook = await new Promise(resolve => {
+    // Load wordbook & folders
+    const storageRes = await new Promise(resolve => {
       if (typeof chrome !== 'undefined' && chrome.storage && chrome.storage.local) {
-        chrome.storage.local.get([WORDBOOK_KEY], result => {
-          resolve(result[WORDBOOK_KEY] || []);
-        });
+        chrome.storage.local.get([WORDBOOK_KEY, WORDBOOK_FOLDERS_KEY, WORDBOOK_DEFAULT_FOLDER_KEY], resolve);
       } else {
-        resolve([]);
+        resolve({});
       }
     });
+    wordbook = storageRes[WORDBOOK_KEY] || [];
+    folders = storageRes[WORDBOOK_FOLDERS_KEY] || [];
+    defaultFolderId = storageRes[WORDBOOK_DEFAULT_FOLDER_KEY] || 'default';
 
     // Load dictionary
     const url = chrome.runtime.getURL('dictionary.json');
@@ -683,6 +720,21 @@
 
     updateBottomBarI18n();
     loadSettings();
+
+    const extName = currentLang === 'zh-CN' ? '粤语悬浮词典' :
+                    currentLang === 'en' ? 'Cantonese Hover Dictionary' :
+                    currentLang === 'ja' ? '広東語ポップアップ辞書' :
+                    currentLang === 'ko' ? '광둥어 팝업 사전' :
+                    '粵語懸浮詞典';
+    let quizPageTitle = t('spellingQuizTitle');
+    if (quizSettings.folderId && quizSettings.folderId !== 'all') {
+      const curFolder = folders.find(f => f.id === quizSettings.folderId);
+      const folderName = curFolder ? (curFolder.id === 'default' ? t('folderDefault') : curFolder.name) : '';
+      if (folderName) {
+        quizPageTitle += ` (${folderName})`;
+      }
+    }
+    document.title = quizPageTitle + ' - ' + extName;
   }
 
   // Listen to language changes from options/popup
@@ -775,7 +827,15 @@
 
   function generateQuizQuestions(wb, dict, customSettings) {
     const settings = customSettings || quizSettings;
-    const activeWords = wb.filter(w => !w.deletedAt);
+    const targetFolder = (settings && settings.folderId) || 'all';
+    const activeWords = wb.filter(w => {
+      if (w.deletedAt) return false;
+      if (targetFolder !== 'all') {
+        const fId = w.folderId || 'default';
+        return fId === targetFolder;
+      }
+      return true;
+    });
     if (activeWords.length === 0) return [];
 
     const availableMode = settings.mode || 'mixed';
@@ -951,8 +1011,24 @@
   };
 
   function startQuiz(questionsOverride) {
+    const targetFolder = quizSettings.folderId || 'all';
+    const scopedWords = wordbook.filter(w => {
+      if (w.deletedAt) return false;
+      if (targetFolder !== 'all') {
+        return (w.folderId || 'default') === targetFolder;
+      }
+      return true;
+    });
+
+    if (scopedWords.length < 3) {
+      const folderObj = folders.find(f => f.id === targetFolder);
+      const fName = folderObj ? (folderObj.id === 'default' ? t('folderDefault') : folderObj.name) : '';
+      renderEmpty(targetFolder !== 'all' ? (t('quizFolderInsufficient') || `該資料夾「${fName}」內可用生詞不足（至少需要 3 詞）`) : null);
+      return;
+    }
+
     const questions = questionsOverride || generateQuizQuestions(wordbook, dictionary);
-    if (questions.length < 3) {
+    if (questions.length === 0) {
       renderEmpty();
       return;
     }
@@ -1127,7 +1203,7 @@
 
     container.innerHTML = `
       <div class="sq-header">
-        <a href="wordbook.html" class="sq-back-btn" id="sqBackBtn">
+        <a href="${getWordbookBackUrl()}" class="sq-back-btn" id="sqBackBtn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -1475,7 +1551,7 @@
     const container = document.getElementById('sqContainer');
     container.innerHTML = `
       <div class="sq-header">
-        <a href="wordbook.html" class="sq-back-btn">
+        <a href="${getWordbookBackUrl()}" class="sq-back-btn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -1552,7 +1628,7 @@
         <div class="sq-result-actions">
           <button class="sq-action-btn sq-retry-btn" id="sqRetryBtn">${t('spellingQuizRetry')}</button>
           ${wrongQuestions.length > 0 ? `<button class="sq-action-btn sq-retry-wrong-btn" id="sqRetryWrongBtn">${t('spellingQuizRetryWrong')}</button>` : ''}
-          <a href="wordbook.html" class="sq-action-btn sq-back-to-wb-btn">${t('spellingQuizBack')}</a>
+          <a href="${getWordbookBackUrl()}" class="sq-action-btn sq-back-to-wb-btn">${t('spellingQuizBack')}</a>
         </div>
       </div>
 
@@ -1686,7 +1762,7 @@
     const container = document.getElementById('sqContainer');
     container.innerHTML = `
       <div class="sq-header">
-        <a href="wordbook.html" class="sq-back-btn">
+        <a href="${getWordbookBackUrl()}" class="sq-back-btn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -1701,14 +1777,14 @@
     `;
   }
 
-  function renderEmpty() {
+  function renderEmpty(customDesc) {
     const bottomBar = document.getElementById('sqBottomBar');
     if (bottomBar) bottomBar.style.display = 'none';
 
     const container = document.getElementById('sqContainer');
     container.innerHTML = `
       <div class="sq-header">
-        <a href="wordbook.html" class="sq-back-btn">
+        <a href="${getWordbookBackUrl()}" class="sq-back-btn">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="19" y1="12" x2="5" y2="12"></line>
             <polyline points="12 19 5 12 12 5"></polyline>
@@ -1743,14 +1819,19 @@
           <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
         </svg>
         <div class="sq-empty-title">${t('spellingQuizNoWords')}</div>
-        <div class="sq-empty-desc">${t('spellingQuizNoWordsDetail')}</div>
-        <a href="wordbook.html" class="sq-action-btn sq-back-to-wb-btn" style="margin-top: 12px;">${t('spellingQuizBack')}</a>
+        <div class="sq-empty-desc">${customDesc || t('spellingQuizNoWordsDetail')}</div>
+        <div style="display: flex; gap: 10px; margin-top: 12px;">
+          <a href="${getWordbookBackUrl()}" class="sq-action-btn sq-back-to-wb-btn">${t('spellingQuizBack')}</a>
+          <button type="button" class="sq-action-btn sq-retry-btn" id="sqOpenSettingsFromEmpty">${t('quizSettingsTitle')}</button>
+        </div>
       </div>
     `;
     const themeBtn = document.getElementById('sqThemeToggle');
     if (themeBtn) themeBtn.addEventListener('click', toggleTheme);
     const settingsBtn = document.getElementById('sqSettingsBtn');
     if (settingsBtn) settingsBtn.addEventListener('click', openSettingsModal);
+    const emptySettingsBtn = document.getElementById('sqOpenSettingsFromEmpty');
+    if (emptySettingsBtn) emptySettingsBtn.addEventListener('click', openSettingsModal);
   }
 
   // ==================== Settings Modal Control ====================
@@ -1761,7 +1842,8 @@
     tempSettings = {
       types: [...(quizSettings.types || ALL_QUIZ_TYPES)],
       count: quizSettings.count || '10',
-      clozeTts: quizSettings.clozeTts || 'sentence'
+      clozeTts: quizSettings.clozeTts || 'sentence',
+      folderId: quizSettings.folderId || 'all'
     };
     const modal = document.getElementById('sqSettingsModal');
     if (!modal) return;
@@ -1769,6 +1851,8 @@
     // Update modal labels with i18n
     const titleText = document.getElementById('sqModalTitleText');
     if (titleText) titleText.textContent = t('quizSettingsTitle');
+    const folderTitle = document.getElementById('sqModalFolderSectionTitle');
+    if (folderTitle) folderTitle.textContent = t('quizFolderScope') || '練習生詞範圍';
     const modeTitle = document.getElementById('sqModalModeSectionTitle');
     if (modeTitle) modeTitle.textContent = t('quizMode');
     const countTitle = document.getElementById('sqModalCountSectionTitle');
@@ -1779,6 +1863,38 @@
     if (saveBtn) saveBtn.textContent = t('quizSaveSettings');
     const cancelBtn = document.getElementById('sqModalCancelBtn');
     if (cancelBtn) cancelBtn.textContent = t('quizCancel');
+
+    // Update Folder Scope Pills
+    const folderPillsContainer = document.getElementById('sqFolderPills');
+    if (folderPillsContainer) {
+      const activeWb = wordbook.filter(w => !w.deletedAt);
+      const allCount = activeWb.length;
+      let pillsHtml = `
+        <button type="button" class="sq-radio-pill ${(tempSettings.folderId || 'all') === 'all' ? 'is-active' : ''}" data-folder="all">
+          ${t('quizFolderAll') || '全部生詞'} (${allCount})
+        </button>
+      `;
+
+      folders.forEach(f => {
+        const count = activeWb.filter(w => (w.folderId || 'default') === f.id).length;
+        const fName = (f.id === 'default') ? (t('folderDefault') || '預設生詞') : f.name;
+        pillsHtml += `
+          <button type="button" class="sq-radio-pill ${tempSettings.folderId === f.id ? 'is-active' : ''}" data-folder="${f.id}">
+            ${escapeHtml(fName)} (${count})
+          </button>
+        `;
+      });
+
+      folderPillsContainer.innerHTML = pillsHtml;
+
+      folderPillsContainer.querySelectorAll('.sq-radio-pill').forEach(pill => {
+        pill.addEventListener('click', () => {
+          folderPillsContainer.querySelectorAll('.sq-radio-pill').forEach(p => p.classList.remove('is-active'));
+          pill.classList.add('is-active');
+          tempSettings.folderId = pill.getAttribute('data-folder');
+        });
+      });
+    }
 
     // Update Mode Pills (Multi-Select)
     const modePills = document.querySelectorAll('#sqModePills .sq-radio-pill');

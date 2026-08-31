@@ -15,6 +15,29 @@ addEventListener('unhandledrejection', async (event) => {
 const BERT_VITS2_SPACE = 'https://naozumi0512-bert-vits2-cantonese-yue.hf.space';
 const AZURE_TTS_PROXY = 'http://114.55.243.162:8090';
 
+// ── 除錯日誌開關 ──────────────────────────────────────────────
+// 預設關閉：正式版不輸出流水帳日誌。console.warn / console.error 不受此開關影響，
+// 真正出錯時照樣會印，方便回報問題。
+//
+// 開啟方式（在擴充功能的 Service Worker 主控台執行）：
+//   永久 — chrome.storage.local.set({ debugLogging: true })
+//   臨時 — __jyutpingDebug = true      （Service Worker 重啟後失效）
+let debugLogging = false;
+
+chrome.storage.local.get(['debugLogging'], (result) => {
+  debugLogging = result?.debugLogging === true;
+});
+
+chrome.storage.onChanged.addListener((changes, namespace) => {
+  if (namespace === 'local' && changes.debugLogging !== undefined) {
+    debugLogging = changes.debugLogging.newValue === true;
+  }
+});
+
+function dlog(...args) {
+  if (debugLogging || globalThis.__jyutpingDebug === true) console.log(...args);
+}
+
 // 監聽來自 content script 的消息
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   if (request.action === 'chromeTtsSpeak') {
@@ -35,16 +58,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     });
   } else if (request.action === 'edgeTtsSpeak') {
     GoogleAnalytics.fireEvent('tts_play', { engine: 'edgeTts' });
-    handleEdgeTts(request.text, request.baseUrl, request.rate, sender.tab.id);
+    handleEdgeTts(request.text, request.baseUrl, request.rate, sender.tab.id, request.jyutping, request.sessionId);
   } else if (request.action === 'azureTtsSpeak') {
     GoogleAnalytics.fireEvent('tts_play', { engine: 'azureTts' });
-    handleAzureTts(request.text, request.azureKey, request.azureRegion, request.azureVoice, request.rate, sender.tab.id);
+    handleAzureTts(request.text, request.azureKey, request.azureRegion, request.azureVoice, request.rate, sender.tab.id, request.jyutping, request.sessionId);
   } else if (request.action === 'azureTtsProxySpeak') {
     GoogleAnalytics.fireEvent('tts_play', { engine: 'azureTtsProxy' });
-    handleAzureTtsProxy(request.text, request.azureVoice, request.rate, sender.tab.id);
+    handleAzureTtsProxy(request.text, request.azureVoice, request.rate, sender.tab.id, request.jyutping, request.sessionId);
   } else if (request.action === 'bertVits2Speak') {
     GoogleAnalytics.fireEvent('tts_play', { engine: 'bertVits2' });
-    handleBertVits2(request.text, request.rate || 1.0, sender.tab.id);
+    handleBertVits2(request.text, request.rate || 1.0, sender.tab.id, request.sessionId);
   } else if (request.action === 'translate') {
     GoogleAnalytics.fireEvent('translate', { type: 'bing' });
     handleTranslate(request, sender.tab.id);
@@ -70,15 +93,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 });
 
 // Edge TTS 請求處理
-async function handleEdgeTts(text, baseUrl, rate, tabId) {
+async function handleEdgeTts(text, baseUrl, rate, tabId, jyutping, sessionId = 0) {
   try {
     const url = baseUrl.replace(/\/$/, '') + '/v1/audio/speech';
-    
+
     const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         input: text,
+        jyutping: jyutping || undefined,
         voice: 'zh-HK-HiuMaanNeural',
         model: 'tts-1',
         speed: rate
@@ -89,15 +113,24 @@ async function handleEdgeTts(text, baseUrl, rate, tabId) {
       throw new Error(`Server error: ${response.status}`);
     }
     
-    const blob = await response.blob();
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      chrome.tabs.sendMessage(tabId, {
-        action: 'playAudio',
-        audioData: reader.result
-      }).catch(() => {});
-    };
-    reader.readAsDataURL(blob);
+    const arrayBuffer = await response.arrayBuffer();
+    const bytes = new Uint8Array(arrayBuffer);
+    let binary = '';
+    const len = bytes.byteLength;
+    const chunkSize = 8192;
+    for (let i = 0; i < len; i += chunkSize) {
+      binary += String.fromCharCode.apply(null, bytes.subarray(i, Math.min(i + chunkSize, len)));
+    }
+    const base64 = btoa(binary);
+    const dataUrl = 'data:audio/mpeg;base64,' + base64;
+
+    chrome.tabs.sendMessage(tabId, {
+      action: 'playAudio',
+      audioData: dataUrl,
+      sessionId: sessionId
+    }).catch(err => {
+      console.warn('[Background] Failed to send playAudio to tab:', err);
+    });
     
   } catch (error) {
     console.error('Edge TTS error:', error);
@@ -105,7 +138,7 @@ async function handleEdgeTts(text, baseUrl, rate, tabId) {
 }
 
 // Azure Speech TTS 請求處理
-async function handleAzureTts(text, apiKey, region, voice, rate, tabId) {
+async function handleAzureTts(text, apiKey, region, voice, rate, tabId, jyutping, sessionId = 0) {
   try {
     voice = voice || 'zh-HK-HiuMaanNeural';
     // Rate: 1.0 = default, convert to SSML percentage
@@ -140,7 +173,8 @@ async function handleAzureTts(text, apiKey, region, voice, rate, tabId) {
     reader.onloadend = () => {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
-        audioData: reader.result
+        audioData: reader.result,
+        sessionId: sessionId
       }).catch(() => {});
     };
     reader.readAsDataURL(blob);
@@ -151,13 +185,14 @@ async function handleAzureTts(text, apiKey, region, voice, rate, tabId) {
 }
 
 // Azure Speech TTS 代理請求處理（通過阿里雲代理，密鑰在伺服器端）
-async function handleAzureTtsProxy(text, voice, rate, tabId) {
+async function handleAzureTtsProxy(text, voice, rate, tabId, jyutping, sessionId = 0) {
   try {
     const response = await fetch(`${AZURE_TTS_PROXY}/v1/azure/speech`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         input: text,
+        jyutping: jyutping || undefined,
         voice: voice || 'zh-HK-HiuMaanNeural',
         speed: rate
       })
@@ -172,7 +207,8 @@ async function handleAzureTtsProxy(text, voice, rate, tabId) {
     reader.onloadend = () => {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
-        audioData: reader.result
+        audioData: reader.result,
+        sessionId: sessionId
       }).catch(() => {});
     };
     reader.readAsDataURL(blob);
@@ -183,9 +219,9 @@ async function handleAzureTtsProxy(text, voice, rate, tabId) {
 }
 
 // Bert-VITS2 請求處理 (Hugging Face Gradio 4 API)
-async function handleBertVits2(text, rate, tabId) {
+async function handleBertVits2(text, rate, tabId, sessionId = 0) {
   try {
-    console.log('Bert-VITS2: Starting request for text:', text);
+    dlog('Bert-VITS2: Starting request for text:', text);
     
     // Step 1: POST to /call/tts_fn to get event_id
     const callResponse = await fetch(`${BERT_VITS2_SPACE}/call/tts_fn`, {
@@ -215,7 +251,7 @@ async function handleBertVits2(text, rate, tabId) {
     
     const callResult = await callResponse.json();
     const eventId = callResult.event_id;
-    console.log('Bert-VITS2: Got event_id:', eventId);
+    dlog('Bert-VITS2: Got event_id:', eventId);
     
     if (!eventId) {
       throw new Error('No event_id received');
@@ -224,7 +260,7 @@ async function handleBertVits2(text, rate, tabId) {
     // Step 2: Poll the event endpoint for result
     const resultResponse = await fetch(`${BERT_VITS2_SPACE}/call/tts_fn/${eventId}`);
     const resultText = await resultResponse.text();
-    console.log('Bert-VITS2: Raw response:', resultText);
+    dlog('Bert-VITS2: Raw response:', resultText);
     
     // Parse SSE response - look for "complete" event
     const lines = resultText.split('\n');
@@ -265,7 +301,7 @@ async function handleBertVits2(text, rate, tabId) {
       throw new Error('No audio path in response');
     }
     
-    console.log('Bert-VITS2: Audio path:', audioPath);
+    dlog('Bert-VITS2: Audio path:', audioPath);
     
     // Step 3: Fetch the audio file
     let audioUrl;
@@ -275,7 +311,7 @@ async function handleBertVits2(text, rate, tabId) {
       audioUrl = `${BERT_VITS2_SPACE}/file=${audioPath}`;
     }
     
-    console.log('Bert-VITS2: Fetching audio from:', audioUrl);
+    dlog('Bert-VITS2: Fetching audio from:', audioUrl);
     
     const audioResponse = await fetch(audioUrl);
     if (!audioResponse.ok) {
@@ -287,7 +323,8 @@ async function handleBertVits2(text, rate, tabId) {
     reader.onloadend = () => {
       chrome.tabs.sendMessage(tabId, {
         action: 'playAudio',
-        audioData: reader.result
+        audioData: reader.result,
+        sessionId: sessionId
       }).catch(() => {});
     };
     reader.readAsDataURL(blob);
@@ -461,7 +498,7 @@ async function translateWithBing(text, from, to, retryCount = 0) {
     bingAccessToken = null; // 清除失效的 Token
     chrome.storage.local.remove('bingAccessToken'); // 從 storage 中也清除
     if (retryCount === 0) {
-      console.log('Bing Token expired or invalid, retrying...', data);
+      dlog('Bing Token expired or invalid, retrying...', data);
       return translateWithBing(text, from, to, 1); // 重試一次
     }
     throw new Error(`Bing API Error: ${data.errorMessage || data.statusCode}`);
@@ -950,12 +987,12 @@ ${cleanHtml}`;
 
 // ==================== 快捷鍵命令 ====================
 chrome.commands.onCommand.addListener((command) => {
-  console.log('[Background] Received command:', command);
+  dlog('[Background] Received command:', command);
   if (command === 'inspect-ruby') {
     chrome.tabs.query({ active: true, currentWindow: true }, (tabs) => {
-      console.log('[Background] Found active tabs:', tabs);
+      dlog('[Background] Found active tabs:', tabs);
       if (tabs.length > 0) {
-        console.log('[Background] Sending toggleRuby message to tab:', tabs[0].id);
+        dlog('[Background] Sending toggleRuby message to tab:', tabs[0].id);
         chrome.tabs.sendMessage(tabs[0].id, { action: 'toggleRuby' }).catch(err => {
           // Do not use console.error here as it triggers extension error badges for chrome:// URLs or unrefreshed tabs
           console.warn('[Background] Failed to send toggleRuby message (page might need refresh or is a chrome:// URL):', err.message);
@@ -1204,13 +1241,13 @@ function updateActionBadge(isEnabled) {
 
 async function handleAiChatQuery(request, sendResponse) {
   const { word, sentence, originalTranslation, question, history, systemPrompt } = request;
-  console.log('[AI Chat Background] Received query request:', { word, question, historyLength: history?.length });
+  dlog('[AI Chat Background] Received query request:', { word, question, historyLength: history?.length });
 
   try {
     const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'uiLang', 'aiCustomSystemPrompt']);
     const { aiBaseUrl, aiApiKey, aiModel, aiLanguage, uiLang, aiCustomSystemPrompt } = settings;
 
-    console.log('[AI Chat Background] Settings loaded:', { aiBaseUrl, aiModel, hasApiKey: !!aiApiKey, aiLanguage });
+    dlog('[AI Chat Background] Settings loaded:', { aiBaseUrl, aiModel, hasApiKey: !!aiApiKey, aiLanguage });
 
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
       console.warn('[AI Chat Background] AI API configuration missing');
@@ -1272,7 +1309,7 @@ async function handleAiChatQuery(request, sendResponse) {
     });
 
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';
-    console.log('[AI Chat Background] Sending request to:', url, 'with model:', aiModel);
+    dlog('[AI Chat Background] Sending request to:', url, 'with model:', aiModel);
 
     const response = await fetch(url, {
       method: 'POST',
@@ -1288,7 +1325,7 @@ async function handleAiChatQuery(request, sendResponse) {
       })
     });
 
-    console.log('[AI Chat Background] Fetch response status:', response.status, response.statusText);
+    dlog('[AI Chat Background] Fetch response status:', response.status, response.statusText);
 
     if (!response.ok) {
       const errText = await response.text();
@@ -1304,7 +1341,7 @@ async function handleAiChatQuery(request, sendResponse) {
       throw new Error('AI 返回空結果');
     }
 
-    console.log('[AI Chat Background] Successfully received reply (length:', reply.length, ')');
+    dlog('[AI Chat Background] Successfully received reply (length:', reply.length, ')');
     sendResponse({ success: true, reply: reply });
   } catch (error) {
     console.error('[AI Chat Background] Exception caught:', error);

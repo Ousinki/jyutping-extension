@@ -47,11 +47,15 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let rubyHoverStyle = 'ruby-red'; // Ruby 懸停樣式: ruby-red, ruby-blue, ruby-green, ruby-orange, ruby-purple, ruby-underline, ruby-border
   let rubyRtBackground = 'none'; // Hover Ruby 音標背景模式：'none' | 'fade' | 'solid'
   let currentWord = null; // 追蹤當前顯示的詞
+  // 多音字當前選中的讀音（{ jyutping, yale, english } 形態），收藏時優先採用，
+  // 否則切到第二個讀音後存入生詞本的仍是 readings[0]
+  let currentActiveReading = null;
   let currentContextSentence = ''; // 當前高亮詞語所在的上下文句子
   let hoverModifier = 'none'; // 懸停觸發按鍵
   let isMouseOverPopup = false; // 滑鼠是否在彈窗上
   let hideTimeout = null; // 延遲隱藏主彈窗計時器
   let justNavigated = false; // 是否剛進行鏈接導航
+  let lastTabSwitchTime = 0; // 記錄最近切換詞性 Tab 的時間戳，防止高度突變導致鼠標意外脫離
   let compactExpandBtn = true; // 精簡模式展開按鈕
   const EXPAND_GRACE_MS = 400; // 展開後的隱藏/重繪寬限時長
   let expandGraceUntil = 0; // 展開寬限截止時間戳（performance.now()），期間不自動隱藏或重繪
@@ -419,23 +423,23 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       vars: {
         '--popup-bg': 'rgba(255, 255, 255, 0.95)',
         '--popup-border': 'rgba(255, 255, 255, 0.3)',
-        '--popup-text': '#333333',
+        '--popup-text': '#1F1F1F',
         '--popup-text-muted': '#555555',
         '--popup-text-label': '#777777',
-        '--popup-accent': '#2196f3',
-        '--popup-accent-hover': '#1976d2',
-        '--popup-word-color': '#1a1a1a',
-        '--popup-def-color': '#444444',
-        '--popup-def-yue': '#b8860b',
+        '--popup-accent': '#8A1C1C',
+        '--popup-accent-hover': '#B42929',
+        '--popup-word-color': '#111111',
+        '--popup-def-color': '#333333',
+        '--popup-def-yue': '#8A1C1C',
         '--popup-divider': 'rgba(0, 0, 0, 0.06)',
         '--popup-divider-strong': 'rgba(0, 0, 0, 0.08)',
         '--popup-example-bg': 'rgba(255, 255, 255, 0.5)',
         '--popup-btn-bg': 'rgba(0, 0, 0, 0.06)',
         '--popup-btn-hover': 'rgba(0, 0, 0, 0.1)',
-        '--popup-btn-speaking': '#2196f3',
+        '--popup-btn-speaking': '#8A1C1C',
         '--popup-btn-speaking-text': '#ffffff',
         '--popup-shadow': '0 8px 32px rgba(0, 0, 0, 0.12)',
-        '--popup-active-bg': 'rgba(33, 150, 243, 0.08)',
+        '--popup-active-bg': 'rgba(138, 28, 28, 0.08)',
       }
     }
   };
@@ -485,6 +489,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   const ttsCache = new Map(); // key: "engine:text" -> audioData
   const TTS_CACHE_MAX = 20;
   let pendingTtsText = ''; // 追蹤正在請求的文本
+  let pendingTtsSessionId = -1; // 發起 TTS 網絡請求時的會話號，用於丟棄過期響應
 
   // ==================== Shadow DOM 樣式隔離 ====================
   let shadowRoot = null; // 彈窗的影子根，實現 CSS 完全隔離
@@ -1493,12 +1498,17 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     const entry = overrideEntry || (dictionary && dictionary[word]);
 
     try {
+      // 多音字：優先採用懸浮窗中當前選中的讀音
+      const reading = (!overrideEntry && currentActiveReading && currentActiveReading.word === word)
+        ? currentActiveReading
+        : null;
+
       const result = await addWord({
         character: word,
         simplified: entry ? entry.simplified : word,
-        jyutping: entry ? entry.jyutping : '',
-        yale: entry ? (entry.yale || '') : '',
-        english: entry ? (entry.english || []) : [],
+        jyutping: reading ? reading.jyutping : (entry ? entry.jyutping : ''),
+        yale: reading ? (reading.yale || '') : (entry ? (entry.yale || '') : ''),
+        english: reading ? (reading.english || []) : (entry ? (entry.english || []) : []),
         sourceUrl: window.location.href,
         sourceTitle: document.title
       });
@@ -1809,6 +1819,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     popup.addEventListener('mouseleave', () => {
       isMouseOverPopup = false;
       if (Date.now() - lastPopupShowTime < 400) return; // 忽略剛顯示時因為 DOM 變動觸發的幽靈事件
+      if (Date.now() - lastTabSwitchTime < 1000) return; // 剛切換詞性 Tab 1 秒內忽略因高度跳變導致的意外移出
       
       // 如果剛導航過（點擊鏈接），則不隱藏彈窗
       if (justNavigated) {
@@ -1905,6 +1916,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       compactExpandBtn = result.compactExpandBtn !== false;
       applyPopupTheme(popupTheme);
       ttsEnabled = result.ttsEnabled !== false;
+      // 讀到「發音已關閉」時卸載預熱監聽，避免白白建立播放器
+      if (!ttsEnabled) detachAudioUnlockListeners();
       ttsEngine = result.ttsEngine || 'edgeTts';
       edgeTtsMode = result.edgeTtsMode || 'default';
       edgeTtsUrl = result.edgeTtsUrl || '';
@@ -1989,9 +2002,11 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       }
       if (changes.customZhFont) {
         customZhFont = changes.customZhFont.newValue || '';
+        applyPopupTheme(popupTheme);
       }
       if (changes.customEnFont) {
         customEnFont = changes.customEnFont.newValue || '';
+        applyPopupTheme(popupTheme);
       }
       if (changes.highlightStyle) {
         highlightStyle = changes.highlightStyle.newValue || 'yellow';
@@ -2004,6 +2019,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       }
       if (changes.ttsEnabled !== undefined) {
         ttsEnabled = changes.ttsEnabled.newValue !== false;
+        if (ttsEnabled) attachAudioUnlockListeners();
+        else releaseAudioContext();
       }
       if (changes.ttsEngine) {
         ttsEngine = changes.ttsEngine.newValue || 'edgeTts';
@@ -2118,10 +2135,287 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
   // 粵語朗讀功能
   let lastSpeakTime = 0;
+  let lastSpeakKey = ''; // 防抖只針對「同一個讀音」，多音字切換讀音時不應被攔截
   let ttsPlaybackTimer = null; // 用於追蹤 TTS 播放狀態
   let activeSpeakerBtn = null; // 當前正在播放動畫的按鈕
   let activeSpeakingRuby = null; // 當前正在發音的 Ruby 元素
   
+  let webAudioCtx = null;
+  const audioBufferCache = new Map();
+  // 解碼後的音節音頻約為原始 MP3 的 20 倍（2.4KB -> 約 50KB），
+  // 150 筆約佔 7.5MB，足以覆蓋常用音節又不會無限增長
+  const AUDIO_BUFFER_CACHE_MAX = 150;
+  let activeAudioSourceNodes = [];
+  let currentHtmlAudio = null;
+  let currentAudioSessionId = 0;
+
+  function unlockAudioContext() {
+    try {
+      if (!webAudioCtx) {
+        webAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (webAudioCtx && webAudioCtx.state === 'suspended') {
+        webAudioCtx.resume().catch(() => {});
+      }
+    } catch (_) {}
+    return webAudioCtx;
+  }
+
+  // 首次用戶手勢時解鎖一次即可（解鎖後立即移除監聽）。
+  // 由於 content script 以 all_frames 注入，若無條件建立 AudioContext，
+  // 使用者在任意頁面/廣告內嵌框點一下就會各留一個永不釋放的音頻上下文。
+  // 因此這裡加兩道限制：關閉發音時不建立；建立成功後立刻卸載監聽。
+  const AUDIO_UNLOCK_EVENTS = ['pointerdown', 'keydown', 'touchend'];
+  let audioUnlockListenersAttached = false;
+
+  function handleFirstGesture() {
+    if (!ttsEnabled) return; // 發音關閉時完全不建立播放器
+    unlockAudioContext();
+    if (webAudioCtx) detachAudioUnlockListeners();
+  }
+
+  function detachAudioUnlockListeners() {
+    if (!audioUnlockListenersAttached) return;
+    AUDIO_UNLOCK_EVENTS.forEach(evt => {
+      document.removeEventListener(evt, handleFirstGesture, { capture: true });
+    });
+    audioUnlockListenersAttached = false;
+  }
+
+  function attachAudioUnlockListeners() {
+    if (audioUnlockListenersAttached || webAudioCtx) return;
+    AUDIO_UNLOCK_EVENTS.forEach(evt => {
+      document.addEventListener(evt, handleFirstGesture, { capture: true, passive: true });
+    });
+    audioUnlockListenersAttached = true;
+  }
+
+  // 關閉發音時釋放已建立的播放器，重新開啟時再等下一次手勢解鎖
+  function releaseAudioContext() {
+    stopActiveAudioNodes();
+    audioBufferCache.clear();
+    // 增益節點隨每次播放建立、播放結束即斷開，這裡無須額外清理
+    if (webAudioCtx) {
+      try { webAudioCtx.close(); } catch (_) {}
+      webAudioCtx = null;
+    }
+  }
+
+  attachAudioUnlockListeners();
+
+  function base64ToArrayBuffer(base64DataUri) {
+    try {
+      const base64 = base64DataUri.includes(',') ? base64DataUri.split(',')[1] : base64DataUri;
+      const binaryString = atob(base64);
+      const len = binaryString.length;
+      const bytes = new Uint8Array(len);
+      for (let i = 0; i < len; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      return bytes.buffer;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function stopActiveAudioNodes() {
+    activeAudioSourceNodes.forEach(node => {
+      try {
+        node.onended = null; // ★ 關鍵：清空 onended，防止手動停止時瀏覽器觸發回調中斷新音頻
+        node.stop();
+      } catch (_) {}
+      // 連同本次播放的增益節點一起斷開，避免中斷時節點仍掛在 destination 上
+      releaseSourceChain(node);
+    });
+    activeAudioSourceNodes = [];
+
+    if (currentHtmlAudio) {
+      try {
+        currentHtmlAudio.onended = null;
+        currentHtmlAudio.onerror = null;
+        currentHtmlAudio.ontimeupdate = null;
+        currentHtmlAudio.pause();
+      } catch (_) {}
+      currentHtmlAudio = null;
+    }
+  }
+
+  async function getAudioBuffer(url) {
+    if (audioBufferCache.has(url)) {
+      // Map 保持插入順序：命中後先刪再插，把它挪到末尾標記為「最近使用」
+      const cached = audioBufferCache.get(url);
+      audioBufferCache.delete(url);
+      audioBufferCache.set(url, cached);
+      return cached;
+    }
+    const ctx = unlockAudioContext();
+    if (!ctx) throw new Error('AudioContext unavailable');
+    const resp = await fetch(url);
+    const arrayBuffer = await resp.arrayBuffer();
+    const audioBuffer = await ctx.decodeAudioData(arrayBuffer);
+    // 超出上限時淘汰最久未使用的那筆，避免解碼後的音頻無限累積
+    if (audioBufferCache.size >= AUDIO_BUFFER_CACHE_MAX) {
+      audioBufferCache.delete(audioBufferCache.keys().next().value);
+    }
+    audioBufferCache.set(url, audioBuffer);
+    return audioBuffer;
+  }
+
+  // 將多個音節的 PCM 音頻緩衝區完整拼接為單個 AudioBuffer
+  // 並在拼接時對每個音節進行響度預平準，確保多字詞中每個字的發音音量均勻一致
+  function concatenateAudioBuffers(buffers) {
+    if (!buffers || buffers.length === 0) return null;
+    if (buffers.length === 1) return buffers[0];
+
+    const numChannels = Math.max(...buffers.map(b => b.numberOfChannels));
+    const sampleRate = buffers[0].sampleRate;
+
+    // 計算總採樣長度（完全保留每個音節的原始音頻長度）
+    let totalLength = 0;
+    for (let i = 0; i < buffers.length; i++) {
+      totalLength += buffers[i].length;
+    }
+
+    const outputBuffer = webAudioCtx.createBuffer(numChannels, totalLength, sampleRate);
+
+    // 計算每個音節各自的增益，使詞內各字發音響度平衡
+    const gains = buffers.map(b => computeNormalizedGain(b));
+
+    for (let channel = 0; channel < numChannels; channel++) {
+      const outputData = outputBuffer.getChannelData(channel);
+      let offset = 0;
+
+      for (let i = 0; i < buffers.length; i++) {
+        const buf = buffers[i];
+        const gain = gains[i];
+        const inputData = buf.getChannelData(Math.min(channel, buf.numberOfChannels - 1));
+        const len = inputData.length;
+        for (let k = 0; k < len; k++) {
+          outputData[offset + k] = inputData[k] * gain;
+        }
+        offset += len;
+      }
+    }
+
+    // 緩存拼接後 buffer 的增益（由於子音節已平準，整體增益設為 1.0）
+    bufferGainCache.set(outputBuffer, 1.0);
+    return outputBuffer;
+  }
+
+  // 按空白切分拼音為音節 token —— 必須與 wrapSyllablesInSpans 的切分規則保持一致，
+  // 否則卡拉OK高亮索引會與實際播放的音節錯位（例如無聲調音節 "naai" 會被正則漏掉）
+  function splitJyutpingTokens(text) {
+    if (!text || typeof text !== 'string') return [];
+    return text.trim().split(/\s+/).filter(Boolean);
+  }
+
+  // 將拼音字串按空格分割為音節 span，便於發音時逐字卡拉OK高亮
+  function wrapSyllablesInSpans(text) {
+    if (!text || typeof text !== 'string') return text || '';
+    const parts = text.split(/(\s+)/);
+    let syllableIndex = 0;
+    return parts.map(part => {
+      if (/^\s+$/.test(part)) {
+        return part;
+      }
+      const idx = syllableIndex++;
+      return `<span class="syllable-item" data-syllable-index="${idx}">${part}</span>`;
+    }).join('');
+  }
+
+  function highlightSpeakingSyllable(container, activeIndex) {
+    if (!container) return;
+    const syllableEls = container.querySelectorAll('.syllable-item');
+    syllableEls.forEach((el, idx) => {
+      if (idx === activeIndex) {
+        el.classList.add('speaking-active');
+      } else {
+        el.classList.remove('speaking-active');
+      }
+    });
+  }
+
+  // sessionId 由調用方（speakCantonese）傳入並共用，避免此處另開會話導致調用方的會話號提前失效
+  async function playSyllablesSeamless(sessionId, syllables, rate = 1.0, onEnd = null, onSyllableChange = null) {
+    stopActiveAudioNodes();
+    if (!webAudioCtx) {
+      webAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (webAudioCtx.state === 'suspended') {
+      await webAudioCtx.resume().catch(() => {});
+    }
+
+    try {
+      const buffers = [];
+      for (const syl of syllables) {
+        const localUrl = chrome.runtime.getURL(`audio/jyutping_female/${syl}.mp3`);
+        try {
+          const buf = await getAudioBuffer(localUrl);
+          if (buf) buffers.push(buf);
+        } catch (e) {
+          console.warn('[Audio] Failed to load syllable buffer for:', syl, e);
+        }
+      }
+
+      // 如果加載期間有新的發音請求發起，直接退出
+      if (sessionId !== currentAudioSessionId) return false;
+
+      // ★ 核心完整性校驗：如果音節庫中缺失了詞條中的某個音節（如 buffers.length !== syllables.length），
+      // 嚴禁只播放半截殘缺單字！返回 false，由 speakCantonese 自動平滑降級至神經網路 TTS 進行自然整詞發音。
+      if (buffers.length !== syllables.length || buffers.length === 0) {
+        console.warn(`[Audio] Incomplete syllables loaded (${buffers.length}/${syllables.length}), fallback to full word TTS`);
+        return false;
+      }
+
+      const mergedBuffer = concatenateAudioBuffers(buffers);
+      if (!mergedBuffer) return false;
+
+      if (sessionId !== currentAudioSessionId) return false;
+
+      const source = webAudioCtx.createBufferSource();
+      source.buffer = mergedBuffer;
+      // 粵典官方 App 預設音節語速為 1.2x ~ 1.5x（多音節連續播放時聽感最自然）
+      const effectiveRate = syllables.length > 1 ? (rate || 1.0) * 1.2 : (rate || 1.0);
+      source.playbackRate.value = effectiveRate;
+
+      // ★ 音節卡拉OK定時器：依據每個音節的實際音頻時長，精確排程點亮對應音節
+      let accumulatedTimeMs = 0;
+      for (let i = 0; i < buffers.length; i++) {
+        const sylIndex = i;
+        const startMs = accumulatedTimeMs;
+        const durationMs = (buffers[i].duration / effectiveRate) * 1000;
+        accumulatedTimeMs += durationMs;
+
+        setTimeout(() => {
+          if (sessionId === currentAudioSessionId) {
+            if (onSyllableChange) onSyllableChange(sylIndex);
+          }
+        }, startMs);
+      }
+
+      connectNormalized(webAudioCtx, source, source.buffer);
+      source.onended = () => {
+        source.onended = null;
+        releaseSourceChain(source);
+        const idx = activeAudioSourceNodes.indexOf(source);
+        if (idx !== -1) activeAudioSourceNodes.splice(idx, 1);
+        if (sessionId === currentAudioSessionId) {
+          if (onSyllableChange) onSyllableChange(-1);
+          if (onEnd) onEnd();
+        }
+      };
+
+      activeAudioSourceNodes.push(source);
+      source.start(0);
+      onPlaybackActuallyStarted(mergedBuffer.duration / effectiveRate);
+      return true;
+
+    } catch (err) {
+      console.warn('[Audio] Seamless syllable playback error:', err);
+      return false;
+    }
+  }
+
   function startSpeakerAnimation(btn = null) {
     if (activeSpeakerBtn) {
       activeSpeakerBtn.classList.remove('speaking');
@@ -2134,7 +2428,10 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     if (activeSpeakerBtn) activeSpeakerBtn.classList.add('speaking');
     
     // 清除上一次的保底計時器
-    if (ttsPlaybackTimer) clearTimeout(ttsPlaybackTimer);
+    if (ttsPlaybackTimer) {
+      clearTimeout(ttsPlaybackTimer);
+      ttsPlaybackTimer = null;
+    }
   }
   
   // 啟動 Ruby 元素的發音狀態標記
@@ -2154,7 +2451,9 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
   }
   
-  function stopSpeakerAnimation() {
+  // 只清除視覺狀態（喇叭動畫、音節高亮），不觸碰正在播放的音頻。
+  // 供「估算超時」這類不確定音頻是否已開始的保底路徑使用。
+  function clearSpeakerVisualState() {
     if (activeSpeakerBtn) {
       activeSpeakerBtn.classList.remove('speaking');
       activeSpeakerBtn = null;
@@ -2164,62 +2463,280 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       activeSpeakingRuby = null;
     }
     if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
+    if (popup) {
+      popup.querySelectorAll('.syllable-item.speaking-active').forEach(el => el.classList.remove('speaking-active'));
+    }
+  }
+
+  // 真正停止發音：掐斷音頻 + 清除視覺狀態。用於使用者主動中斷或開始新一次發音。
+  function stopSpeakerAnimation() {
+    stopActiveAudioNodes();
+    clearSpeakerVisualState();
+  }
+
+  // 音頻已實際開始播放：取消「按字數估算」的保底計時器，改以真實時長重新排程。
+  function onPlaybackActuallyStarted(realDurationSec) {
+    if (ttsPlaybackTimer) { clearTimeout(ttsPlaybackTimer); ttsPlaybackTimer = null; }
+    const hasDuration = typeof realDurationSec === 'number' && isFinite(realDurationSec) && realDurationSec > 0;
+    const backstopMs = hasDuration ? realDurationSec * 1000 + 2000 : 30000;
+    ttsPlaybackTimer = setTimeout(clearSpeakerVisualState, backstopMs);
+  }
+
+  // ── 播放音量統一 ──────────────────────────────────────────────
+  // 使用 Gated Voice RMS (帶語音活動門限的均方根能量) + Peak Limiting 進行精確響度歸一化：
+  // 傳統整段 RMS 會受前置/後置靜音、入聲頓音長短影響，導致單字與整句、母音與入聲之間忽大忽小。
+  // Gated Voice RMS 只對有效人聲樣本（振幅 >= 門限）計算能量，使所有音節（Words.hk）與神經網絡（Edge TTS）
+  // 的聽感人聲響度完全一致且穩定。
+  const TARGET_PEAK = 0.85;       // 目標峰值約 -1.4 dBFS，保證不削波
+  const TARGET_VOICE_RMS = 0.18;  // 目標人聲平均能量（標準廣播/播客語音響度）
+  const MAX_MAKEUP = 4.0;         // 增益上限，避免底噪放大
+  const MIN_GAIN = 0.25;          // 增益下限，避免過度衰減
+
+  // 量測結果按 AudioBuffer 緩存：緩存命中的音頻不必重複掃描
+  const bufferGainCache = new WeakMap();
+
+  function computeNormalizedGain(audioBuffer) {
+    const cached = bufferGainCache.get(audioBuffer);
+    if (cached !== undefined) return cached;
+
+    let peak = 0;
+    const channels = audioBuffer.numberOfChannels;
+    const dataLen = audioBuffer.length;
+    const step = dataLen > 400000 ? 4 : 1;
+
+    for (let ch = 0; ch < channels; ch++) {
+      const data = audioBuffer.getChannelData(ch);
+      for (let i = 0; i < dataLen; i += step) {
+        const abs = Math.abs(data[i]);
+        if (abs > peak) peak = abs;
+      }
+    }
+
+    if (peak < 0.001) {
+      bufferGainCache.set(audioBuffer, 1.0);
+      return 1.0;
+    }
+
+    // 動態語音能量門限：峰值的 8% 或絕對 0.015（約 -22 dB 以下過濾掉靜音與呼吸聲）
+    const threshold = Math.max(0.015, peak * 0.08);
+    let voiceSumSq = 0;
+    let voiceSamples = 0;
+
+    for (let ch = 0; ch < channels; ch++) {
+      const data = audioBuffer.getChannelData(ch);
+      for (let i = 0; i < dataLen; i += step) {
+        const abs = Math.abs(data[i]);
+        if (abs >= threshold) {
+          voiceSumSq += abs * abs;
+          voiceSamples++;
+        }
+      }
+    }
+
+    const voiceRms = voiceSamples > 0 ? Math.sqrt(voiceSumSq / voiceSamples) : peak * 0.5;
+    const byRms = TARGET_VOICE_RMS / voiceRms;
+    const byPeak = TARGET_PEAK / peak;
+    const gain = Math.max(MIN_GAIN, Math.min(byPeak, byRms, MAX_MAKEUP));
+
+    bufferGainCache.set(audioBuffer, gain);
+    return gain;
+  }
+
+  // 每次播放建立獨立的增益節點並歸一化音量。
+  // 節點在 releaseSourceChain 中斷開，播放結束即可回收，不會累積。
+  function connectNormalized(ctx, source, audioBuffer) {
+    const gainNode = ctx.createGain();
+    gainNode.gain.value = computeNormalizedGain(audioBuffer);
+    source.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    source._outGain = gainNode;
+    return gainNode;
+  }
+
+  // 播放結束或被中斷時斷開整條鏈，讓增益節點不再掛在 destination 上
+  function releaseSourceChain(source) {
+    if (!source) return;
+    try { source.disconnect(); } catch (_) {}
+    if (source._outGain) {
+      try { source._outGain.disconnect(); } catch (_) {}
+      source._outGain = null;
+    }
+  }
+
+  // 以 HTML Audio 播放（Web Audio 解碼失敗或 AudioContext 不可用時的後備路徑）
+  function playHtmlAudioFallback(src, sessionId) {
+    if (sessionId !== currentAudioSessionId) return;
+    const audio = new Audio(src);
+    currentHtmlAudio = audio;
+    audio.volume = 0.85; // 與歸一化後的 Web Audio 響度對齊
+    audio.onplaying = () => {
+      if (sessionId === currentAudioSessionId) onPlaybackActuallyStarted(audio.duration);
+    };
+    audio.ontimeupdate = () => {
+      if (sessionId === currentAudioSessionId && audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
+    };
+    audio.onended = () => { if (sessionId === currentAudioSessionId) stopSpeakerAnimation(); };
+    audio.onerror = () => { if (sessionId === currentAudioSessionId) stopSpeakerAnimation(); };
+    audio.play().catch(err => {
+      console.warn('[Content] TTS Playback failed:', err);
+      if (sessionId === currentAudioSessionId) stopSpeakerAnimation();
+    });
   }
   
 
-  async function speakCantonese(text, targetBtn = null) {
+  async function speakCantonese(text, targetBtn = null, options = {}) {
     if (!ttsEnabled) return;
     
-    // ★ 關鍵修復：在用戶手勢（點擊）的同步調用棧中，立即播放一個無聲的音頻，以解鎖瀏覽器的 Autoplay Policy
-    try {
-        const dummyAudio = new Audio('data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA');
-        dummyAudio.volume = 0;
-        dummyAudio.play().catch(e => console.log('Dummy audio unlock failed:', e));
-    } catch (e) {
-        console.error('Audio unlock error:', e);
-    }
+    // ★ 關鍵：在用戶點擊的同步調用棧中立即解鎖 Web Audio Context
+    unlockAudioContext();
     
     // 將文本轉換為繁體（如果詞典有記錄），避免 macOS WebSpeech 等引擎將簡體字（如「区」）錯誤讀成國語
     let textToSpeak = text;
-    if (dictionary && dictionary[text] && dictionary[text].traditional) {
-      textToSpeak = dictionary[text].traditional;
+    let entry = (dictionary && dictionary[text]) ? dictionary[text] : null;
+    if (entry && entry.traditional) {
+      textToSpeak = entry.traditional;
     }
+
+    let jyutpingHint = (typeof options === 'object' && options && options.jyutping) ? options.jyutping : '';
+    // 如果未顯式傳入 jyutping，自動嘗試從字典中獲取
+    if (!jyutpingHint && entry && entry.jyutping) {
+      jyutpingHint = entry.jyutping;
+    }
+
+    // 只有在明確指定 preferWordshk: true 時（如點擊粵拼文本、拼音小喇叭）才優先調用 Words.hk 真人音節原聲
+    const preferWordshk = Boolean(options && options.preferWordshk);
+
+    const onSyllableChange = (typeof options === 'object' && options && typeof options.onSyllableChange === 'function')
+      ? options.onSyllableChange
+      : null;
     
-    // 全局防抖：300ms 內不重複發音
+    // 全局防抖：300ms 內不重複發音「同一個讀音」（帶上 jyutpingHint，
+    // 否則多音字切換讀音後緊接的發音會被誤攔，出現「釋義切了但沒聲音」）
     const now = Date.now();
-    console.trace(`speakCantonese called for "${textToSpeak}". Time diff: ${now - lastSpeakTime}ms`);
-    if (now - lastSpeakTime < 300) {
-      console.log('speakCantonese blocked by debounce');
+    const speakKey = `${textToSpeak}|${jyutpingHint}`;
+    if (now - lastSpeakTime < 300 && speakKey === lastSpeakKey) {
       return;
     }
     lastSpeakTime = now;
-    
-    console.log('speakCantonese proceeding, engine:', ttsEngine);
+    lastSpeakKey = speakKey;
     
     // ★ 統一啟動喇叭動畫
     startSpeakerAnimation(targetBtn);
-    // 估算發音時長：每個漢字大約 500ms，加上 1000ms 的網絡延遲緩衝，受語速影響
-    const estimatedDurationMs = (textToSpeak.length * 500 + 1000) / ttsRate;
-    // 保底超時：最少 2000ms，最多 10000ms（此為兜底，正常由 audio.onended 觸發停止）
-    const timeoutMs = Math.max(2000, Math.min(estimatedDurationMs, 10000));
-    ttsPlaybackTimer = setTimeout(stopSpeakerAnimation, timeoutMs);
     
+    const sessionId = ++currentAudioSessionId;
+
+    async function fallbackToTtsEngine() {
+      // 如果加載期間已被新請求取代，直接退出
+      if (sessionId !== currentAudioSessionId) return;
+
+      // 先掐斷仍在播放的音頻，避免與稍後抵達的 TTS 音頻疊音
+      stopActiveAudioNodes();
+      pendingTtsSessionId = sessionId;
+
+      // 保底計時器：僅在「請求發不出去或音頻始終沒開始播」時收掉喇叭動畫。
+      // ★ 只清視覺狀態，絕不掐斷音頻 —— 此計時器從發出網路請求起算，
+      //   網路耗時會擠掉播放預算，若讓它停止音頻就會出現「讀一半突然停」。
+      //   音頻真正開始播放後，onPlaybackActuallyStarted 會取消並改用真實時長重排。
+      const estimatedDurationMs = (textToSpeak.length * 500 + 1000) / ttsRate;
+      const timeoutMs = Math.max(8000, Math.min(estimatedDurationMs + 8000, 30000));
+      ttsPlaybackTimer = setTimeout(() => {
+        if (sessionId === currentAudioSessionId) clearSpeakerVisualState();
+      }, timeoutMs);
+
+      try {
+        if (ttsEngine === 'webSpeech') {
+          speakWithWebSpeech(textToSpeak);
+        } else if (ttsEngine === 'chromeTts') {
+          speakWithChromeTts(textToSpeak);
+        } else if (ttsEngine === 'edgeTts') {
+          const baseUrl = edgeTtsMode === 'custom' ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
+          await speakWithEdgeTts(textToSpeak, baseUrl, jyutpingHint, sessionId);
+        } else if (ttsEngine === 'bertVits2') {
+          await speakWithBertVits2(textToSpeak, sessionId);
+        } else if (ttsEngine === 'azureTts') {
+          if (azureTtsMode === 'custom') {
+            chrome.runtime.sendMessage({
+              action: 'azureTtsSpeak',
+              text: textToSpeak,
+              jyutping: jyutpingHint,
+              azureKey: azureTtsKey,
+              azureRegion: azureTtsRegion,
+              azureVoice: azureTtsVoice,
+              rate: ttsRate,
+              sessionId: sessionId
+            });
+          } else {
+            chrome.runtime.sendMessage({
+              action: 'azureTtsProxySpeak',
+              text: textToSpeak,
+              jyutping: jyutpingHint,
+              azureVoice: azureTtsVoice,
+              rate: ttsRate,
+              sessionId: sessionId
+            });
+          }
+        }
+      } catch (error) {
+        if (error && error.message && error.message.includes('Extension context invalidated')) {
+          console.warn('[Jyutping Extension] Extension context invalidated. Please refresh the page.');
+          if (sessionId === currentAudioSessionId) stopSpeakerAnimation();
+          return;
+        }
+        console.error('TTS error:', error);
+        if (sessionId === currentAudioSessionId) stopSpeakerAnimation();
+        if (!window.hasShownTtsFallbackToast) {
+          showToast('🔊 語音服務連線異常，已自動降級為系統本機發音。<br>請檢查網絡或刷新網頁。', 4000);
+          window.hasShownTtsFallbackToast = true;
+        }
+        // 降級到 Web Speech
+        speakWithWebSpeech(textToSpeak);
+      }
+    }
+
+    // ★ 優先分支：點擊粵拼文本或小喇叭（preferWordshk: true）-> 嘗試播放 Words.hk 完整音節
+    if (preferWordshk && jyutpingHint) {
+      const syllables = splitJyutpingTokens(jyutpingHint.toLowerCase());
+      if (syllables.length > 0) {
+        const played = await playSyllablesSeamless(sessionId, syllables, ttsRate || 1.0, stopSpeakerAnimation, onSyllableChange);
+        if (played) return;
+        // 如果在加載音頻期間此會話已被新請求取代，直接退出，絕不能再 fallbackToTtsEngine()！
+        if (sessionId !== currentAudioSessionId) return;
+      }
+    }
+
     // 檢查緩存（僅對需要 API 調用的引擎）
-    const cacheKey = `${ttsEngine}:${ttsRate}:${textToSpeak}`;
+    const cacheKey = `${ttsEngine}:${ttsRate}:${textToSpeak}:${jyutpingHint}`;
     if (['edgeTts', 'azureTts', 'bertVits2'].includes(ttsEngine)) {
       const cachedAudio = ttsCache.get(cacheKey);
       if (cachedAudio) {
-        console.log('TTS cache hit:', textToSpeak);
-        const audio = new Audio(cachedAudio);
-        audio.ontimeupdate = () => {
-          if (audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
-        };
-        audio.onended = stopSpeakerAnimation;
-        audio.onerror = stopSpeakerAnimation;
-        audio.play().catch(err => {
-          console.warn('[Content] Cached TTS Playback failed:', err);
-          stopSpeakerAnimation();
-        });
+        if (sessionId !== currentAudioSessionId) return;
+        stopActiveAudioNodes();
+        const ctx = unlockAudioContext();
+        if (ctx && ctx.state !== 'closed') {
+          fetch(cachedAudio)
+            .then(res => res.arrayBuffer())
+            .then(ab => ctx.decodeAudioData(ab.slice(0)))
+            .then(audioBuffer => {
+              if (sessionId !== currentAudioSessionId) return;
+              const source = ctx.createBufferSource();
+              source.buffer = audioBuffer;
+              connectNormalized(ctx, source, audioBuffer);
+              source.onended = () => {
+                releaseSourceChain(source);
+                if (sessionId === currentAudioSessionId) {
+                  stopSpeakerAnimation();
+                  const idx = activeAudioSourceNodes.indexOf(source);
+                  if (idx !== -1) activeAudioSourceNodes.splice(idx, 1);
+                }
+              };
+              activeAudioSourceNodes.push(source);
+              source.start(0);
+              onPlaybackActuallyStarted(audioBuffer.duration);
+            })
+            .catch(() => playHtmlAudioFallback(cachedAudio, sessionId));
+        } else {
+          playHtmlAudioFallback(cachedAudio, sessionId);
+        }
         return;
       }
     }
@@ -2227,50 +2744,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     // 記錄待處理的文本（用於緩存回傳的音頻）
     pendingTtsText = cacheKey;
     
-    try {
-      if (ttsEngine === 'webSpeech') {
-        speakWithWebSpeech(textToSpeak);
-      } else if (ttsEngine === 'chromeTts') {
-        speakWithChromeTts(textToSpeak);
-      } else if (ttsEngine === 'edgeTts') {
-        const baseUrl = edgeTtsMode === 'custom' ? edgeTtsUrl : EDGE_TTS_DEFAULT_URL;
-        await speakWithEdgeTts(textToSpeak, baseUrl);
-      } else if (ttsEngine === 'bertVits2') {
-        await speakWithBertVits2(textToSpeak);
-      } else if (ttsEngine === 'azureTts') {
-        if (azureTtsMode === 'custom') {
-          chrome.runtime.sendMessage({
-            action: 'azureTtsSpeak',
-            text: textToSpeak,
-            azureKey: azureTtsKey,
-            azureRegion: azureTtsRegion,
-            azureVoice: azureTtsVoice,
-            rate: ttsRate
-          });
-        } else {
-          chrome.runtime.sendMessage({
-            action: 'azureTtsProxySpeak',
-            text: textToSpeak,
-            azureVoice: azureTtsVoice,
-            rate: ttsRate
-          });
-        }
-      }
-    } catch (error) {
-      if (error && error.message && error.message.includes('Extension context invalidated')) {
-        console.warn('[Jyutping Extension] Extension context invalidated. Please refresh the page.');
-        stopSpeakerAnimation();
-        return;
-      }
-      console.error('TTS error:', error);
-      stopSpeakerAnimation();
-      if (!window.hasShownTtsFallbackToast) {
-        showToast('🔊 語音服務連線異常，已自動降級為系統本機發音。<br>請檢查網絡或刷新網頁。', 4000);
-        window.hasShownTtsFallbackToast = true;
-      }
-      // 降級到 Web Speech
-      speakWithWebSpeech(textToSpeak);
-    }
+    await fallbackToTtsEngine();
   }
 
   // Web Speech API
@@ -2279,6 +2753,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = 'zh-HK';
     utterance.rate = ttsRate;
+    utterance.volume = 0.85; // 與歸一化後的 Web Audio 響度對齊
     utterance.onend = stopSpeakerAnimation;
     utterance.onerror = stopSpeakerAnimation;
     
@@ -2301,24 +2776,27 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   }
 
   // Edge TTS (via background script to avoid CORS)
-  async function speakWithEdgeTts(text, baseUrl) {
+  async function speakWithEdgeTts(text, baseUrl, jyutping = '', sessionId = 0) {
     baseUrl = baseUrl || EDGE_TTS_DEFAULT_URL;
     
     // Send request through background script (no CORS restrictions)
     chrome.runtime.sendMessage({
       action: 'edgeTtsSpeak',
       text: text,
+      jyutping: jyutping,
       baseUrl: baseUrl,
-      rate: ttsRate
+      rate: ttsRate,
+      sessionId: sessionId
     });
   }
 
   // Bert-VITS2 (via background script)
-  async function speakWithBertVits2(text) {
+  async function speakWithBertVits2(text, sessionId = 0) {
     chrome.runtime.sendMessage({
       action: 'bertVits2Speak',
       text: text,
-      rate: ttsRate
+      rate: ttsRate,
+      sessionId: sessionId
     });
   }
 
@@ -2724,19 +3202,15 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       cancelLongPressAnimation();
     }, true);
 
-    // 點擊注音區塊發音
+    // 點擊注音區塊發音（已在 mousedown 階段觸發發音，此處只負責樣式同步）
     document.addEventListener('click', (e) => {
       if (!isEnabled) return;
       if (ignoreNextRubyClick) return;
       
       const ruby = e.target.closest('.jyutping-ruby-injected');
       if (ruby) {
-        let word = ruby.dataset.word;
-        if (word) {
-          speakCantonese(word);
-          startRubySpeakingState(ruby);
-          ruby.classList.add('jyutping-clicked-hover');
-        }
+        startRubySpeakingState(ruby);
+        ruby.classList.add('jyutping-clicked-hover');
       }
     });
 
@@ -3448,7 +3922,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       compactText.addEventListener('pointerup', (e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
-        speakCantonese(entry.traditional);
+        speakCantonese(entry.traditional, null, { jyutping: entry.jyutping || '', preferWordshk: true });
         
         // 觸發點擊動畫
         compactText.classList.remove('playing');
@@ -3640,7 +4114,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       rubyText.addEventListener('pointerup', (e) => {
         if (e.button !== 0) return;
         e.stopPropagation();
-        speakCantonese(entry.traditional);
+        speakCantonese(entry.traditional, null, { jyutping: entry.jyutping || '', preferWordshk: true });
         
         rubyText.style.opacity = '0.5';
         setTimeout(() => rubyText.style.opacity = '1', 200);
@@ -3987,11 +4461,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       ? (entry.yale || entry.jyutping)
       : entry.jyutping;
 
-    if (pronunciation && toneStyle === 'superscript' && popupDisplayStyle === 'compact' && !forceFull) {
-      pronunciation = pronunciation.replace(/(\d+)/g, '<sup class="jyutping-tone">$1</sup>');
-    }
-
-    if (pronunciation && toneStyle === 'superscript' && popupDisplayStyle === 'ruby' && !forceFull) {
+    if (pronunciation && toneStyle === 'superscript') {
       pronunciation = convertToSuperscriptTone(pronunciation);
     }
 
@@ -4007,95 +4477,147 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       return;
     }
 
-    // 構建 HTML 內容
+    // 構建 POS 原生條目內容
+    const posEntries = (entry.entries && Array.isArray(entry.entries) && entry.entries.length > 0)
+      ? entry.entries
+      : [
+          {
+            id: 0,
+            pos: '',
+            pronunciations: [
+              {
+                jyutping: entry.jyutping || '',
+                yale: entry.yale || ''
+              }
+            ],
+            defs: (entry.english || []).map((e, idx) => ({
+              yue: e.startsWith('[粵]') ? e.slice(3).trim() : '',
+              eng: e.startsWith('[粵]') ? '' : e,
+              egs: entry.examples?.[idx] || []
+            }))
+          }
+        ];
+
+    let currentActiveEntryIndex = 0;
+    let currentEntryObj = posEntries[0];
+
+    function updateActiveContext(curEntry) {
+      const activePr = curEntry.pronunciations?.[0] || { jyutping: entry.jyutping || '', yale: entry.yale || '' };
+      const activeEnglish = [];
+      (curEntry.defs || []).forEach(d => {
+        if (d.yue) activeEnglish.push(`[粵] ${d.yue}`);
+        if (d.eng) activeEnglish.push(d.eng);
+      });
+      currentActiveReading = {
+        word: result.word,
+        jyutping: activePr.jyutping || entry.jyutping || '',
+        yale: activePr.yale || entry.yale || '',
+        english: activeEnglish
+      };
+      activeQAContext.originalTranslation = activeEnglish.join('; ');
+    }
+
+    updateActiveContext(currentEntryObj);
+
+    function generatePronunciationHtml(entryObj) {
+      const prs = entryObj.pronunciations || [];
+      if (prs.length === 0 && entry.jyutping) {
+        prs.push({ jyutping: entry.jyutping, yale: entry.yale || '' });
+      }
+      if (prs.length === 0) return '';
+
+      const label = displayMode === 'yale' ? 'Yale' : '粵拼';
+      const buttonsHtml = prs.map((pr, idx) => {
+        let p = displayMode === 'yale' ? (pr.yale || pr.jyutping) : pr.jyutping;
+        if (p && toneStyle === 'superscript') {
+          p = convertToSuperscriptTone(p);
+        }
+        return `
+          <button type="button" class="reading-speaker-btn" data-jyutping="${pr.jyutping}" data-pr-index="${idx}" title="點擊朗讀此讀音">
+            <span class="reading-pr-text">${wrapSyllablesInSpans(p)}</span>
+            <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+              <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+              <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+            </svg>
+          </button>
+        `;
+      }).join('<span class="reading-separator">/</span>');
+
+      return `
+        <div class="pronunciation-section">
+          <span class="pronunciation-label">${label}:</span>
+          <div class="reading-speaker-list">
+            ${buttonsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    function generateDefinitionHtml(entryObj) {
+      if (!entryObj || !entryObj.defs || entryObj.defs.length === 0) return '';
+      const badgeTitle = chrome.i18n.getMessage('badgeClickToTranslate') || '點擊翻譯此釋義';
+      const defItems = entryObj.defs.slice(0, 8).map((d, index) => {
+        let className = 'def-item';
+        const hasExamples = Boolean(d.egs && Array.isArray(d.egs) && d.egs.length > 0);
+        if (hasExamples) className += ' has-examples';
+
+        let innerHtml = '';
+        if (d.yue) {
+          className += ' def-yue';
+          const rawText = d.yue.trim();
+          innerHtml = `
+            <div class="def-main-row">
+              <span class="badge-yue" data-text="${rawText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+              <span class="def-content-text">${rawText}</span>
+              ${hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : ''}
+            </div>
+            ${d.eng ? `<div class="def-eng-row">${d.eng}</div>` : ''}
+          `;
+        } else if (d.eng) {
+          innerHtml = `
+            <div class="def-main-row">
+              <span class="def-content-text">${d.eng}</span>
+              ${hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : ''}
+            </div>
+          `;
+        }
+
+        return `<div class="${className}" ${hasExamples ? `data-example-index="${index}"` : ''}>${innerHtml}</div>`;
+      }).join('');
+
+      return `<div class="definition-section">${defItems}</div>`;
+    }
+
+    function generatePosTabsHtml(entries, activeIdx) {
+      if (!entries || entries.length <= 1) return '';
+      const pillsHtml = entries.map((e, idx) => {
+        const posLabel = e.pos ? `${idx + 1} ${e.pos}` : `${idx + 1} 釋義`;
+        return `
+          <button type="button" class="pos-tab-pill ${idx === activeIdx ? 'active' : ''}" data-entry-index="${idx}">
+            ${posLabel}
+          </button>
+        `;
+      }).join('');
+
+      return `
+        <div class="pos-tabs-bar">
+          ${pillsHtml}
+        </div>
+      `;
+    }
+
     let html = `
       <div class="word-section">
         <span class="word-text">${entry.traditional}</span>
         ${entry.simplified !== entry.traditional ? 
           `<span class="word-simplified">${entry.simplified}</span>` : ''}
       </div>
+      ${generatePronunciationHtml(currentEntryObj)}
+      ${generateDefinitionHtml(currentEntryObj)}
     `;
 
-    if (pronunciation) {
-      html += `
-        <div class="pronunciation-section">
-          <span class="pronunciation-label">${displayMode === 'yale' ? 'Yale' : '粵拼'}:</span>
-          <span class="pronunciation-text">${pronunciation}</span>
-          <button class="tts-speaker-btn" title="播放發音" aria-label="播放發音">
-            <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-            </svg>
-          </button>
-        </div>
-      `;
-    }
-
-    const popupMain = popup.querySelector('.popup-main');
-    const popupExamples = popup.querySelector('.popup-examples');
-    const popupTranslate = popup.querySelector('.popup-translate');
-    
-    // 重置樣式
-    popupExamples.style.display = 'none';
-    popupExamples.innerHTML = '';
-    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
-    popupMain.innerHTML = '';
-    popup.classList.remove('expanded-mode');
-    popup.classList.remove('compact-mode');
-    removeCompactStyles();
-    popup.style.width = '320px'; // 默認寬度
-    // 恢復完整模式下的操作按鈕
-    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
-    if (actionsWrapper) actionsWrapper.style.display = 'flex';
-    const reportForm = popup.querySelector('.popup-report-form');
-    if (reportForm) reportForm.style.display = 'none';
-
-    // 清空之前的 html 内容，只保留 Header (词头+拼音)
-    // 注意：目前的 html 變量包含了 Header。
-    // 我们需要把 Header 放入 popupMain，然后追加 Definitions。
-    // 但是 popupMain.innerHTML = html 会覆盖？
-    // 让我们重构一下：html 变量只包含 Definition？
-    // 不，Header 也是需要的。
-    // 现在的 html 变量包含了 Header + (Double Definition Block 1)。
-    // 我们删除了 Block 1。
-    // 所以 html 依然包含 Header。
-    // 然后追加 Block 2 的 Definition 到 html。
-    // 最后 popupMain.innerHTML = html。
-    // 这样 Header + Definition 都在 popupMain 里。
-    // 正确。
-
-    if (entry.english && entry.english.length > 0) {
-      const badgeTitle = chrome.i18n.getMessage('badgeClickToTranslate') || '點擊翻譯此釋義';
-      const defItems = entry.english.slice(0, 5).map((def, index) => {
-        let className = 'def-item';
-        let hasExamples = false;
-        
-        if (entry.examples && entry.examples[index] && entry.examples[index].length > 0) {
-          className += ' has-examples';
-          hasExamples = true;
-        }
-
-        let innerHtml = '';
-        if (def.startsWith('[粵]')) {
-          className += ' def-yue';
-          const rawText = def.slice(3).trim();
-          innerHtml = `<span class="badge-yue" data-text="${rawText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span><span class="def-content-text">${rawText}</span>`;
-        } else {
-          innerHtml = `<span class="def-content-text">${def}</span>`;
-        }
-        
-        const arrowHtml = hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : '';
-        return `<div class="${className}" ${hasExamples ? `data-example-index="${index}"` : ''}><div class="def-main-row">${innerHtml}${arrowHtml}</div></div>`;
-      }).join('');
-      
-      html += `
-        <div class="definition-section">
-          ${defItems}
-        </div>
-      `;
-    }
-    // 近義詞、反義詞、參觀 放在同一個區塊
+    // 近義詞、反義詞、異體字放在同一個區塊
     const refLines = [];
 
     if (entry.sims && entry.sims.length > 0) {
@@ -4123,67 +4645,65 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       html += `<div class="see-also-section">${refLines.join('')}</div>`;
     }
 
+    // 注入底部 POS 詞性分頁欄
+    html += generatePosTabsHtml(posEntries, currentActiveEntryIndex);
+
+    const popupMain = popup.querySelector('.popup-main');
+    const popupExamples = popup.querySelector('.popup-examples');
+    const popupTranslate = popup.querySelector('.popup-translate');
+    
+    // 重置樣式
+    popupExamples.style.display = 'none';
+    popupExamples.innerHTML = '';
+    if (popupTranslate) { popupTranslate.style.display = 'none'; popupTranslate.innerHTML = ''; }
+    popupMain.innerHTML = '';
+    popup.classList.remove('expanded-mode');
+    popup.classList.remove('compact-mode');
+    removeCompactStyles();
+    popup.style.width = '320px'; // 默認寬度
+
+    // 恢復完整模式下的操作按鈕
+    const actionsWrapper = popup.querySelector('.popup-actions-wrapper');
+    if (actionsWrapper) actionsWrapper.style.display = 'flex';
+    const reportForm = popup.querySelector('.popup-report-form');
+    if (reportForm) reportForm.style.display = 'none';
+
     popupMain.innerHTML = html;
 
-    // 異步檢查當前詞是否已收藏，更新書籤按鈕狀態
-    isWordSaved(result.word).then(saved => {
-      updateBookmarkBtnState(saved);
-    });
-
-    // 綁定點擊發音 (Word)
-    const wordSection = popupMain.querySelector('.word-section');
-    if (wordSection) {
-      wordSection.style.cursor = 'pointer';
-      wordSection.addEventListener('click', (e) => {
-        e.stopPropagation();
-        speakCantonese(entry.traditional);
+    function bindPronunciationEvents(container, curEntry) {
+      container.querySelectorAll('.reading-speaker-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const jp = btn.dataset.jyutping;
+          const prEl = btn.querySelector('.reading-pr-text');
+          speakCantonese(entry.traditional, btn, {
+            jyutping: jp,
+            preferWordshk: true,
+            onSyllableChange: (sylIdx) => highlightSpeakingSyllable(prEl, sylIdx)
+          });
+        });
       });
     }
 
-    // 綁定發音點擊（拼音文字 + 喇叭按鈕均可觸發發聲）
-    const pronunciationText = popupMain.querySelector('.pronunciation-text');
-    const speakerBtn = popupMain.querySelector('.tts-speaker-btn');
-    
-    function triggerTTS(e) {
-      e.stopPropagation();
-      speakCantonese(entry.traditional, speakerBtn);
-    }
-    
-    if (pronunciationText) {
-      pronunciationText.style.cursor = 'pointer';
-      pronunciationText.addEventListener('click', triggerTTS);
-    }
-    if (speakerBtn) {
-      speakerBtn.addEventListener('click', triggerTTS);
-    }
-
-    popupMain.querySelectorAll('.badge-yue').forEach(badge => {
-      badge.addEventListener('click', (e) => {
-        e.stopPropagation(); // 阻止冒泡觸發父層例句展開
-        const defItem = badge.closest('.def-item');
-        if (defItem) {
-          translateBadgeElement(badge, defItem);
-        }
+    function bindDefinitionEvents(container, curEntry) {
+      container.querySelectorAll('.badge-yue').forEach(badge => {
+        badge.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const defItem = badge.closest('.def-item');
+          if (defItem) translateBadgeElement(badge, defItem);
+        });
       });
-    });
 
-    // 若開啟了自動翻譯粵語口語釋義，自動並行翻譯
-    if (enableAutoTranslateYueDefs) {
-      popupMain.querySelectorAll('.badge-yue').forEach(badge => {
-        const defItem = badge.closest('.def-item');
-        if (defItem) {
-          translateBadgeElement(badge, defItem);
-        }
-      });
-    }
+      if (enableAutoTranslateYueDefs) {
+        container.querySelectorAll('.badge-yue').forEach(badge => {
+          const defItem = badge.closest('.def-item');
+          if (defItem) translateBadgeElement(badge, defItem);
+        });
+      }
 
-    // 綁定例句點擊事件
-    if (entry.examples) {
-      popupMain.querySelectorAll('.has-examples').forEach(el => {
+      container.querySelectorAll('.has-examples').forEach(el => {
         el.addEventListener('click', (e) => {
-          e.stopPropagation(); // 防止觸發 document click
-          
-          // 如果已經是 active 狀態，點擊則收回
+          e.stopPropagation();
           if (el.classList.contains('active')) {
             el.classList.remove('active');
             popupExamples.style.display = 'none';
@@ -4193,22 +4713,125 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
             return;
           }
           
-          // 移除其他 active 狀態
-          popupMain.querySelectorAll('.def-item').forEach(d => d.classList.remove('active'));
+          container.querySelectorAll('.def-item').forEach(d => d.classList.remove('active'));
           el.classList.add('active');
 
-          const index = parseInt(el.dataset.exampleIndex);
-          const examples = entry.examples[index];
+          const index = parseInt(el.dataset.exampleIndex, 10);
+          const examples = curEntry.defs?.[index]?.egs;
           
           if (examples && examples.length > 0) {
             renderExamples(examples);
             popupExamples.style.display = 'block';
             popup.classList.add('expanded-mode');
-            popup.style.width = '640px'; // 變寬
-            
-            // 重新調整位置，確保不超出屏幕邊緣
+            popup.style.width = '640px';
             adjustPopupPosition();
           }
+        });
+      });
+    }
+
+    function bindPosTabsEvents(container) {
+      container.querySelectorAll('.pos-tab-pill').forEach(pill => {
+        pill.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const idx = parseInt(pill.dataset.entryIndex, 10);
+          if (idx === currentActiveEntryIndex || !posEntries[idx]) return;
+
+          // 保持彈窗最小高度，防止切換到短釋義時底部縮水脫離鼠標
+          const currentHeight = popup.offsetHeight;
+          if (currentHeight > 0) {
+            popup.style.minHeight = `${currentHeight}px`;
+          }
+          lastTabSwitchTime = Date.now();
+          isMouseOverPopup = true;
+
+          currentActiveEntryIndex = idx;
+          const targetEntry = posEntries[idx];
+          updateActiveContext(targetEntry);
+
+          // 關閉展開的例句浮窗
+          if (popupExamples) {
+            popupExamples.style.display = 'none';
+            popupExamples.innerHTML = '';
+          }
+          popup.classList.remove('expanded-mode');
+          popup.style.width = '320px';
+
+          // 更新 POS pill active 態
+          container.querySelectorAll('.pos-tab-pill').forEach(p => p.classList.remove('active'));
+          pill.classList.add('active');
+
+          // 刷新發音區域
+          const oldPrSec = popupMain.querySelector('.pronunciation-section');
+          if (oldPrSec) {
+            const tempWrapper = document.createElement('div');
+            tempWrapper.innerHTML = generatePronunciationHtml(targetEntry);
+            const newPrSec = tempWrapper.firstElementChild;
+            if (newPrSec) {
+              oldPrSec.replaceWith(newPrSec);
+              bindPronunciationEvents(newPrSec, targetEntry);
+            }
+          }
+
+          // 刷新釋義區域
+          const oldDefSec = popupMain.querySelector('.definition-section');
+          if (oldDefSec) {
+            const tempWrapper = document.createElement('div');
+            tempWrapper.innerHTML = generateDefinitionHtml(targetEntry);
+            const newDefSec = tempWrapper.firstElementChild;
+            if (newDefSec) {
+              oldDefSec.replaceWith(newDefSec);
+              bindDefinitionEvents(newDefSec, targetEntry);
+            }
+          }
+
+          // 切換詞性時，自動播放該詞性下的第一個讀音
+          const firstPr = targetEntry.pronunciations?.[0];
+          if (firstPr && firstPr.jyutping) {
+            const firstBtn = popupMain.querySelector('.reading-speaker-btn');
+            const prEl = firstBtn ? firstBtn.querySelector('.reading-pr-text') : null;
+            speakCantonese(entry.traditional, firstBtn, {
+              jyutping: firstPr.jyutping,
+              preferWordshk: true,
+              onSyllableChange: (sylIdx) => highlightSpeakingSyllable(prEl, sylIdx)
+            });
+          }
+        });
+      });
+    }
+
+    // 綁定發音與釋義事件
+    const prSection = popupMain.querySelector('.pronunciation-section');
+    if (prSection) {
+      bindPronunciationEvents(prSection, currentEntryObj);
+    }
+    const defSection = popupMain.querySelector('.definition-section');
+    if (defSection) {
+      bindDefinitionEvents(defSection, currentEntryObj);
+    }
+    const posTabsBar = popupMain.querySelector('.pos-tabs-bar');
+    if (posTabsBar) {
+      bindPosTabsEvents(posTabsBar);
+    }
+
+    // 異步檢查當前詞是否已收藏，更新書籤按鈕狀態
+    isWordSaved(result.word).then(saved => {
+      updateBookmarkBtnState(saved);
+    });
+
+    // 綁定點擊發音 (Word 詞頭)
+    const wordSection = popupMain.querySelector('.word-section');
+    if (wordSection) {
+      wordSection.style.cursor = 'pointer';
+      wordSection.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const activePr = posEntries[currentActiveEntryIndex]?.pronunciations?.[0];
+        const curJp = activePr ? activePr.jyutping : (entry.jyutping || '');
+        const firstBtn = popupMain.querySelector('.reading-speaker-btn');
+        // 點擊詞頭漢字：調用用戶配置的 TTS 引擎進行整詞發音
+        speakCantonese(entry.traditional, firstBtn, {
+          jyutping: curJp,
+          preferWordshk: false
         });
       });
     }
@@ -4428,6 +5051,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
   // 隱藏彈窗
   function hidePopup(keepHighlight = false) {
+    currentActiveReading = null;
+
     if (activePopupRubyElement) {
       activePopupRubyElement.classList.remove('jyutping-popup-active');
       activePopupRubyElement = null;
@@ -4436,6 +5061,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     if (popup) {
       popup.classList.remove('jyutping-popup-pinned');
       popup.style.display = 'none';
+      popup.style.minHeight = '';
+      lastTabSwitchTime = 0;
       hideRubyFadeMask();
       removeCompactStyles();
       const qaContainer = popup.querySelector('.popup-qa-container');
@@ -4827,6 +5454,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       applyPopupTheme(popupTheme);
     } else if (request.action === 'changeTtsEnabled') {
       ttsEnabled = request.ttsEnabled;
+      if (ttsEnabled) attachAudioUnlockListeners();
+      else releaseAudioContext();
     } else if (request.action === 'changeTtsEngine') {
       ttsEngine = request.ttsEngine;
     } else if (request.action === 'changeEdgeTtsUrl') {
@@ -4863,11 +5492,13 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     } else if (request.action === 'changeYueDefDisplayMode') {
       yueDefDisplayMode = request.yueDefDisplayMode || 'expand';
     } else if (request.action === 'playAudio') {
-      // 防止舊 content script 重複播放（擴展重載後舊腳本仍在監聽）
-      const myId = document.documentElement.getAttribute('data-jyutping-tts-owner');
-      if (myId !== contentScriptId) return;
-      
-      const audioSrc = request.audioData.startsWith('data:') ? createBlobUrlFromDataUri(request.audioData) : request.audioData;
+      const rawAudioData = request.audioData;
+      if (!rawAudioData) {
+        console.warn('[Content] playAudio received empty audioData');
+        return;
+      }
+
+      const audioSrc = rawAudioData.startsWith('data:') ? createBlobUrlFromDataUri(rawAudioData) : rawAudioData;
 
       // 緩存音頻數據
       if (pendingTtsText) {
@@ -4883,17 +5514,60 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         ttsCache.set(pendingTtsText, audioSrc);
         pendingTtsText = '';
       }
-      // 播放音頻
-      const audio = new Audio(audioSrc);
-      audio.ontimeupdate = () => {
-        if (audio.duration && audio.currentTime >= audio.duration - 0.05) stopSpeakerAnimation();
-      };
-      audio.onended = stopSpeakerAnimation;
-      audio.onerror = stopSpeakerAnimation;
-      audio.play().catch(err => {
-        console.warn('[Content] TTS Playback failed (NotAllowedError or missing interaction):', err);
-        stopSpeakerAnimation();
-      });
+      // 播放音頻：只丟棄「發起請求後又被新一次發音取代」的過期響應。
+      if (request.sessionId && request.sessionId !== currentAudioSessionId) {
+        return;
+      }
+      if (pendingTtsSessionId !== -1 && pendingTtsSessionId !== currentAudioSessionId) {
+        return;
+      }
+      const sessionId = request.sessionId || (pendingTtsSessionId !== -1 ? pendingTtsSessionId : ++currentAudioSessionId);
+      pendingTtsSessionId = -1;
+      stopActiveAudioNodes();
+
+      try {
+        const ctx = unlockAudioContext();
+        let abPromise;
+        if (rawAudioData && rawAudioData.startsWith('data:')) {
+          const ab = base64ToArrayBuffer(rawAudioData);
+          if (ab) {
+            abPromise = Promise.resolve(ab);
+          } else {
+            abPromise = fetch(audioSrc).then(res => res.arrayBuffer());
+          }
+        } else {
+          abPromise = fetch(audioSrc).then(res => res.arrayBuffer());
+        }
+
+        abPromise
+          .then(ab => ctx.decodeAudioData(ab.slice(0)))
+          .then(audioBuffer => {
+            if (sessionId !== currentAudioSessionId) return;
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuffer;
+            connectNormalized(ctx, source, audioBuffer);
+
+            source.onended = () => {
+              releaseSourceChain(source);
+              if (sessionId === currentAudioSessionId) {
+                stopSpeakerAnimation();
+                const idx = activeAudioSourceNodes.indexOf(source);
+                if (idx !== -1) activeAudioSourceNodes.splice(idx, 1);
+              }
+            };
+
+            activeAudioSourceNodes.push(source);
+            source.start(0);
+            onPlaybackActuallyStarted(audioBuffer.duration);
+          })
+          .catch(err => {
+            console.warn('[Content] Web Audio decode failed, falling back to HTML Audio:', err);
+            playHtmlAudioFallback(audioSrc, sessionId);
+          });
+      } catch (err) {
+        console.warn('[Content] Web Audio failed, falling back to HTML Audio:', err);
+        playHtmlAudioFallback(audioSrc, sessionId);
+      }
     } else if (request.action === 'translateResult') {
       if (request.success) {
                 let trans = request.translations;
@@ -4929,12 +5603,16 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const text = (request.text || '').trim();
       if (text) {
         const entry = dictionary && dictionary[text];
+        // 多音字：若懸浮窗正展示同一個詞，沿用其中已切換的讀音
+        const reading = (currentActiveReading && currentActiveReading.word === text)
+          ? currentActiveReading
+          : null;
         addWord({
           character: text,
           simplified: entry ? entry.simplified : text,
-          jyutping: entry ? entry.jyutping : '',
-          yale: entry ? (entry.yale || '') : '',
-          english: entry ? (entry.english || []) : [],
+          jyutping: reading ? reading.jyutping : (entry ? entry.jyutping : ''),
+          yale: reading ? (reading.yale || '') : (entry ? (entry.yale || '') : ''),
+          english: reading ? (reading.english || []) : (entry ? (entry.english || []) : []),
           sourceUrl: window.location.href,
           sourceTitle: document.title
         }).then(result => {

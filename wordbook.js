@@ -141,7 +141,16 @@
           return true;
         });
 
-        if (hasExpired) {
+        // 確保歷史詞條都有 folderId 屬性，隔離不同資料夾的數據
+        let hasMissingFolderId = false;
+        purged.forEach(w => {
+          if (!w.folderId) {
+            w.folderId = 'default';
+            hasMissingFolderId = true;
+          }
+        });
+
+        if (hasExpired || hasMissingFolderId) {
           chrome.storage.local.set({ [WORDBOOK_KEY]: purged });
           resolve(purged);
         } else {
@@ -579,7 +588,30 @@
       dictBookmarkAdd: '加入生词本',
       dictBookmarkRemove: '从生词本移除',
       wordbookSelectItem: '点击选中',
-      wordbookDeselectItem: '点击取消选中'
+      wordbookDeselectItem: '點擊取消選中',
+      folderAll: '全部生詞',
+      folderDefault: '生詞本',
+      folderNew: '新建資料夾',
+      folderEdit: '編輯資料夾',
+      folderDelete: '刪除資料夾',
+      folderSetDefault: '設為預設生詞本',
+      folderDefaultBadge: '預設',
+      folderMoveTo: '移動至資料夾',
+      folderMoveHere: '移動選中的 $1 個生詞至此',
+      folderMovedSuccess: '已移動 $1 個生詞至「$2」',
+      folderNameLabel: '資料夾名稱',
+      folderNamePlaceholder: '請輸入資料夾名稱（如：日常口語、餐飲）…',
+      folderColorLabel: '標籤顏色',
+      folderDeleteConfirmTitle: '刪除資料夾',
+      folderDeleteConfirmDesc: '資料夾「$1」內含有 $2 個生詞，請選擇處理方式：',
+      folderDeleteMoveOption: '保留生詞（移至預設資料夾）',
+      folderDeleteMoveOptionDesc: '生詞不會丟失，自動移至預設資料夾中。',
+      folderDeletePurgeOption: '同時將資料夾內的生詞移至廢紙簍',
+      folderDeletePurgeOptionDesc: '生詞將移入廢紙簍，可在 30 天內還原。',
+      folderDeleteEmptyConfirm: '確定要刪除資料夾「$1」嗎？',
+      folderSetDefaultDesc: '新收藏的生詞將自動存入此生詞本。',
+      folderBelongsTo: '所屬資料夾',
+      folderDeleted: '已刪除資料夾「$1」'
     },
     'en': {
       wordbookAiSettingsTitle: 'AI Settings',
@@ -786,7 +818,30 @@
       dictBookmarkAdd: 'Add to Word Book',
       dictBookmarkRemove: 'Remove from Word Book',
       wordbookSelectItem: 'Click to select',
-      wordbookDeselectItem: 'Click to deselect'
+      wordbookDeselectItem: 'Click to deselect',
+      folderAll: 'All Words',
+      folderDefault: 'Wordbook',
+      folderNew: 'New Folder',
+      folderEdit: 'Edit Folder',
+      folderDelete: 'Delete Folder',
+      folderSetDefault: 'Set as Default Wordbook',
+      folderDefaultBadge: 'Default',
+      folderMoveTo: 'Move to Folder',
+      folderMoveHere: 'Move $1 selected words here',
+      folderMovedSuccess: 'Moved $1 words to "$2"',
+      folderNameLabel: 'Folder Name',
+      folderNamePlaceholder: 'Enter folder name (e.g. Daily, Food)...',
+      folderColorLabel: 'Label Color',
+      folderDeleteConfirmTitle: 'Delete Folder',
+      folderDeleteConfirmDesc: 'Folder "$1" contains $2 words. Please choose an action:',
+      folderDeleteMoveOption: 'Keep words (move to default folder)',
+      folderDeleteMoveOptionDesc: 'Words will not be lost and will be moved to the default folder.',
+      folderDeletePurgeOption: 'Move words to trash',
+      folderDeletePurgeOptionDesc: 'Words will be moved to trash and can be restored within 30 days.',
+      folderDeleteEmptyConfirm: 'Are you sure you want to delete folder "$1"?',
+      folderSetDefaultDesc: 'Newly saved words will automatically go into this wordbook.',
+      folderBelongsTo: 'Folder',
+      folderDeleted: 'Folder "$1" deleted'
     },
     'ja': {
       wordbookAiSettingsTitle: 'AI 設定',
@@ -993,7 +1048,30 @@
       dictBookmarkAdd: '単語帳に追加',
       dictBookmarkRemove: '単語帳から削除',
       wordbookSelectItem: 'クリックして選択',
-      wordbookDeselectItem: 'クリックして選択解除'
+      wordbookDeselectItem: 'クリックして選択解除',
+      folderAll: 'すべての単語',
+      folderDefault: '単語帳',
+      folderNew: '新規フォルダ',
+      folderEdit: 'フォルダを編集',
+      folderDelete: 'フォルダを削除',
+      folderSetDefault: 'デフォルト単語帳に設定',
+      folderDefaultBadge: 'デフォルト',
+      folderMoveTo: 'フォルダへ移動',
+      folderMoveHere: '選択した $1 個の単語をここに移動',
+      folderMovedSuccess: '$1 個の単語を「$2」に移動しました',
+      folderNameLabel: 'フォルダ名',
+      folderNamePlaceholder: 'フォルダ名を入力（例：日常会話、グルメなど）…',
+      folderColorLabel: 'ラベル色',
+      folderDeleteConfirmTitle: 'フォルダの削除',
+      folderDeleteConfirmDesc: 'フォルダ「$1」には $2 個の単語が含まれています：',
+      folderDeleteMoveOption: '単語を保持（デフォルトフォルダに移動）',
+      folderDeleteMoveOptionDesc: '単語は保持され、デフォルトフォルダに自動移動します。',
+      folderDeletePurgeOption: '単語をごみ箱に移動',
+      folderDeletePurgeOptionDesc: '単語はごみ箱に移動し、30日以内であれば復元できます。',
+      folderDeleteEmptyConfirm: 'フォルダ「$1」を削除してもよろしいですか？',
+      folderSetDefaultDesc: '新しく保存された単語は自動的にこの単語帳に入ります。',
+      folderBelongsTo: '所属フォルダ',
+      folderDeleted: 'フォルダ「$1」を削除しました'
     },
     'ko': {
       wordbookAiSettingsTitle: 'AI 설정',
@@ -1198,7 +1276,30 @@
       dictBookmarkAdd: '단어장에 추가',
       dictBookmarkRemove: '단어장에서 제거',
       wordbookSelectItem: '클릭하여 선택',
-      wordbookDeselectItem: '클릭하여 선택 해제'
+      wordbookDeselectItem: '클릭하여 선택 해제',
+      folderAll: '전체 단어',
+      folderDefault: '단어장',
+      folderNew: '새 폴더',
+      folderEdit: '폴더 편집',
+      folderDelete: '폴더 삭제',
+      folderSetDefault: '기본 단어장으로 설정',
+      folderDefaultBadge: '기본',
+      folderMoveTo: '폴더로 이동',
+      folderMoveHere: '선택한 단어 $1개를 여기로 이동',
+      folderMovedSuccess: '$1개의 단어를 \'$2\'(으)로 이동했습니다',
+      folderNameLabel: '폴더 이름',
+      folderNamePlaceholder: '폴더 이름을 입력하세요 (예: 일상 회화, 음식 등)…',
+      folderColorLabel: '라벨 색상',
+      folderDeleteConfirmTitle: '폴더 삭제',
+      folderDeleteConfirmDesc: '\'$1\' 폴더에 단어 $2개가 포함되어 있습니다：',
+      folderDeleteMoveOption: '단어 유지 (기본 폴더로 이동)',
+      folderDeleteMoveOptionDesc: '단어가 삭제되지 않고 기본 폴더로 자동 이동됩니다.',
+      folderDeletePurgeOption: '단어를 휴지통으로 이동',
+      folderDeletePurgeOptionDesc: '단어가 휴지통으로 이동하며 30일 이내에 복원할 수 있습니다.',
+      folderDeleteEmptyConfirm: '\'$1\' 폴더를 삭제하시겠습니까?',
+      folderSetDefaultDesc: '새로 저장된 단어는 자동으로 이 단어장에 들어갑니다.',
+      folderBelongsTo: '소속 폴더',
+      folderDeleted: '\'$1\' 폴더를 삭제했습니다'
     }
   };
 
@@ -1454,9 +1555,25 @@
     if (typeof updateSearchModeUI === 'function') {
       updateSearchModeUI();
     }
+    if (typeof updateSpellingQuizBtn === 'function') {
+      updateSpellingQuizBtn();
+    }
   }
 
   // ==================== State ====================
+
+  const WORDBOOK_FOLDERS_KEY = 'wordbook_folders';
+  const WORDBOOK_DEFAULT_FOLDER_KEY = 'wordbook_default_folder_id';
+  const FOLDER_COLORS = ['default', '#2563EB', '#0891B2', '#059669', '#D97706', '#7C3AED', '#DB2777', '#475569'];
+
+  let folders = [];
+  let defaultFolderId = 'default';
+  let currentFolderId = 'default';
+  let editingFolderId = null;
+  let deletingFolderId = null;
+  let activeCtxFolderId = null;
+  let selectedFolderColor = 'default';
+  let overflowFoldersList = [];
 
   let wordbook = [];
   let filteredWords = [];
@@ -1464,6 +1581,149 @@
   let currentSort = 'newest';
   let searchQuery = '';
   let currentView = 'all'; // 'all' | 'trash'
+
+  async function getFolders() {
+    return new Promise((resolve) => {
+      chrome.storage.local.get([WORDBOOK_FOLDERS_KEY, WORDBOOK_DEFAULT_FOLDER_KEY], (res) => {
+        let list = res[WORDBOOK_FOLDERS_KEY];
+        let defId = res[WORDBOOK_DEFAULT_FOLDER_KEY] || 'default';
+        if (!Array.isArray(list) || list.length === 0) {
+          list = [{
+            id: 'default',
+            name: '生詞本',
+            nameI18nKey: 'folderDefault',
+            color: 'default',
+            createdAt: 0,
+            isDefault: true
+          }];
+          chrome.storage.local.set({
+            [WORDBOOK_FOLDERS_KEY]: list,
+            [WORDBOOK_DEFAULT_FOLDER_KEY]: 'default'
+          });
+        }
+        let hasDef = false;
+        list.forEach(f => {
+          if (f.id === defId) {
+            f.isDefault = true;
+            hasDef = true;
+          } else {
+            f.isDefault = false;
+          }
+        });
+        if (!hasDef && list.length > 0) {
+          list[0].isDefault = true;
+          defId = list[0].id;
+          chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: defId });
+        }
+        folders = list;
+        defaultFolderId = defId;
+        resolve(folders);
+      });
+    });
+  }
+
+  async function saveFolders(newFolders) {
+    folders = newFolders;
+    return new Promise((resolve) => {
+      chrome.storage.local.set({ [WORDBOOK_FOLDERS_KEY]: newFolders }, () => resolve(true));
+    });
+  }
+
+  async function setDefaultFolderId(folderId) {
+    const target = folders.find(f => f.id === folderId);
+    if (!target) return false;
+    folders.forEach(f => { f.isDefault = (f.id === folderId); });
+    defaultFolderId = folderId;
+    await saveFolders(folders);
+    await new Promise(resolve => {
+      chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: folderId }, resolve);
+    });
+    renderFolderTabs();
+    renderList();
+    return true;
+  }
+
+  async function createFolder(name, color = 'default', isDef = false) {
+    if (!name || !name.trim()) return null;
+    const newFolder = {
+      id: 'folder_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+      name: name.trim(),
+      color: color,
+      createdAt: Date.now(),
+      isDefault: isDef
+    };
+    folders.push(newFolder);
+    if (isDef) {
+      folders.forEach(f => { f.isDefault = (f.id === newFolder.id); });
+      defaultFolderId = newFolder.id;
+      await chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: newFolder.id });
+    }
+    await saveFolders(folders);
+    return newFolder;
+  }
+
+  async function updateFolder(id, updates) {
+    const folder = folders.find(f => f.id === id);
+    if (!folder) return false;
+    if (updates.name && updates.name.trim()) folder.name = updates.name.trim();
+    if (updates.color) folder.color = updates.color;
+    if (updates.isDefault) {
+      folders.forEach(f => { f.isDefault = (f.id === id); });
+      defaultFolderId = id;
+      await chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: id });
+    }
+    await saveFolders(folders);
+    return true;
+  }
+
+  async function deleteFolder(id, moveToDefault = true) {
+    if (id === 'default') return false;
+    let nextDef = defaultFolderId;
+    if (id === defaultFolderId) {
+      nextDef = 'default';
+      defaultFolderId = 'default';
+      await chrome.storage.local.set({ [WORDBOOK_DEFAULT_FOLDER_KEY]: 'default' });
+    }
+    folders = folders.filter(f => f.id !== id);
+    folders.forEach(f => { f.isDefault = (f.id === defaultFolderId); });
+    await saveFolders(folders);
+
+    if (currentFolderId === id) {
+      currentFolderId = 'default';
+    }
+
+    let modified = false;
+    const now = Date.now();
+    for (const w of wordbook) {
+      if ((w.folderId || 'default') === id) {
+        if (moveToDefault) {
+          w.folderId = nextDef;
+        } else {
+          w.deletedAt = now;
+        }
+        modified = true;
+      }
+    }
+    if (modified) {
+      await saveWordbook(wordbook);
+    }
+    return true;
+  }
+
+  async function moveWordsToFolder(wordIds, targetFolderId) {
+    const idSet = new Set(wordIds);
+    let count = 0;
+    for (const w of wordbook) {
+      if (idSet.has(w.id)) {
+        w.folderId = targetFolderId;
+        count++;
+      }
+    }
+    if (count > 0) {
+      await saveWordbook(wordbook);
+    }
+    return count;
+  }
 
   // ==================== DOM References ====================
 
@@ -1642,7 +1902,14 @@
     const qCompact = rawQ.replace(/[\s\d]/g, '');
     const tokens = rawQ.split(/\s+/).filter(Boolean);
 
-    const sourceWords = wordbook.filter(w => currentView === 'trash' ? !!w.deletedAt : !w.deletedAt);
+    const sourceWords = wordbook.filter(w => {
+      if (currentView === 'trash') return !!w.deletedAt;
+      if (w.deletedAt) return false;
+      if (currentFolderId && currentFolderId !== 'all') {
+        return (w.folderId || 'default') === currentFolderId;
+      }
+      return true;
+    });
     filteredWords = sourceWords.filter(w => matchWord(w, rawQ, qNoTones, qCompact, tokens));
 
     switch (currentSort) {
@@ -1734,8 +2001,15 @@
     if (selectAllLabel) selectAllLabel.style.display = '';
     if (bulkDeleteBtn) bulkDeleteBtn.style.display = '';
 
-    // Build chronological ID mapping for the current view scope (1 = earliest created, N = newest)
-    const currentScopeWords = wordbook.filter(w => isTrash ? !!w.deletedAt : !w.deletedAt);
+    // Build chronological ID mapping for the current view and folder scope (1 = earliest created, N = newest)
+    const currentScopeWords = wordbook.filter(w => {
+      if (isTrash) return !!w.deletedAt;
+      if (w.deletedAt) return false;
+      if (currentFolderId && currentFolderId !== 'all') {
+        return (w.folderId || 'default') === currentFolderId;
+      }
+      return true;
+    });
     const chronologicalOrder = [...currentScopeWords].sort((a, b) => (a.timestamp || 0) - (b.timestamp || 0));
     const idSeqMap = new Map();
     chronologicalOrder.forEach((w, i) => {
@@ -3259,6 +3533,8 @@
     });
     selectedIds.clear();
     await saveWordbook(wordbook);
+    renderFolderTabs();
+    initFolderEvents();
     renderList();
     updateStats();
     updateStorage();
@@ -4948,6 +5224,614 @@
     }
   });
 
+  // ==================== Folder Tabs & Management ====================
+
+  const folderTabsBar = document.getElementById('folderTabsBar');
+  const folderModal = document.getElementById('folderModal');
+  const closeFolderModalBtn = document.getElementById('closeFolderModalBtn');
+  const folderCancelBtn = document.getElementById('folderCancelBtn');
+  const folderSaveBtn = document.getElementById('folderSaveBtn');
+  const folderDeleteModal = document.getElementById('folderDeleteModal');
+  const closeFolderDeleteModalBtn = document.getElementById('closeFolderDeleteModalBtn');
+  const folderDeleteCancelBtn = document.getElementById('folderDeleteCancelBtn');
+  const folderDeleteConfirmBtn = document.getElementById('folderDeleteConfirmBtn');
+
+  function getCurrentFolderName() {
+    const f = folders.find(folder => folder.id === currentFolderId);
+    if (!f) return t('folderDefault') || '生詞本';
+    return (f.id === 'default') ? (t('folderDefault') || '生詞本') : f.name;
+  }
+
+  function updateSpellingQuizBtn() {
+    const spellingQuizLink = document.getElementById('spellingQuizLink');
+    const spellingQuizBtnText = document.getElementById('spellingQuizBtnText');
+    if (!spellingQuizLink || !spellingQuizBtnText) return;
+
+    const targetFolderId = currentFolderId || defaultFolderId || 'default';
+    spellingQuizLink.href = `spelling.html?folder=${encodeURIComponent(targetFolderId)}`;
+
+    const folderName = getCurrentFolderName();
+    if (spellingQuizLink.matches(':hover') || spellingQuizLink.classList.contains('is-hovered')) {
+      spellingQuizBtnText.textContent = folderName;
+    } else {
+      spellingQuizBtnText.textContent = t('spellingQuizBtn') || '拼寫練習';
+      spellingQuizLink.style.minWidth = '';
+    }
+    spellingQuizLink.title = `${t('spellingQuizBtn') || '拼寫練習'} (${folderName})`;
+  }
+
+  function initSpellingQuizBtn() {
+    const spellingQuizLink = document.getElementById('spellingQuizLink');
+    const spellingQuizBtnText = document.getElementById('spellingQuizBtnText');
+    if (!spellingQuizLink || !spellingQuizBtnText) return;
+
+    function handleEnter() {
+      const currentWidth = spellingQuizLink.getBoundingClientRect().width;
+      if (currentWidth > 0) {
+        spellingQuizLink.style.minWidth = `${Math.ceil(currentWidth)}px`;
+      }
+      spellingQuizLink.classList.add('is-hovered');
+      spellingQuizBtnText.textContent = getCurrentFolderName();
+    }
+
+    function handleLeave() {
+      spellingQuizLink.classList.remove('is-hovered');
+      spellingQuizBtnText.textContent = t('spellingQuizBtn') || '拼寫練習';
+      spellingQuizLink.style.minWidth = '';
+    }
+
+    spellingQuizLink.addEventListener('mouseenter', handleEnter);
+    spellingQuizLink.addEventListener('mouseleave', handleLeave);
+    spellingQuizLink.addEventListener('focus', handleEnter);
+    spellingQuizLink.addEventListener('blur', handleLeave);
+
+    updateSpellingQuizBtn();
+  }
+
+  function renderFolderTabs() {
+    if (!folderTabsBar) return;
+    const activeWords = wordbook.filter(w => !w.deletedAt);
+
+    if (!folders.some(f => f.id === currentFolderId)) {
+      currentFolderId = defaultFolderId || (folders[0] ? folders[0].id : 'default');
+    }
+
+    updateSpellingQuizBtn();
+
+    let html = '';
+
+    folders.forEach(f => {
+      const isDef = (f.id === defaultFolderId);
+      const count = activeWords.filter(w => (w.folderId || 'default') === f.id).length;
+      const fName = (f.id === 'default') ? (t('folderDefault') || '生詞本') : f.name;
+      const fColor = (f.color && f.color !== 'default') ? f.color : 'var(--primary)';
+
+      html += `
+        <div class="folder-tab-item ${currentFolderId === f.id ? 'active' : ''}" data-folder="${f.id}" title="${escapeHtml(fName)} (右鍵管理)">
+          <span class="folder-tab-icon" style="color: ${fColor};">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="color-mix(in srgb, ${fColor} 18%, transparent)" stroke="${fColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+            </svg>
+          </span>
+          <span class="folder-name-text">${escapeHtml(fName)}</span>
+          ${isDef ? `<span class="folder-default-star" title="${t('folderDefaultBadge') || '預設生詞本'}"><svg viewBox="0 0 24 24" width="12" height="12" fill="#EAB308" stroke="#CA8A04" stroke-width="1"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>` : ''}
+          <span class="folder-pill-count">${count}</span>
+        </div>
+      `;
+    });
+
+    folderTabsBar.innerHTML = html;
+
+    folderTabsBar.querySelectorAll('.folder-tab-item').forEach(tab => {
+      tab.addEventListener('click', () => {
+        closeFolderContextMenu();
+        const folderId = tab.getAttribute('data-folder');
+        if (folderId && folderId !== currentFolderId) {
+          currentFolderId = folderId;
+          selectedIds.clear();
+          renderFolderTabs();
+          renderList();
+          updateSelectionUI();
+        }
+      });
+
+      tab.addEventListener('contextmenu', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const folderId = tab.getAttribute('data-folder');
+        if (folderId) {
+          openFolderContextMenu(folderId, e.clientX, e.clientY);
+        }
+      });
+    });
+
+    setTimeout(() => {
+      updateFolderOverflowLayout();
+    }, 0);
+  }
+
+  function updateFolderOverflowLayout() {
+    const bar = document.getElementById('folderTabsBar');
+    const overflowWrapper = document.getElementById('folderOverflowWrapper');
+    const wrapper = document.getElementById('folderTabsWrapper');
+    if (!bar || !overflowWrapper || !wrapper) return;
+
+    const tabs = Array.from(bar.querySelectorAll('.folder-tab-item'));
+    if (tabs.length === 0) {
+      overflowWrapper.style.display = 'none';
+      wrapper.classList.remove('is-expanded');
+      bar.style.height = '42px';
+      return;
+    }
+
+    const availableWidth = bar.clientWidth;
+    if (availableWidth <= 0) return;
+
+    let totalWidth = 0;
+    const gap = 8;
+    tabs.forEach(t => {
+      totalWidth += (totalWidth === 0) ? t.offsetWidth : (gap + t.offsetWidth);
+    });
+
+    const isOverflowing = totalWidth > availableWidth + 2;
+    if (isOverflowing) {
+      overflowWrapper.style.display = 'flex';
+      if (wrapper.classList.contains('is-expanded')) {
+        bar.style.height = `${bar.scrollHeight}px`;
+      }
+    } else {
+      overflowWrapper.style.display = 'none';
+      wrapper.classList.remove('is-expanded');
+      bar.style.height = '42px';
+    }
+  }
+
+  function toggleFolderExpand() {
+    const wrapper = document.getElementById('folderTabsWrapper');
+    const bar = document.getElementById('folderTabsBar');
+    if (!wrapper || !bar) return;
+
+    const isCurrentlyExpanded = wrapper.classList.contains('is-expanded');
+
+    if (isCurrentlyExpanded) {
+      bar.style.height = `${bar.scrollHeight}px`;
+      bar.offsetHeight;
+      bar.style.height = '42px';
+      wrapper.classList.remove('is-expanded');
+    } else {
+      bar.style.height = 'auto';
+      const targetHeight = bar.scrollHeight;
+      bar.style.height = '42px';
+      bar.offsetHeight;
+      bar.style.height = `${targetHeight}px`;
+      wrapper.classList.add('is-expanded');
+
+      clearTimeout(bar._expandTimer);
+      bar._expandTimer = setTimeout(() => {
+        if (wrapper.classList.contains('is-expanded')) {
+          bar.style.height = 'auto';
+        }
+      }, 300);
+    }
+  }
+
+  function updateFolderNameInputColor(color) {
+    const inputEl = document.getElementById('folderNameInput');
+    if (!inputEl) return;
+    const accentColor = (color && color !== 'default') ? color : 'var(--primary)';
+    inputEl.style.setProperty('--folder-accent-color', accentColor);
+    inputEl.style.borderColor = accentColor;
+  }
+
+  function renderFolderPalette(selectedColor) {
+    const paletteEl = document.getElementById('folderColorPalette');
+    if (!paletteEl) return;
+
+    updateFolderNameInputColor(selectedColor);
+
+    paletteEl.innerHTML = FOLDER_COLORS.map(color => {
+      const isSelected = color === selectedColor;
+      const bg = color === 'default' ? 'var(--primary)' : color;
+      return `
+        <div class="folder-color-option ${isSelected ? 'active' : ''}" data-color="${color}" style="background: ${bg};" title="${color}">
+          ${isSelected ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>' : ''}
+        </div>
+      `;
+    }).join('');
+
+    paletteEl.querySelectorAll('.folder-color-option').forEach(opt => {
+      opt.addEventListener('click', () => {
+        selectedFolderColor = opt.getAttribute('data-color');
+        renderFolderPalette(selectedFolderColor);
+      });
+    });
+  }
+
+  function openFolderModal(folderId = null) {
+    editingFolderId = folderId;
+    const modal = document.getElementById('folderModal');
+    const titleEl = document.getElementById('folderModalTitle');
+    const nameInput = document.getElementById('folderNameInput');
+    const isDefaultToggle = document.getElementById('folderIsDefaultToggle');
+    const isDefaultWrapper = document.getElementById('folderIsDefaultWrapper');
+
+    if (!modal || !nameInput) return;
+
+    if (folderId) {
+      const targetFolder = folders.find(f => f.id === folderId);
+      if (!targetFolder) return;
+      if (titleEl) titleEl.textContent = t('folderEdit') || '編輯資料夾';
+      nameInput.value = (targetFolder.id === 'default') ? (t('folderDefault') || '生詞本') : targetFolder.name;
+      selectedFolderColor = targetFolder.color || 'default';
+
+      if (isDefaultWrapper) {
+        if (targetFolder.id === defaultFolderId) {
+          isDefaultWrapper.style.display = 'none';
+        } else {
+          isDefaultWrapper.style.display = 'flex';
+          if (isDefaultToggle) isDefaultToggle.checked = false;
+        }
+      }
+    } else {
+      if (titleEl) titleEl.textContent = t('folderNew') || '新建資料夾';
+      nameInput.value = '';
+      selectedFolderColor = 'default';
+      if (isDefaultWrapper) {
+        isDefaultWrapper.style.display = 'flex';
+        if (isDefaultToggle) isDefaultToggle.checked = false;
+      }
+    }
+
+    renderFolderPalette(selectedFolderColor);
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+    setTimeout(() => { nameInput.focus(); }, 50);
+  }
+
+  function closeFolderModal() {
+    const modal = document.getElementById('folderModal');
+    if (modal) modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    editingFolderId = null;
+  }
+
+  async function handleSaveFolder() {
+    const nameInput = document.getElementById('folderNameInput');
+    const isDefaultToggle = document.getElementById('folderIsDefaultToggle');
+    if (!nameInput) return;
+
+    const name = nameInput.value.trim();
+    if (!name) {
+      nameInput.focus();
+      return;
+    }
+
+    const isDefault = isDefaultToggle ? isDefaultToggle.checked : false;
+
+    if (editingFolderId) {
+      await updateFolder(editingFolderId, {
+        name,
+        color: selectedFolderColor,
+        isDefault
+      });
+    } else {
+      const created = await createFolder(name, selectedFolderColor, isDefault);
+      if (created) currentFolderId = created.id;
+    }
+
+    closeFolderModal();
+    renderFolderTabs();
+    renderList();
+  }
+
+  async function requestDeleteFolder(folderId) {
+    const targetFolder = folders.find(f => f.id === folderId);
+    if (!targetFolder || targetFolder.id === 'default') return;
+
+    const activeWordsInFolder = wordbook.filter(w => !w.deletedAt && (w.folderId || 'default') === folderId).length;
+
+    // 如果生詞本中沒有生詞的話，直接進行刪除
+    if (activeWordsInFolder === 0) {
+      const fName = targetFolder.name;
+      await deleteFolder(folderId, true);
+      renderFolderTabs();
+      renderList();
+      updateStats();
+      updateStorage();
+      showToast((t('folderDeleted') || '已刪除資料夾「$1」').replace('$1', fName));
+      return;
+    }
+
+    // 如果有生詞，彈出確認彈窗
+    openFolderDeleteModal(folderId);
+  }
+
+  function openFolderDeleteModal(folderId) {
+    deletingFolderId = folderId;
+    const targetFolder = folders.find(f => f.id === folderId);
+    if (!targetFolder) return;
+
+    const modal = document.getElementById('folderDeleteModal');
+    const descEl = document.getElementById('folderDeleteDesc');
+    if (!modal) return;
+
+    const activeWordsInFolder = wordbook.filter(w => !w.deletedAt && (w.folderId || 'default') === folderId).length;
+    const fName = targetFolder.name;
+
+    if (descEl) {
+      descEl.textContent = (t('folderDeleteConfirmDesc') || '資料夾「$1」內含有 $2 個生詞，請選擇處理方式：')
+        .replace('$1', fName)
+        .replace('$2', activeWordsInFolder);
+    }
+
+    const optionMove = document.getElementById('folderDeleteOptionMove');
+    const optionPurge = document.getElementById('folderDeleteOptionPurge');
+    const radioMove = modal.querySelector('input[value="move"]');
+    if (radioMove) radioMove.checked = true;
+    if (optionMove) optionMove.classList.add('active');
+    if (optionPurge) optionPurge.classList.remove('active');
+
+    modal.classList.add('show');
+    document.body.classList.add('modal-open');
+  }
+
+  function closeFolderDeleteModal() {
+    const modal = document.getElementById('folderDeleteModal');
+    if (modal) modal.classList.remove('show');
+    document.body.classList.remove('modal-open');
+    deletingFolderId = null;
+  }
+
+  async function handleConfirmDeleteFolder() {
+    if (!deletingFolderId) return;
+    const modal = document.getElementById('folderDeleteModal');
+    const choice = modal?.querySelector('input[name="folderDeleteChoice"]:checked')?.value || 'move';
+    const moveToDefault = (choice === 'move');
+
+    await deleteFolder(deletingFolderId, moveToDefault);
+    closeFolderDeleteModal();
+    renderFolderTabs();
+    renderList();
+    updateStats();
+    updateStorage();
+  }
+
+  function openFolderContextMenu(folderId, clientX, clientY) {
+    const menu = document.getElementById('folderGlobalContextMenu');
+    if (!menu) return;
+
+    const targetFolder = folders.find(f => f.id === folderId);
+    if (!targetFolder) return;
+
+    activeCtxFolderId = folderId;
+
+    const isDef = (targetFolder.id === defaultFolderId);
+    const fName = (targetFolder.id === 'default') ? (t('folderDefault') || '生詞本') : targetFolder.name;
+    const fColor = (targetFolder.color && targetFolder.color !== 'default') ? targetFolder.color : 'var(--primary)';
+
+    const headerTitle = document.getElementById('folderCtxHeaderTitle');
+    if (headerTitle) headerTitle.textContent = fName;
+
+    const headerIcon = document.getElementById('folderCtxHeaderIcon');
+    if (headerIcon) {
+      headerIcon.innerHTML = `
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="color-mix(in srgb, ${fColor} 20%, transparent)" stroke="${fColor}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"/>
+        </svg>
+      `;
+    }
+
+    const moveHereBtn = document.getElementById('folderCtxMoveHereBtn');
+    const moveDivider = document.getElementById('folderCtxMoveDivider');
+    const moveHereText = document.getElementById('folderCtxMoveHereText');
+    const movableWords = wordbook.filter(w => !w.deletedAt && selectedIds.has(w.id) && (w.folderId || 'default') !== folderId);
+    const hasMovable = (movableWords.length > 0);
+
+    if (moveHereBtn) {
+      moveHereBtn.style.display = hasMovable ? 'flex' : 'none';
+      if (moveDivider) moveDivider.style.display = hasMovable ? 'block' : 'none';
+      if (moveHereText) {
+        moveHereText.textContent = (t('folderMoveHere') || '移動選中的 $1 個生詞至此').replace('$1', movableWords.length);
+      }
+    }
+
+    const setDefaultBtn = document.getElementById('folderCtxSetDefaultBtn');
+    const setDefaultText = document.getElementById('folderCtxSetDefaultText');
+    if (setDefaultBtn) {
+      setDefaultBtn.style.display = isDef ? 'none' : 'flex';
+      if (setDefaultText) setDefaultText.textContent = t('folderSetDefault') || '設為預設生詞本';
+    }
+
+    const editBtn = document.getElementById('folderCtxEditBtn');
+    const editText = document.getElementById('folderCtxEditText');
+    if (editBtn && editText) {
+      editText.textContent = t('folderEdit') || '編輯資料夾';
+    }
+
+    const deleteBtn = document.getElementById('folderCtxDeleteBtn');
+    const deleteDivider = document.getElementById('folderCtxDeleteDivider');
+    const deleteText = document.getElementById('folderCtxDeleteText');
+    if (deleteBtn) {
+      const canDelete = (targetFolder.id !== 'default');
+      deleteBtn.style.display = canDelete ? 'flex' : 'none';
+      if (deleteDivider) deleteDivider.style.display = canDelete ? 'block' : 'none';
+      if (deleteText) deleteText.textContent = t('folderDelete') || '刪除資料夾';
+    }
+
+    // Position menu within viewport bounds
+    menu.style.display = 'flex';
+    const menuWidth = 200;
+    const menuHeight = (hasMovable ? 40 : 0) + (isDef ? 95 : 135);
+
+    let posX = clientX;
+    let posY = clientY;
+
+    if (posX + menuWidth > window.innerWidth - 10) {
+      posX = Math.max(10, window.innerWidth - menuWidth - 10);
+    }
+    if (posY + menuHeight > window.innerHeight - 10) {
+      posY = Math.max(10, window.innerHeight - menuHeight - 10);
+    }
+
+    menu.style.left = `${posX}px`;
+    menu.style.top = `${posY}px`;
+  }
+
+  function closeFolderContextMenu() {
+    const menu = document.getElementById('folderGlobalContextMenu');
+    if (menu) menu.style.display = 'none';
+    activeCtxFolderId = null;
+  }
+
+  function initFolderEvents() {
+    // Folder Modal Events
+    if (closeFolderModalBtn) closeFolderModalBtn.addEventListener('click', closeFolderModal);
+    if (folderCancelBtn) folderCancelBtn.addEventListener('click', closeFolderModal);
+    if (folderSaveBtn) folderSaveBtn.addEventListener('click', handleSaveFolder);
+    if (folderModal) {
+      folderModal.addEventListener('click', (e) => {
+        if (e.target === folderModal) closeFolderModal();
+      });
+    }
+
+    // Folder Delete Modal Events
+    if (closeFolderDeleteModalBtn) closeFolderDeleteModalBtn.addEventListener('click', closeFolderDeleteModal);
+    if (folderDeleteCancelBtn) folderDeleteCancelBtn.addEventListener('click', closeFolderDeleteModal);
+    if (folderDeleteConfirmBtn) folderDeleteConfirmBtn.addEventListener('click', handleConfirmDeleteFolder);
+    if (folderDeleteModal) {
+      folderDeleteModal.addEventListener('click', (e) => {
+        if (e.target === folderDeleteModal) closeFolderDeleteModal();
+      });
+
+      const optionMove = document.getElementById('folderDeleteOptionMove');
+      const optionPurge = document.getElementById('folderDeleteOptionPurge');
+      if (optionMove) {
+        optionMove.addEventListener('click', () => {
+          const radio = optionMove.querySelector('input');
+          if (radio) radio.checked = true;
+          optionMove.classList.add('active');
+          if (optionPurge) optionPurge.classList.remove('active');
+        });
+      }
+      if (optionPurge) {
+        optionPurge.addEventListener('click', () => {
+          const radio = optionPurge.querySelector('input');
+          if (radio) radio.checked = true;
+          optionPurge.classList.add('active');
+          if (optionMove) optionMove.classList.remove('active');
+        });
+      }
+    }
+
+    // Folder Global Context Menu Events
+    const ctxMoveHereBtn = document.getElementById('folderCtxMoveHereBtn');
+    const ctxSetDefaultBtn = document.getElementById('folderCtxSetDefaultBtn');
+    const ctxEditBtn = document.getElementById('folderCtxEditBtn');
+    const ctxDeleteBtn = document.getElementById('folderCtxDeleteBtn');
+
+    if (ctxMoveHereBtn) {
+      ctxMoveHereBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const fId = activeCtxFolderId;
+        if (!fId) return;
+        const movableIds = wordbook
+          .filter(w => !w.deletedAt && selectedIds.has(w.id) && (w.folderId || 'default') !== fId)
+          .map(w => w.id);
+        closeFolderContextMenu();
+        if (movableIds.length === 0) return;
+
+        const targetFolder = folders.find(f => f.id === fId);
+        const targetName = targetFolder ? ((targetFolder.id === 'default') ? (t('folderDefault') || '生詞本') : targetFolder.name) : '';
+        const movedCount = await moveWordsToFolder(movableIds, fId);
+        selectedIds.clear();
+        renderFolderTabs();
+        renderList();
+        updateSelectionUI();
+        showToast((t('folderMovedSuccess') || '已移動 $1 個生詞至「$2」')
+          .replace('$1', movedCount)
+          .replace('$2', targetName)
+        );
+      });
+    }
+
+    if (ctxSetDefaultBtn) {
+      ctxSetDefaultBtn.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        const fId = activeCtxFolderId;
+        closeFolderContextMenu();
+        if (fId) await setDefaultFolderId(fId);
+      });
+    }
+
+    if (ctxEditBtn) {
+      ctxEditBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const fId = activeCtxFolderId;
+        closeFolderContextMenu();
+        if (fId) openFolderModal(fId);
+      });
+    }
+
+    if (ctxDeleteBtn) {
+      ctxDeleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const fId = activeCtxFolderId;
+        closeFolderContextMenu();
+        if (fId) requestDeleteFolder(fId);
+      });
+    }
+
+    // New Folder Button
+    const btnNew = document.getElementById('btnNewFolder');
+    if (btnNew) {
+      btnNew.addEventListener('click', () => {
+        closeFolderContextMenu();
+        openFolderModal(null);
+      });
+    }
+
+    // Folder Overflow Expand Button
+    const overflowBtn = document.getElementById('folderOverflowBtn');
+    if (overflowBtn) {
+      overflowBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        closeFolderContextMenu();
+        toggleFolderExpand();
+      });
+    }
+
+    // Global dismiss for folder context menu
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('#folderGlobalContextMenu')) {
+        closeFolderContextMenu();
+      }
+    });
+
+    document.addEventListener('contextmenu', (e) => {
+      if (!e.target.closest('.folder-tab-item')) {
+        closeFolderContextMenu();
+      }
+    });
+
+    window.addEventListener('blur', () => {
+      closeFolderContextMenu();
+    });
+
+    window.addEventListener('resize', () => {
+      closeFolderContextMenu();
+      updateFolderOverflowLayout();
+    });
+
+    if (window.ResizeObserver && folderTabsBar) {
+      const ro = new ResizeObserver(() => {
+        updateFolderOverflowLayout();
+      });
+      ro.observe(folderTabsBar);
+      const wrapper = document.getElementById('folderTabsWrapper');
+      if (wrapper) ro.observe(wrapper);
+    }
+  }
+
   // ==================== Init ====================
 
   async function init() {
@@ -4964,11 +5848,18 @@
     applyI18n();
 
     chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && (changes[WORDBOOK_FOLDERS_KEY] || changes[WORDBOOK_DEFAULT_FOLDER_KEY])) {
+        if (changes[WORDBOOK_FOLDERS_KEY]) folders = changes[WORDBOOK_FOLDERS_KEY].newValue || [];
+        if (changes[WORDBOOK_DEFAULT_FOLDER_KEY]) defaultFolderId = changes[WORDBOOK_DEFAULT_FOLDER_KEY].newValue || 'default';
+        renderFolderTabs();
+        renderList();
+      }
       if (area === 'local' && (changes.uiLang || changes.extensionLang)) {
         const nextLang = (changes.uiLang || changes.extensionLang).newValue;
         if (nextLang) {
           currentLang = normalizeLang(nextLang);
           applyI18n();
+          renderFolderTabs();
           renderList();
           if (aiSettingsModal && aiSettingsModal.classList.contains('show')) {
             if (aiCustomPromptInputModal && isDefaultSystemPrompt(aiCustomPromptInputModal.value)) {
@@ -4984,8 +5875,18 @@
       }
     });
 
-    // Load wordbook
+    // Load folders and wordbook
+    await getFolders();
     wordbook = await getWordbook();
+
+    // Parse URL parameter for active folder
+    try {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlFolder = urlParams.get('folder') || urlParams.get('folderId');
+      if (urlFolder && (urlFolder === 'all' || folders.some(f => f.id === urlFolder))) {
+        currentFolderId = urlFolder;
+      }
+    } catch (e) {}
     
     // Load dictionary for the detail panel
     try {
@@ -5042,6 +5943,9 @@
       });
     }
 
+    renderFolderTabs();
+    initFolderEvents();
+    initSpellingQuizBtn();
     renderList();
     updateStats();
     updateStorage();

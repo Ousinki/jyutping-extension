@@ -154,14 +154,14 @@ async function applyI18n(lang) {
 
   // 主題預覽配色數據
   const THEME_PREVIEW = {
-    classic: { bg: '#ffffff', border: '#d0d0d0', text: '#333', word: '#1a1a1a', accent: '#2196f3', def: '#555', yue: '#b8860b', divider: '#eee', shadow: '0 2px 8px rgba(0,0,0,0.1)' },
+    classic: { bg: '#ffffff', border: '#d0d0d0', text: '#333', word: '#1a1a1a', accent: '#8A1C1C', def: '#555', yue: '#b8860b', divider: '#eee', shadow: '0 2px 8px rgba(0,0,0,0.1)' },
     academic: { bg: '#ffeaeb', border: '#fba5a8', text: '#8A1C1C', word: '#610c0c', accent: '#D83131', def: '#8A1C1C', yue: '#D83131', divider: '#fccacc', shadow: '0 4px 12px rgba(138,28,28,0.2)' },
     night:   { bg: '#1a1a2e', border: '#16213e', text: '#e0e0e0', word: '#f0f0ff', accent: '#7c8cf8', def: '#c0c0d0', yue: '#e8b84e', divider: '#2a2a40', shadow: '0 2px 12px rgba(0,0,0,0.4)' },
     ink:     { bg: '#2d2d2d', border: '#444', text: '#e0e0e0', word: '#f0f0f0', accent: '#64b5f6', def: '#ccc', yue: '#daa520', divider: '#3d3d3d', shadow: '0 2px 12px rgba(0,0,0,0.4)' },
     ocean:   { bg: '#e3f2fd', border: '#90caf9', text: '#1565c0', word: '#0d47a1', accent: '#0d47a1', def: '#1976d2', yue: '#e65100', divider: '#bbdefb', shadow: '0 2px 8px rgba(21,101,192,0.2)' },
     warm:    { bg: '#fff8e1', border: '#ffe082', text: '#5d4037', word: '#3e2723', accent: '#e65100', def: '#6d4c41', yue: '#c62828', divider: '#ffe0b2', shadow: '0 2px 8px rgba(230,81,0,0.15)' },
     mint:    { bg: '#e8f5e9', border: '#a5d6a7', text: '#2e7d32', word: '#1b5e20', accent: '#1b5e20', def: '#388e3c', yue: '#bf360c', divider: '#c8e6c9', shadow: '0 2px 8px rgba(46,125,50,0.2)' },
-    glass:   { bg: 'rgba(255,255,255,0.78)', border: 'rgba(255,255,255,0.3)', text: '#333', word: '#1a1a1a', accent: '#2196f3', def: '#444', yue: '#b8860b', divider: 'rgba(0,0,0,0.08)', shadow: '0 4px 16px rgba(0,0,0,0.12)', glass: true },
+    glass:   { bg: 'rgba(255,255,255,0.78)', border: 'rgba(255,255,255,0.3)', text: '#333', word: '#1a1a1a', accent: '#8A1C1C', def: '#444', yue: '#b8860b', divider: 'rgba(0,0,0,0.08)', shadow: '0 4px 16px rgba(0,0,0,0.12)', glass: true },
   };
 
   // 更新主題預覽
@@ -197,7 +197,7 @@ async function applyI18n(lang) {
     if (type === 'zh') {
       preview.style.setProperty('--popup-font-zh', font || 'system-ui, -apple-system, sans-serif');
     } else if (type === 'en') {
-      preview.style.setProperty('--popup-font-en', font || '"Courier New", monospace');
+      preview.style.setProperty('--popup-font-en', font || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace');
     }
   }
 

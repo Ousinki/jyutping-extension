@@ -53,8 +53,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Remove existing rendered cards (keep emptyState)
     resourcesGrid.querySelectorAll('.resource-card').forEach((c) => c.remove());
 
-    const visitText = activeDict['optRoadmapVisit'] || '立即訪問 ↗';
-
     window.ROADMAP_RESOURCES.forEach((item) => {
       const title = item.title[lang] || item.title['zh-HK'] || item.title['en'] || '';
       const desc = item.desc[lang] || item.desc['zh-HK'] || item.desc['en'] || '';
@@ -82,7 +80,6 @@ document.addEventListener('DOMContentLoaded', () => {
         <div class="card-desc">${desc}</div>
         <div class="card-footer">
           <span class="card-domain">${item.domain}</span>
-          <span class="card-action">${visitText}</span>
         </div>
       `;
 
