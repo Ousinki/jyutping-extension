@@ -166,8 +166,14 @@
     "message": "Light Gray (#999)"
   },
   "optCompactExpandBtn": {
-    "message": "Show <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> button to expand to full dictionary",
+    "message": "Show <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> full dictionary expand button next to phonetics",
     "description": "optCompactExpandBtn"
+  },
+  "optEnableSubwordsFlyout": {
+    "message": "Show Subwords Flyout on Headword Hover"
+  },
+  "optEnableSubwordsFlyoutDesc": {
+    "message": "Display a side flyout with subwords and individual characters when hovering over the headword."
   },
   "optCustomInput": {
     "message": "Custom..."
@@ -192,7 +198,46 @@
     "message": "Report"
   },
   "optDemoTranslation": {
-    "message": "Pretty, good-looking."
+    "message": "Beautiful, pretty."
+  },
+  "optPopupDemoSentence": {
+    "message": "<span class=\"preview-hl-word\" style=\"background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;\">你好</span>！ 很高興為你服務。"
+  },
+  "optDemoPronLabel": {
+    "message": "Jyutping:"
+  },
+  "optDemoDefYue": {
+    "message": "打招呼嘅問候語或者一般對話嘅開場白"
+  },
+  "optDemoDefTrans": {
+    "message": "hello; a common greeting; literally \"you be well\""
+  },
+  "optDemoSeeAlsoLabel": {
+    "message": "Cantonese:"
+  },
+  "optDemoExampleTitle": {
+    "message": "Examples"
+  },
+  "optDemoExampleYue": {
+    "message": "你好，我叫陳大文。"
+  },
+  "optDemoExampleTrans": {
+    "message": "Hi, my name is Diamond Chan."
+  },
+  "optDemoBadgeClickTitle": {
+    "message": "Click to translate definition"
+  },
+  "optDemoPlayExampleTitle": {
+    "message": "Play example audio (TTS)"
+  },
+  "optDemoPinyinBtnTitle": {
+    "message": "Click to pronounce syllable by syllable"
+  },
+  "optDemoWordSecTitle": {
+    "message": "Click to pronounce full word (TTS)"
+  },
+  "optDemoSubwordsHint": {
+    "message": "Hover to view related words & characters"
   },
   "optDev": {
     "message": "Developer",
@@ -1115,6 +1160,14 @@
   },
   "wordbookAiSettingsTitle": {
     "message": "AI Settings"
+  },
+  "optTargetLangFollowsUiLangNote": {
+    "message": "💡 Target language automatically follows your \"Interface Language\" (Current: $LANG$). Change it via the top-right language switcher.",
+    "placeholders": {
+      "lang": {
+        "content": "$1"
+      }
+    }
   },
   "optAutoTranslateYueDefs": {
     "message": "Auto-translate Cantonese Definitions"

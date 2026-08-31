@@ -724,7 +724,6 @@
       }
     });
     wordbook = storageRes[WORDBOOK_KEY] || [];
-    folders = storageRes[WORDBOOK_FOLDERS_KEY] || [];
     defaultFolderId = storageRes[WORDBOOK_DEFAULT_FOLDER_KEY] || 'default';
 
     // Load dictionary
@@ -799,11 +798,69 @@
     }
   }
 
+  function getAllCleanQuizDefinitions(entry, fallback = '') {
+    if (!entry && !fallback) return [];
+    const list = (entry && Array.isArray(entry.english) && entry.english.length > 0)
+      ? entry.english
+      : [fallback];
+
+    const results = [];
+    const seen = new Set();
+
+    for (const rawStr of list) {
+      if (!rawStr || typeof rawStr !== 'string') continue;
+      let clean = rawStr.replace(/<[^>]+>/g, '').trim();
+      clean = clean
+        .replace(/^\[粵\]\s*/, '')
+        .replace(/^\[普\]\s*/, '')
+        .replace(/^\(bound form\)\s*/i, '')
+        .replace(/^\(dialect\)\s*/i, '')
+        .trim();
+
+      const parts = clean.split(/\s*[;；]\s*/).filter(Boolean);
+      if (parts.length > 1) {
+        if (parts[0].length >= 18 || (parts[0].length + parts[1].length > 40)) {
+          clean = parts[0];
+        } else {
+          clean = `${parts[0]}；${parts[1]}`;
+        }
+      }
+
+      const commas = clean.split(/\s*[,，]\s*/).filter(Boolean);
+      if (commas.length > 3) {
+        clean = commas.slice(0, 3).join(', ');
+      }
+
+      if (clean.length > 52) {
+        clean = clean.slice(0, 50).trim() + '...';
+      }
+
+      if (clean && !seen.has(clean)) {
+        seen.add(clean);
+        results.push(clean);
+      }
+    }
+
+    if (results.length === 0 && fallback) results.push(fallback);
+    return results;
+  }
+
+  function isChineseText(str) {
+    if (!str || typeof str !== 'string') return false;
+    return /[\u4e00-\u9fa5\u3400-\u4dbf]/.test(str);
+  }
+
+  function getCleanQuizDefinition(entry, fallback = '') {
+    const all = getAllCleanQuizDefinitions(entry, fallback);
+    return all[0] || fallback || '';
+  }
+
   function getSmartDistractors(targetWord, targetDef, targetJyutping, count = 3) {
     initDistractorPool();
     const distractors = [];
     const usedWords = new Set([targetWord]);
     const usedDefs = new Set([targetDef]);
+    const targetIsChinese = isChineseText(targetDef);
 
     // 1. 先優先從用戶的生詞本其他生詞中挑選干擾項 (加強專屬記憶效果)
     const otherWb = wordbook.filter(w => !w.deletedAt && w.character !== targetWord);
@@ -811,7 +868,11 @@
       if (distractors.length >= count) break;
       const e = dictionary[w.character];
       if (!e) continue;
-      const def = (e.english || []).filter(d => !d.startsWith('[粵]')).slice(0, 2).join('; ') || (e.english || [])[0] || '';
+      const allDefs = getAllCleanQuizDefinitions(e, w.explanation || '');
+      // 嚴格保證語言一致性：中文題干只匹中文字義，英文題干只配英文字義
+      const matchedDefs = allDefs.filter(d => isChineseText(d) === targetIsChinese);
+      if (matchedDefs.length === 0) continue;
+      const def = matchedDefs[Math.floor(Math.random() * matchedDefs.length)];
       if (def && !usedDefs.has(def)) {
         usedWords.add(w.character);
         usedDefs.add(def);
@@ -824,17 +885,20 @@
       }
     }
 
-    // 2. 從長度相同/相近的大詞庫中補充高質量干擾項
+    // 2. 從長度相同/相近的大詞庫中補充高質量干擾項（嚴格語言一致）
     const len = targetWord.length;
     const pool = dictByLength.get(len) || cachedDictEntries;
     let attempts = 0;
-    while (distractors.length < count && attempts < 150) {
+    while (distractors.length < count && attempts < 300) {
       attempts++;
       const randWord = pool[Math.floor(Math.random() * pool.length)];
       if (usedWords.has(randWord)) continue;
       const e = dictionary[randWord];
       if (!e) continue;
-      const def = (e.english || []).filter(d => !d.startsWith('[粵]')).slice(0, 2).join('; ') || (e.english || [])[0] || '';
+      const allDefs = getAllCleanQuizDefinitions(e, '');
+      const matchedDefs = allDefs.filter(d => isChineseText(d) === targetIsChinese);
+      if (matchedDefs.length === 0) continue;
+      const def = matchedDefs[Math.floor(Math.random() * matchedDefs.length)];
       if (!def || usedDefs.has(def)) continue;
 
       usedWords.add(randWord);
@@ -865,7 +929,6 @@
     });
     if (activeWords.length === 0) return [];
 
-    const availableMode = settings.mode || 'mixed';
     const rawBank = [];
 
     for (const word of activeWords) {
@@ -873,11 +936,16 @@
       const trad = (entry && entry.traditional) || word.character;
       const simp = (entry && entry.simplified) || word.character;
       const jyutping = (entry && entry.jyutping) || word.jyutping || '';
-      const engList = (entry && entry.english) ? entry.english.filter(d => !d.startsWith('[粵]')).slice(0, 2) : [];
-      const primaryDef = engList.join('; ') || ((entry && entry.english && entry.english[0]) || word.explanation || '');
+      const allDefs = getAllCleanQuizDefinitions(entry, word.explanation || '');
+      // 優先抽取地道中文釋義，若無中文釋義則使用英文釋義
+      const chineseDefs = allDefs.filter(d => isChineseText(d));
+      const poolDefs = (chineseDefs.length > 0) ? chineseDefs : allDefs;
+      const primaryDef = poolDefs.length > 0
+        ? poolDefs[Math.floor(Math.random() * poolDefs.length)]
+        : (word.explanation || trad);
 
-      // 檢查是否有可用例句
-      let exampleItem = null;
+      // 收集該詞的所有可用例句並隨機選取一條
+      const matchedExamples = [];
       if (entry && entry.examples) {
         for (const exArr of entry.examples) {
           if (!exArr) continue;
@@ -890,18 +958,19 @@
               const idx = ex.yue.indexOf(targetWord);
               const blankMarker = '\x00BLANK' + targetWord.length + '\x00';
               const blankedSentence = ex.yue.substring(0, idx) + blankMarker + ex.yue.substring(idx + targetWord.length);
-              exampleItem = {
+              matchedExamples.push({
                 sentence: ex.yue,
                 blankedSentence: blankedSentence,
                 translation: ex.eng || '',
                 targetWordLength: targetWord.length
-              };
-              break;
+              });
             }
           }
-          if (exampleItem) break;
         }
       }
+      const exampleItem = matchedExamples.length > 0
+        ? matchedExamples[Math.floor(Math.random() * matchedExamples.length)]
+        : null;
 
       // 生成干擾選項 (供選擇題使用)
       const distractors = getSmartDistractors(word.character, primaryDef, jyutping, 3);
@@ -922,7 +991,8 @@
           blankedSentence: exampleItem.blankedSentence,
           wordLength: exampleItem.targetWordLength,
           translation: exampleItem.translation,
-          english: engList
+          english: allDefs,
+          definition: primaryDef
         });
       }
 
@@ -936,7 +1006,8 @@
         jyutping: jyutping,
         wordLength: trad.length,
         prompt: primaryDef || trad,
-        english: engList
+        english: allDefs,
+        definition: primaryDef
       });
 
       // 3. 釋義選擇題 (Definition Choice)

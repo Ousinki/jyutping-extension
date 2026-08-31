@@ -68,7 +68,7 @@ async function applyI18n(lang) {
       if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
         el.placeholder = activeDict[key];
       } else {
-        if (el.children.length > 0 && !key.startsWith('clItem') && key !== 'optCompactExpandBtn' && key !== 'optTtsAccuracyDesc') {
+        if (el.children.length > 0 && !key.startsWith('clItem') && key !== 'optCompactExpandBtn' && key !== 'optTtsAccuracyDesc' && key !== 'optPopupDemoSentence') {
             for (let child of el.childNodes) {
                 if (child.nodeType === Node.TEXT_NODE && child.nodeValue.trim().length > 0) {
                     child.nodeValue = activeDict[key];
@@ -81,6 +81,15 @@ async function applyI18n(lang) {
       }
     }
   });
+  document.querySelectorAll('[data-i18n-title]').forEach(el => {
+    const key = el.getAttribute('data-i18n-title');
+    if (activeDict[key]) {
+      el.setAttribute('title', activeDict[key]);
+      if (el.hasAttribute('aria-label')) {
+        el.setAttribute('aria-label', activeDict[key]);
+      }
+    }
+  });
   document.querySelectorAll('select:not(.native-only)').forEach(select => {
     select.dispatchEvent(new Event('updateUI'));
   });
@@ -88,24 +97,35 @@ async function applyI18n(lang) {
     window.__updateFbUI();
   }
   updateShortcutDesc(lang);
-  chrome.storage.sync.get(['paragraphTransDirection', 'autoTranslateYueDefsTargetLang'], (res) => {
+  updateTargetLangHints(lang);
+  chrome.storage.sync.get(['paragraphTransDirection', 'yueDefDisplayMode'], (res) => {
     if (typeof updateParaTransDirectionUI === 'function') {
-      updateParaTransDirectionUI(res.paragraphTransDirection || 'yue_to_target', res.autoTranslateYueDefsTargetLang || 'zh-Hans');
+      updateParaTransDirectionUI(res.paragraphTransDirection || 'yue_to_target', lang);
+    }
+    if (typeof updateYueDefDemo === 'function') {
+      updateYueDefDemo(lang, res.yueDefDisplayMode || 'expand');
     }
   });
 }
 
-  // Get saved language or default
+  // Get saved language or default & purge legacy aiLanguage
+  chrome.storage.local.remove(['aiLanguage']);
   chrome.storage.local.get(['uiLang'], async (res) => {
     const lang = res.uiLang || 'zh-HK';
     document.getElementById('langToggle').value = lang;
     await applyI18n(lang);
+    updateTargetLangHints(lang);
   });
 
   document.getElementById('langToggle').addEventListener('change', async (e) => {
     const lang = e.target.value;
     chrome.storage.local.set({ uiLang: lang, extensionLang: lang });
     await applyI18n(lang);
+    updateTargetLangHints(lang);
+    chrome.storage.sync.get(['paragraphTransDirection', 'yueDefDisplayMode'], (res) => {
+      updateParaTransDirectionUI(res.paragraphTransDirection || 'yue_to_target', lang);
+      updateYueDefDemo(lang, res.yueDefDisplayMode || 'expand');
+    });
     // Also refresh dynamically generated buttons
     if (typeof resetTestButton === 'function') resetTestButton();
     if (typeof resetAiTestButton === 'function') resetAiTestButton();
@@ -154,7 +174,6 @@ async function applyI18n(lang) {
   const aiBaseUrlInput = document.getElementById('aiBaseUrl');
   const aiApiKeyInput = document.getElementById('aiApiKey');
   const aiModelInput = document.getElementById('aiModel');
-  const aiLanguageSelect = document.getElementById('aiLanguage');
   const aiPromptInput = document.getElementById('aiPrompt');
   const testAiBtn = document.getElementById('testAiBtn');
 
@@ -440,6 +459,20 @@ async function applyI18n(lang) {
           speakWithOptionsTTS(word, link);
         });
       });
+
+      // 7. 點擊子詞候選面板單項（你好、你、好）
+      const flyout = document.getElementById('previewSubwordsFlyout');
+      if (flyout) {
+        flyout.querySelectorAll('.subword-item').forEach(item => {
+          item.addEventListener('click', (e) => {
+            e.stopPropagation();
+            flyout.querySelectorAll('.subword-item').forEach(it => it.classList.remove('active'));
+            item.classList.add('active');
+            const word = item.dataset.word || item.textContent.trim();
+            speakWithOptionsTTS(word, item);
+          });
+        });
+      }
     }
   }
 
@@ -545,7 +578,8 @@ async function applyI18n(lang) {
       });
     }
 
-    updateParaTransDirectionUI(result.paragraphTransDirection || 'yue_to_target', result.autoTranslateYueDefsTargetLang || 'zh-Hans');
+    const curLang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
+    updateParaTransDirectionUI(result.paragraphTransDirection || 'yue_to_target', curLang);
     
     document.getElementById('popupDisplayStyle').value = result.popupDisplayStyle || 'full';
     
@@ -639,15 +673,11 @@ async function applyI18n(lang) {
     }
 
     const enableAutoTranslateYueDefsToggle = document.getElementById('enableAutoTranslateYueDefs');
-    const autoTranslateYueDefsTargetLangSelect = document.getElementById('autoTranslateYueDefsTargetLang');
     const autoTranslateYueDefsEngineSelect = document.getElementById('autoTranslateYueDefsEngine');
     const yueDefDisplayModeSelect = document.getElementById('yueDefDisplayMode');
 
     if (enableAutoTranslateYueDefsToggle) {
       enableAutoTranslateYueDefsToggle.checked = result.enableAutoTranslateYueDefs === true;
-    }
-    if (autoTranslateYueDefsTargetLangSelect) {
-      autoTranslateYueDefsTargetLangSelect.value = result.autoTranslateYueDefsTargetLang || 'zh-Hans';
     }
     if (autoTranslateYueDefsEngineSelect) {
       autoTranslateYueDefsEngineSelect.value = result.autoTranslateYueDefsEngine || 'google';
@@ -655,7 +685,8 @@ async function applyI18n(lang) {
     if (yueDefDisplayModeSelect) {
       yueDefDisplayModeSelect.value = result.yueDefDisplayMode || 'expand';
     }
-    updateYueDefDemo(result.autoTranslateYueDefsTargetLang || 'zh-Hans', result.yueDefDisplayMode || 'expand');
+    const currentUiLang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
+    updateYueDefDemo(currentUiLang, result.yueDefDisplayMode || 'expand');
 
     displayModeSelect.value = result.displayMode || 'jyutping';
     if (toneStyleToggle) toneStyleToggle.checked = result.toneStyle !== 'inline'; // 預設為 'superscript'
@@ -672,6 +703,13 @@ async function applyI18n(lang) {
       if (demoCompactExpandBtn) {
         demoCompactExpandBtn.style.display = compactExpandBtnToggle.checked ? 'inline-flex' : 'none';
       }
+    }
+
+    // 載入詞頭子詞懸浮面板開關設定
+    const enableSubwordsFlyoutToggle = document.getElementById('enableSubwordsFlyoutToggle');
+    if (enableSubwordsFlyoutToggle) {
+      enableSubwordsFlyoutToggle.checked = result.enableSubwordsFlyout !== false;
+      updatePreviewSubwordsHint();
     }
     
     // 載入高亮樣式
@@ -773,22 +811,14 @@ async function applyI18n(lang) {
   });
 
   // AI 設定用 local storage（避免 sync 配額不足）
-  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'aiPrompt'], (result) => {
+  chrome.storage.local.get(['aiEnabled', 'aiBaseUrl', 'aiApiKey', 'aiModel', 'aiPrompt'], (result) => {
     aiEnabledToggle.checked = result.aiEnabled === true;
     aiSettings.style.display = result.aiEnabled ? 'block' : 'none';
     aiBaseUrlInput.value = result.aiBaseUrl || '';
     aiApiKeyInput.value = result.aiApiKey || '';
     aiModelInput.value = result.aiModel || '';
-    if (aiLanguageSelect) {
-      aiLanguageSelect.value = result.aiLanguage || 'auto';
-    }
     if (aiPromptInput) {
       aiPromptInput.value = result.aiPrompt || '';
-    }
-    
-    // 觸發自定義 UI 更新
-    if (aiLanguageSelect) {
-      aiLanguageSelect.dispatchEvent(new Event('updateUI'));
     }
   });
 
@@ -950,7 +980,6 @@ async function applyI18n(lang) {
   }
 
   const enableAutoTranslateYueDefsEl = document.getElementById('enableAutoTranslateYueDefs');
-  const autoTranslateYueDefsTargetLangEl = document.getElementById('autoTranslateYueDefsTargetLang');
   const autoTranslateYueDefsEngineEl = document.getElementById('autoTranslateYueDefsEngine');
 
   function updateYueDefDemo(targetLang, mode) {
@@ -1006,19 +1035,6 @@ async function applyI18n(lang) {
     });
   }
 
-  if (autoTranslateYueDefsTargetLangEl) {
-    autoTranslateYueDefsTargetLangEl.addEventListener('change', () => {
-      const val = autoTranslateYueDefsTargetLangEl.value;
-      chrome.storage.sync.set({ autoTranslateYueDefsTargetLang: val });
-      GoogleAnalytics.fireEvent('change_setting', { setting: 'autoTranslateYueDefsTargetLang', value: val });
-      notifyContentScripts({ action: 'changeAutoTranslateYueDefsTargetLang', autoTranslateYueDefsTargetLang: val });
-      updateYueDefDemo(val, yueDefDisplayModeEl ? yueDefDisplayModeEl.value : 'expand');
-      chrome.storage.sync.get(['paragraphTransDirection'], (res) => {
-        updateParaTransDirectionUI(res.paragraphTransDirection || 'yue_to_target', val);
-      });
-    });
-  }
-
   if (autoTranslateYueDefsEngineEl) {
     autoTranslateYueDefsEngineEl.addEventListener('change', () => {
       const val = autoTranslateYueDefsEngineEl.value;
@@ -1035,7 +1051,8 @@ async function applyI18n(lang) {
       chrome.storage.sync.set({ yueDefDisplayMode: val });
       GoogleAnalytics.fireEvent('change_setting', { setting: 'yueDefDisplayMode', value: val });
       notifyContentScripts({ action: 'changeYueDefDisplayMode', yueDefDisplayMode: val });
-      updateYueDefDemo(autoTranslateYueDefsTargetLangEl ? autoTranslateYueDefsTargetLangEl.value : 'zh-Hans', val);
+      const curUiLang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
+      updateYueDefDemo(curUiLang, val);
     });
   }
 
@@ -1309,6 +1326,7 @@ async function applyI18n(lang) {
 
   function getTargetLangDisplayName(langCode) {
     switch (langCode) {
+      case 'zh-CN':
       case 'zh-Hans': return t('optAILangCN') || '簡體中文';
       case 'zh-Hant':
       case 'zh-TW':
@@ -1320,11 +1338,24 @@ async function applyI18n(lang) {
     }
   }
 
-  function updateParaTransDirectionUI(direction, targetLangCode) {
+  function updateTargetLangHints(langCode) {
+    const lang = langCode || (document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK');
+    const langDisplayName = getTargetLangDisplayName(lang);
+    const rawTemplate = t('optTargetLangFollowsUiLangNote') || '💡 目標語言將自動跟隨當前「介面語言」（當前：$LANG$）。如需更改，請在頁面右上角切換「介面語言」。';
+    const noteHtml = rawTemplate.replace('$LANG$', `<strong>${langDisplayName}</strong>`).replace('$1', `<strong>${langDisplayName}</strong>`);
+
+    const hintIds = ['paraTransTargetLangHint', 'yueDefsTargetLangHint', 'aiTargetLangHint'];
+    hintIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.innerHTML = noteHtml;
+    });
+  }
+
+  function updateParaTransDirectionUI(direction, currentLangCode) {
     const paraDirFromText = document.getElementById('paraDirFromText');
     const paraDirToText = document.getElementById('paraDirToText');
-    const targetLangSelect = document.getElementById('autoTranslateYueDefsTargetLang');
-    const effectiveLangCode = targetLangCode || (targetLangSelect ? targetLangSelect.value : 'zh-Hans');
+    const langToggle = document.getElementById('langToggle');
+    const effectiveLangCode = currentLangCode || (langToggle ? langToggle.value : 'zh-HK');
     const targetName = `${t('optParaTransLangTarget')} (${getTargetLangDisplayName(effectiveLangCode)})`;
     const yueName = t('optParaTransLangYue');
 
@@ -1354,12 +1385,13 @@ async function applyI18n(lang) {
   }
 
   function toggleParaTransDirection() {
-    chrome.storage.sync.get(['paragraphTransDirection', 'autoTranslateYueDefsTargetLang'], (res) => {
+    chrome.storage.sync.get(['paragraphTransDirection'], (res) => {
       const currentDir = res.paragraphTransDirection || 'yue_to_target';
       const newDir = currentDir === 'yue_to_target' ? 'target_to_yue' : 'yue_to_target';
+      const curLang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
       chrome.storage.sync.set({ paragraphTransDirection: newDir });
       GoogleAnalytics.fireEvent('change_setting', { setting: 'paragraphTransDirection', value: newDir });
-      updateParaTransDirectionUI(newDir, res.autoTranslateYueDefsTargetLang);
+      updateParaTransDirectionUI(newDir, curLang);
       notifyContentScripts({ action: 'changeParagraphTransDirection', value: newDir });
     });
   }
@@ -1586,6 +1618,37 @@ async function applyI18n(lang) {
       }
       GoogleAnalytics.fireEvent('change_setting', { setting: 'compactExpandBtn', value: enabled });
       notifyContentScripts({ action: 'changeCompactExpandBtn', enabled });
+    });
+  }
+
+  // 詞頭子詞面板開關
+  const enableSubwordsFlyoutToggle = document.getElementById('enableSubwordsFlyoutToggle');
+  function updatePreviewSubwordsHint() {
+    const hint = document.getElementById('previewSubwordsHint');
+    const wordSec = document.getElementById('previewWordSection');
+    const flyout = document.getElementById('previewSubwordsFlyout');
+    const wrapper = document.querySelector('.theme-preview-wrapper');
+    const enabled = enableSubwordsFlyoutToggle ? enableSubwordsFlyoutToggle.checked : true;
+    if (hint) hint.style.display = enabled ? 'inline' : 'none';
+    if (wordSec) {
+      if (enabled) wordSec.classList.add('has-subwords');
+      else wordSec.classList.remove('has-subwords');
+    }
+    if (flyout) {
+      flyout.style.display = enabled ? 'block' : 'none';
+    }
+    if (wrapper) {
+      wrapper.style.paddingLeft = enabled ? '68px' : '0px';
+    }
+  }
+
+  if (enableSubwordsFlyoutToggle) {
+    enableSubwordsFlyoutToggle.addEventListener('change', () => {
+      const enabled = enableSubwordsFlyoutToggle.checked;
+      chrome.storage.sync.set({ enableSubwordsFlyout: enabled });
+      updatePreviewSubwordsHint();
+      GoogleAnalytics.fireEvent('change_setting', { setting: 'enableSubwordsFlyout', value: enabled });
+      notifyContentScripts({ action: 'changeEnableSubwordsFlyout', enabled });
     });
   }
 
@@ -1933,14 +1996,7 @@ async function applyI18n(lang) {
     notifyContentScripts({ action: 'changeAiModel', aiModel: model });
   });
 
-  // AI 目標語言變更
-  if (aiLanguageSelect) {
-    aiLanguageSelect.addEventListener('change', () => {
-      const lang = aiLanguageSelect.value;
-      chrome.storage.local.set({ aiLanguage: lang });
-      notifyContentScripts({ action: 'changeAiLanguage', aiLanguage: lang });
-    });
-  }
+
 
   // AI 提示詞變更
   if (aiPromptInput) {
@@ -1966,7 +2022,8 @@ async function applyI18n(lang) {
     testAiBtn.textContent = t('optTestingAI');
 
     try {
-      const targetLang = aiLanguageSelect ? aiLanguageSelect.value : 'auto';
+      const curUiLang = document.getElementById('langToggle') ? document.getElementById('langToggle').value : 'zh-HK';
+      const targetLang = getTargetLangDisplayName(curUiLang);
       
       let promptTemplate = aiPromptInput ? aiPromptInput.value.trim() : '';
       if (!promptTemplate) {

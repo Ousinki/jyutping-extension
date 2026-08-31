@@ -169,6 +169,12 @@
     "message": "在音标旁显示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展开完整词典按钮",
     "description": "optCompactExpandBtn"
   },
+  "optEnableSubwordsFlyout": {
+    "message": "悬停词头显示子词与相关单字面板"
+  },
+  "optEnableSubwordsFlyoutDesc": {
+    "message": "鼠标悬停于悬浮窗词头时，于侧边展开包含复合词及单字的候选列表，方便快速跳转查词。"
+  },
   "optCustomInput": {
     "message": "自定义输入..."
   },
@@ -193,6 +199,45 @@
   },
   "optDemoTranslation": {
     "message": "漂亮，好看。"
+  },
+  "optPopupDemoSentence": {
+    "message": "<span class=\"preview-hl-word\" style=\"background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;\">你好</span>！ 很高兴为你服务。"
+  },
+  "optDemoPronLabel": {
+    "message": "粤拼:"
+  },
+  "optDemoDefYue": {
+    "message": "打招呼嘅问候语或者一般对话嘅开场白"
+  },
+  "optDemoDefTrans": {
+    "message": "打招呼的问候语或一般对话的开场白"
+  },
+  "optDemoSeeAlsoLabel": {
+    "message": "粤语说法："
+  },
+  "optDemoExampleTitle": {
+    "message": "例句"
+  },
+  "optDemoExampleYue": {
+    "message": "你好，我叫陈大文。"
+  },
+  "optDemoExampleTrans": {
+    "message": "你好，我叫陈大文。"
+  },
+  "optDemoBadgeClickTitle": {
+    "message": "点击翻译此释义"
+  },
+  "optDemoPlayExampleTitle": {
+    "message": "播放例句 (TTS)"
+  },
+  "optDemoPinyinBtnTitle": {
+    "message": "点击逐字朗读 (单字音档)"
+  },
+  "optDemoWordSecTitle": {
+    "message": "点击发音 (整词 TTS 朗读)"
+  },
+  "optDemoSubwordsHint": {
+    "message": "悬停查看相关词与单字"
   },
   "optDev": {
     "message": "开发者",
@@ -1124,6 +1169,14 @@
   },
   "optAutoTranslateYueDefsTarget": {
     "message": "粤语释义目标语言"
+  },
+  "optTargetLangFollowsUiLangNote": {
+    "message": "💡 目标语言将自动跟随当前「界面语言」（当前：$LANG$）。如需更改，请在页面右上角切换「界面语言」。",
+    "placeholders": {
+      "lang": {
+        "content": "$1"
+      }
+    }
   },
   "optAutoTranslateYueDefsEngine": {
     "message": "粤语释义翻译引擎"

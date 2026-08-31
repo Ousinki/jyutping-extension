@@ -730,6 +730,39 @@
         background: rgba(248, 113, 113, 0.32);
       }
 
+      /* 生詞本發音交互樣式 */
+      .word-character {
+        cursor: pointer;
+        transition: color 0.15s ease, transform 0.15s ease;
+      }
+      .word-character:hover {
+        color: var(--primary);
+      }
+      .word-character.speaking {
+        color: var(--primary) !important;
+        font-weight: 700 !important;
+      }
+      .jyutping-text {
+        cursor: pointer;
+        transition: color 0.15s ease;
+      }
+      .jyutping-text:hover {
+        color: var(--primary);
+      }
+      .jyutping-text.speaking {
+        color: var(--primary) !important;
+      }
+      .jyutping-text .syllable-item {
+        display: inline;
+        transition: color 0.12s ease, font-weight 0.12s ease;
+      }
+      .jyutping-text .syllable-item.speaking-active,
+      #cantonese-popup-dict .syllable-item.speaking-active {
+        color: var(--primary, #8A1C1C) !important;
+        font-weight: 700 !important;
+        text-decoration: underline;
+      }
+
       .ai-typing-indicator {
         display: flex;
         align-items: center;

@@ -67,6 +67,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let _currentSubwordRoot = ''; // 記錄當前子詞家族的根詞（如 "標準音"）
   let currentSubwordCandidates = []; // 當前根詞拆分出的子詞與單字列表
   let popupSubwordsFlyout = null; // 左側子詞懸浮面板 DOM
+  let enableSubwordsFlyout = true; // 是否啟用詞頭子詞懸停浮動面板
   let flyoutHideTimeout = null; // 延遲隱藏子詞面板計時器
 
   let lastPopupResult = null;
@@ -2041,18 +2042,18 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let rubyTextStyle = 'default';
   let rubyDictionaryColor = '#999999';
   let enableAutoTranslateYueDefs = false;
-  let autoTranslateYueDefsTargetLang = 'zh-Hans';
   let autoTranslateYueDefsEngine = 'google';
   let yueDefDisplayMode = 'expand'; // 'expand' or 'replace'
   const yueDefTranslationCache = new Map();
 
   function loadSettings() {
     chrome.storage.sync.get([
-      'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'popupThemeMode', 'popupThemeDay', 'popupThemeNight', 'popupThemeDayStart', 'popupThemeNightStart', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'ttsEnabled', 
+      'enabled', 'displayMode', 'toneStyle', 'rubyRtBackground', 'hoverModifier', 'popupDisplayStyle', 'popupTheme', 'popupThemeMode', 'popupThemeDay', 'popupThemeNight', 'popupThemeDayStart', 'popupThemeNightStart', 'customZhFont', 'customEnFont', 'highlightStyle', 'rubyHoverStyle', 'compactExpandBtn', 'enableSubwordsFlyout', 'ttsEnabled', 
       'ttsEngine', 'edgeTtsMode', 'edgeTtsUrl', 'azureTtsKey', 'azureTtsRegion', 'azureTtsVoice', 'ttsRate', 'toneDisplayStyle', 'rubyTextOpacity', 'rubyTextStyle', 'rubyDictionaryColor', 'transLang', 'transLangs', 'transTrigger', 'transHoverEngine', 'paragraphTransKey', 'paragraphTransMode', 'paragraphTransEngine', 'paragraphTransDirection', 'enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'
     ], (result) => {
       // enabled 可能在 sync 中設定（Options 頁面），先讀取
       if (result.enabled !== undefined) isEnabled = result.enabled !== false;
+      enableSubwordsFlyout = result.enableSubwordsFlyout !== false;
       yueDefDisplayMode = result.yueDefDisplayMode || 'expand';
 
       displayMode = result.displayMode || 'jyutping';
@@ -2094,7 +2095,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       rubyTextStyle = result.rubyTextStyle || 'default';
       rubyDictionaryColor = result.rubyDictionaryColor || '#999999';
       enableAutoTranslateYueDefs = result.enableAutoTranslateYueDefs === true;
-      autoTranslateYueDefsTargetLang = result.autoTranslateYueDefsTargetLang || 'zh-Hans';
       autoTranslateYueDefsEngine = result.autoTranslateYueDefsEngine || 'google';
       let tls = result.transLangs;
       if (!tls && result.transLang) {
@@ -2200,6 +2200,9 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       if (changes.highlightStyle) {
         highlightStyle = changes.highlightStyle.newValue || 'yellow';
       }
+      if (changes.enableSubwordsFlyout !== undefined) {
+        enableSubwordsFlyout = changes.enableSubwordsFlyout.newValue !== false;
+      }
       if (changes.rubyHoverStyle) {
         rubyHoverStyle = changes.rubyHoverStyle.newValue || 'ruby-red';
       }
@@ -2296,8 +2299,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         paragraphTransDirection = changes.paragraphTransDirection.newValue || 'yue_to_target';
       } else if (changes.enableAutoTranslateYueDefs) {
         enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
-      } else if (changes.autoTranslateYueDefsTargetLang) {
-        autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
       } else if (changes.autoTranslateYueDefsEngine) {
         autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
       } else if (changes.yueDefDisplayMode) {
@@ -4598,12 +4599,24 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
   }
 
+  function getYueDefTargetLangCode() {
+    switch (currentLang) {
+      case 'zh-CN': return 'zh-Hans';
+      case 'zh-TW':
+      case 'zh-HK': return 'zh-Hant';
+      case 'en': return 'en';
+      case 'ja': return 'ja';
+      case 'ko': return 'ko';
+      default: return 'zh-Hant';
+    }
+  }
+
   // 粵語釋義點擊即翻 / 自動翻譯處理函數
   async function translateBadgeElement(badgeEl, defItemEl) {
     const text = badgeEl.dataset.text;
     if (!text) return;
 
-    const targetLang = autoTranslateYueDefsTargetLang || 'zh-Hans';
+    const targetLang = getYueDefTargetLangCode();
     const engine = autoTranslateYueDefsEngine || 'google';
     const mode = yueDefDisplayMode || 'expand';
     const cacheKey = `${engine}_${targetLang}_${text}`;
@@ -4909,7 +4922,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       `;
     }
 
-    const hasSubwords = currentSubwordCandidates && currentSubwordCandidates.length > 1;
+    const hasSubwords = enableSubwordsFlyout && currentSubwordCandidates && currentSubwordCandidates.length > 1;
 
     let html = `
       <div class="word-section ${hasSubwords ? 'has-subwords' : ''}">
@@ -5869,6 +5882,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       popupDisplayStyle = request.style;
     } else if (request.action === 'changeCompactExpandBtn') {
       compactExpandBtn = request.enabled;
+    } else if (request.action === 'changeEnableSubwordsFlyout') {
+      enableSubwordsFlyout = request.enabled !== false;
     } else if (request.action === 'changeRubyRtBackground') {
       rubyRtBackground = request.value;
     } else if (request.action === 'changeHighlightStyle') {
@@ -5939,8 +5954,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       transHoverEngine = request.transHoverEngine;
     } else if (request.action === 'changeEnableAutoTranslateYueDefs') {
       enableAutoTranslateYueDefs = request.enableAutoTranslateYueDefs === true;
-    } else if (request.action === 'changeAutoTranslateYueDefsTargetLang') {
-      autoTranslateYueDefsTargetLang = request.autoTranslateYueDefsTargetLang;
     } else if (request.action === 'changeAutoTranslateYueDefsEngine') {
       autoTranslateYueDefsEngine = request.autoTranslateYueDefsEngine;
     } else if (request.action === 'changeYueDefDisplayMode') {

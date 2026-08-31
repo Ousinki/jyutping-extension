@@ -107,7 +107,7 @@
   const TRASH_AUTO_PURGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
   let dictionary = null;
   let isDetailMode = localStorage.getItem('jyutping_detail_mode') === 'true';
-  let isAutoPronounce = localStorage.getItem('jyutping_auto_pronounce') === 'true';
+  let isAutoPronounce = localStorage.getItem('jyutping_auto_pronounce') !== 'false';
   let autoTtsTimer = null;
   let aiHoverPronunciationEnabled = true;
   const wordAiHistoryMap = {};
@@ -190,9 +190,9 @@
       wordbookEnableAiQuickActions: '顯示快捷指令欄',
       wordbookAddQuickAction: '添加新指令',
       wordbookAiQuery1: '用呢個詞造一個粵語例句，並附上書面語翻譯',
-      wordbookAiQuery2: '呢個詞嘅粵語語源係咩？',
+      wordbookAiQuery2: '呢個詞嘅粵語語源係咩？請用書面語詳細解答',
       wordbookAiQuery3: '呢個詞喺日常粵語入面點用？請提供例句並附上書面語翻譯',
-      wordbookAiQuery4: '呢個詞有咩近義詞同反義詞？',
+      wordbookAiQuery4: '呢個詞有咩近義詞同反義詞？請列出並附上書面語解釋',
       wordbookTitle: '我的生詞本',
       wordbookSubtitle: 'My Cantonese Word Book',
       wordbookBackToSettings: '返回設定',
@@ -402,9 +402,9 @@
       wordbookEnableAiQuickActions: '显示快捷指令栏',
       wordbookAddQuickAction: '添加新指令',
       wordbookAiQuery1: '用这个词造一个粤语例句，并附上书面语翻译',
-      wordbookAiQuery2: '这个词的粤语语源是什么？',
+      wordbookAiQuery2: '这个词的粤语语源是什么？请用简体中文清晰解答',
       wordbookAiQuery3: '这个词在日常粤语里怎么用？请提供例句并附上书面语翻译',
-      wordbookAiQuery4: '这个词有什么近义词和反义词？',
+      wordbookAiQuery4: '这个词有什么近义词和反义词？请列出并附上简体中文解释',
       wordbookTitle: '我的生词本',
       wordbookSubtitle: 'My Cantonese Word Book',
       wordbookBackToSettings: '返回设定',
@@ -639,9 +639,9 @@
       wordbookEnableAiQuickActions: 'Show Quick Actions Bar',
       wordbookAddQuickAction: 'Add Action',
       wordbookAiQuery1: 'Make a Cantonese example sentence using this word, and provide an English translation.',
-      wordbookAiQuery2: 'What is the etymology of this word?',
+      wordbookAiQuery2: 'What is the etymology of this word? Please explain in English.',
       wordbookAiQuery3: 'How is this word used in daily Cantonese? Provide examples with English translations.',
-      wordbookAiQuery4: 'What are the synonyms and antonyms of this word?',
+      wordbookAiQuery4: 'What are the synonyms and antonyms of this word? Please explain them with English definitions.',
       wordbookTitle: 'My Word Book',
       wordbookSubtitle: 'Cantonese Vocabulary',
       wordbookBackToSettings: 'Back to Settings',
@@ -876,9 +876,9 @@
       wordbookEnableAiQuickActions: 'クイックアクションバーを表示',
       wordbookAddQuickAction: 'アクションを追加',
       wordbookAiQuery1: 'この言葉を使って広東語の例文を作り、日本語の翻訳を付けてください',
-      wordbookAiQuery2: 'この言葉の語源は何ですか？',
+      wordbookAiQuery2: 'この言葉の語源は何ですか？日本語で詳しく解説してください',
       wordbookAiQuery3: 'この言葉は日常広東語でどのように使われますか？例文と日本語の翻訳を付けてください',
-      wordbookAiQuery4: 'この言葉の類義語と対義語は何ですか？',
+      wordbookAiQuery4: 'この言葉の類義語と対義語は何ですか？それぞれの意味と解説を日本語で付けてください',
       wordbookTitle: '単語帳',
       wordbookSubtitle: '広東語ボキャブラリー',
       wordbookBackToSettings: '設定に戻る',
@@ -1113,9 +1113,9 @@
       wordbookEnableAiQuickActions: '빠른 작업 표시줄 표시',
       wordbookAddQuickAction: '작업 추가',
       wordbookAiQuery1: '이 단어를 사용하여 광둥어 예문을 만들고 한국어 번역을 제공해 주세요',
-      wordbookAiQuery2: '이 단어의 어원은 무엇인가요?',
+      wordbookAiQuery2: '이 단어의 어원은 무엇인가요? 한국어로 자세히 설명해 주세요',
       wordbookAiQuery3: '이 단어는 일상 광둥어에서 어떻게 사용되나요? 예문과 한국어 번역을 제공해 주세요',
-      wordbookAiQuery4: '이 단어의 유의어와 반의어는 무엇인가요?',
+      wordbookAiQuery4: '이 단어의 유의어와 반의어는 무엇인가요? 각 단어의 의미와 설명을 한국어로 제공해 주세요',
       wordbookTitle: '단어장',
       wordbookSubtitle: '광둥어 어휘',
       wordbookBackToSettings: '설정으로 돌아가기',
@@ -1814,15 +1814,13 @@
   // ==================== Theme ====================
 
   let enableAutoTranslateYueDefs = false;
-  let autoTranslateYueDefsTargetLang = 'zh-Hans';
   let autoTranslateYueDefsEngine = 'google';
   let yueDefDisplayMode = 'expand'; // 'expand' or 'replace'
   const yueDefTranslationCache = new Map();
 
   function initTranslationSettings() {
-    chrome.storage.sync.get(['enableAutoTranslateYueDefs', 'autoTranslateYueDefsTargetLang', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'], (res) => {
+    chrome.storage.sync.get(['enableAutoTranslateYueDefs', 'autoTranslateYueDefsEngine', 'yueDefDisplayMode'], (res) => {
       enableAutoTranslateYueDefs = res.enableAutoTranslateYueDefs === true;
-      autoTranslateYueDefsTargetLang = res.autoTranslateYueDefsTargetLang || 'zh-Hans';
       autoTranslateYueDefsEngine = res.autoTranslateYueDefsEngine || 'google';
       yueDefDisplayMode = res.yueDefDisplayMode || 'expand';
     });
@@ -1862,9 +1860,6 @@
           }
           if (changes.enableAutoTranslateYueDefs) {
             enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
-          }
-          if (changes.autoTranslateYueDefsTargetLang) {
-            autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
           }
           if (changes.autoTranslateYueDefsEngine) {
             autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
@@ -2269,8 +2264,8 @@
         return `
           <div class="col-char">
             <div class="excel-cell">
-              <span class="word-character excel-cell-text" data-word="${escapeHtml(word.character)}">${escapeHtml(word.character)}</span>
-              <span class="word-character excel-cell-floating" data-word="${escapeHtml(word.character)}">${escapeHtml(word.character)}</span>
+              <span class="word-character excel-cell-text" data-word="${escapeHtml(word.character)}" title="點擊發音 (TTS)">${escapeHtml(word.character)}</span>
+              <span class="word-character excel-cell-floating" data-word="${escapeHtml(word.character)}" title="點擊發音 (TTS)">${escapeHtml(word.character)}</span>
             </div>
           </div>
         `;
@@ -2278,8 +2273,8 @@
         return `
           <div class="col-jyutping word-jyutping">
             <div class="excel-cell">
-              <span class="jyutping-text excel-cell-text" data-word="${escapeHtml(word.character)}">${escapeHtml(word.jyutping || '')}</span>
-              <span class="jyutping-text excel-cell-floating" data-word="${escapeHtml(word.character)}">${escapeHtml(word.jyutping || '')}</span>
+              <span class="jyutping-text excel-cell-text" data-word="${escapeHtml(word.character)}" data-jyutping="${escapeHtml(word.jyutping || '')}" title="點擊逐字朗讀 (單字音檔)">${wrapSyllablesInSpans(word.jyutping || '')}</span>
+              <span class="jyutping-text excel-cell-floating" data-word="${escapeHtml(word.character)}" data-jyutping="${escapeHtml(word.jyutping || '')}" title="點擊逐字朗讀 (單字音檔)">${wrapSyllablesInSpans(word.jyutping || '')}</span>
             </div>
           </div>
         `;
@@ -2288,8 +2283,8 @@
         return `
           <div class="col-yale word-jyutping">
             <div class="excel-cell">
-              <span class="jyutping-text excel-cell-text" data-word="${escapeHtml(word.character)}">${escapeHtml(yaleText)}</span>
-              <span class="jyutping-text excel-cell-floating" data-word="${escapeHtml(word.character)}">${escapeHtml(yaleText)}</span>
+              <span class="jyutping-text excel-cell-text" data-word="${escapeHtml(word.character)}" data-jyutping="${escapeHtml(word.jyutping || '')}" title="點擊逐字朗讀 (單字音檔)">${wrapSyllablesInSpans(yaleText)}</span>
+              <span class="jyutping-text excel-cell-floating" data-word="${escapeHtml(word.character)}" data-jyutping="${escapeHtml(word.jyutping || '')}" title="點擊逐字朗讀 (單字音檔)">${wrapSyllablesInSpans(yaleText)}</span>
             </div>
           </div>
         `;
@@ -3080,12 +3075,44 @@
     doExport('json');
   });
 
-  // ==================== Multi-Engine TTS ====================
+  // ==================== Multi-Engine TTS & Syllable Audio ====================
   const EDGE_TTS_DEFAULT_URL = 'http://114.55.243.162:8090';
   let speakingBtn = null;
   let speakingTimer = null;
   let currentAudio = null;
   let currentTtsRequestId = 0;
+  let syllableAudioCtx = null;
+  const syllableBufferCache = new Map();
+
+  function splitJyutpingTokens(text) {
+    if (!text || typeof text !== 'string') return [];
+    return text.trim().split(/\s+/).filter(Boolean);
+  }
+
+  function wrapSyllablesInSpans(text) {
+    if (!text || typeof text !== 'string') return text || '';
+    const parts = text.split(/(\s+)/);
+    let syllableIndex = 0;
+    return parts.map(part => {
+      if (/^\s+$/.test(part)) {
+        return part;
+      }
+      const idx = syllableIndex++;
+      return `<span class="syllable-item" data-syllable-index="${idx}">${part}</span>`;
+    }).join('');
+  }
+
+  function highlightSpeakingSyllable(container, activeIndex) {
+    if (!container) return;
+    const syllableEls = container.querySelectorAll('.syllable-item');
+    syllableEls.forEach((el, idx) => {
+      if (idx === activeIndex) {
+        el.classList.add('speaking-active');
+      } else {
+        el.classList.remove('speaking-active');
+      }
+    });
+  }
 
   function startSpeaking(btn) {
     if (speakingBtn) {
@@ -3095,6 +3122,7 @@
       const parentToolbar = speakingBtn.closest('.ai-selection-toolbar, .ai-hover-phonetic-pill');
       if (parentToolbar) parentToolbar.classList.remove('speaking');
     }
+    document.querySelectorAll('.syllable-item.speaking-active').forEach(el => el.classList.remove('speaking-active'));
     if (speakingTimer) clearTimeout(speakingTimer);
     speakingBtn = btn;
     if (btn) {
@@ -3115,6 +3143,8 @@
       const parentToolbar = speakingBtn.closest('.ai-selection-toolbar, .ai-hover-phonetic-pill');
       if (parentToolbar) parentToolbar.classList.remove('speaking');
     }
+    document.querySelectorAll('.syllable-item.speaking-active').forEach(el => el.classList.remove('speaking-active'));
+    document.querySelectorAll('.word-character.speaking, .jyutping-text.speaking, .reading-speaker-btn.speaking, .tts-speaker-btn.speaking').forEach(el => el.classList.remove('speaking'));
     speakingBtn = null;
     if (speakingTimer) { clearTimeout(speakingTimer); speakingTimer = null; }
   }
@@ -3134,6 +3164,135 @@
       ttsCache.delete(oldestKey);
     }
     ttsCache.set(key, blobUrl);
+  }
+
+  async function getSyllableBuffer(url) {
+    if (syllableBufferCache.has(url)) return syllableBufferCache.get(url);
+    try {
+      const resp = await fetch(url);
+      if (!resp.ok) return null;
+      const arrayBuffer = await resp.arrayBuffer();
+      if (!syllableAudioCtx) {
+        syllableAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      const audioBuffer = await syllableAudioCtx.decodeAudioData(arrayBuffer);
+      syllableBufferCache.set(url, audioBuffer);
+      return audioBuffer;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function concatenateAudioBuffers(buffers) {
+    if (!buffers || buffers.length === 0 || !syllableAudioCtx) return null;
+    if (buffers.length === 1) return buffers[0];
+    const totalLength = buffers.reduce((acc, b) => acc + b.length, 0);
+    const numberOfChannels = Math.max(...buffers.map(b => b.numberOfChannels));
+    const sampleRate = buffers[0].sampleRate;
+    const outputBuffer = syllableAudioCtx.createBuffer(numberOfChannels, totalLength, sampleRate);
+    for (let channel = 0; channel < numberOfChannels; channel++) {
+      const outputData = outputBuffer.getChannelData(channel);
+      let offset = 0;
+      for (const buffer of buffers) {
+        const inputData = buffer.getChannelData(Math.min(channel, buffer.numberOfChannels - 1));
+        outputData.set(inputData, offset);
+        offset += buffer.length;
+      }
+    }
+    return outputBuffer;
+  }
+
+  async function playSyllablesAudio(character, jyutpingStr, targetEl) {
+    const syllables = splitJyutpingTokens(jyutpingStr);
+    if (syllables.length === 0) {
+      playTts(character, targetEl);
+      return;
+    }
+
+    const reqId = ++currentTtsRequestId;
+    try {
+      if ('speechSynthesis' in window) speechSynthesis.cancel();
+      if (chrome.tts && typeof chrome.tts.stop === 'function') chrome.tts.stop();
+      if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.src = '';
+        currentAudio = null;
+      }
+    } catch(e) {}
+
+    startSpeaking(targetEl);
+
+    chrome.storage.sync.get(['ttsRate'], async (result) => {
+      if (reqId !== currentTtsRequestId) return;
+
+      const rate = result.ttsRate || 1.0;
+
+      try {
+        if (!syllableAudioCtx) {
+          syllableAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (syllableAudioCtx.state === 'suspended') {
+          await syllableAudioCtx.resume().catch(() => {});
+        }
+
+        const buffers = [];
+        for (const syl of syllables) {
+          const localUrl = chrome.runtime.getURL(`audio/jyutping_female/${syl}.mp3`);
+          const buf = await getSyllableBuffer(localUrl);
+          if (buf) buffers.push(buf);
+        }
+
+        if (reqId !== currentTtsRequestId) return;
+
+        if (buffers.length !== syllables.length || buffers.length === 0) {
+          console.warn(`[Wordbook] Missing syllable audio (${buffers.length}/${syllables.length}), fallback to TTS for:`, character);
+          playTts(character, targetEl);
+          return;
+        }
+
+        const mergedBuffer = concatenateAudioBuffers(buffers);
+        if (!mergedBuffer) {
+          playTts(character, targetEl);
+          return;
+        }
+
+        if (reqId !== currentTtsRequestId) return;
+
+        const source = syllableAudioCtx.createBufferSource();
+        source.buffer = mergedBuffer;
+        // 保持自然標準語速（與用戶設置的 ttsRate 完全同步，單字朗讀使用 1.0x 原聲）
+        const effectiveRate = rate || 1.0;
+        source.playbackRate.value = effectiveRate;
+
+        let accumulatedTimeMs = 0;
+        for (let i = 0; i < buffers.length; i++) {
+          const sylIndex = i;
+          const startMs = accumulatedTimeMs;
+          const durationMs = (buffers[i].duration / effectiveRate) * 1000;
+          accumulatedTimeMs += durationMs;
+
+          setTimeout(() => {
+            if (reqId === currentTtsRequestId) {
+              highlightSpeakingSyllable(targetEl, sylIndex);
+            }
+          }, startMs);
+        }
+
+        source.connect(syllableAudioCtx.destination);
+        source.onended = () => {
+          if (reqId === currentTtsRequestId) {
+            highlightSpeakingSyllable(targetEl, -1);
+            stopSpeaking();
+          }
+        };
+        source.start();
+      } catch (err) {
+        console.warn('[Wordbook] Syllable playback failed, fallback to TTS:', err);
+        if (reqId === currentTtsRequestId) {
+          playTts(character, targetEl);
+        }
+      }
+    });
   }
 
   function playTts(text, ttsBtn) {
@@ -3240,7 +3399,7 @@
               stopSpeaking();
             }
           };
-          audio.play();
+          audio.play().catch(() => stopSpeaking());
         } catch (e) {
           if (reqId !== currentTtsRequestId) return;
           console.warn('[Wordbook] Edge TTS failed, falling back to Chrome TTS / WebSpeech:', e);
@@ -3316,7 +3475,7 @@
               stopSpeaking();
             }
           };
-          audio.play();
+          audio.play().catch(() => stopSpeaking());
         } catch (e) {
           if (reqId !== currentTtsRequestId) return;
           console.warn('[Wordbook] Google TTS failed, falling back to Chrome TTS / WebSpeech:', e);
@@ -3444,11 +3603,20 @@
       }
     }
 
-    // Character or Jyutping click → TTS
-    const ttsTarget = e.target.closest('.word-character') || e.target.closest('.jyutping-text');
-    if (ttsTarget) {
+    // Character click → TTS (整詞 TTS 朗讀)
+    const charTarget = e.target.closest('.word-character');
+    if (charTarget) {
       e.stopPropagation();
-      playTts(ttsTarget.dataset.word, ttsTarget);
+      playTts(charTarget.dataset.word, charTarget);
+      return;
+    }
+
+    // Jyutping / Yale click → 逐字單字音檔發音 (Syllable audio)
+    const jyutpingTarget = e.target.closest('.jyutping-text');
+    if (jyutpingTarget) {
+      e.stopPropagation();
+      const jyutpingVal = jyutpingTarget.dataset.jyutping || jyutpingTarget.textContent;
+      playSyllablesAudio(jyutpingTarget.dataset.word, jyutpingVal, jyutpingTarget);
       return;
     }
 
@@ -3566,18 +3734,16 @@
       if (!bulkAiBtn.classList.contains('active') || bulkAiBtn.classList.contains('loading')) return;
       if (selectedIds.size === 0) return;
 
-      const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'uiLang', 'aiCustomSystemPrompt', 'aiNotePrompt']);
+      const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'uiLang', 'extensionLang', 'aiCustomSystemPrompt', 'aiNotePrompt']);
       if (!settings.aiBaseUrl || !settings.aiApiKey || !settings.aiModel) {
         alert(t('aiFeedbackConfigureTip') || '請先在設定中配置 AI 服務 (API Key)');
         chrome.runtime.sendMessage({ action: 'openOptionsPage' });
         return;
       }
 
-      let targetLang = settings.aiLanguage || 'auto';
-      if (targetLang === 'auto') {
-        const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
-        targetLang = langMap[settings.uiLang || uiLang] || '繁體中文';
-      }
+      const currentUi = settings.uiLang || settings.extensionLang || (typeof currentLang !== 'undefined' ? currentLang : 'zh-HK');
+      const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
+      const targetLang = langMap[currentUi] || '繁體中文';
 
       const totalCount = selectedIds.size;
       const confirmMsg = (t('wordbookAiBulkConfirm') || '確定要使用 AI 為選中的 {n} 個詞條生成筆記釋義嗎？').replace('{n}', totalCount);
@@ -4172,7 +4338,7 @@
         originalTranslation: '',
         question: question,
         history: aiChatHistory,
-        systemPrompt: globalAiCustomSystemPrompt
+        systemPrompt: getEffectiveSystemPrompt(currentLang)
       }, (response) => {
         aiIsLoading = false;
         aiSendBtn.disabled = false;
@@ -4307,14 +4473,18 @@
       html += `
         <div class="pronunciation-section" style="margin-top: 8px; margin-bottom: 16px; border-bottom: 1px solid var(--popup-divider-strong); padding-bottom: 12px;">
           <span class="pronunciation-label">${phoneticLabel}</span>
-          <span class="pronunciation-text" id="detailPronunciationText" style="cursor: pointer; font-size: 15px;">${pronunciation}</span>
-          <button class="tts-speaker-btn" id="detailSpeakerBtn" title="${t('wordbookPlayAudio') || '播放發音'}" aria-label="${t('wordbookPlayAudio') || '播放發音'}">
-            <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
-              <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
-              <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
-            </svg>
-          </button>
+          <div class="reading-speaker-list" style="display: inline-flex; align-items: center;">
+            <button type="button" class="reading-speaker-btn" id="detailPinyinBtn" title="點擊逐字朗讀 (單字音檔)" style="cursor: pointer; background: transparent; border: none; padding: 0; display: inline-flex; align-items: center; gap: 6px; font-family: inherit; font-size: inherit; color: inherit;">
+              <span class="pronunciation-text" id="detailPronunciationText" style="cursor: pointer; font-size: 15px;">${wrapSyllablesInSpans(pronunciation)}</span>
+              <span class="tts-speaker-btn" id="detailSpeakerBtn" title="${t('wordbookPlayAudio') || '播放發音'}" aria-label="${t('wordbookPlayAudio') || '播放發音'}">
+                <svg class="tts-speaker-icon" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"></polygon>
+                  <path class="tts-wave tts-wave-1" d="M15.54 8.46a5 5 0 0 1 0 7.07"></path>
+                  <path class="tts-wave tts-wave-2" d="M19.07 4.93a10 10 0 0 1 0 14.14"></path>
+                </svg>
+              </span>
+            </button>
+          </div>
         </div>
       `;
     }
@@ -4533,15 +4703,27 @@
       aiSettingsBtn.addEventListener('click', openAiSettingsModal);
     }
 
-    // Bind TTS
-    const triggerTTS = () => playTts(entry.traditional, document.getElementById('detailSpeakerBtn'));
+    // Bind TTS on Headword (詞頭整詞 TTS 朗讀)
     const wordSec = document.getElementById('detailWordSection');
+    if (wordSec) {
+      wordSec.setAttribute('title', '點擊發音 (整詞 TTS 朗讀)');
+      wordSec.addEventListener('click', () => {
+        playTts(entry.traditional, document.getElementById('detailSpeakerBtn') || wordSec);
+      });
+    }
+
+    // Bind Syllable audio on Pronunciation (粵拼/耶魯 逐字單字音檔發音)
+    const pinyinBtn = document.getElementById('detailPinyinBtn');
     const pronText = document.getElementById('detailPronunciationText');
     const speakBtn = document.getElementById('detailSpeakerBtn');
+    const triggerSyllableAudio = (e) => {
+      e.stopPropagation();
+      playSyllablesAudio(entry.traditional, entry.jyutping || pronunciation, pronText || pinyinBtn || speakBtn);
+    };
     
-    if (wordSec) wordSec.addEventListener('click', triggerTTS);
-    if (pronText) pronText.addEventListener('click', triggerTTS);
-    if (speakBtn) speakBtn.addEventListener('click', triggerTTS);
+    if (pinyinBtn) pinyinBtn.addEventListener('click', triggerSyllableAudio);
+    if (pronText) pronText.addEventListener('click', triggerSyllableAudio);
+    if (speakBtn) speakBtn.addEventListener('click', triggerSyllableAudio);
     
     // Bind Example Toggles
     detailPane.querySelectorAll('.has-inline-examples .def-text').forEach(defText => {
@@ -4648,12 +4830,24 @@
       }
     }
 
+    function getYueDefTargetLangCode() {
+      switch (currentLang) {
+        case 'zh-CN': return 'zh-Hans';
+        case 'zh-TW':
+        case 'zh-HK': return 'zh-Hant';
+        case 'en': return 'en';
+        case 'ja': return 'ja';
+        case 'ko': return 'ko';
+        default: return 'zh-Hant';
+      }
+    }
+
     // Bind [粵] Badge Click-to-Translate
     async function translateWordbookBadge(badgeEl, containerEl) {
       const text = badgeEl.dataset.text;
       if (!text) return;
 
-      const targetLang = autoTranslateYueDefsTargetLang || 'zh-Hans';
+      const targetLang = getYueDefTargetLangCode();
       const engine = autoTranslateYueDefsEngine || 'google';
       const mode = yueDefDisplayMode || 'expand';
       const cacheKey = `${engine}_${targetLang}_${text}`;
@@ -5056,7 +5250,7 @@
       const aiBtn = document.getElementById('detailNoteAiBtn');
 
       // 檢查 AI 配置
-      const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'uiLang', 'aiCustomSystemPrompt', 'aiNotePrompt']);
+      const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'uiLang', 'extensionLang', 'aiCustomSystemPrompt', 'aiNotePrompt']);
       if (!settings.aiBaseUrl || !settings.aiApiKey || !settings.aiModel) {
         alert(t('aiFeedbackConfigureTip') || '請先在設定中配置 AI 服務 (API Key)');
         chrome.runtime.sendMessage({ action: 'openOptionsPage' });
@@ -5075,11 +5269,9 @@
         noteTextarea.placeholder = t('wordbookAiEditingPlaceholder') || '正在使用 AI 進行編輯...';
       }
 
-      let targetLang = settings.aiLanguage || 'auto';
-      if (targetLang === 'auto') {
-        const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
-        targetLang = langMap[settings.uiLang || uiLang] || '繁體中文';
-      }
+      const currentUi = settings.uiLang || settings.extensionLang || (typeof currentLang !== 'undefined' ? currentLang : 'zh-HK');
+      const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
+      const targetLang = langMap[currentUi] || '繁體中文';
 
       const pronunciation = entry.jyutping || entry.yale || '';
       const definitions = (entry.english || [])
@@ -5242,7 +5434,7 @@
           originalTranslation: definitions,
           question: question,
           history: aiChatHistory,
-          systemPrompt: globalAiCustomSystemPrompt
+          systemPrompt: getEffectiveSystemPrompt(currentLang)
         }, (response) => {
           aiIsLoading = false;
           if (aiSendBtn) aiSendBtn.disabled = false;

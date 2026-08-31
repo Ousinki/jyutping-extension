@@ -272,6 +272,26 @@
         color: var(--text-secondary);
       }
 
+      .target-lang-hint-note {
+        display: block;
+        font-size: 13px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 10px 0 14px 0;
+        padding: 9px 14px;
+        background: var(--bg-hover, rgba(0, 0, 0, 0.03));
+        border-radius: 6px;
+        border-left: 3px solid var(--primary, #8a1c1c);
+        box-sizing: border-box;
+        width: 100%;
+        text-align: left;
+      }
+
+      .target-lang-hint-note strong {
+        color: var(--text-primary);
+        font-weight: 600;
+      }
+
       /* Toggle Switch */
       .toggle {
         position: relative;
@@ -1549,7 +1569,7 @@
             </div>
 
             <!-- 主題預覽區 -->
-            <div class="theme-preview-wrapper" style="margin-top: 4px; display: flex; flex-direction: column; align-items: flex-start; width: 100%;">
+            <div class="theme-preview-wrapper" style="margin-top: 4px; display: flex; flex-direction: column; align-items: flex-start; width: 100%; max-width: 710px; padding-left: 68px; box-sizing: border-box;">
               <!-- 頂部：模擬劃選句子 + 右側嵌入主題下拉欄 -->
               <div style="display: flex; align-items: center; justify-content: space-between; width: 100%; max-width: 640px; margin-bottom: 10px; flex-wrap: wrap; gap: 8px;">
                 <div class="preview-target-demo" style="font-size: 15px; color: var(--text-primary); font-family: var(--popup-font-zh, system-ui, sans-serif); margin-bottom: 0;">
@@ -1622,13 +1642,20 @@
                   z-index: 1 !important;
                 "
               >
+                <!-- 左側子詞候選面板 (模擬演示) -->
+                <div class="popup-subwords-flyout" id="previewSubwordsFlyout" style="display: block;">
+                  <div class="subword-item active" data-word="你好">你好</div>
+                  <div class="subword-item" data-word="你">你</div>
+                  <div class="subword-item" data-word="好">好</div>
+                </div>
+
                 <!-- 箭頭指向「你好」 -->
                 <div class="popup-arrow popup-arrow-up" style="left: 28px;"></div>
                 
                 <div class="popup-inner">
                   <!-- 右上角小操作按鈕 -->
                   <div class="popup-actions-wrapper" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; z-index: 10;">
-                    <div class="popup-settings-btn" title="設定" style="opacity: 0.4; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; cursor: pointer;">
+                    <div class="popup-settings-btn" id="previewSettingsBtn" title="設定" data-i18n-title="optSettings" style="opacity: 0.4; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; cursor: pointer;">
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="12" cy="12" r="3"></circle>
                         <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -1638,11 +1665,11 @@
 
                   <div class="popup-container">
                     <div class="popup-main">
-                      <div class="word-section" id="previewWordSection" title="點擊發音 (整詞 TTS 朗讀)" style="cursor: pointer;">
-                        <span class="word-text" id="previewWord">你好</span>
+                      <div class="word-section has-subwords" id="previewWordSection" title="點擊發音 (整詞 TTS 朗讀)" style="cursor: pointer;">
+                        <span class="word-text" id="previewWord">你好<span class="word-subwords-hint" id="previewSubwordsHint" title="懸停查看相關詞與單字" data-i18n-title="optDemoSubwordsHint">◂</span></span>
                       </div>
                       <div class="pronunciation-section">
-                        <span class="pronunciation-label">粵拼:</span>
+                        <span class="pronunciation-label" data-i18n="optDemoPronLabel">粵拼:</span>
                         <div class="reading-speaker-list">
                           <button type="button" class="reading-speaker-btn" id="previewPinyinBtn" title="點擊逐字朗讀 (單字音檔)" style="cursor: pointer;">
                             <span class="reading-pr-text" id="previewPinyin"><span class="syllable-item">nei5</span> <span class="syllable-item">hou2</span></span>
@@ -1657,7 +1684,7 @@
                       <div class="definition-section">
                         <div class="def-item def-yue has-examples active" id="previewDefItem" style="cursor: pointer;" title="點擊展開/收起右側例句">
                           <div class="def-main-row">
-                            <span class="badge-yue" id="previewBadgeYue" role="button" title="點擊翻譯此釋義" style="cursor: pointer;">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+                            <span class="badge-yue" id="previewBadgeYue" role="button" title="點擊翻譯此釋義" style="cursor: pointer;">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
                             <span class="def-content-text" id="previewYue">打招呼嘅問候語或者一般對話嘅開場白</span>
                             <span class="example-arrow-icon"> ▽</span>
                           </div>
@@ -1666,7 +1693,7 @@
                       </div>
                       <div class="see-also-section" style="margin-top: 8px;">
                         <div class="ref-line">
-                          <span class="see-also-label">粵語說法：</span>
+                          <span class="see-also-label" data-i18n="optDemoSeeAlsoLabel">粵語說法：</span>
                           <span class="see-also-link" data-word="hi" style="cursor: pointer;">hi</span>、<span class="see-also-link" data-word="嗨" style="cursor: pointer;">嗨</span>、<span class="see-also-link" data-word="hello" style="cursor: pointer;">hello</span>、<span class="see-also-link" data-word="哈佬" style="cursor: pointer;">哈佬</span>
                         </div>
                       </div>
@@ -1675,7 +1702,7 @@
                     <!-- 右側例句區 -->
                     <div class="popup-examples" id="previewPopupExamples" style="display: block;">
                       <div class="example-title" style="display: flex; justify-content: space-between; align-items: center;">
-                        <span>例句</span>
+                        <span data-i18n="optDemoExampleTitle">例句</span>
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.5;">
                           <circle cx="12" cy="12" r="3"></circle>
                           <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -1692,12 +1719,21 @@
                             </svg>
                           </button>
                         </div>
-                        <div class="example-eng">Hi, my name is Diamond Chan.</div>
+                        <div class="example-eng" id="previewExampleEng">Hi, my name is Diamond Chan.</div>
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
+            </div>
+
+            <!-- 詞頭相關子詞懸停浮動面板開關 -->
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-subtle, rgba(0,0,0,0.06)); display: flex; flex-direction: column; gap: 4px;">
+              <label style="display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px; color: var(--text-primary, #333);">
+                <input type="checkbox" id="enableSubwordsFlyoutToggle" style="margin: 0; accent-color: var(--primary, #1890ff);" />
+                <span data-i18n="optEnableSubwordsFlyout">懸停詞頭顯示子詞與相關單字面板</span>
+              </label>
+              <div style="font-size: 12px; color: var(--text-muted, #888); margin-left: 22px; line-height: 1.4;" data-i18n="optEnableSubwordsFlyoutDesc">滑鼠懸停於懸浮窗詞頭時，於側邊展開包含複合詞及單字的候選列表，方便快速跳轉查詞。</div>
             </div>
           </div>
         </div>
@@ -1863,6 +1899,8 @@
                 </div>
               </div>
             </div>
+
+            <div class="target-lang-hint-note" id="paraTransTargetLangHint"></div>
           </div>
 
           <!-- Paragraph Translation Demo Animation -->
@@ -2447,19 +2485,7 @@
               </label>
             </div>
 
-            <div class="setting-item" id="yueDefsTargetLangRow">
-              <div class="setting-info">
-                <span class="setting-label" data-i18n="optAutoTranslateYueDefsTarget">粵語釋義目標語言</span>
-                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsTargetDesc">選擇口語釋義預設翻譯成的語言</span>
-              </div>
-              <select id="autoTranslateYueDefsTargetLang" class="setting-select">
-                <option value="zh-Hans" data-i18n="optYueDefLangZhHans">简体中文 (Simplified Chinese)</option>
-                <option value="en" data-i18n="optYueDefLangEn">English (英文)</option>
-                <option value="ja" data-i18n="optYueDefLangJa">日本語 (Japanese)</option>
-                <option value="ko" data-i18n="optYueDefLangKo">한국어 (Korean)</option>
-                <option value="zh-Hant" data-i18n="optYueDefLangZhHant">繁體中文 (Traditional Chinese)</option>
-              </select>
-            </div>
+            <div class="target-lang-hint-note" id="yueDefsTargetLangHint"></div>
 
             <div class="setting-item" id="yueDefsEngineRow">
               <div class="setting-info">
@@ -3166,20 +3192,7 @@
               />
             </div>
 
-            <div class="setting-item">
-              <div class="setting-info" style="margin-right: 16px;">
-                <span class="setting-label" data-i18n="optAILanguage">目標語言</span>
-              </div>
-              <div class="select-wrapper">
-                <select id="aiLanguage">
-                  <option value="auto" data-i18n="optAILangAuto">跟隨介面語言 (Auto)</option>
-                  <option value="繁體中文" data-i18n="optAILangTW">繁體中文</option>
-                  <option value="簡體中文" data-i18n="optAILangCN">簡體中文</option>
-                  <option value="英文" data-i18n="optAILangEN">英文 (English)</option>
-                  <option value="日文" data-i18n="optAILangJA">日文 (日本語)</option>
-                </select>
-              </div>
-            </div>
+            <div class="target-lang-hint-note" id="aiTargetLangHint"></div>
 
             <div class="setting-item" style="flex-direction: column; align-items: stretch;">
               <div class="setting-info" style="margin-bottom: 8px;">

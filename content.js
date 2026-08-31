@@ -699,6 +699,7 @@
     let _currentSubwordRoot = "";
     let currentSubwordCandidates = [];
     let popupSubwordsFlyout = null;
+    let enableSubwordsFlyout = true;
     let flyoutHideTimeout = null;
     let lastPopupResult = null;
     let lastPopupRect = null;
@@ -2422,7 +2423,6 @@ ${userDesc || "未提供具體描述"}`;
     let rubyTextStyle = "default";
     let rubyDictionaryColor = "#999999";
     let enableAutoTranslateYueDefs = false;
-    let autoTranslateYueDefsTargetLang = "zh-Hans";
     let autoTranslateYueDefsEngine = "google";
     let yueDefDisplayMode = "expand";
     const yueDefTranslationCache = /* @__PURE__ */ new Map();
@@ -2445,6 +2445,7 @@ ${userDesc || "未提供具體描述"}`;
         "highlightStyle",
         "rubyHoverStyle",
         "compactExpandBtn",
+        "enableSubwordsFlyout",
         "ttsEnabled",
         "ttsEngine",
         "edgeTtsMode",
@@ -2471,6 +2472,7 @@ ${userDesc || "未提供具體描述"}`;
         "yueDefDisplayMode"
       ], (result) => {
         if (result.enabled !== void 0) isEnabled = result.enabled !== false;
+        enableSubwordsFlyout = result.enableSubwordsFlyout !== false;
         yueDefDisplayMode = result.yueDefDisplayMode || "expand";
         displayMode = result.displayMode || "jyutping";
         toneStyle = result.toneStyle || "superscript";
@@ -2509,7 +2511,6 @@ ${userDesc || "未提供具體描述"}`;
         rubyTextStyle = result.rubyTextStyle || "default";
         rubyDictionaryColor = result.rubyDictionaryColor || "#999999";
         enableAutoTranslateYueDefs = result.enableAutoTranslateYueDefs === true;
-        autoTranslateYueDefsTargetLang = result.autoTranslateYueDefsTargetLang || "zh-Hans";
         autoTranslateYueDefsEngine = result.autoTranslateYueDefsEngine || "google";
         let tls = result.transLangs;
         if (!tls && result.transLang) {
@@ -2610,6 +2611,9 @@ ${userDesc || "未提供具體描述"}`;
         if (changes.highlightStyle) {
           highlightStyle = changes.highlightStyle.newValue || "yellow";
         }
+        if (changes.enableSubwordsFlyout !== void 0) {
+          enableSubwordsFlyout = changes.enableSubwordsFlyout.newValue !== false;
+        }
         if (changes.rubyHoverStyle) {
           rubyHoverStyle = changes.rubyHoverStyle.newValue || "ruby-red";
         }
@@ -2703,8 +2707,6 @@ ${userDesc || "未提供具體描述"}`;
           paragraphTransDirection = changes.paragraphTransDirection.newValue || "yue_to_target";
         } else if (changes.enableAutoTranslateYueDefs) {
           enableAutoTranslateYueDefs = changes.enableAutoTranslateYueDefs.newValue === true;
-        } else if (changes.autoTranslateYueDefsTargetLang) {
-          autoTranslateYueDefsTargetLang = changes.autoTranslateYueDefsTargetLang.newValue;
         } else if (changes.autoTranslateYueDefsEngine) {
           autoTranslateYueDefsEngine = changes.autoTranslateYueDefsEngine.newValue;
         } else if (changes.yueDefDisplayMode) {
@@ -4520,10 +4522,27 @@ ${userDesc || "未提供具體描述"}`;
           return "譯";
       }
     }
+    function getYueDefTargetLangCode() {
+      switch (currentLang) {
+        case "zh-CN":
+          return "zh-Hans";
+        case "zh-TW":
+        case "zh-HK":
+          return "zh-Hant";
+        case "en":
+          return "en";
+        case "ja":
+          return "ja";
+        case "ko":
+          return "ko";
+        default:
+          return "zh-Hant";
+      }
+    }
     async function translateBadgeElement(badgeEl, defItemEl) {
       const text = badgeEl.dataset.text;
       if (!text) return;
-      const targetLang = autoTranslateYueDefsTargetLang || "zh-Hans";
+      const targetLang = getYueDefTargetLangCode();
       const engine = autoTranslateYueDefsEngine || "google";
       const mode = yueDefDisplayMode || "expand";
       const cacheKey = `${engine}_${targetLang}_${text}`;
@@ -4769,7 +4788,7 @@ ${userDesc || "未提供具體描述"}`;
         </div>
       `;
       }
-      const hasSubwords = currentSubwordCandidates && currentSubwordCandidates.length > 1;
+      const hasSubwords = enableSubwordsFlyout && currentSubwordCandidates && currentSubwordCandidates.length > 1;
       let html = `
       <div class="word-section ${hasSubwords ? "has-subwords" : ""}">
         <span class="word-text">${entry.traditional}${hasSubwords ? `<span class="word-subwords-hint" title="${pt("hoverSubwords") || "懸停查看相關詞與單字"}">◂</span>` : ""}</span>
@@ -5535,6 +5554,8 @@ ${userDesc || "未提供具體描述"}`;
         popupDisplayStyle = request.style;
       } else if (request.action === "changeCompactExpandBtn") {
         compactExpandBtn = request.enabled;
+      } else if (request.action === "changeEnableSubwordsFlyout") {
+        enableSubwordsFlyout = request.enabled !== false;
       } else if (request.action === "changeRubyRtBackground") {
         rubyRtBackground = request.value;
       } else if (request.action === "changeHighlightStyle") {
@@ -5605,8 +5626,6 @@ ${userDesc || "未提供具體描述"}`;
         transHoverEngine = request.transHoverEngine;
       } else if (request.action === "changeEnableAutoTranslateYueDefs") {
         enableAutoTranslateYueDefs = request.enableAutoTranslateYueDefs === true;
-      } else if (request.action === "changeAutoTranslateYueDefsTargetLang") {
-        autoTranslateYueDefsTargetLang = request.autoTranslateYueDefsTargetLang;
       } else if (request.action === "changeAutoTranslateYueDefsEngine") {
         autoTranslateYueDefsEngine = request.autoTranslateYueDefsEngine;
       } else if (request.action === "changeYueDefDisplayMode") {

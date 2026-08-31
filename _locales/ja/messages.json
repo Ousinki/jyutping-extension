@@ -166,8 +166,14 @@
     "message": "ライトグレー (#999)"
   },
   "optCompactExpandBtn": {
-    "message": "<img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> ボタンを表示して完全な辞書に展開する",
+    "message": "発音記号の横に <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 辞書展開ボタンを表示",
     "description": "optCompactExpandBtn"
+  },
+  "optEnableSubwordsFlyout": {
+    "message": "見出し語ホバー時にサブワード・関連文字パネルを表示"
+  },
+  "optEnableSubwordsFlyoutDesc": {
+    "message": "見出し語にカーソルを合わせたとき、構成する単語や文字の候補パネルを側面に表示します。"
   },
   "optCustomInput": {
     "message": "カスタム..."
@@ -193,6 +199,45 @@
   },
   "optDemoTranslation": {
     "message": "綺麗、美しい。"
+  },
+  "optPopupDemoSentence": {
+    "message": "<span class=\"preview-hl-word\" style=\"background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;\">你好</span>！ 很高興為你服務。"
+  },
+  "optDemoPronLabel": {
+    "message": "広東語ピンイン:"
+  },
+  "optDemoDefYue": {
+    "message": "打招呼嘅問候語或者一般對話嘅開場白"
+  },
+  "optDemoDefTrans": {
+    "message": "こんにちは。一般的な挨拶、または会話のきっかけの言葉"
+  },
+  "optDemoSeeAlsoLabel": {
+    "message": "広東語："
+  },
+  "optDemoExampleTitle": {
+    "message": "例文"
+  },
+  "optDemoExampleYue": {
+    "message": "你好，我叫陳大文。"
+  },
+  "optDemoExampleTrans": {
+    "message": "こんにちは、私の名前は陳大文です。"
+  },
+  "optDemoBadgeClickTitle": {
+    "message": "クリックして翻訳"
+  },
+  "optDemoPlayExampleTitle": {
+    "message": "例文を再生 (TTS)"
+  },
+  "optDemoPinyinBtnTitle": {
+    "message": "文字ごとに発音を再生"
+  },
+  "optDemoWordSecTitle": {
+    "message": "クリックして単語全体を発音 (TTS)"
+  },
+  "optDemoSubwordsHint": {
+    "message": "ホバーして関連語句・単字を表示"
   },
   "optDev": {
     "message": "開発者",
@@ -1103,6 +1148,14 @@
   },
   "optAutoTranslateYueDefsTarget": {
     "message": "広東語解説の翻訳先言語"
+  },
+  "optTargetLangFollowsUiLangNote": {
+    "message": "💡 翻訳先言語は現在の「UI言語」（現在: $LANG$）に自動で連動します。変更する場合は右上の「言語」を切り替えてください。",
+    "placeholders": {
+      "lang": {
+        "content": "$1"
+      }
+    }
   },
   "optAutoTranslateYueDefsEngine": {
     "message": "広東語解説の翻訳エンジン"

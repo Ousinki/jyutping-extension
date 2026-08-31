@@ -564,18 +564,16 @@ async function handleAiTranslate(request, tabId) {
   
   try {
     // 從 storage 讀取 AI 設定
-    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'aiPrompt', 'uiLang']);
-    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage, aiPrompt, uiLang } = settings;
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiPrompt', 'uiLang', 'extensionLang']);
+    const { aiBaseUrl, aiApiKey, aiModel, aiPrompt } = settings;
     
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
     
-    let targetLang = aiLanguage || 'auto';
-    if (targetLang === 'auto') {
-      const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
-      targetLang = langMap[uiLang] || '繁體中文';
-    }
+    const currentUi = settings.uiLang || settings.extensionLang || 'zh-HK';
+    const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
+    const targetLang = langMap[currentUi] || '繁體中文';
     let promptTemplate = aiPrompt ? aiPrompt.trim() : '';
     if (!promptTemplate) {
       const dynamicDefault = await getDefaultPrompt(uiLang);
@@ -713,15 +711,14 @@ async function handleAiTranslateParagraph(request, tabId) {
   };
 
   try {
-    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'uiLang', 'extensionLang']);
     const syncSettings = await chrome.storage.sync.get([
       'paragraphTransEngine',
-      'paragraphTransDirection',
-      'autoTranslateYueDefsTargetLang'
+      'paragraphTransDirection'
     ]);
     const engine = syncSettings.paragraphTransEngine || 'bing';
     const direction = syncSettings.paragraphTransDirection || 'yue_to_target';
-    const targetLangCode = syncSettings.autoTranslateYueDefsTargetLang || 'zh-Hans';
+    const uiLang = settings.uiLang || settings.extensionLang || 'zh-HK';
     const { aiBaseUrl, aiApiKey, aiModel } = settings;
 
     if (!html || !html.trim()) {
@@ -748,7 +745,8 @@ async function handleAiTranslateParagraph(request, tabId) {
 
       let bingTarget = 'yue';
       if (direction === 'yue_to_target') {
-        switch (targetLangCode) {
+        switch (uiLang) {
+          case 'zh-CN':
           case 'zh-Hans': bingTarget = 'zh-Hans'; break;
           case 'zh-Hant':
           case 'zh-TW':
@@ -756,7 +754,7 @@ async function handleAiTranslateParagraph(request, tabId) {
           case 'en': bingTarget = 'en'; break;
           case 'ja': bingTarget = 'ja'; break;
           case 'ko': bingTarget = 'ko'; break;
-          default: bingTarget = 'zh-Hans'; break;
+          default: bingTarget = 'zh-Hant'; break;
         }
       }
 
@@ -797,8 +795,9 @@ async function handleAiTranslateParagraph(request, tabId) {
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
-    let targetLangPromptLabel = '簡體中文（普通話/國語）';
-    switch (targetLangCode) {
+    let targetLangPromptLabel = '繁體中文（現代標準漢語書面語）';
+    switch (uiLang) {
+      case 'zh-CN':
       case 'zh-Hans': targetLangPromptLabel = '簡體中文（普通話/國語）'; break;
       case 'zh-Hant':
       case 'zh-TW':
@@ -806,7 +805,7 @@ async function handleAiTranslateParagraph(request, tabId) {
       case 'en': targetLangPromptLabel = 'English (英語)'; break;
       case 'ja': targetLangPromptLabel = '日本語 (日語)'; break;
       case 'ko': targetLangPromptLabel = '한국어 (韓語)'; break;
-      default: targetLangPromptLabel = '簡體中文（普通話/國語）'; break;
+      default: targetLangPromptLabel = '繁體中文（現代標準漢語書面語）'; break;
     }
 
     let prompt = '';
@@ -1126,25 +1125,23 @@ async function handleAiChatQuery(request, sendResponse) {
   dlog('[AI Chat Background] Received query request:', { word, question, historyLength: history?.length });
 
   try {
-    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'aiLanguage', 'uiLang', 'aiCustomSystemPrompt']);
-    const { aiBaseUrl, aiApiKey, aiModel, aiLanguage, uiLang, aiCustomSystemPrompt } = settings;
+    const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'uiLang', 'extensionLang', 'aiCustomSystemPrompt']);
+    const { aiBaseUrl, aiApiKey, aiModel, aiCustomSystemPrompt } = settings;
 
-    dlog('[AI Chat Background] Settings loaded:', { aiBaseUrl, aiModel, hasApiKey: !!aiApiKey, aiLanguage });
+    dlog('[AI Chat Background] Settings loaded:', { aiBaseUrl, aiModel, hasApiKey: !!aiApiKey });
 
     if (!aiBaseUrl || !aiApiKey || !aiModel) {
       console.warn('[AI Chat Background] AI API configuration missing');
       throw new Error('請先在設定頁面配置 AI 翻譯');
     }
 
-    let targetLang = aiLanguage || 'auto';
-    if (targetLang === 'auto') {
-      const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
-      targetLang = langMap[uiLang] || '繁體中文';
-    }
+    const currentUi = settings.uiLang || settings.extensionLang || 'zh-HK';
+    const langMap = { 'zh-HK': '繁體中文', 'zh-TW': '繁體中文', 'zh-CN': '簡體中文', 'en': 'English', 'ja': '日本語', 'ko': '한국어' };
+    const targetLang = langMap[currentUi] || '繁體中文';
 
     const messages = [];
 
-    // System instruction (Custom Prompt if configured, else default)
+    // System instruction (Custom Prompt if configured, else localized default)
     let effectivePrompt = (systemPrompt || aiCustomSystemPrompt || '').trim();
     if (effectivePrompt && (effectivePrompt.includes('"answer"') || effectivePrompt.includes('JSON 格式') || effectivePrompt.includes('"terms"'))) {
       effectivePrompt = '';
@@ -1156,9 +1153,21 @@ async function handleAiChatQuery(request, sendResponse) {
         content: effectivePrompt.replace(/\{targetLang\}/g, targetLang).replace(/\{word\}/g, word || '')
       });
     } else {
+      let defaultSystemPrompt = '';
+      if (currentUi === 'en') {
+        defaultSystemPrompt = `You are an expert in Cantonese linguistics. Please explain and answer the user's questions about the selected Cantonese words or sentences entirely in English. All definitions, meanings, and explanations must be 100% written in English (keep Cantonese characters and Jyutping romanization intact). Output clear Markdown format without JSON.`;
+      } else if (currentUi === 'ko') {
+        defaultSystemPrompt = `당신은 광둥어 언어 전문가입니다. 선택한 광둥어 단어나 문장에 대한 사용자의 질문에 모든 설명과 뜻풀이를 반드시 100% 한국어로 작성해 주세요 (광둥어 단어와 粤拼 발음은 그대로 유지하되, 모든 해설과 의미는 반드시 한국어로 작성해야 합니다). 깔끔한 Markdown 형식으로 답변하고 JSON은 출력하지 마세요.`;
+      } else if (currentUi === 'ja') {
+        defaultSystemPrompt = `あなたは広東語の言語専門家です。選択された広東語の単語や文章に関する質問について、すべての解説と意味の説明を必ず100%日本語で回答してください（広東語の単語と発音記号はそのまま維持し、解説と意味は日本語で分かりやすく説明してください）。Markdown形式で自然に出力し、JSONは出力しないでください。`;
+      } else if (currentUi === 'zh-CN') {
+        defaultSystemPrompt = `你是一个粤语语言专家。请用规范的简体中文为用户解答关于选中字词或句子的疑问，所有词义解析、说明文字均使用简体中文输出（粤语字词及拼音音标保持原文）。解答要简明扼要、准确可靠。请直接使用 Markdown 格式，不要输出 JSON 代码。`;
+      } else {
+        defaultSystemPrompt = `你是一個粵語語言專家。請用繁體中文（標準書面語）為用戶解答關於選中字詞或句子的疑問，所有詞義解析與說明文字均使用繁體中文輸出（粵語字詞及拼音音標保持原文）。解答要簡明扼要、準確可靠。請直接使用 Markdown 格式，不要輸出 JSON 代碼。`;
+      }
       messages.push({
         role: 'system',
-        content: `你是一個粵語語言專家。請用${targetLang}回答用戶關於選中字詞或句子的疑問，解答要簡明扼要、準確可靠。請直接使用自然流暢的 Markdown 格式（可使用粗體、列表等排版），不要輸出 JSON 代碼。`
+        content: defaultSystemPrompt
       });
     }
 
@@ -1174,16 +1183,34 @@ async function handleAiChatQuery(request, sendResponse) {
 
     // New user question: Send selected phrase, context sentence, and question together to the AI
     let userMsg = '';
+    let labelWord = '選中短語';
+    let labelSentence = '所在句子';
+    let labelQuestion = '問題';
+    if (currentUi === 'en') {
+      labelWord = 'Selected Term';
+      labelSentence = 'Context';
+      labelQuestion = 'Question';
+    } else if (currentUi === 'ko') {
+      labelWord = '선택된 단어';
+      labelSentence = '문맥';
+      labelQuestion = '질문';
+    } else if (currentUi === 'ja') {
+      labelWord = '選択された語彙';
+      labelSentence = '文脈';
+      labelQuestion = '質問';
+    } else if (currentUi === 'zh-CN') {
+      labelWord = '选中短语';
+      labelSentence = '所在句子';
+      labelQuestion = '问题';
+    }
+
     if (word) {
-      userMsg += `選中短語：「${word}」\n`;
-      userMsg += `所在句子：「${sentence || ''}」\n`;
+      userMsg += `${labelWord}：「${word}」\n`;
+      userMsg += `${labelSentence}：「${sentence || ''}」\n`;
     } else {
-      userMsg += `選中句子：「${sentence || ''}」\n`;
+      userMsg += `${labelSentence}：「${sentence || ''}」\n`;
     }
-    if (originalTranslation) {
-      userMsg += `初始翻譯：「${originalTranslation}」\n`;
-    }
-    userMsg += `追問：${question}`;
+    userMsg += `${labelQuestion}：${question}`;
 
     messages.push({
       role: 'user',

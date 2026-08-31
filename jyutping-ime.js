@@ -13,6 +13,20 @@
     return div.innerHTML;
   }
 
+  function stripHtmlTags(text) {
+    if (!text || typeof text !== 'string') return '';
+    return text.replace(/<[^>]+>/g, '').trim();
+  }
+
+  function cleanDefText(text) {
+    if (!text || typeof text !== 'string') return '';
+    return stripHtmlTags(text)
+      .replace(/^\[粵\]\s*/, '')
+      .replace(/^\(bound form\)\s*/, '')
+      .replace(/^\[普\]\s*/, '')
+      .trim();
+  }
+
   // 粵語拼音容錯規範化 (支援常見粵語羅馬化變體)
   function normalizeJyutpingFuzzy(str) {
     return str.toLowerCase()
@@ -108,12 +122,18 @@
             if (Array.isArray(it)) {
               for (const sub of it) {
                 if (sub && sub.yue) {
-                  exList.push(sub);
+                  exList.push({
+                    yue: stripHtmlTags(sub.yue),
+                    eng: stripHtmlTags(sub.eng || '')
+                  });
                   exCount++;
                 }
               }
             } else if (it && it.yue) {
-              exList.push(it);
+              exList.push({
+                yue: stripHtmlTags(it.yue),
+                eng: stripHtmlTags(it.eng || '')
+              });
               exCount++;
             }
           }
@@ -140,16 +160,20 @@
         let def = '';
         if (entry.english && entry.english.length > 0) {
           for (const e of entry.english) {
-            const clean = e.replace(/^\[粵\]\s*/, '').replace(/^\(bound form\)\s*/, '').trim();
+            const clean = cleanDefText(e);
             if (clean && !clean.startsWith('[')) {
               def = clean.split(';')[0].split(',')[0].slice(0, 28);
               break;
             }
           }
           if (!def && entry.english[0]) {
-            def = entry.english[0].replace(/^\[粵\]\s*/, '').slice(0, 28);
+            def = cleanDefText(entry.english[0]).slice(0, 28);
           }
         }
+
+        const pos = (entry.entries && entry.entries[0] && entry.entries[0].pos) ? entry.entries[0].pos : (entry.pos || '');
+        const sims = (Array.isArray(entry.sims) ? entry.sims : []).map(s => typeof s === 'string' ? stripHtmlTags(s) : '').filter(Boolean);
+        const seeAlso = (Array.isArray(entry.see_also) ? entry.see_also : []).map(s => typeof s === 'string' ? stripHtmlTags(s) : '').filter(Boolean);
 
         const item = {
           word: trad,
@@ -157,8 +181,12 @@
           jyutping: jp,
           tonedJp: tonedJp,
           rawJp: rawJp,
+          yale: entry.yale || '',
+          pos: pos,
+          sims: sims,
+          seeAlso: seeAlso,
           def: def,
-          allDefs: (entry.english || []).map(e => e.replace(/^\[粵\]\s*/, '').trim()).filter(Boolean),
+          allDefs: (entry.english || []).map(cleanDefText).filter(Boolean),
           examples: exList,
           score: score
         };
@@ -1011,12 +1039,14 @@
       // 如果有打開的詳細信息側邊欄 (TypeDuck 風格)
       if (this.activeDetailItem) {
         const dItem = this.activeDetailItem;
+        const allSims = [...(dItem.sims || []), ...(dItem.seeAlso || [])].filter((v, i, a) => a.indexOf(v) === i);
         html += `
           <div class="ime-detail-panel">
             <div class="ime-detail-header">
               <div class="ime-detail-title-row">
                 <span class="ime-detail-word">${escapeHtml(dItem.word)}</span>
                 <span class="ime-detail-jyutping">${escapeHtml(dItem.jyutping)}</span>
+                ${dItem.pos ? `<span class="ime-detail-pos">${escapeHtml(dItem.pos)}</span>` : ''}
               </div>
               <button class="ime-detail-close-btn" title="關閉">✕</button>
             </div>
@@ -1024,18 +1054,24 @@
               ${dItem.allDefs && dItem.allDefs.length > 0 ? `
                 <div class="ime-detail-section-title">釋義 / Definitions</div>
                 <div class="ime-detail-defs">
-                  ${dItem.allDefs.slice(0, 4).map(d => `<div class="ime-detail-def-item">• ${escapeHtml(d)}</div>`).join('')}
+                  ${dItem.allDefs.slice(0, 8).map(d => `<div class="ime-detail-def-item">• ${escapeHtml(cleanDefText(d))}</div>`).join('')}
                 </div>
               ` : ''}
               ${dItem.examples && dItem.examples.length > 0 ? `
                 <div class="ime-detail-section-title" style="margin-top: 8px;">例句 / Examples</div>
                 <div class="ime-detail-examples">
-                  ${dItem.examples.slice(0, 2).map(ex => `
+                  ${dItem.examples.slice(0, 8).map(ex => `
                     <div class="ime-detail-ex-item">
-                      <div class="ime-detail-ex-yue">${escapeHtml(ex.yue)}</div>
-                      ${ex.eng ? `<div class="ime-detail-ex-eng">${escapeHtml(ex.eng)}</div>` : ''}
+                      <div class="ime-detail-ex-yue">${escapeHtml(stripHtmlTags(ex.yue))}</div>
+                      ${ex.eng ? `<div class="ime-detail-ex-eng">${escapeHtml(stripHtmlTags(ex.eng))}</div>` : ''}
                     </div>
                   `).join('')}
+                </div>
+              ` : ''}
+              ${allSims.length > 0 ? `
+                <div class="ime-detail-section-title" style="margin-top: 8px;">相關詞 / See Also</div>
+                <div class="ime-detail-sims">
+                  ${allSims.slice(0, 8).map(s => `<span class="ime-detail-sim-tag">${escapeHtml(s)}</span>`).join('')}
                 </div>
               ` : ''}
             </div>

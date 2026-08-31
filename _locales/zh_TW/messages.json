@@ -169,6 +169,12 @@
     "message": "在音標旁顯示 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 展開完整詞典按鈕",
     "description": "optCompactExpandBtn"
   },
+  "optEnableSubwordsFlyout": {
+    "message": "懸停詞頭顯示子詞與相關單字面板"
+  },
+  "optEnableSubwordsFlyoutDesc": {
+    "message": "滑鼠懸停於懸浮窗詞頭時，於側邊展開包含複合詞及單字的候選列表，方便快速跳轉查詞。"
+  },
   "optCustomInput": {
     "message": "自定義輸入..."
   },
@@ -193,6 +199,45 @@
   },
   "optDemoTranslation": {
     "message": "漂亮，好看。"
+  },
+  "optPopupDemoSentence": {
+    "message": "<span class=\"preview-hl-word\" style=\"background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;\">你好</span>！ 很高興為你服務。"
+  },
+  "optDemoPronLabel": {
+    "message": "粵拼:"
+  },
+  "optDemoDefYue": {
+    "message": "打招呼嘅問候語或者一般對話嘅開場白"
+  },
+  "optDemoDefTrans": {
+    "message": "hello; a common greeting; literally \"you be well\""
+  },
+  "optDemoSeeAlsoLabel": {
+    "message": "粵語說法："
+  },
+  "optDemoExampleTitle": {
+    "message": "例句"
+  },
+  "optDemoExampleYue": {
+    "message": "你好，我叫陳大文。"
+  },
+  "optDemoExampleTrans": {
+    "message": "Hi, my name is Diamond Chan."
+  },
+  "optDemoBadgeClickTitle": {
+    "message": "點擊翻譯此釋義"
+  },
+  "optDemoPlayExampleTitle": {
+    "message": "播放例句 (TTS)"
+  },
+  "optDemoPinyinBtnTitle": {
+    "message": "點擊逐字朗讀 (單字音檔)"
+  },
+  "optDemoWordSecTitle": {
+    "message": "點擊發音 (整詞 TTS 朗讀)"
+  },
+  "optDemoSubwordsHint": {
+    "message": "懸停查看相關詞與單字"
   },
   "optDev": {
     "message": "開發者",
@@ -1124,6 +1169,14 @@
   },
   "optAutoTranslateYueDefsTarget": {
     "message": "粵語釋義目標語言"
+  },
+  "optTargetLangFollowsUiLangNote": {
+    "message": "💡 目標語言將自動跟隨當前「介面語言」（當前：$LANG$）。如需更改，請在頁面右上角切換「介面語言」。",
+    "placeholders": {
+      "lang": {
+        "content": "$1"
+      }
+    }
   },
   "optAutoTranslateYueDefsEngine": {
     "message": "粵語釋義翻譯引擎"

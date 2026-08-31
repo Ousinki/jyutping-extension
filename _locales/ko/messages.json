@@ -152,7 +152,13 @@
     "message": "밝은 회색 (#999)"
   },
   "optCompactExpandBtn": {
-    "message": "<img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 버튼을 표시하여 전체 사전으로 확장"
+    "message": "발음 기호 옆에 <img src=\"icon_favicon.svg\" style=\"width: 14px; height: 14px; filter: grayscale(100%); vertical-align: middle; margin: 0 4px;\" /> 전체 사전 확장 버튼 표시"
+  },
+  "optEnableSubwordsFlyout": {
+    "message": "표제어 호버 시 서브단어 및 관련 글자 패널 표시"
+  },
+  "optEnableSubwordsFlyoutDesc": {
+    "message": "표제어에 마우스를 올렸을 때 구성 단어와 개별 한자 후보 패널을 측면에 표시합니다."
   },
   "optCustomInput": {
     "message": "사용자 지정..."
@@ -178,6 +184,45 @@
   },
   "optDemoTranslation": {
     "message": "예쁘다, 보기 좋다."
+  },
+  "optPopupDemoSentence": {
+    "message": "<span class=\"preview-hl-word\" style=\"background: rgba(254, 240, 138, 0.9); padding: 1px 4px; border-radius: 2px; font-weight: 500; color: #1e293b;\">你好</span>！ 很高興為你服務。"
+  },
+  "optDemoPronLabel": {
+    "message": "광둥어 켯핑:"
+  },
+  "optDemoDefYue": {
+    "message": "打招呼嘅問候語或者一般對話嘅開場白"
+  },
+  "optDemoDefTrans": {
+    "message": "안녕하세요. 일상적인 인사말 또는 대화의 시작말"
+  },
+  "optDemoSeeAlsoLabel": {
+    "message": "광둥어 표현:"
+  },
+  "optDemoExampleTitle": {
+    "message": "예문"
+  },
+  "optDemoExampleYue": {
+    "message": "你好，我叫陳大文。"
+  },
+  "optDemoExampleTrans": {
+    "message": "안녕하세요, 제 이름은 진대문입니다."
+  },
+  "optDemoBadgeClickTitle": {
+    "message": "클릭하여 번역"
+  },
+  "optDemoPlayExampleTitle": {
+    "message": "예문 재생 (TTS)"
+  },
+  "optDemoPinyinBtnTitle": {
+    "message": "글자별 발음 재생"
+  },
+  "optDemoWordSecTitle": {
+    "message": "클릭하여 전체 단어 발음 (TTS)"
+  },
+  "optDemoSubwordsHint": {
+    "message": "호버하여 관련 단어 및 글자 보기"
   },
   "optDev": {
     "message": "개발자"
@@ -1051,6 +1096,14 @@
   },
   "optAutoTranslateYueDefsTarget": {
     "message": "광둥어 설명 번역 대상 언어"
+  },
+  "optTargetLangFollowsUiLangNote": {
+    "message": "💡 번역 대상 언어는 현재 \"인터페이스 언어\"(현재: $LANG$)에 자동으로 연동됩니다. 변경하려면 오른쪽 상단에서 \"언어\"를 전환하세요.",
+    "placeholders": {
+      "lang": {
+        "content": "$1"
+      }
+    }
   },
   "optAutoTranslateYueDefsEngine": {
     "message": "광둥어 설명 번역 엔진"
