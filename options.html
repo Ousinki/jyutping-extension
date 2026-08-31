@@ -1010,9 +1010,9 @@
             <li><a href="#sec-paragraph" data-i18n="optParaTransTitle">段落翻譯</a></li>
             <li><a href="#sec-inspect" data-i18n="optInspectModeTitle">全文注音</a></li>
             <li><a href="#sec-trans" data-i18n="optTransSettings">翻譯設定</a></li>
-            <li><a href="#sec-ai" data-i18n="optAISettings">✨ AI 語境翻譯</a></li>
+            <li><a href="#sec-ai"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -1px; margin-right: 5px; flex-shrink: 0;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg><span data-i18n="optAISettings">AI 語境翻譯</span></a></li>
             <li><a href="#sec-tts" data-i18n="optTTSSettings">語音設定 (TTS)</a></li>
-            <li><a href="#sec-feedback" data-i18n="optFeedbackTitle">💡 意見與反饋</a></li>
+            <li><a href="#sec-feedback"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -1px; margin-right: 5px; flex-shrink: 0;"><path d="M9 18h6M10 22h4M15.09 14c.18-.98.65-1.74 1.41-2.5A6 6 0 1 0 7.5 11.5c.76.76 1.23 1.52 1.41 2.5"></path></svg><span data-i18n="optFeedbackTitle">意見與反饋</span></a></li>
           </ul>
         </nav>
       </div>
@@ -2467,17 +2467,17 @@
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
               <div style="font-size: 15px; font-weight: 600; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
                 <span style="display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; border-radius: 6px; background: rgba(184, 134, 11, 0.15); color: #b8860b; font-size: 11px; font-weight: 700;">粵</span>
-                <span data-i18n="optYueDefSectionTitle">粵語口語釋義翻譯</span>
+                <span data-i18n="optYueDefSectionTitle">粵語釋義翻譯</span>
               </div>
             </div>
             <p style="font-size: 12px; color: var(--text-secondary); margin: 0 0 16px 0; line-height: 1.5;" data-i18n="optYueDefSectionDesc">
-              詞典中帶有 [粵] 標籤的口語詞條，可點擊徽章即時翻譯或開啟自動翻譯
+              詞典中帶有 [粵] 標籤的詞條，可點擊徽章即時翻譯或開啟自動翻譯
             </p>
 
             <div class="setting-item">
               <div class="setting-info">
-                <span class="setting-label" data-i18n="optAutoTranslateYueDefs">自動翻譯粵語口語釋義</span>
-                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsDesc">在懸浮窗與生詞本中自動將 [粵] 口語釋義翻譯為目標語言</span>
+                <span class="setting-label" data-i18n="optAutoTranslateYueDefs">自動翻譯粵語釋義</span>
+                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsDesc">在懸浮窗與生詞本中自動將 [粵] 釋義翻譯為目標語言</span>
               </div>
               <label class="toggle">
                 <input type="checkbox" id="enableAutoTranslateYueDefs">
@@ -2485,12 +2485,10 @@
               </label>
             </div>
 
-            <div class="target-lang-hint-note" id="yueDefsTargetLangHint"></div>
-
             <div class="setting-item" id="yueDefsEngineRow">
               <div class="setting-info">
                 <span class="setting-label" data-i18n="optAutoTranslateYueDefsEngine">粵語釋義翻譯引擎</span>
-                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsEngineDesc">選擇用於翻譯口語釋義的引擎</span>
+                <span class="setting-desc" data-i18n="optAutoTranslateYueDefsEngineDesc">選擇用於翻譯粵語釋義的引擎</span>
               </div>
               <select id="autoTranslateYueDefsEngine" class="setting-select">
                 <option value="google" data-i18n="optAutoTranslateEngineGoogle">Google 翻譯 (免配置 / 速度快)</option>
@@ -2904,6 +2902,8 @@
                 }
               </style>
             </div>
+
+            <div class="target-lang-hint-note" id="yueDefsTargetLangHint" style="margin-top: 14px; margin-bottom: 0;"></div>
           </div>
         </div>
       </div>
@@ -2911,7 +2911,7 @@
       <!-- AI Translation Settings -->
       <div class="settings-card" id="sec-ai">
         <div class="settings-section">
-          <div class="section-title" data-i18n="optAISettings">✨ AI 語境翻譯</div>
+          <div class="section-title"><svg width="18" height="18" viewBox="0 0 24 24" fill="rgba(139, 92, 246, 0.12)" stroke="#8b5cf6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -3px; margin-right: 6px;"><path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"></path><path d="M5 3v4"></path><path d="M19 17v4"></path><path d="M3 5h4"></path><path d="M17 19h4"></path></svg><span data-i18n="optAISettings">AI 語境翻譯</span></div>
 
           <div class="setting-item">
             <div class="setting-info">
@@ -3497,7 +3497,7 @@
       <!-- Feedback Card -->
       <div class="settings-card" id="sec-feedback">
         <div class="settings-section">
-          <h2 data-i18n="optFeedbackTitle">💡 意見與反饋</h2>
+          <h2><svg width="20" height="20" viewBox="0 0 24 24" fill="rgba(234, 179, 8, 0.15)" stroke="#eab308" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -3px; margin-right: 6px;"><path d="M9 18h6M10 22h4M15.09 14c.18-.98.65-1.74 1.41-2.5A6 6 0 1 0 7.5 11.5c.76.76 1.23 1.52 1.41 2.5"></path></svg><span data-i18n="optFeedbackTitle">意見與反饋</span></h2>
           <p class="section-desc">
             <span data-i18n="optFeedbackDesc">如果您有任何功能建議或遇到 Bug，歡迎在這裡直接告訴我！</span>
           </p>
@@ -3648,10 +3648,10 @@
       <!-- Footer -->
       <div class="footer">
         <p>
-          <span data-i18n="optFooterData">數據來源：</span><a href="https://cc-canto.org" target="_blank">CC-Canto</a>
+          <span data-i18n="optFooterData">數據來源：</span><a href="https://words.hk" target="_blank">Words.hk (粵典)</a>、<a href="https://cc-canto.org" target="_blank">CC-Canto</a>
           & <a href="https://cc-cedict.org" target="_blank">CC-CEDICT</a>
         </p>
-        <p><span data-i18n="optFooterLicense">授權：</span>CC BY-SA 3.0</p>
+        <p><span data-i18n="optFooterLicense">授權：</span>CC BY 4.0 / CC BY-SA 3.0</p>
       </div>
       </div>
     </div>

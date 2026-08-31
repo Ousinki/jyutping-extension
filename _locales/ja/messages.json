@@ -128,7 +128,7 @@
     "description": "optAIPromptLabel"
   },
   "optAISettings": {
-    "message": "✨ AI 文脈翻訳",
+    "message": "AI 文脈翻訳",
     "description": "optAISettings"
   },
   "optAITip1": {
@@ -319,7 +319,7 @@
     "description": "optFeedbackPlaceholder"
   },
   "optFeedbackTitle": {
-    "message": "💡 フィードバックと提案",
+    "message": "フィードバックと提案",
     "description": "optFeedbackTitle"
   },
   "optFontCustom": {

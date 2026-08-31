@@ -128,7 +128,7 @@
     "description": "optAIPromptLabel"
   },
   "optAISettings": {
-    "message": "✨ AI 语境翻译",
+    "message": "AI 语境翻译",
     "description": "optAISettings"
   },
   "optAITip1": {
@@ -319,7 +319,7 @@
     "description": "optFeedbackPlaceholder"
   },
   "optFeedbackTitle": {
-    "message": "💡 意见与反馈",
+    "message": "意见与反馈",
     "description": "optFeedbackTitle"
   },
   "optFontCustom": {
@@ -1162,10 +1162,10 @@
     "message": "AI 设置"
   },
   "optAutoTranslateYueDefs": {
-    "message": "自动翻译粤语口语释义"
+    "message": "自动翻译粤语释义"
   },
   "optAutoTranslateYueDefsDesc": {
-    "message": "在悬浮窗与生词本中自动将 [粤] 口语释义翻译为目标语言"
+    "message": "在悬浮窗与生词本中自动将 [粤] 释义翻译为目标语言"
   },
   "optAutoTranslateYueDefsTarget": {
     "message": "粤语释义目标语言"
@@ -1203,16 +1203,16 @@
     "message": "点击切换回粤语原文"
   },
   "optYueDefSectionTitle": {
-    "message": "粤语口语释义翻译"
+    "message": "粤语释义翻译"
   },
   "optYueDefSectionDesc": {
-    "message": "词典中带有 [粤] 标签的口语词条，可点击徽章即时翻译或开启自动翻译"
+    "message": "词典中带有 [粤] 标签的词条，可点击徽章即时翻译或开启自动翻译"
   },
   "optAutoTranslateYueDefsTargetDesc": {
-    "message": "选择口语释义默认翻译成的语言"
+    "message": "选择粤语释义默认翻译成的语言"
   },
   "optAutoTranslateYueDefsEngineDesc": {
-    "message": "选择用于翻译口语释义的引擎"
+    "message": "选择用于翻译粤语释义的引擎"
   },
   "optRoadmapTitle": {
     "message": "学习导航"

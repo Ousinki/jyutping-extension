@@ -115,7 +115,7 @@
     "message": "시스템 프롬프트"
   },
   "optAISettings": {
-    "message": "✨ AI 문맥 번역"
+    "message": "AI 문맥 번역"
   },
   "optAITip1": {
     "message": "일반: OpenAI",
@@ -298,7 +298,7 @@
     "description": "optFeedbackPlaceholder"
   },
   "optFeedbackTitle": {
-    "message": "💡 피드백 및 제안",
+    "message": "피드백 및 제안",
     "description": "optFeedbackTitle"
   },
   "optFontCustom": {

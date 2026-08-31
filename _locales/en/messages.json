@@ -128,7 +128,7 @@
     "description": "optAIPromptLabel"
   },
   "optAISettings": {
-    "message": "✨ AI Contextual Translation",
+    "message": "AI Contextual Translation",
     "description": "optAISettings"
   },
   "optAITip1": {
@@ -319,7 +319,7 @@
     "description": "optFeedbackPlaceholder"
   },
   "optFeedbackTitle": {
-    "message": "💡 Feedback & Suggestions",
+    "message": "Feedback & Suggestions",
     "description": "optFeedbackTitle"
   },
   "optFontCustom": {
