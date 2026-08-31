@@ -185,12 +185,7 @@
 
 /* Definition with examples marker */
 .has-examples {
-  cursor: pointer;
   position: relative;
-}
-.has-examples:hover .def-main-row {
-  text-decoration: underline;
-  text-decoration-color: var(--popup-text-label);
 }
 
 .example-arrow-icon {
@@ -200,6 +195,7 @@
   margin-left: 4px;
   display: inline-block;
   user-select: none;
+  cursor: pointer;
   transition: transform 0.2s ease;
 }
 
@@ -481,11 +477,19 @@
   font-size: 13px;
   color: var(--popup-def-color);
   line-height: 1.5;
+  cursor: text;
 }
 
 #cantonese-popup-dict .def-item {
   padding: 2px 0;
   border-bottom: 1px solid var(--popup-divider);
+  cursor: text;
+}
+
+#cantonese-popup-dict .def-content-text,
+#cantonese-popup-dict .def-eng-row,
+#cantonese-popup-dict .def-main-row {
+  cursor: text;
 }
 
 #cantonese-popup-dict .def-item:last-child {
@@ -654,10 +658,18 @@
   color: var(--popup-accent);
   cursor: pointer;
   pointer-events: auto;
+  transition: opacity 0.15s ease;
 }
 
 #cantonese-popup-dict .see-also-link:hover {
+  opacity: 0.8;
   text-decoration: underline;
+}
+
+/* 僅在粵語釋義正文中保留常駐下劃線 */
+#cantonese-popup-dict .def-content-text .see-also-link {
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* 朗讀按鈕 */

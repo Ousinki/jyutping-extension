@@ -4566,9 +4566,10 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         if (d.yue) {
           className += ' def-yue';
           const rawText = d.yue.trim();
+          const cleanTranslateText = rawText.replace(/<[^>]+>/g, '').trim();
           innerHtml = `
             <div class="def-main-row">
-              <span class="badge-yue" data-text="${rawText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+              <span class="badge-yue" data-text="${cleanTranslateText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
               <span class="def-content-text">${rawText}</span>
               ${hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : ''}
             </div>
@@ -4639,6 +4640,18 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         `<span class="see-also-link" data-word="${w}">${w}</span>`
       ).join('、');
       refLines.push(`<div class="ref-line"><span class="see-also-label">異體：</span>${seeLinks}</div>`);
+    }
+
+    if (entry.cantonese && entry.cantonese.length > 0) {
+      const yueLinks = entry.cantonese.map(w => 
+        `<span class="see-also-link" data-word="${w}">${w}</span>`
+      ).join('、');
+      refLines.push(`<div class="ref-line"><span class="see-also-label">粵語說法：</span>${yueLinks}</div>`);
+    }
+
+    if (entry.mandarin && entry.mandarin.length > 0) {
+      const manTexts = entry.mandarin.slice(0, 8).join('、');
+      refLines.push(`<div class="ref-line"><span class="see-also-label">普通話：</span>${manTexts}</div>`);
     }
 
     if (refLines.length > 0) {
@@ -4728,6 +4741,24 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           }
         });
       });
+
+      container.querySelectorAll('.see-also-link').forEach(link => {
+        link.addEventListener('click', (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const word = link.dataset.word;
+          if (dictionary[word]) {
+            // 防止重新渲染期間彈窗被隱藏
+            isMouseOverPopup = true;
+            justNavigated = true; // 標記為剛導航
+            
+            currentWord = word;
+            // 傳入 null 表示保持當前位置
+            showPopup({ word, entry: dictionary[word], length: word.length }, null);
+            isMouseOverPopup = true; // 重新渲染後重設
+          }
+        });
+      });
     }
 
     function bindPosTabsEvents(container) {
@@ -4735,13 +4766,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         pill.addEventListener('click', (e) => {
           e.stopPropagation();
           const idx = parseInt(pill.dataset.entryIndex, 10);
-          if (idx === currentActiveEntryIndex || !posEntries[idx]) return;
-
-          // 保持彈窗最小高度，防止切換到短釋義時底部縮水脫離鼠標
-          const currentHeight = popup.offsetHeight;
-          if (currentHeight > 0) {
-            popup.style.minHeight = `${currentHeight}px`;
-          }
           lastTabSwitchTime = Date.now();
           isMouseOverPopup = true;
 
@@ -4756,6 +4780,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           }
           popup.classList.remove('expanded-mode');
           popup.style.width = '320px';
+          popup.style.minHeight = '';
 
           // 更新 POS pill active 態
           container.querySelectorAll('.pos-tab-pill').forEach(p => p.classList.remove('active'));
@@ -4783,6 +4808,15 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
               oldDefSec.replaceWith(newDefSec);
               bindDefinitionEvents(newDefSec, targetEntry);
             }
+          }
+
+          // 若彈窗位於文字上方（arrowDirection 為 down），實時重新錨定 top 位置，確保底部邊框與箭頭始終緊貼目標文字
+          const targetRect = rect || lastPopupRect;
+          if (targetRect && popupArrow && popupArrow.classList.contains('popup-arrow-down')) {
+            const ARROW_HEIGHT = 8;
+            const GAP = 2;
+            const newHeight = popup.offsetHeight;
+            popup.style.top = (targetRect.top - newHeight - GAP - ARROW_HEIGHT + window.scrollY) + 'px';
           }
 
           // 切換詞性時，自動播放該詞性下的第一個讀音

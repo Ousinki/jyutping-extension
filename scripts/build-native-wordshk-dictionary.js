@@ -9,6 +9,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import * as OpenCC from 'opencc-js';
+
+const s2t = OpenCC.Converter({ from: 'cn', to: 'hk' });
+const t2s = OpenCC.Converter({ from: 'hk', to: 'cn' });
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -82,7 +86,7 @@ function jyutpingToYale(jyutping) {
   return yaleSyllables.join(' ');
 }
 
-function extractText(lines) {
+function extractText(lines, preserveLinks = false) {
   if (!lines || !Array.isArray(lines)) return '';
   let realLines = lines;
   const first = lines[0];
@@ -92,7 +96,17 @@ function extractText(lines) {
   return realLines
     .map(line => {
       if (!Array.isArray(line)) return '';
-      return line.map(seg => (Array.isArray(seg) && seg.length >= 2 ? seg[1] : (typeof seg === 'string' ? seg : ''))).join('');
+      return line.map(seg => {
+        if (Array.isArray(seg) && seg.length >= 2) {
+          const tag = seg[0];
+          const text = seg[1];
+          if (preserveLinks && tag === 'L' && text) {
+            return `<span class="see-also-link" data-word="${text}">${text}</span>`;
+          }
+          return text;
+        }
+        return typeof seg === 'string' ? seg : '';
+      }).join('');
     })
     .filter(line => line.trim().length > 0)
     .join('; ');
@@ -104,8 +118,8 @@ function extractExamples(egs) {
     const yueRaw = (eg.yue && Array.isArray(eg.yue)) ? eg.yue[0] : eg.yue;
     const engRaw = (eg.eng && Array.isArray(eg.eng)) ? eg.eng : eg.eng;
     return {
-      yue: extractText(yueRaw),
-      eng: extractText(engRaw)
+      yue: extractText(yueRaw, false),
+      eng: extractText(engRaw, false)
     };
   }).filter(e => e.yue || e.eng);
 }
@@ -124,8 +138,8 @@ for (const [id, entry] of Object.entries(wordshk)) {
   const fullPos = (poses && labels) ? `${poses} · ${labels}` : (poses || labels);
 
   const defs = (entry.defs || []).map(d => ({
-    yue: extractText(d.yue),
-    eng: extractText(d.eng),
+    yue: extractText(d.yue, true),
+    eng: extractText(d.eng, false),
     egs: extractExamples(d.egs)
   })).filter(d => d.yue || d.eng);
 
@@ -170,6 +184,45 @@ for (const [id, entry] of Object.entries(wordshk)) {
 }
 
 console.log(`   Words.hk 提取獨立詞彙: ${wordshkEntriesMap.size.toLocaleString()}`);
+
+// 載入 Words.hk 官方詞頻表 (word_frequencies.rs) 以實現與官方 App 100% 一致的排序
+const wordFrequenciesMap = new Map();
+const freqFile = '/Volumes/ExternalSSD/Projects/wordshk-tools/data/word_frequencies.rs';
+if (fs.existsSync(freqFile)) {
+  const freqContent = fs.readFileSync(freqFile, 'utf-8');
+  for (const m of freqContent.matchAll(/\((\d+),\s*(\d+)\)/g)) {
+    wordFrequenciesMap.set(parseInt(m[1], 10), parseInt(m[2], 10));
+  }
+  console.log(`   載入官方詞頻表權重: ${wordFrequenciesMap.size.toLocaleString()} 條`);
+}
+
+function getEntryFrequency(id) {
+  return wordFrequenciesMap.get(id) ?? 50;
+}
+
+// 嚴格按照 Words.hk 官方 App (wordshk-tools/src/entry_group_index.rs) 排序規則：
+// 1. 詞頻降序 (Frequency Descending)
+// 2. 釋義數量降序 (Defs Count Descending)
+// 3. Entry ID 升序 (Entry ID Ascending)
+function sortWordEntries(entries) {
+  return entries.sort((a, b) => {
+    const freqA = getEntryFrequency(a.id);
+    const freqB = getEntryFrequency(b.id);
+    if (freqA !== freqB) {
+      return freqB - freqA;
+    }
+    const defsLenA = a.defs?.length || 0;
+    const defsLenB = b.defs?.length || 0;
+    if (defsLenA !== defsLenB) {
+      return defsLenB - defsLenA;
+    }
+    return a.id - b.id;
+  });
+}
+
+for (const [w, entries] of wordshkEntriesMap.entries()) {
+  sortWordEntries(entries);
+}
 
 console.log('\n📖 正在讀取現有 dictionary.json...');
 const dictionary = fs.existsSync(dictionaryJsonPath)
@@ -291,12 +344,139 @@ for (const [word, wEntries] of wordshkEntriesMap.entries()) {
   }
 }
 
-console.log(`   Words.hk 升級覆蓋詞數: ${wordshkEnhancedCount.toLocaleString()}`);
-console.log(`   CC-Canto 通用保留詞數: ${cccantoFallbackCount.toLocaleString()}`);
-console.log(`   Words.hk 獨有新增詞數: ${newWordshkAddedCount.toLocaleString()}`);
-console.log(`   全庫詞條總數: ${Object.keys(dictionary).length.toLocaleString()}`);
+// 2.5 同步繁體與簡體詞條：讓所有簡體詞條 100% 繼承其繁體詞條的 Words.hk 原生條目與釋義
+console.log('\n🔄 正在同步簡體詞條以完整繼承 Words.hk 原生數據...');
+let simpSyncedCount = 0;
+for (const [word, entry] of Object.entries(dictionary)) {
+  const trad = entry.traditional || s2t(word);
+  if (trad && trad !== word && dictionary[trad]) {
+    const tradEntry = dictionary[trad];
+    const isTradEnhanced = tradEntry.entries && tradEntry.entries.some(e => e.id > 0);
+    const isSimpEnhanced = entry.entries && entry.entries.some(e => e.id > 0);
 
-// 3. 合併自定義詞條 custom_entries.json
+    if (isTradEnhanced && !isSimpEnhanced) {
+      entry.entries = tradEntry.entries;
+      entry.english = tradEntry.english;
+      entry.examples = tradEntry.examples;
+      entry.jyutping = tradEntry.jyutping;
+      entry.yale = tradEntry.yale;
+      if (tradEntry.sims) entry.sims = tradEntry.sims;
+      if (tradEntry.ants) entry.ants = tradEntry.ants;
+      if (tradEntry.see_also) entry.see_also = tradEntry.see_also;
+      if (tradEntry.mandarin) entry.mandarin = tradEntry.mandarin;
+      if (tradEntry.cantonese) entry.cantonese = tradEntry.cantonese;
+      simpSyncedCount++;
+    }
+  }
+}
+console.log(`   成功同步簡體詞條: ${simpSyncedCount.toLocaleString()} 條`);
+
+// 3. 處理普粵對照詞表 (mandarin_variants.tsv)
+const mandarinVariantsPath = '/Volumes/ExternalSSD/Projects/wordshk-tools/data/mandarin_variants.tsv';
+const c2mMap = new Map(); // 粵語 ➡️ 普通話
+const m2cMap = new Map(); // 普通話 ➡️ 粵語
+
+if (fs.existsSync(mandarinVariantsPath)) {
+  console.log('\n📖 正在解析普粵對照詞表 mandarin_variants.tsv...');
+  const manContent = fs.readFileSync(mandarinVariantsPath, 'utf-8');
+  const lines = manContent.trim().split('\n').slice(1);
+  for (const line of lines) {
+    const parts = line.split('\t');
+    if (parts.length < 4) continue;
+    const yueStr = parts[2];
+    const manStr = parts[3];
+    if (!yueStr || !manStr) continue;
+
+    const yueWords = yueStr.split('/').map(s => s.trim()).filter(Boolean);
+    const manWords = manStr.split('/').map(s => s.trim()).filter(Boolean);
+
+    for (const mw of manWords) {
+      const trad = s2t(mw);
+      const simp = t2s(mw);
+
+      [trad, simp].forEach(mForm => {
+        if (!m2cMap.has(mForm)) m2cMap.set(mForm, new Set());
+        yueWords.forEach(yw => m2cMap.get(mForm).add(yw));
+      });
+    }
+
+    for (const yw of yueWords) {
+      if (!c2mMap.has(yw)) c2mMap.set(yw, new Set());
+      manWords.forEach(mw => {
+        c2mMap.get(yw).add(s2t(mw));
+      });
+    }
+  }
+  console.log(`   粵語 ➡️ 普通話映射: ${c2mMap.size.toLocaleString()} 詞`);
+  console.log(`   普通話 ➡️ 粵語映射: ${m2cMap.size.toLocaleString()} 詞`);
+
+  // 為所有字典中的粵語詞注入普通話對應說法 (mandarin)
+  for (const [word, entry] of Object.entries(dictionary)) {
+    if (c2mMap.has(word)) {
+      entry.mandarin = Array.from(c2mMap.get(word));
+    }
+  }
+
+  // 為普通話詞注入粵語對應說法 (cantonese)，若未收錄則自動生成輕量對照條目
+  let newMandarinAdded = 0;
+  for (const [manWord, yueSet] of m2cMap.entries()) {
+    const yueList = Array.from(yueSet);
+    const manTrad = s2t(manWord);
+    const manSimp = t2s(manWord);
+
+    if (!dictionary[manWord]) {
+      const firstYue = yueList[0];
+      const yueEntry = dictionary[firstYue];
+      const jp = yueEntry ? yueEntry.jyutping : '';
+      const yale = yueEntry ? yueEntry.yale : '';
+
+      dictionary[manWord] = {
+        traditional: manTrad,
+        simplified: manSimp,
+        pinyin: '',
+        jyutping: jp,
+        yale: yale,
+        cantonese: yueList,
+        english: [
+          `普通話詞彙，對應地道粵語說法：${yueList.join('、')}`
+        ],
+        entries: [
+          {
+            id: 0,
+            pos: '普通話詞彙',
+            pronunciations: [
+              {
+                jyutping: jp,
+                yale: yale
+              }
+            ],
+            defs: [
+              {
+                yue: `普通話詞彙，對應地道粵語說法：${yueList.join('、')}`,
+                eng: `Mandarin term, corresponding Cantonese expression: ${yueList.join(', ')}`,
+                egs: []
+              }
+            ]
+          }
+        ]
+      };
+      newMandarinAdded++;
+    } else {
+      dictionary[manWord].cantonese = yueList;
+      if (manTrad !== manWord && !dictionary[manTrad]) {
+        dictionary[manTrad] = { ...dictionary[manWord], traditional: manTrad, simplified: manSimp };
+      }
+      if (manSimp !== manWord && !dictionary[manSimp]) {
+        dictionary[manSimp] = { ...dictionary[manWord], traditional: manTrad, simplified: manSimp };
+      }
+    }
+  }
+  console.log(`   新收錄普通話反查詞條: ${newMandarinAdded.toLocaleString()} 詞`);
+}
+
+console.log(`\n📊 詞典最終詞條總數: ${Object.keys(dictionary).length.toLocaleString()}`);
+
+// 4. 合併自定義詞條 custom_entries.json
 if (fs.existsSync(customEntriesPath)) {
   console.log('\n📖 正在合併自定義詞條 custom_entries.json...');
   const customEntries = JSON.parse(fs.readFileSync(customEntriesPath, 'utf-8'));

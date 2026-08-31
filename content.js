@@ -4398,9 +4398,10 @@ ${userDesc || "未提供具體描述"}`;
           if (d.yue) {
             className += " def-yue";
             const rawText = d.yue.trim();
+            const cleanTranslateText = rawText.replace(/<[^>]+>/g, "").trim();
             innerHtml = `
             <div class="def-main-row">
-              <span class="badge-yue" data-text="${rawText.replace(/"/g, "&quot;")}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+              <span class="badge-yue" data-text="${cleanTranslateText.replace(/"/g, "&quot;")}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
               <span class="def-content-text">${rawText}</span>
               ${hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : ""}
             </div>
@@ -4460,6 +4461,16 @@ ${userDesc || "未提供具體描述"}`;
           (w) => `<span class="see-also-link" data-word="${w}">${w}</span>`
         ).join("、");
         refLines.push(`<div class="ref-line"><span class="see-also-label">異體：</span>${seeLinks}</div>`);
+      }
+      if (entry.cantonese && entry.cantonese.length > 0) {
+        const yueLinks = entry.cantonese.map(
+          (w) => `<span class="see-also-link" data-word="${w}">${w}</span>`
+        ).join("、");
+        refLines.push(`<div class="ref-line"><span class="see-also-label">粵語說法：</span>${yueLinks}</div>`);
+      }
+      if (entry.mandarin && entry.mandarin.length > 0) {
+        const manTexts = entry.mandarin.slice(0, 8).join("、");
+        refLines.push(`<div class="ref-line"><span class="see-also-label">普通話：</span>${manTexts}</div>`);
       }
       if (refLines.length > 0) {
         html += `<div class="see-also-section">${refLines.join("")}</div>`;
@@ -4536,17 +4547,26 @@ ${userDesc || "未提供具體描述"}`;
             }
           });
         });
+        container.querySelectorAll(".see-also-link").forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            const word = link.dataset.word;
+            if (dictionary[word]) {
+              isMouseOverPopup = true;
+              justNavigated = true;
+              currentWord = word;
+              showPopup({ word, entry: dictionary[word], length: word.length }, null);
+              isMouseOverPopup = true;
+            }
+          });
+        });
       }
       function bindPosTabsEvents(container) {
         container.querySelectorAll(".pos-tab-pill").forEach((pill) => {
           pill.addEventListener("click", (e) => {
             e.stopPropagation();
             const idx = parseInt(pill.dataset.entryIndex, 10);
-            if (idx === currentActiveEntryIndex || !posEntries[idx]) return;
-            const currentHeight = popup.offsetHeight;
-            if (currentHeight > 0) {
-              popup.style.minHeight = `${currentHeight}px`;
-            }
             lastTabSwitchTime = Date.now();
             isMouseOverPopup = true;
             currentActiveEntryIndex = idx;
@@ -4558,6 +4578,7 @@ ${userDesc || "未提供具體描述"}`;
             }
             popup.classList.remove("expanded-mode");
             popup.style.width = "320px";
+            popup.style.minHeight = "";
             container.querySelectorAll(".pos-tab-pill").forEach((p) => p.classList.remove("active"));
             pill.classList.add("active");
             const oldPrSec = popupMain.querySelector(".pronunciation-section");
@@ -4579,6 +4600,13 @@ ${userDesc || "未提供具體描述"}`;
                 oldDefSec.replaceWith(newDefSec);
                 bindDefinitionEvents(newDefSec, targetEntry);
               }
+            }
+            const targetRect = rect || lastPopupRect;
+            if (targetRect && popupArrow && popupArrow.classList.contains("popup-arrow-down")) {
+              const ARROW_HEIGHT = 8;
+              const GAP = 2;
+              const newHeight = popup.offsetHeight;
+              popup.style.top = targetRect.top - newHeight - GAP - ARROW_HEIGHT + window.scrollY + "px";
             }
             const firstPr = targetEntry.pronunciations?.[0];
             if (firstPr && firstPr.jyutping) {
