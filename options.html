@@ -1253,6 +1253,7 @@
         <nav class="toc-sidebar">
           <div class="toc-title" data-i18n="optTOC">目錄</div>
           <ul class="toc-list" id="tocList">
+            <li><a href="#sec-account"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: inline-block; vertical-align: -1px; margin-right: 5px; flex-shrink: 0; color: var(--primary);"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg><span data-i18n="optAccountSettings">用戶帳號</span></a></li>
             <li><a href="#sec-general" data-i18n="optGenSettings">一般設定</a></li>
             <li><a href="#sec-paragraph" data-i18n="optParaTransTitle">段落翻譯</a></li>
             <li><a href="#sec-inspect" data-i18n="optInspectModeTitle">全文注音</a></li>
@@ -1357,6 +1358,23 @@
             <span data-i18n="optOpenWebsite">打開官網</span>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity: 0.6;"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
           </a>
+        </div>
+      </div>
+
+      <!-- User Account & Cloud Sync Section -->
+      <div class="settings-card" id="sec-account">
+        <div class="settings-section">
+          <div class="section-title" style="display: flex; align-items: center; justify-content: space-between;">
+            <span style="display: flex; align-items: center; gap: 6px;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <span data-i18n="optAccountSettings">用戶帳號與雲端同步</span>
+            </span>
+            <span id="optAccountBadgeStatus" style="font-size: 11px; padding: 2px 8px; border-radius: 9999px; background: var(--bg-input); color: var(--text-muted);">檢查中...</span>
+          </div>
+
+          <div id="optAccountCardContent" style="padding-top: 6px;">
+            <!-- Dynamically populated by options.js -->
+          </div>
         </div>
       </div>
 

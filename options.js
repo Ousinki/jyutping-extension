@@ -2609,7 +2609,7 @@ async function applyI18n(lang) {
       if (feedbackResultTimer) clearTimeout(feedbackResultTimer);
 
       try {
-        const response = await fetch("https://api.web3forms.com/submit", {
+        const response = await fetch("https://jyut.hk/api/feedback", {
           method: "POST",
           body: formData
         });
@@ -3089,12 +3089,11 @@ async function applyI18n(lang) {
 
       try {
         const formData = new FormData();
-        formData.append("access_key", "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c");
+        formData.append("source", "插件問卷系統");
         formData.append("subject", `[懸浮窗問卷] ${selectedRating > 0 ? selectedRating + '星' : ''}反饋 - 粵語詞典`);
         formData.append("message", messageBody);
-        formData.append("from_name", "插件問卷系統");
 
-        const response = await fetch("https://api.web3forms.com/submit", {
+        const response = await fetch("https://jyut.hk/api/feedback", {
           method: "POST",
           body: formData
         });
@@ -3120,6 +3119,107 @@ async function applyI18n(lang) {
       }
     }
   }
+
+  // ==========================================
+  // User Account & SSO Management on Options Page
+  // ==========================================
+  function initOptionsAccount() {
+    const badgeStatus = document.getElementById('optAccountBadgeStatus');
+    const cardContent = document.getElementById('optAccountCardContent');
+
+    function renderAccountUI(user) {
+      // 1. Settings Card Content Status
+      if (badgeStatus) {
+        if (!user) {
+          badgeStatus.textContent = '未連接';
+          badgeStatus.style.background = 'var(--bg-input)';
+          badgeStatus.style.color = 'var(--text-muted)';
+        } else {
+          badgeStatus.textContent = '● 已連接雲端';
+          badgeStatus.style.background = 'rgba(34, 197, 94, 0.15)';
+          badgeStatus.style.color = '#16a34a';
+        }
+      }
+
+      if (cardContent) {
+        if (!user) {
+          cardContent.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 20px; flex-wrap: wrap;">
+              <div style="flex: 1; min-width: 240px;">
+                <div style="font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">尚未綁定 jyut.hk 官網帳號</div>
+                <div style="font-size: 13px; color: var(--text-secondary); line-height: 1.5;">登入後可享受生詞本多端自動雲備份、歷史生詞同步等專屬服務。</div>
+              </div>
+              <button id="optLoginBtn" style="display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; border-radius: 8px; background: var(--primary); color: #fff; border: none; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 2px 6px rgba(138, 28, 28, 0.2);">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+                <span>立即登入 / 註冊</span>
+              </button>
+            </div>
+          `;
+          const btn = document.getElementById('optLoginBtn');
+          if (btn) {
+            btn.onclick = () => chrome.tabs.create({ url: 'https://jyut.hk' });
+          }
+        } else {
+          const avatarHtml = user.avatar
+            ? `<img src="${user.avatar}" style="width: 44px; height: 44px; border-radius: 50%; object-fit: cover; box-shadow: var(--shadow);" alt="${user.name}" />`
+            : `<div style="width: 44px; height: 44px; border-radius: 50%; background: var(--primary); color: #fff; font-size: 18px; display: flex; align-items: center; justify-content: center; font-weight: bold; box-shadow: var(--shadow);">${(user.name || 'U').charAt(0).toUpperCase()}</div>`;
+
+          cardContent.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; padding: 8px 0;">
+              <div style="display: flex; align-items: center; gap: 14px;">
+                ${avatarHtml}
+                <div>
+                  <div style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 15px; font-weight: 700; color: var(--text-primary);">${user.name || '粵語學習者'}</span>
+                    <span style="font-size: 10px; padding: 1px 6px; border-radius: 4px; background: rgba(34, 197, 94, 0.12); color: #16a34a; font-weight: 600;">Google 帳號已綁定</span>
+                  </div>
+                  <div style="font-size: 12px; color: var(--text-muted); margin-top: 2px;">${user.email || ''}</div>
+                </div>
+              </div>
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <button id="optGoProfileBtn" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg-input); color: var(--text-primary); font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg>
+                  <span>前往官網個人中心</span>
+                </button>
+                <button id="optLogoutBtn" style="display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.2); background: rgba(239, 68, 68, 0.08); color: #ef4444; font-size: 12px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                  <span>退出登入</span>
+                </button>
+              </div>
+            </div>
+          `;
+
+          const goBtn = document.getElementById('optGoProfileBtn');
+          if (goBtn) {
+            goBtn.onclick = () => chrome.tabs.create({ url: 'https://jyut.hk' });
+          }
+          const logoutBtn = document.getElementById('optLogoutBtn');
+          if (logoutBtn) {
+            logoutBtn.onclick = () => {
+              chrome.storage.local.remove(['jyut_auth_user'], () => {
+                renderAccountUI(null);
+              });
+            };
+          }
+        }
+      }
+    }
+
+    // Initial read
+    chrome.storage.local.get(['jyut_auth_user'], (res) => {
+      renderAccountUI(res.jyut_auth_user || null);
+    });
+
+    // Listen for storage changes
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes.jyut_auth_user) {
+        renderAccountUI(changes.jyut_auth_user.newValue || null);
+      }
+    });
+  }
+
+  // Initialize account UI on options page
+  initOptionsAccount();
 
   function handleHashScroll() {
     const hash = window.location.hash;

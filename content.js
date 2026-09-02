@@ -2521,21 +2521,20 @@
 【錯誤描述】：
 ${userDesc || "未提供具體描述"}`;
         try {
-          const response = await fetch("https://api.web3forms.com/submit", {
+          const response = await fetch("https://jyut.hk/api/feedback", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
               "Accept": "application/json"
             },
             body: JSON.stringify({
-              access_key: "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c",
               subject,
-              from_name: "Jyutping Extension",
+              source: "Jyutping Extension 劃詞報錯",
               message
             })
           });
           const result = await response.json();
-          if (response.status === 200) {
+          if (response.ok && result.success) {
             btn.textContent = pt("reportSent");
             btn.style.backgroundColor = "#4caf50";
           } else {
@@ -6589,6 +6588,25 @@ ${userDesc || "未提供具體描述"}`;
         const currentTop = parseFloat(activePopup.style.top) || rect.top;
         activePopup.style.top = Math.max(5, currentTop - overflow) + "px";
       }
+    }
+    try {
+      const host = window.location.hostname;
+      if (host.includes("jyut.hk") || host.includes("localhost")) {
+        window.addEventListener("jyut_auth_sync", (event) => {
+          if (event && event.detail !== void 0) {
+            chrome.storage.local.set({ jyut_auth_user: event.detail || null });
+          }
+        });
+        window.addEventListener("message", (event) => {
+          if (event.data && event.data.type === "JYUT_AUTH_SYNC") {
+            chrome.storage.local.set({ jyut_auth_user: event.data.user || null });
+          }
+        });
+        setTimeout(() => {
+          window.postMessage({ type: "JYUT_REQUEST_AUTH" }, "*");
+        }, 300);
+      }
+    } catch (e) {
     }
     if (document.readyState === "loading") {
       document.addEventListener("DOMContentLoaded", init);

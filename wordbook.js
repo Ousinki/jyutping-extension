@@ -5214,18 +5214,17 @@
           const message = `【單詞】：${character}\n【來源】：生詞本詞典面板\n\n【錯誤描述】：\n${userDesc || '未提供具體描述'}`;
 
           try {
-            const response = await fetch('https://api.web3forms.com/submit', {
+            const response = await fetch('https://jyut.hk/api/feedback', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
               body: JSON.stringify({
-                access_key: 'd19a0594-b64b-4593-b0e1-baf1cbeb6a4c',
                 subject,
-                from_name: 'Jyutping Extension',
+                source: '生詞本單詞報錯',
                 message
               })
             });
             const result = await response.json();
-            if (response.status === 200) {
+            if (response.ok && result.success) {
               reportSend.textContent = '✓ ' + (t('dictReportSent') || '報告已送出');
               reportSend.style.background = '#4caf50';
               reportSend.style.borderColor = '#4caf50';
@@ -6531,7 +6530,7 @@ if (aiSettingsModal) {
   });
 }
 
-// ==================== AI Feedback Modal Logic (Web3Forms Email) ====================
+// ==================== AI Feedback Modal Logic (JYUT.HK Official API) ====================
 const aiFeedbackModal = document.getElementById('aiFeedbackModal');
 const closeAiFeedbackBtn = document.getElementById('closeAiFeedbackBtn');
 const cancelAiFeedbackBtn = document.getElementById('cancelAiFeedbackBtn');
@@ -6618,12 +6617,12 @@ if (aiFeedbackForm) {
     }
 
     try {
-      const response = await fetch("https://api.web3forms.com/submit", {
+      const response = await fetch("https://jyut.hk/api/feedback", {
         method: "POST",
         body: formData
       });
       const data = await response.json();
-      if (response.ok) {
+      if (response.ok && data.success) {
         aiFeedbackResult.className = 'ai-fb-result is-success';
         aiFeedbackResult.innerHTML = `
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -7732,6 +7731,61 @@ if (detailPaneElement) {
       hideSelectionToolbar();
     }, true);
   }
+
+  // ==========================================
+  // Single Sign-On (SSO) Account Sync Logic
+  // ==========================================
+  function initAuthBadge() {
+    const badgeEl = document.getElementById('headerAuthBadge');
+    if (!badgeEl) return;
+
+    function renderAuth(user) {
+      if (!user) {
+        badgeEl.style.display = 'inline-flex';
+        badgeEl.innerHTML = `
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color: var(--primary);">
+            <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span>登入官網帳號</span>
+        `;
+        badgeEl.title = '前往 jyut.hk 登入帳號以啟用同步';
+        badgeEl.onclick = () => {
+          chrome.tabs.create({ url: 'https://jyut.hk' });
+        };
+      } else {
+        badgeEl.style.display = 'inline-flex';
+        const avatarHtml = user.avatar
+          ? `<img src="${escapeHtml(user.avatar)}" class="header-auth-avatar" alt="${escapeHtml(user.name)}" />`
+          : `<div class="header-auth-initial">${escapeHtml(user.name ? user.name.charAt(0).toUpperCase() : 'U')}</div>`;
+
+        badgeEl.innerHTML = `
+          ${avatarHtml}
+          <span>${escapeHtml(user.name || user.email || '學員')}</span>
+          <span class="header-auth-status"><span class="header-auth-dot"></span>已連接</span>
+        `;
+        badgeEl.title = `已登入: ${user.email || user.name} (點擊前往官網)`;
+        badgeEl.onclick = () => {
+          chrome.tabs.create({ url: 'https://jyut.hk' });
+        };
+      }
+    }
+
+    // 1. Initial read
+    chrome.storage.local.get(['jyut_auth_user'], (res) => {
+      renderAuth(res.jyut_auth_user || null);
+    });
+
+    // 2. Listen for storage changes
+    chrome.storage.onChanged.addListener((changes, area) => {
+      if (area === 'local' && changes.jyut_auth_user) {
+        renderAuth(changes.jyut_auth_user.newValue || null);
+      }
+    });
+  }
+
+  // Initialize SSO Auth Badge
+  initAuthBadge();
 
   // Initialize AI selection and hover word snap
   initAiSelectionAndHover();

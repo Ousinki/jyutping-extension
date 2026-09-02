@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 
-  // === 4. Resource Recommendation Modal & Web3Forms Submission ===
+  // === 4. Resource Recommendation Modal & JYUT.HK Submission ===
   const openRecommendModalBtn = document.getElementById('openRecommendModalBtn');
   const recommendModal = document.getElementById('recommendModal');
   const closeRecommendModalBtn = document.getElementById('closeRecommendModalBtn');
@@ -402,17 +402,18 @@ ${content}
 
       try {
         const formData = new FormData();
-        formData.append('access_key', 'd19a0594-b64b-4593-b0e1-baf1cbeb6a4c');
+        formData.append('source', '粵語學習導航推薦系統');
         formData.append('subject', `[學習導航推薦] ${subjectPreview} - 粵語資源投稿`);
         formData.append('message', messageBody);
-        formData.append('from_name', '粵語學習導航推薦系統');
 
-        const response = await fetch('https://api.web3forms.com/submit', {
+        const response = await fetch('https://jyut.hk/api/feedback', {
           method: 'POST',
           body: formData
         });
 
-        if (response.ok) {
+        const resData = await response.json();
+
+        if (response.ok && resData.success) {
           const successMsg = activeDict['optRoadmapRecSuccess'] || '🎉 感謝推薦！我們已收到您的投稿，審核後將收錄進導航庫。';
           
           if (recommendFormBody && recommendFormFooter) {

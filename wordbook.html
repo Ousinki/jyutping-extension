@@ -1215,6 +1215,68 @@
         transform: rotate(180deg);
       }
 
+      .header-collapsible {
+        position: relative;
+      }
+      .header-auth-badge {
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 14px;
+        border-radius: 9999px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        color: var(--text-primary);
+        text-decoration: none;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+        z-index: 10;
+      }
+      .header-auth-badge:hover {
+        border-color: var(--primary);
+        transform: translateY(-1px);
+        box-shadow: 0 3px 8px rgba(138, 28, 28, 0.15);
+      }
+      .header-auth-avatar {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        object-fit: cover;
+      }
+      .header-auth-initial {
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 700;
+      }
+      .header-auth-status {
+        font-size: 10px;
+        font-weight: 600;
+        color: #22c55e;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+      }
+      .header-auth-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #22c55e;
+        display: inline-block;
+      }
+
       /* ========== Header ========== */
       .header {
         display: flex;
@@ -4179,6 +4241,7 @@
 
       <!-- Collapsible Header Section -->
       <div class="header-collapsible" id="headerCollapsible">
+        <div class="header-auth-badge" id="headerAuthBadge" style="display: none;"></div>
 
         <!-- Header -->
         <div class="header">
@@ -4605,7 +4668,7 @@
       </div>
     </div>
 
-    <!-- AI Feedback Modal (Direct to Developer Email via Web3Forms) -->
+    <!-- AI Feedback Modal (Direct to JYUT.HK Official API) -->
     <div class="modal-overlay" id="aiFeedbackModal">
       <div class="modal">
         <div class="ai-modal-header" style="margin-bottom: 14px;">
@@ -4630,7 +4693,7 @@
         </div>
 
         <form id="aiFeedbackForm" style="display: flex; flex-direction: column; gap: 12px;">
-          <input type="hidden" name="access_key" value="d19a0594-b64b-4593-b0e1-baf1cbeb6a4c">
+          <input type="hidden" name="source" value="生詞本 AI 回答反饋">
           <input type="hidden" name="subject" id="aiFeedbackSubject" value="【粵拼插件】AI 回答反饋">
 
           <div class="ai-fb-context-card">

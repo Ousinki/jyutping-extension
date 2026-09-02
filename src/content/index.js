@@ -2123,25 +2123,22 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const message = `【單詞】：${currentWord || '未知'}\n【上下文】：${currentContextSentence || '未知'}\n\n【錯誤描述】：\n${userDesc || '未提供具體描述'}`;
       
       try {
-        // 使用 Web3Forms API 靜默發送郵件 (需替換為你的 Access Key)
-        // 获取 Key: https://web3forms.com/ (输入邮箱 ousinki@outlook.com 即可免费获取)
-        const response = await fetch('https://api.web3forms.com/submit', {
+        const response = await fetch('https://jyut.hk/api/feedback', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'Accept': 'application/json'
           },
           body: JSON.stringify({
-            access_key: "d19a0594-b64b-4593-b0e1-baf1cbeb6a4c",
             subject: subject,
-            from_name: "Jyutping Extension",
+            source: 'Jyutping Extension 劃詞報錯',
             message: message
           })
         });
 
         const result = await response.json();
         
-        if (response.status === 200) {
+        if (response.ok && result.success) {
           // 發送成功
           btn.textContent = pt('reportSent');
           btn.style.backgroundColor = '#4caf50'; // 綠色
@@ -7077,6 +7074,34 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const currentTop = parseFloat(activePopup.style.top) || rect.top;
       activePopup.style.top = Math.max(5, currentTop - overflow) + 'px';
     }
+  }
+
+  // ==========================================
+  // JYUT.HK Website Single Sign-On (SSO) Bridge
+  // ==========================================
+  try {
+    const host = window.location.hostname;
+    if (host.includes('jyut.hk') || host.includes('localhost')) {
+      // 1. Listen for auth changes dispatched by jyut.hk
+      window.addEventListener('jyut_auth_sync', (event) => {
+        if (event && event.detail !== undefined) {
+          chrome.storage.local.set({ jyut_auth_user: event.detail || null });
+        }
+      });
+
+      window.addEventListener('message', (event) => {
+        if (event.data && event.data.type === 'JYUT_AUTH_SYNC') {
+          chrome.storage.local.set({ jyut_auth_user: event.data.user || null });
+        }
+      });
+
+      // 2. Proactively request current auth status from the page on load
+      setTimeout(() => {
+        window.postMessage({ type: 'JYUT_REQUEST_AUTH' }, '*');
+      }, 300);
+    }
+  } catch (e) {
+    // ignore
   }
 
   // 啟動
