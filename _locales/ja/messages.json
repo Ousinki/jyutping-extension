@@ -315,8 +315,38 @@
     "description": "optFeedbackLabel"
   },
   "optFeedbackPlaceholder": {
-    "message": "提案や遭遇した問題を記入してください...",
+    "message": "提案や遭遇した問題を記入してください... (Cmd/Ctrl+Vでスクショ直接貼り付け対応)",
     "description": "optFeedbackPlaceholder"
+  },
+  "optAddScreenshot": {
+    "message": "スクショを添付"
+  },
+  "optMaxImagesLimit": {
+    "message": "スクショは最大3枚までです"
+  },
+  "optSingleImageTooLarge": {
+    "message": "1枚の画像は3MB以下にしてください"
+  },
+  "optTotalImagesTooLarge": {
+    "message": "画像の合計サイズは4.5MB以下にしてください"
+  },
+  "optOnlyImageAllowed": {
+    "message": "PNG、JPG、WEBP形式の画像のみ対応しています"
+  },
+  "optRemoveAttachment": {
+    "message": "スクショを削除"
+  },
+  "optZoomPreview": {
+    "message": "クリックして拡大表示"
+  },
+  "optFeedbackSuccess": {
+    "message": "送信に成功しました！貴重なフィードバックをありがとうございます！"
+  },
+  "optFeedbackFailed": {
+    "message": "送信失敗："
+  },
+  "optFeedbackNetworkError": {
+    "message": "ネットワークエラーが発生しました。しばらくしてからもう一度お試しください。"
   },
   "optFeedbackTitle": {
     "message": "フィードバックと提案",
@@ -344,6 +374,10 @@
   "optFooterLicense": {
     "message": "ライセンス：",
     "description": "optFooterLicense"
+  },
+  "optFooterWordsHkLicense": {
+    "message": "Words.hk オープンデータライセンス",
+    "description": "optFooterWordsHkLicense"
   },
   "optFormat": {
     "message": "発音表示形式",
@@ -1193,6 +1227,9 @@
   "optAutoTranslateYueDefsEngineDesc": {
     "message": "口語定義の翻訳に使用するエンジンを選択します"
   },
+  "optOpenWebsite": {
+    "message": "公式サイトを開く"
+  },
   "optRoadmapTitle": {
     "message": "学習ロードマップ"
   },
@@ -1546,8 +1583,14 @@
   "dictReportWord": {
     "message": "単語："
   },
+  "optSentenceLabel": {
+    "message": "例文："
+  },
   "dictReportPlaceholder": {
     "message": "具体的なエラー（発音の間違い、解説の誤りなど）を入力してください..."
+  },
+  "wordbookNoteCancel": {
+    "message": "キャンセル"
   },
   "dictReportSend": {
     "message": "報告を送信"
@@ -1566,6 +1609,15 @@
   },
   "wordbookDeselectItem": {
     "message": "クリックして選択解除"
+  },
+  "wordbookAiNotConfigured": {
+    "message": "AI API が設定されていません。"
+  },
+  "wordbookAiGoToSettings": {
+    "message": "設定へ移動"
+  },
+  "aiFeedbackConfigureTip": {
+    "message": "先に設定で AI API（API Key）を設定してください"
   },
   "folderAll": {
     "message": "すべての単語"

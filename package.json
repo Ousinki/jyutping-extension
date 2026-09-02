@@ -1,6 +1,6 @@
 {
   "name": "jyutping-extension",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "description": "粵語懸浮詞典 - Cantonese Jyutping hover dictionary browser extension",
   "private": true,
   "type": "module",

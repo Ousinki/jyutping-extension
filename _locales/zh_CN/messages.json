@@ -315,8 +315,38 @@
     "description": "optFeedbackLabel"
   },
   "optFeedbackPlaceholder": {
-    "message": "请填写您的建议或遇到的问题...",
+    "message": "请填写您的建议或遇到的问题... (支持 Cmd/Ctrl+V 直接粘贴截图)",
     "description": "optFeedbackPlaceholder"
+  },
+  "optAddScreenshot": {
+    "message": "附带截图"
+  },
+  "optMaxImagesLimit": {
+    "message": "最多只能附带 3 张截图"
+  },
+  "optSingleImageTooLarge": {
+    "message": "单张图片不能超过 3MB"
+  },
+  "optTotalImagesTooLarge": {
+    "message": "所有图片总和不能超过 4.5MB"
+  },
+  "optOnlyImageAllowed": {
+    "message": "仅支持上传 PNG、JPG、WEBP 格式的图片"
+  },
+  "optRemoveAttachment": {
+    "message": "移除截图"
+  },
+  "optZoomPreview": {
+    "message": "点击放大预览"
+  },
+  "optFeedbackSuccess": {
+    "message": "发送成功！非常感谢您的宝贵反馈！"
+  },
+  "optFeedbackFailed": {
+    "message": "发送失败："
+  },
+  "optFeedbackNetworkError": {
+    "message": "网络连接异常或发生错误，请稍后重试。"
   },
   "optFeedbackTitle": {
     "message": "意见与反馈",
@@ -344,6 +374,10 @@
   "optFooterLicense": {
     "message": "授权：",
     "description": "optFooterLicense"
+  },
+  "optFooterWordsHkLicense": {
+    "message": "Words.hk 开放资料协议",
+    "description": "optFooterWordsHkLicense"
   },
   "optFormat": {
     "message": "发音显示格式",
@@ -1214,6 +1248,9 @@
   "optAutoTranslateYueDefsEngineDesc": {
     "message": "选择用于翻译粤语释义的引擎"
   },
+  "optOpenWebsite": {
+    "message": "打开官网"
+  },
   "optRoadmapTitle": {
     "message": "学习导航"
   },
@@ -1549,8 +1586,14 @@
   "dictReportWord": {
     "message": "词语："
   },
+  "optSentenceLabel": {
+    "message": "句子："
+  },
   "dictReportPlaceholder": {
     "message": "请描述具体的错误（例如读音不正确、释义有误等）..."
+  },
+  "wordbookNoteCancel": {
+    "message": "取消"
   },
   "dictReportSend": {
     "message": "发送报告"
@@ -1569,6 +1612,15 @@
   },
   "wordbookDeselectItem": {
     "message": "点击取消选中"
+  },
+  "wordbookAiNotConfigured": {
+    "message": "尚未配置 AI API，"
+  },
+  "wordbookAiGoToSettings": {
+    "message": "前往设置"
+  },
+  "aiFeedbackConfigureTip": {
+    "message": "请先在设置中配置 AI 服务 (API Key)"
   },
   "folderAll": {
     "message": "全部生词"

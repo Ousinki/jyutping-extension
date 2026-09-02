@@ -48,6 +48,6 @@ scratch.html
 scratch/
 html_keys.txt
 update_func.txt
-transcript_diff.txt
-ziuruaiR
-
+# Local private info documents (never commit or upload)
+DOMAIN_INFO.md
+SERVER_INFO.md

@@ -911,25 +911,76 @@
   -webkit-hyphens: auto;
 }
 
+.ai-sparkle-svg {
+  display: inline-block;
+  vertical-align: -2.5px;
+  margin-right: 5px;
+  flex-shrink: 0;
+  transform-origin: center;
+}
+
+.ai-loading-row .ai-sparkle-svg,
+.ai-error-row .ai-sparkle-svg {
+  margin-right: 0;
+}
+
+.ai-sparkle-loading {
+  animation: aiSparklePulse 1.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+.ai-error-svg {
+  display: inline-block;
+  vertical-align: -2px;
+  margin-right: 5px;
+  flex-shrink: 0;
+}
+
+@keyframes aiSparklePulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 0px #F59E0B);
+  }
+  50% {
+    transform: scale(1.25);
+    opacity: 0.45;
+    filter: drop-shadow(0 0 6px rgba(245, 158, 11, 0.7));
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.95;
+    filter: drop-shadow(0 0 0px #F59E0B);
+  }
+}
+
 /* ========== 文字高亮樣式 ========== */
-::highlight(jyutping-highlight),
 .jyutping-highlight {
-  background-color: rgba(255, 220, 80, 0.45) !important;
   font-size: inherit !important;
 }
 
 /* 高亮色：黃色（預設） */
-.jyutping-highlight.hl-yellow { background-color: rgba(255, 220, 80, 0.45) !important; }
+::highlight(jyutping-highlight-yellow), .jyutping-highlight.hl-yellow, .jyutping-highlight:not([class*="hl-"]) {
+  background-color: rgba(255, 220, 80, 0.45) !important;
+}
 /* 高亮色：藍色 */
-.jyutping-highlight.hl-blue { background-color: rgba(96, 165, 250, 0.35) !important; }
+::highlight(jyutping-highlight-blue), .jyutping-highlight.hl-blue {
+  background-color: rgba(96, 165, 250, 0.35) !important;
+}
 /* 高亮色：紅色 */
-.jyutping-highlight.hl-red { background-color: rgba(248, 113, 113, 0.35) !important; }
+::highlight(jyutping-highlight-red), .jyutping-highlight.hl-red {
+  background-color: rgba(248, 113, 113, 0.35) !important;
+}
 /* 高亮色：綠色 */
-.jyutping-highlight.hl-green { background-color: rgba(74, 222, 128, 0.35) !important; }
+::highlight(jyutping-highlight-green), .jyutping-highlight.hl-green {
+  background-color: rgba(74, 222, 128, 0.35) !important;
+}
 /* 高亮色：灰色 */
-.jyutping-highlight.hl-gray { background-color: rgba(156, 163, 175, 0.3) !important; }
+::highlight(jyutping-highlight-gray), .jyutping-highlight.hl-gray {
+  background-color: rgba(156, 163, 175, 0.3) !important;
+}
 
 /* 虛線下劃線 */
+::highlight(jyutping-highlight-underline-dashed),
 .jyutping-highlight.hl-underline-dashed {
   background-color: transparent !important;
   text-decoration: underline dashed !important;
@@ -939,6 +990,7 @@
 }
 
 /* 虛線邊框 */
+::highlight(jyutping-highlight-border-dashed),
 .jyutping-highlight.hl-border-dashed {
   background-color: transparent !important;
   outline: 1.5px dashed #888 !important;

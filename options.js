@@ -730,7 +730,24 @@ async function applyI18n(lang) {
     
     const setupFontUI = (selectElem, inputElem, savedValue) => {
       let matchFound = false;
-      const valueToCheck = savedValue || '';
+      let valueToCheck = savedValue || '';
+
+      // Normalize default fallback font strings to empty string (which maps to preset default)
+      if (selectElem.id === 'enFontSelect') {
+        const defaultEnFonts = [
+          'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace',
+          'ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace',
+          'Consolas, "SF Mono", ui-monospace, monospace'
+        ];
+        if (defaultEnFonts.includes(valueToCheck.trim())) {
+          valueToCheck = '';
+        }
+      } else if (selectElem.id === 'zhFontSelect') {
+        if (valueToCheck === 'system-ui' || valueToCheck === 'sans-serif' || valueToCheck === 'system-ui, -apple-system, sans-serif') {
+          valueToCheck = '';
+        }
+      }
+
       for (let i = 0; i < selectElem.options.length; i++) {
         if (selectElem.options[i].value === valueToCheck) {
           matchFound = true;
@@ -747,9 +764,14 @@ async function applyI18n(lang) {
         inputElem.style.display = 'block';
         inputElem.value = valueToCheck;
       }
+      selectElem.dispatchEvent(new Event('updateUI'));
     };
 
     const finishSetup = () => {
+      if (typeof buildSingleCustomSelect === 'function') {
+        buildSingleCustomSelect(zhFontSelect);
+        buildSingleCustomSelect(enFontSelect);
+      }
       setupFontUI(zhFontSelect, customZhFontInput, result.customZhFont);
       setupFontUI(enFontSelect, customEnFontInput, result.customEnFont);
       updatePreviewFont('zh', result.customZhFont);
@@ -1119,7 +1141,7 @@ async function applyI18n(lang) {
 
     const customEnInput = document.getElementById('customEnFont');
     const enSelect = document.getElementById('enFontSelect');
-    const enFont = (customEnInput && customEnInput.value.trim()) || (enSelect && enSelect.value) || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace';
+    const enFont = (enSelect && enSelect.value === 'custom' && customEnInput && customEnInput.value.trim()) || (enSelect && enSelect.value) || 'ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, monospace';
 
     // 1. 生成對應音調顯示格式的音節
     const syllables = [
@@ -2314,18 +2336,277 @@ async function applyI18n(lang) {
   const feedbackForm = document.getElementById('feedbackForm');
   const submitFeedbackBtn = document.getElementById('submitFeedbackBtn');
   const feedbackResult = document.getElementById('feedbackResult');
+  const feedbackAttachBtn = document.getElementById('feedbackAttachBtn');
+  const feedbackAttachmentInput = document.getElementById('feedbackAttachmentInput');
+  const feedbackMessageInput = document.getElementById('feedbackMessageInput') || document.querySelector('textarea[name="message"]');
+  const feedbackAttachmentPreview = document.getElementById('feedbackAttachmentPreview');
+  const attachmentError = document.getElementById('attachmentError');
+  const imageLightboxModal = document.getElementById('imageLightboxModal');
+  const imageLightboxImg = document.getElementById('imageLightboxImg');
+  const imageLightboxCaption = document.getElementById('imageLightboxCaption');
+  const imageLightboxCloseBtn = document.getElementById('imageLightboxCloseBtn');
+  const imageLightboxBackdrop = document.querySelector('.image-lightbox-backdrop');
+
+  const MAX_SCREENSHOTS = 3;
+  const MAX_SINGLE_SIZE = 3 * 1024 * 1024; // 3MB
+  const MAX_TOTAL_SIZE = 4.5 * 1024 * 1024; // 4.5MB
+
+  let attachedScreenshotFiles = []; // Array of File objects
+
+  function formatFileSize(bytes) {
+    if (bytes < 1024) return bytes + ' B';
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / (1024 * 1024)).toFixed(1) + ' MB';
+  }
+
+  function setAttachmentError(msg) {
+    if (attachmentError) {
+      if (msg) {
+        attachmentError.textContent = msg;
+        attachmentError.style.display = 'block';
+      } else {
+        attachmentError.style.display = 'none';
+      }
+    }
+  }
+
+  function openLightbox(file) {
+    if (!imageLightboxModal || !imageLightboxImg || !file) return;
+    const url = URL.createObjectURL(file);
+    imageLightboxImg.src = url;
+    if (imageLightboxCaption) {
+      imageLightboxCaption.textContent = `${file.name || 'screenshot.png'} (${formatFileSize(file.size)})`;
+    }
+    imageLightboxModal.style.display = 'flex';
+    requestAnimationFrame(() => {
+      imageLightboxModal.classList.add('active');
+    });
+  }
+
+  function closeLightbox() {
+    if (!imageLightboxModal) return;
+    imageLightboxModal.classList.remove('active');
+    setTimeout(() => {
+      imageLightboxModal.style.display = 'none';
+      if (imageLightboxImg) imageLightboxImg.src = '';
+    }, 250);
+  }
+
+  if (imageLightboxCloseBtn) imageLightboxCloseBtn.addEventListener('click', closeLightbox);
+  if (imageLightboxBackdrop) imageLightboxBackdrop.addEventListener('click', closeLightbox);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && imageLightboxModal && imageLightboxModal.classList.contains('active')) {
+      closeLightbox();
+    }
+  });
+
+  function updateAttachBtnState() {
+    if (!feedbackAttachBtn) return;
+    const count = attachedScreenshotFiles.length;
+    const btnSpan = feedbackAttachBtn.querySelector('span');
+    const baseText = t('optAddScreenshot') || '附帶截圖';
+    if (btnSpan) {
+      btnSpan.textContent = count > 0 ? `${baseText} (${count}/${MAX_SCREENSHOTS})` : baseText;
+    }
+    if (count >= MAX_SCREENSHOTS) {
+      feedbackAttachBtn.style.opacity = '0.6';
+      feedbackAttachBtn.style.cursor = 'not-allowed';
+      feedbackAttachBtn.title = t('optMaxImagesLimit') || '最多只能附帶 3 張截圖';
+    } else {
+      feedbackAttachBtn.style.opacity = '1';
+      feedbackAttachBtn.style.cursor = 'pointer';
+      feedbackAttachBtn.removeAttribute('title');
+    }
+  }
+
+  function renderAttachmentPreviews() {
+    if (!feedbackAttachmentPreview) return;
+    updateAttachBtnState();
+
+    if (attachedScreenshotFiles.length === 0) {
+      feedbackAttachmentPreview.innerHTML = '';
+      feedbackAttachmentPreview.style.display = 'none';
+      return;
+    }
+
+    let html = '';
+    attachedScreenshotFiles.forEach((file, index) => {
+      const objectUrl = URL.createObjectURL(file);
+      html += `
+        <div class="attachment-item-card" data-index="${index}">
+          <div class="attachment-thumb-wrap zoom-preview-trigger" data-index="${index}" title="${t('optZoomPreview') || '點擊放大預覽'}">
+            <img src="${objectUrl}" alt="Screenshot ${index + 1}" />
+            <div class="zoom-icon-hint">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                <line x1="11" y1="8" x2="11" y2="14"></line>
+                <line x1="8" y1="11" x2="14" y2="11"></line>
+              </svg>
+            </div>
+          </div>
+          <div class="zoom-preview-trigger" data-index="${index}" style="flex: 1; min-width: 0; display: flex; flex-direction: column; overflow: hidden; cursor: zoom-in;" title="${t('optZoomPreview') || '點擊放大預覽'}">
+            <span style="font-size: 12.5px; font-weight: 500; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${file.name || 'screenshot_' + (index + 1) + '.png'}</span>
+            <span style="font-size: 11px; color: var(--text-muted); line-height: 1.2; margin-top: 2px;">${formatFileSize(file.size)}</span>
+          </div>
+          <button type="button" class="remove-single-attachment-btn" data-index="${index}" title="${t('optRemoveAttachment') || '移除截圖'}" style="background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px 4px; font-size: 14px; line-height: 1; border-radius: 4px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.2s;" onmouseover="this.style.color='var(--primary)'" onmouseout="this.style.color='var(--text-muted)'">✕</button>
+        </div>
+      `;
+    });
+
+    feedbackAttachmentPreview.innerHTML = html;
+    feedbackAttachmentPreview.style.display = 'grid';
+
+    // 綁定點擊放大預覽事件
+    feedbackAttachmentPreview.querySelectorAll('.zoom-preview-trigger').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(el.dataset.index, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < attachedScreenshotFiles.length) {
+          openLightbox(attachedScreenshotFiles[idx]);
+        }
+      });
+    });
+
+    // 綁定每個獨立卡片的刪除事件
+    feedbackAttachmentPreview.querySelectorAll('.remove-single-attachment-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = parseInt(btn.dataset.index, 10);
+        if (!isNaN(idx) && idx >= 0 && idx < attachedScreenshotFiles.length) {
+          attachedScreenshotFiles.splice(idx, 1);
+          setAttachmentError('');
+          renderAttachmentPreviews();
+        }
+      });
+    });
+  }
+
+  function handleAttachmentFiles(fileList) {
+    setAttachmentError('');
+    if (!fileList || fileList.length === 0) return;
+
+    const validTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif'];
+    const filesToAdd = Array.from(fileList);
+
+    for (const file of filesToAdd) {
+      if (attachedScreenshotFiles.length >= MAX_SCREENSHOTS) {
+        setAttachmentError(t('optMaxImagesLimit') || '最多只能附帶 3 張截圖');
+        break;
+      }
+
+      if (!validTypes.includes(file.type)) {
+        setAttachmentError(t('optOnlyImageAllowed') || '僅支援上傳 PNG、JPG、WEBP 格式的圖片');
+        continue;
+      }
+
+      if (file.size > MAX_SINGLE_SIZE) {
+        setAttachmentError(t('optSingleImageTooLarge') || '單張圖片不能超過 3MB');
+        continue;
+      }
+
+      const currentTotal = attachedScreenshotFiles.reduce((acc, f) => acc + f.size, 0);
+      if (currentTotal + file.size > MAX_TOTAL_SIZE) {
+        setAttachmentError(t('optTotalImagesTooLarge') || '所有圖片總和不能超過 4.5MB');
+        break;
+      }
+
+      attachedScreenshotFiles.push(file);
+    }
+
+    renderAttachmentPreviews();
+  }
+
+  function clearAllAttachments() {
+    attachedScreenshotFiles = [];
+    if (feedbackAttachmentInput) feedbackAttachmentInput.value = '';
+    setAttachmentError('');
+    renderAttachmentPreviews();
+  }
+
+  if (feedbackAttachBtn && feedbackAttachmentInput) {
+    feedbackAttachBtn.addEventListener('click', () => {
+      if (attachedScreenshotFiles.length >= MAX_SCREENSHOTS) {
+        setAttachmentError(t('optMaxImagesLimit') || '最多只能附帶 3 張截圖');
+        return;
+      }
+      feedbackAttachmentInput.click();
+    });
+
+    feedbackAttachmentInput.addEventListener('change', (e) => {
+      if (e.target.files && e.target.files.length > 0) {
+        handleAttachmentFiles(e.target.files);
+      }
+      feedbackAttachmentInput.value = ''; // 允許重複選取相同檔案
+    });
+  }
+
+  if (feedbackMessageInput) {
+    // 監聽 Cmd/Ctrl + V 剪貼板貼上圖片
+    feedbackMessageInput.addEventListener('paste', (e) => {
+      const items = e.clipboardData && e.clipboardData.items;
+      if (!items) return;
+      const imageFiles = [];
+      for (let i = 0; i < items.length; i++) {
+        if (items[i].type.startsWith('image/')) {
+          const file = items[i].getAsFile();
+          if (file) {
+            imageFiles.push(file);
+          }
+        }
+      }
+      if (imageFiles.length > 0) {
+        handleAttachmentFiles(imageFiles);
+      }
+    });
+
+    // 支援拖拽圖片到輸入框
+    feedbackMessageInput.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      feedbackMessageInput.style.borderColor = 'var(--accent, #3b82f6)';
+    });
+    feedbackMessageInput.addEventListener('dragleave', () => {
+      feedbackMessageInput.style.borderColor = '';
+    });
+    feedbackMessageInput.addEventListener('drop', (e) => {
+      e.preventDefault();
+      feedbackMessageInput.style.borderColor = '';
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        handleAttachmentFiles(e.dataTransfer.files);
+      }
+    });
+  }
+
+  let feedbackResultTimer = null;
 
   if (feedbackForm) {
     feedbackForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       
       const formData = new FormData(feedbackForm);
+      if (attachedScreenshotFiles.length > 0) {
+        formData.append("attachment", attachedScreenshotFiles[0], attachedScreenshotFiles[0].name || 'screenshot_1.png');
+        if (attachedScreenshotFiles[1]) {
+          formData.append("attachment_2", attachedScreenshotFiles[1], attachedScreenshotFiles[1].name || 'screenshot_2.png');
+        }
+        if (attachedScreenshotFiles[2]) {
+          formData.append("attachment_3", attachedScreenshotFiles[2], attachedScreenshotFiles[2].name || 'screenshot_3.png');
+        }
+      }
+
       const originalHTML = submitFeedbackBtn.innerHTML;
       
-      submitFeedbackBtn.innerHTML = `發送中...`;
+      submitFeedbackBtn.innerHTML = `
+        <svg class="spin-icon" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="12" />
+        </svg>
+        <span>${t('optSending') || '發送中...'}</span>
+      `;
       submitFeedbackBtn.disabled = true;
-      submitFeedbackBtn.style.opacity = '0.7';
+      submitFeedbackBtn.style.opacity = '0.75';
       feedbackResult.style.display = 'none';
+      if (feedbackResultTimer) clearTimeout(feedbackResultTimer);
 
       try {
         const response = await fetch("https://api.web3forms.com/submit", {
@@ -2335,27 +2616,48 @@ async function applyI18n(lang) {
 
         const data = await response.json();
 
-        if (response.ok) {
-          feedbackResult.textContent = "✅ 發送成功！非常感謝您的反饋！";
-          feedbackResult.style.color = "var(--accent)";
+        if (response.ok && data.success) {
+          feedbackResult.className = 'feedback-result-banner success';
+          feedbackResult.innerHTML = `
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+              <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+              <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            <span>${t('optFeedbackSuccess') || '發送成功！非常感謝您的寶貴反饋！'}</span>
+          `;
           feedbackForm.reset();
+          clearAllAttachments();
         } else {
-          feedbackResult.textContent = "❌ 發送失敗：" + data.message;
-          feedbackResult.style.color = "var(--primary)";
+          feedbackResult.className = 'feedback-result-banner error';
+          feedbackResult.innerHTML = `
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="15" y1="9" x2="9" y2="15"></line>
+              <line x1="9" y1="9" x2="15" y2="15"></line>
+            </svg>
+            <span>${(t('optFeedbackFailed') || '發送失敗：') + (data && data.message ? data.message : (t('optFeedbackNetworkError') || '請稍後重試'))}</span>
+          `;
         }
       } catch (error) {
-        feedbackResult.textContent = "❌ 發生錯誤，請稍後再試。";
-        feedbackResult.style.color = "var(--primary)";
+        feedbackResult.className = 'feedback-result-banner error';
+        feedbackResult.innerHTML = `
+          <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+          </svg>
+          <span>${t('optFeedbackNetworkError') || '網絡連接異常或發生錯誤，請稍後重試。'}</span>
+        `;
       } finally {
-        feedbackResult.style.display = 'block';
+        feedbackResult.style.display = 'flex';
         submitFeedbackBtn.innerHTML = originalHTML;
         submitFeedbackBtn.disabled = false;
         submitFeedbackBtn.style.opacity = '1';
         
-        // 5秒後隱藏提示
-        setTimeout(() => {
+        // 6秒後淡出提示
+        feedbackResultTimer = setTimeout(() => {
           feedbackResult.style.display = 'none';
-        }, 5000);
+        }, 6000);
       }
     });
   }
@@ -2437,121 +2739,135 @@ async function applyI18n(lang) {
   }
 
   // 初始化自定義下拉選單 (Progressive Enhancement)
+  function buildSingleCustomSelect(select) {
+    if (!select) return;
+    if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+      select.nextElementSibling.remove();
+    }
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'custom-select-wrapper';
+    
+    const trigger = document.createElement('div');
+    trigger.className = 'custom-select-trigger';
+    trigger.setAttribute('tabindex', '0');
+    
+    const label = document.createElement('span');
+    label.className = 'custom-select-label';
+    
+    const arrow = document.createElement('div');
+    arrow.className = 'custom-select-arrow';
+    arrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
+    
+    trigger.appendChild(label);
+    trigger.appendChild(arrow);
+    
+    const panel = document.createElement('div');
+    panel.className = 'custom-select-panel';
+    
+    let lastGroup = null;
+    Array.from(select.options).forEach(option => {
+      const group = option.parentElement && option.parentElement.tagName === 'OPTGROUP' ? option.parentElement : null;
+      if (group && group !== lastGroup) {
+        lastGroup = group;
+        const groupHeader = document.createElement('div');
+        groupHeader.className = 'custom-select-group-header';
+        groupHeader.textContent = group.label;
+        groupHeader.style.cssText = 'padding: 6px 12px; font-size: 11px; font-weight: bold; color: var(--text-secondary, #888); border-top: 1px solid var(--border, #eee); margin-top: 4px; pointer-events: none; opacity: 0.8;';
+        panel.appendChild(groupHeader);
+      }
+
+      const item = document.createElement('div');
+      item.className = 'custom-select-item';
+      
+      if (option.hasAttribute('data-i18n')) {
+        item.setAttribute('data-i18n', option.getAttribute('data-i18n'));
+      }
+      
+      if (option.selected || option.value === select.value) {
+        item.classList.add('selected');
+        label.textContent = option.textContent;
+        if (option.hasAttribute('data-i18n')) {
+          label.setAttribute('data-i18n', option.getAttribute('data-i18n'));
+        }
+      }
+      item.textContent = option.textContent;
+      item.dataset.value = option.value;
+      
+      item.addEventListener('click', (e) => {
+        e.stopPropagation();
+        select.value = option.value;
+        
+        label.textContent = option.textContent;
+        if (option.hasAttribute('data-i18n')) {
+          label.setAttribute('data-i18n', option.getAttribute('data-i18n'));
+        } else {
+          label.removeAttribute('data-i18n');
+        }
+        panel.querySelectorAll('.custom-select-item').forEach(i => i.classList.remove('selected'));
+        item.classList.add('selected');
+        
+        wrapper.classList.remove('open');
+        select.dispatchEvent(new Event('change'));
+      });
+      panel.appendChild(item);
+    });
+    
+    const updateUI = () => {
+      const selectedOption = (select.selectedIndex >= 0 ? select.options[select.selectedIndex] : null) || Array.from(select.options).find(o => o.value === select.value);
+      if (selectedOption) {
+        label.textContent = selectedOption.textContent;
+        if (selectedOption.hasAttribute('data-i18n')) {
+          label.setAttribute('data-i18n', selectedOption.getAttribute('data-i18n'));
+        } else {
+          label.removeAttribute('data-i18n');
+        }
+        panel.querySelectorAll('.custom-select-item').forEach(i => {
+          if (i.dataset.value === selectedOption.value) {
+            i.classList.add('selected');
+          } else {
+            i.classList.remove('selected');
+          }
+        });
+      }
+    };
+    
+    select.addEventListener('change', updateUI);
+    select.addEventListener('updateUI', updateUI);
+    
+    wrapper.appendChild(trigger);
+    wrapper.appendChild(panel);
+    
+    select.parentNode.insertBefore(wrapper, select.nextSibling);
+    select.style.display = 'none';
+    
+    trigger.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      const isOpen = wrapper.classList.contains('open');
+      document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+      if (!isOpen) {
+        wrapper.classList.add('open');
+        const rect = panel.getBoundingClientRect();
+        if (rect.bottom > window.innerHeight) {
+          panel.style.top = 'auto';
+          panel.style.bottom = 'calc(100% + 6px)';
+          panel.style.transform = 'translateY(6px)';
+        } else {
+          panel.style.top = 'calc(100% + 6px)';
+          panel.style.bottom = 'auto';
+          panel.style.transform = 'none';
+        }
+      }
+    });
+  }
+
   function initCustomSelects() {
     const selects = document.querySelectorAll('select:not(.native-only)');
     selects.forEach(select => {
-      if (select.nextElementSibling && select.nextElementSibling.classList.contains('custom-select-wrapper')) {
-        return;
+      if (!select.nextElementSibling || !select.nextElementSibling.classList.contains('custom-select-wrapper')) {
+        buildSingleCustomSelect(select);
       }
-      
-      const wrapper = document.createElement('div');
-      wrapper.className = 'custom-select-wrapper';
-      
-      const trigger = document.createElement('div');
-      trigger.className = 'custom-select-trigger';
-      trigger.setAttribute('tabindex', '0');
-      
-      const label = document.createElement('span');
-      label.className = 'custom-select-label';
-      
-      const arrow = document.createElement('div');
-      arrow.className = 'custom-select-arrow';
-      arrow.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>';
-      
-      trigger.appendChild(label);
-      trigger.appendChild(arrow);
-      
-      const panel = document.createElement('div');
-      panel.className = 'custom-select-panel';
-      
-      Array.from(select.options).forEach(option => {
-        const item = document.createElement('div');
-        item.className = 'custom-select-item';
-        
-        if (option.hasAttribute('data-i18n')) {
-          item.setAttribute('data-i18n', option.getAttribute('data-i18n'));
-        }
-        
-        if (option.selected) {
-          item.classList.add('selected');
-          label.textContent = option.textContent;
-          if (option.hasAttribute('data-i18n')) {
-            label.setAttribute('data-i18n', option.getAttribute('data-i18n'));
-          }
-        }
-        item.textContent = option.textContent;
-        item.dataset.value = option.value;
-        
-        item.addEventListener('click', (e) => {
-          e.stopPropagation();
-          select.value = option.value;
-          
-          label.textContent = option.textContent;
-          if (option.hasAttribute('data-i18n')) {
-            label.setAttribute('data-i18n', option.getAttribute('data-i18n'));
-          } else {
-            label.removeAttribute('data-i18n');
-          }
-          panel.querySelectorAll('.custom-select-item').forEach(i => i.classList.remove('selected'));
-          item.classList.add('selected');
-          
-          wrapper.classList.remove('open');
-          select.dispatchEvent(new Event('change'));
-        });
-        panel.appendChild(item);
-      });
-      
-      const updateUI = () => {
-        const selectedOption = select.options[select.selectedIndex];
-        if (selectedOption) {
-          label.textContent = selectedOption.textContent;
-          if (selectedOption.hasAttribute('data-i18n')) {
-            label.setAttribute('data-i18n', selectedOption.getAttribute('data-i18n'));
-          } else {
-            label.removeAttribute('data-i18n');
-          }
-          panel.querySelectorAll('.custom-select-item').forEach(i => {
-            if (i.dataset.value === selectedOption.value) {
-              i.classList.add('selected');
-            } else {
-              i.classList.remove('selected');
-            }
-          });
-        }
-      };
-      
-      select.addEventListener('change', updateUI);
-      select.addEventListener('updateUI', updateUI);
-      
-      wrapper.appendChild(trigger);
-      wrapper.appendChild(panel);
-      
-      select.parentNode.insertBefore(wrapper, select.nextSibling);
-      select.style.display = 'none';
-      
-      trigger.addEventListener('click', (e) => {
-        e.stopPropagation();
-        e.preventDefault();
-        const isOpen = wrapper.classList.contains('open');
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-        if (!isOpen) {
-          wrapper.classList.add('open');
-          const rect = panel.getBoundingClientRect();
-          if (rect.bottom > window.innerHeight) {
-            panel.style.top = 'auto';
-            panel.style.bottom = 'calc(100% + 6px)';
-            panel.style.transform = 'translateY(6px)';
-          } else {
-            panel.style.top = 'calc(100% + 6px)';
-            panel.style.bottom = 'auto';
-            panel.style.transform = 'none';
-          }
-        }
-      });
-    });
-    
-    document.addEventListener('click', () => {
-      document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
     });
   }
 
@@ -2756,7 +3072,7 @@ async function applyI18n(lang) {
       const uiLang = navigator.language || '未知';
 
       const messageBody = `
-=== Jyutping Extension v1.5.7 反饋 ===
+=== Jyutping Extension v${chrome.runtime?.getManifest?.()?.version || '1.5.8'} 反饋 ===
 
 1. 常用語言: ${finalLang || '未選擇'}
 2. 整體評分: ${selectedRating > 0 ? selectedRating + ' 顆星' : '未評分'}
@@ -2804,5 +3120,24 @@ async function applyI18n(lang) {
       }
     }
   }
+
+  function handleHashScroll() {
+    const hash = window.location.hash;
+    if (!hash) return;
+    const target = document.querySelector(hash);
+    if (target) {
+      setTimeout(() => {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        target.style.transition = 'box-shadow 0.4s ease, border-color 0.4s ease';
+        target.style.boxShadow = '0 0 0 3px rgba(139, 92, 246, 0.45)';
+        setTimeout(() => {
+          target.style.boxShadow = '';
+        }, 2000);
+      }, 250);
+    }
+  }
+
+  window.addEventListener('hashchange', handleHashScroll);
+  setTimeout(handleHashScroll, 300);
 
   });

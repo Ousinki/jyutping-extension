@@ -388,7 +388,38 @@
       dictBookmarkAdd: '加入生詞本',
       dictBookmarkRemove: '從生詞本移除',
       wordbookSelectItem: '點擊選中',
-      wordbookDeselectItem: '點擊取消選中'
+      wordbookDeselectItem: '點擊取消選中',
+      wordbookAiNotConfigured: '尚未配置 AI API，',
+      wordbookAiGoToSettings: '前往設定',
+      aiFeedbackConfigureTip: '請先在設定中配置 AI 服務 (API Key)',
+      folderAll: '全部生詞',
+      folderDefault: '生詞本',
+      folderNew: '新建資料夾',
+      folderEdit: '編輯資料夾',
+      folderDelete: '刪除資料夾',
+      folderSetDefault: '設為預設生詞本',
+      folderDefaultBadge: '預設',
+      folderMoveTo: '移動至資料夾',
+      folderMoveHere: '移動選中的 $1 個生詞至此',
+      folderMovedSuccess: '已移動 $1 個生詞至「$2」',
+      folderNameLabel: '資料夾名稱',
+      folderNamePlaceholder: '請輸入資料夾名稱（如：日常口語、餐飲）…',
+      folderColorLabel: '標籤顏色',
+      folderDeleteConfirmTitle: '刪除資料夾',
+      folderDeleteConfirmDesc: '資料夾「$1」內含有 $2 個生詞，請選擇處理方式：',
+      folderDeleteMoveOption: '保留生詞（移至預設資料夾）',
+      folderDeleteMoveOptionDesc: '生詞不會丟失，自動移至預設資料夾中。',
+      folderDeletePurgeOption: '同時將資料夾內的生詞移至廢紙簍',
+      folderDeletePurgeOptionDesc: '生詞將移入廢紙簍，可在 30 天內還原。',
+      folderDeleteEmptyConfirm: '確定要刪除資料夾「$1」嗎？',
+      quizFolderScope: '練習生詞範圍',
+      quizFolderAll: '全部生詞',
+      quizFolderInsufficient: '該資料夾內可用生詞不足（至少需要 3 詞）',
+      folderUncategorized: '未分類',
+      folderBelongsTo: '所屬資料夾',
+      wordbookSave: '保存',
+      folderSetDefaultDesc: '新收藏的生詞將自動存入此生詞本。',
+      folderDeleted: '已刪除資料夾「$1」'
     },
     'zh-CN': {
       wordbookAiSettingsTitle: 'AI 设置',
@@ -602,30 +633,38 @@
       dictBookmarkAdd: '加入生词本',
       dictBookmarkRemove: '从生词本移除',
       wordbookSelectItem: '点击选中',
-      wordbookDeselectItem: '點擊取消選中',
-      folderAll: '全部生詞',
-      folderDefault: '生詞本',
-      folderNew: '新建資料夾',
-      folderEdit: '編輯資料夾',
-      folderDelete: '刪除資料夾',
-      folderSetDefault: '設為預設生詞本',
-      folderDefaultBadge: '預設',
-      folderMoveTo: '移動至資料夾',
-      folderMoveHere: '移動選中的 $1 個生詞至此',
-      folderMovedSuccess: '已移動 $1 個生詞至「$2」',
-      folderNameLabel: '資料夾名稱',
-      folderNamePlaceholder: '請輸入資料夾名稱（如：日常口語、餐飲）…',
-      folderColorLabel: '標籤顏色',
-      folderDeleteConfirmTitle: '刪除資料夾',
-      folderDeleteConfirmDesc: '資料夾「$1」內含有 $2 個生詞，請選擇處理方式：',
-      folderDeleteMoveOption: '保留生詞（移至預設資料夾）',
-      folderDeleteMoveOptionDesc: '生詞不會丟失，自動移至預設資料夾中。',
-      folderDeletePurgeOption: '同時將資料夾內的生詞移至廢紙簍',
-      folderDeletePurgeOptionDesc: '生詞將移入廢紙簍，可在 30 天內還原。',
-      folderDeleteEmptyConfirm: '確定要刪除資料夾「$1」嗎？',
-      folderSetDefaultDesc: '新收藏的生詞將自動存入此生詞本。',
-      folderBelongsTo: '所屬資料夾',
-      folderDeleted: '已刪除資料夾「$1」'
+      wordbookDeselectItem: '点击取消选中',
+      wordbookAiNotConfigured: '尚未配置 AI API，',
+      wordbookAiGoToSettings: '前往设置',
+      aiFeedbackConfigureTip: '请先在设置中配置 AI 服务 (API Key)',
+      folderAll: '全部生词',
+      folderDefault: '生词本',
+      folderNew: '新建文件夹',
+      folderEdit: '编辑文件夹',
+      folderDelete: '删除文件夹',
+      folderSetDefault: '设为默认生词本',
+      folderDefaultBadge: '默认',
+      folderMoveTo: '移动到文件夹',
+      folderMoveHere: '移动选中的 $1 个生词到此',
+      folderMovedSuccess: '已移动 $1 个生词至「$2」',
+      folderNameLabel: '文件夹名称',
+      folderNamePlaceholder: '请输入文件夹名称（如：日常口语、餐饮）…',
+      folderColorLabel: '标签颜色',
+      folderDeleteConfirmTitle: '删除文件夹',
+      folderDeleteConfirmDesc: '文件夹「$1」内含有 $2 个生词，请选择处理方式：',
+      folderDeleteMoveOption: '保留生词（移至默认文件夹）',
+      folderDeleteMoveOptionDesc: '生词不会丢失，自动移至默认文件夹中。',
+      folderDeletePurgeOption: '同时将文件夹内的生词移至废纸篓',
+      folderDeletePurgeOptionDesc: '生词将移入废纸篓，可在 30 天内还原。',
+      folderDeleteEmptyConfirm: '确定要删除文件夹「$1」吗？',
+      quizFolderScope: '练习生词范围',
+      quizFolderAll: '全部生词',
+      quizFolderInsufficient: '该文件夹内可用生词不足（至少需要 3 词）',
+      folderUncategorized: '未分类',
+      folderBelongsTo: '所属文件夹',
+      wordbookSave: '保存',
+      folderSetDefaultDesc: '新收藏的生词将自动存入此生词本。',
+      folderDeleted: '已删除文件夹「$1」'
     },
     'en': {
       wordbookAiSettingsTitle: 'AI Settings',
@@ -840,6 +879,9 @@
       dictBookmarkRemove: 'Remove from Word Book',
       wordbookSelectItem: 'Click to select',
       wordbookDeselectItem: 'Click to deselect',
+      wordbookAiNotConfigured: 'AI API not configured, ',
+      wordbookAiGoToSettings: 'Go to Settings',
+      aiFeedbackConfigureTip: 'Please configure AI API Key in Settings first',
       folderAll: 'All Words',
       folderDefault: 'Wordbook',
       folderNew: 'New Folder',
@@ -860,8 +902,13 @@
       folderDeletePurgeOption: 'Move words to trash',
       folderDeletePurgeOptionDesc: 'Words will be moved to trash and can be restored within 30 days.',
       folderDeleteEmptyConfirm: 'Are you sure you want to delete folder "$1"?',
-      folderSetDefaultDesc: 'Newly saved words will automatically go into this wordbook.',
+      quizFolderScope: 'Quiz Word Scope',
+      quizFolderAll: 'All Words',
+      quizFolderInsufficient: 'Not enough words in this folder (at least 3 required)',
+      folderUncategorized: 'Uncategorized',
       folderBelongsTo: 'Folder',
+      wordbookSave: 'Save',
+      folderSetDefaultDesc: 'Newly saved words will automatically go into this wordbook.',
       folderDeleted: 'Folder "$1" deleted'
     },
     'ja': {
@@ -1077,6 +1124,9 @@
       dictBookmarkRemove: '単語帳から削除',
       wordbookSelectItem: 'クリックして選択',
       wordbookDeselectItem: 'クリックして選択解除',
+      wordbookAiNotConfigured: 'AI APIが未設定です，',
+      wordbookAiGoToSettings: '設定へ',
+      aiFeedbackConfigureTip: '先に設定で AI サービス (API Key) を設定してください',
       folderAll: 'すべての単語',
       folderDefault: '単語帳',
       folderNew: '新規フォルダ',
@@ -1097,8 +1147,13 @@
       folderDeletePurgeOption: '単語をごみ箱に移動',
       folderDeletePurgeOptionDesc: '単語はごみ箱に移動し、30日以内であれば復元できます。',
       folderDeleteEmptyConfirm: 'フォルダ「$1」を削除してもよろしいですか？',
-      folderSetDefaultDesc: '新しく保存された単語は自動的にこの単語帳に入ります。',
+      quizFolderScope: '練習単語範囲',
+      quizFolderAll: 'すべての単語',
+      quizFolderInsufficient: 'このフォルダには利用可能な単語が不足しています（最低3語必要）',
+      folderUncategorized: '未分類',
       folderBelongsTo: '所属フォルダ',
+      wordbookSave: '保存',
+      folderSetDefaultDesc: '新しく保存された単語は自動的にこの単語帳に入ります。',
       folderDeleted: 'フォルダ「$1」を削除しました'
     },
     'ko': {
@@ -1312,6 +1367,9 @@
       dictBookmarkRemove: '단어장에서 제거',
       wordbookSelectItem: '클릭하여 선택',
       wordbookDeselectItem: '클릭하여 선택 해제',
+      wordbookAiNotConfigured: 'AI API가 설정되지 않았습니다, ',
+      wordbookAiGoToSettings: '설정으로 이동',
+      aiFeedbackConfigureTip: '먼저 설정에서 AI 서비스 (API Key)를 설정해 주세요',
       folderAll: '전체 단어',
       folderDefault: '단어장',
       folderNew: '새 폴더',
@@ -1332,8 +1390,13 @@
       folderDeletePurgeOption: '단어를 휴지통으로 이동',
       folderDeletePurgeOptionDesc: '단어가 휴지통으로 이동하며 30일 이내에 복원할 수 있습니다.',
       folderDeleteEmptyConfirm: '\'$1\' 폴더를 삭제하시겠습니까?',
-      folderSetDefaultDesc: '새로 저장된 단어는 자동으로 이 단어장에 들어갑니다.',
+      quizFolderScope: '단어 연습 범위',
+      quizFolderAll: '전체 단어',
+      quizFolderInsufficient: '이 폴더에 학습 가능한 단어가 부족합니다 (최소 3개 필요)',
+      folderUncategorized: '미분류',
       folderBelongsTo: '소속 폴더',
+      wordbookSave: '저장',
+      folderSetDefaultDesc: '새로 저장된 단어는 자동으로 이 단어장에 들어갑니다.',
       folderDeleted: '\'$1\' 폴더를 삭제했습니다'
     }
   };
@@ -1557,7 +1620,11 @@
   });
 
   function t(key, params) {
-    let localString = (i18nStrings[currentLang] || i18nStrings['zh-HK'])[key];
+    const langKey = normalizeLang(currentLang);
+    let localString = (i18nStrings[langKey] || i18nStrings['zh-HK'])[key];
+    if (!localString && i18nStrings['zh-HK']) {
+      localString = i18nStrings['zh-HK'][key];
+    }
     if (!localString) {
       localString = chrome.i18n.getMessage(key) || key;
     }
@@ -2774,51 +2841,77 @@
   }
 
   function searchDictionary(query) {
+    if (!dictSearchIndex || !query) return [];
     query = query.trim();
-    if (!dictSearchIndex || !query || query.length < 1) return [];
+    if (query.length < 1) return [];
 
-    // For Chinese queries, strip everything that isn't a CJK character
-    // e.g. "香 港" / "香-港" / "香·港" → "香港"
-    const hasChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(query);
-    if (hasChinese) {
-      query = query.replace(/[^\u4e00-\u9fff\u3400-\u4dbf]/g, '');
-    }
+    // 去除多餘空格與標點符號，但完整保留 CJK 漢字、英文字母與數字（如 "香 港" -> "香港", "A 貨" -> "A貨", "貨 van" -> "貨van"）
+    const cleanQuery = query.replace(/[^\u4e00-\u9fff\u3400-\u4dbfa-zA-Z0-9]/g, '');
+    const qRaw = query.toLowerCase();
+    const qClean = (cleanQuery || query).toLowerCase();
 
-    const q = query.toLowerCase();
+    const isPureLatin = /^[a-z0-9\s]+$/i.test(query);
+    const hasTones = /\d/.test(query);
+    const stripTones = (s) => s.replace(/[0-9]/g, '');
+    const qNoTone = hasTones ? qRaw : stripTones(qRaw);
+
     const results = [];
     const savedChars = new Set(wordbook.map(w => w.character));
     const seenTraditional = new Set(); // Deduplicate entries with same traditional form
     const MAX_RESULTS = 30;
 
-    // Detect query type
-    const isLatin = /^[a-zA-Z0-9\s]+$/.test(query);
-    const isChinese = /[\u4e00-\u9fff\u3400-\u4dbf]/.test(query);
-    // Toneless mode: query has letters but no digits (e.g. 'hoeng gong')
-    const hasTones = /\d/.test(query);
-    const stripTones = (s) => s.replace(/[0-9]/g, '');
-    const qNoTone = hasTones ? q : stripTones(q);
-
-    // Pass 1: Exact matches first (e.g. '香港' before '香港仔', 'hoeng1 gong2' exact)
+    // Pass 1: 精確詞頭或精確拼音匹配優先（如 "A貨" / "A 货" / "香港" / "hoeng1 gong2"）
     for (let i = 0; i < dictSearchIndex.length && results.length < MAX_RESULTS; i++) {
       const item = dictSearchIndex[i];
       if (seenTraditional.has(item.traditional)) continue;
       let isExact = false;
-      if (isChinese && (item.traditional === query || item.simplified === query)) {
+      let matchType = '';
+
+      const tradLower = item.traditional.toLowerCase();
+      const simpLower = item.simplified.toLowerCase();
+
+      if (tradLower === qClean || simpLower === qClean || tradLower === qRaw || simpLower === qRaw) {
         isExact = true;
-      } else if (isLatin) {
-        if (hasTones && (item.jyutping === q || item.pinyin === q)) {
+        matchType = 'char-exact';
+      } else if (isPureLatin) {
+        if (hasTones && (item.jyutping === qRaw || item.pinyin === qRaw)) {
           isExact = true;
+          matchType = 'jyutping-exact';
         } else if (!hasTones && (stripTones(item.jyutping) === qNoTone || stripTones(item.pinyin) === qNoTone)) {
           isExact = true;
+          matchType = 'jyutping-exact';
         }
       }
+
       if (isExact) {
         seenTraditional.add(item.traditional);
-        results.push({ ...item, matchType: isChinese ? 'char-exact' : 'jyutping-exact', isSaved: savedChars.has(item.traditional) });
+        results.push({
+          ...item,
+          matchType,
+          isSaved: savedChars.has(item.traditional)
+        });
       }
     }
 
-    // Pass 2: Partial / prefix matches
+    // Pass 2: 詞頭前綴匹配（如搜索 "A" -> "A貨", 搜索 "香" -> "香港"）
+    for (let i = 0; i < dictSearchIndex.length && results.length < MAX_RESULTS; i++) {
+      const item = dictSearchIndex[i];
+      if (seenTraditional.has(item.traditional)) continue;
+
+      const tradLower = item.traditional.toLowerCase();
+      const simpLower = item.simplified.toLowerCase();
+
+      if (tradLower.startsWith(qClean) || simpLower.startsWith(qClean) || tradLower.startsWith(qRaw) || simpLower.startsWith(qRaw)) {
+        seenTraditional.add(item.traditional);
+        results.push({
+          ...item,
+          matchType: 'char',
+          isSaved: savedChars.has(item.traditional)
+        });
+      }
+    }
+
+    // Pass 3: 部分包含匹配與拼音/英文釋義匹配
     for (let i = 0; i < dictSearchIndex.length && results.length < MAX_RESULTS; i++) {
       const item = dictSearchIndex[i];
       if (seenTraditional.has(item.traditional)) continue;
@@ -2826,16 +2919,16 @@
       let matched = false;
       let matchType = '';
 
-      if (isChinese) {
-        if (item.traditional.includes(query) || item.simplified.includes(query)) {
-          matched = true;
-          matchType = 'char';
-        }
-      } else if (isLatin) {
-        // Compare with or without tones
+      const tradLower = item.traditional.toLowerCase();
+      const simpLower = item.simplified.toLowerCase();
+
+      if (tradLower.includes(qClean) || simpLower.includes(qClean) || tradLower.includes(qRaw) || simpLower.includes(qRaw)) {
+        matched = true;
+        matchType = 'char';
+      } else if (isPureLatin) {
         const itemJp = hasTones ? item.jyutping : stripTones(item.jyutping);
         const itemPy = hasTones ? item.pinyin : stripTones(item.pinyin);
-        const cmpQ = hasTones ? q : qNoTone;
+        const cmpQ = hasTones ? qRaw : qNoTone;
 
         if (itemJp.startsWith(cmpQ) || itemJp === cmpQ) {
           matched = true;
@@ -2849,17 +2942,17 @@
         } else if (itemPy.includes(cmpQ)) {
           matched = true;
           matchType = 'pinyin';
-        } else if (item.english.includes(q)) {
+        } else if (item.english.includes(qRaw)) {
           matched = true;
           matchType = 'english';
         }
       } else {
-        if (item.traditional.includes(query) || item.simplified.includes(query)) {
-          matched = true;
-          matchType = 'char';
-        } else if (item.jyutping.includes(q)) {
+        if (item.jyutping.includes(qClean) || item.jyutping.includes(qRaw)) {
           matched = true;
           matchType = 'jyutping';
+        } else if (item.english.includes(qRaw)) {
+          matched = true;
+          matchType = 'english';
         }
       }
 
@@ -2910,7 +3003,9 @@
     </div>`;
 
     results.forEach((item, idx) => {
-      const def = (item.entry.english || []).filter(d => !d.startsWith('[粵]')).slice(0, 2).join('; ') || '';
+      const defs = (item.entry.english || []).filter(Boolean);
+      const cleanDefs = defs.map(d => d.replace(/^\[粵\]\s*/, '').replace(/<[^>]+>/g, '').trim());
+      const def = cleanDefs.slice(0, 2).join('; ') || '';
       const truncDef = def.length > 60 ? def.slice(0, 57) + '…' : def;
       const savedStar = item.isSaved ? '<span style="color:#D4AF37;font-size:20px;margin-left:5px;line-height:0;vertical-align:-1px;">★</span>' : '';
 
@@ -3084,6 +3179,23 @@
   let syllableAudioCtx = null;
   const syllableBufferCache = new Map();
 
+  function unlockAudioContext() {
+    try {
+      if (!syllableAudioCtx) {
+        syllableAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      if (syllableAudioCtx && syllableAudioCtx.state === 'suspended') {
+        syllableAudioCtx.resume().catch(() => {});
+      }
+    } catch (_) {}
+    return syllableAudioCtx;
+  }
+
+  // 用戶首次與頁面互動時自動解鎖 Web Audio Context
+  ['pointerdown', 'keydown', 'click'].forEach(evt => {
+    document.addEventListener(evt, unlockAudioContext, { capture: true, passive: true });
+  });
+
   function splitJyutpingTokens(text) {
     if (!text || typeof text !== 'string') return [];
     return text.trim().split(/\s+/).filter(Boolean);
@@ -3203,6 +3315,7 @@
   }
 
   async function playSyllablesAudio(character, jyutpingStr, targetEl) {
+    unlockAudioContext();
     const syllables = splitJyutpingTokens(jyutpingStr);
     if (syllables.length === 0) {
       playTts(character, targetEl);
@@ -3228,12 +3341,8 @@
       const rate = result.ttsRate || 1.0;
 
       try {
-        if (!syllableAudioCtx) {
-          syllableAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (syllableAudioCtx.state === 'suspended') {
-          await syllableAudioCtx.resume().catch(() => {});
-        }
+        const ctx = unlockAudioContext();
+        if (!ctx) throw new Error('No AudioContext');
 
         const buffers = [];
         for (const syl of syllables) {
@@ -3258,7 +3367,7 @@
 
         if (reqId !== currentTtsRequestId) return;
 
-        const source = syllableAudioCtx.createBufferSource();
+        const source = ctx.createBufferSource();
         source.buffer = mergedBuffer;
         // 保持自然標準語速（與用戶設置的 ttsRate 完全同步，單字朗讀使用 1.0x 原聲）
         const effectiveRate = rate || 1.0;
@@ -3278,7 +3387,7 @@
           }, startMs);
         }
 
-        source.connect(syllableAudioCtx.destination);
+        source.connect(ctx.destination);
         source.onended = () => {
           if (reqId === currentTtsRequestId) {
             highlightSpeakingSyllable(targetEl, -1);
@@ -3297,6 +3406,7 @@
 
   function playTts(text, ttsBtn) {
     if (!text) return;
+    unlockAudioContext();
     const reqId = ++currentTtsRequestId;
 
     // Immediately stop any currently playing speech or audio
@@ -3376,7 +3486,8 @@
           const resp = await fetch(baseUrl + '/v1/audio/speech', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ input: text, voice: 'zh-HK-HiuMaanNeural', model: 'tts-1', speed: rate })
+            body: JSON.stringify({ input: text, voice: 'zh-HK-HiuMaanNeural', model: 'tts-1', speed: rate }),
+            signal: AbortSignal.timeout(2500)
           });
           if (reqId !== currentTtsRequestId) return; // Discard if new click happened while fetching
           if (!resp.ok) throw new Error('Edge TTS error: ' + resp.status);
@@ -3402,8 +3513,10 @@
           audio.play().catch(() => stopSpeaking());
         } catch (e) {
           if (reqId !== currentTtsRequestId) return;
-          console.warn('[Wordbook] Edge TTS failed, falling back to Chrome TTS / WebSpeech:', e);
-          if (chrome.tts) {
+          console.warn('[Wordbook] Edge TTS failed, trying syllables fallback or Chrome TTS / WebSpeech:', e);
+          if (dictionary && dictionary[text] && (dictionary[text].jyutping || dictionary[text].yale)) {
+            playSyllablesAudio(text, dictionary[text].jyutping || dictionary[text].yale, ttsBtn);
+          } else if (chrome.tts) {
             chrome.tts.speak(text, {
               lang: 'zh-HK', rate: rate,
               onEvent: (e) => {
@@ -3582,42 +3695,42 @@
       return;
     }
 
-    // Row click selection for detail panel (only in Detail Mode)
+    // Row click selection
     const row = e.target.closest('.table-row');
-    if (isDetailMode && row && !e.target.closest('.bulk-actions') && !e.target.closest('.word-card-checkbox') && !e.target.closest('.word-character') && !e.target.closest('.jyutping-text') && !e.target.closest('.trash-action-btn')) {
+    if (row && !e.target.closest('.bulk-actions') && !e.target.closest('.word-card-checkbox') && !e.target.closest('.trash-action-btn')) {
       const charEl = row.querySelector('.word-character');
       if (charEl) {
         const character = charEl.dataset.word;
-        // Toggle: clicking the same active row deselects it
-        if (row.classList.contains('active-row')) {
-          row.classList.remove('active-row');
-          showGenericAiPanel();
+        unlockAudioContext();
+        
+        // 點擊拼音：播放逐字拼音音檔發音
+        if (e.target.closest('.jyutping-text')) {
+          e.stopPropagation();
+          const jyutpingTarget = e.target.closest('.jyutping-text');
+          const jyutpingVal = jyutpingTarget.dataset.jyutping || jyutpingTarget.textContent;
+          document.querySelectorAll('.table-row').forEach(r => r.classList.remove('active-row'));
+          row.classList.add('active-row');
+          if (isDetailMode) {
+            renderDetailPanel(character);
+          }
+          playSyllablesAudio(character, jyutpingVal, jyutpingTarget);
           return;
         }
+
+        // 點擊漢字或整行：切換選中狀態並觸發朗讀 / 渲染詳情
+        const isClickingChar = Boolean(e.target.closest('.word-character'));
         document.querySelectorAll('.table-row').forEach(r => r.classList.remove('active-row'));
         row.classList.add('active-row');
-        renderDetailPanel(character);
-        if (isAutoPronounce) {
+        
+        if (isDetailMode) {
+          renderDetailPanel(character);
+        }
+        
+        if (isAutoPronounce || isClickingChar) {
           triggerAutoPronounce(character, charEl);
         }
+        return;
       }
-    }
-
-    // Character click → TTS (整詞 TTS 朗讀)
-    const charTarget = e.target.closest('.word-character');
-    if (charTarget) {
-      e.stopPropagation();
-      playTts(charTarget.dataset.word, charTarget);
-      return;
-    }
-
-    // Jyutping / Yale click → 逐字單字音檔發音 (Syllable audio)
-    const jyutpingTarget = e.target.closest('.jyutping-text');
-    if (jyutpingTarget) {
-      e.stopPropagation();
-      const jyutpingVal = jyutpingTarget.dataset.jyutping || jyutpingTarget.textContent;
-      playSyllablesAudio(jyutpingTarget.dataset.word, jyutpingVal, jyutpingTarget);
-      return;
     }
 
     // Checkbox
@@ -4499,7 +4612,8 @@
         if (def.startsWith('[粵]')) {
           className += ' def-yue';
           const rawDefText = def.slice(3).trim();
-          innerHtml = `<span class="badge-yue" data-text="${rawDefText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span><span class="def-content-text">${rawDefText}</span>`;
+          const cleanText = rawDefText.replace(/<[^>]+>/g, '').trim();
+          innerHtml = `<span class="badge-yue" data-text="${cleanText.replace(/"/g, '&quot;')}" data-orig-html="${rawDefText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span><span class="def-content-text">${rawDefText}</span>`;
         } else {
           innerHtml = `<span>${def}</span>`;
         }
@@ -4707,23 +4821,22 @@
     const wordSec = document.getElementById('detailWordSection');
     if (wordSec) {
       wordSec.setAttribute('title', '點擊發音 (整詞 TTS 朗讀)');
-      wordSec.addEventListener('click', () => {
+      wordSec.addEventListener('click', (e) => {
+        e.stopPropagation();
+        unlockAudioContext();
         playTts(entry.traditional, document.getElementById('detailSpeakerBtn') || wordSec);
       });
     }
 
     // Bind Syllable audio on Pronunciation (粵拼/耶魯 逐字單字音檔發音)
     const pinyinBtn = document.getElementById('detailPinyinBtn');
-    const pronText = document.getElementById('detailPronunciationText');
-    const speakBtn = document.getElementById('detailSpeakerBtn');
-    const triggerSyllableAudio = (e) => {
-      e.stopPropagation();
-      playSyllablesAudio(entry.traditional, entry.jyutping || pronunciation, pronText || pinyinBtn || speakBtn);
-    };
-    
-    if (pinyinBtn) pinyinBtn.addEventListener('click', triggerSyllableAudio);
-    if (pronText) pronText.addEventListener('click', triggerSyllableAudio);
-    if (speakBtn) speakBtn.addEventListener('click', triggerSyllableAudio);
+    if (pinyinBtn) {
+      pinyinBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        unlockAudioContext();
+        playSyllablesAudio(entry.traditional, entry.jyutping || pronunciation, pinyinBtn);
+      });
+    }
     
     // Bind Example Toggles
     detailPane.querySelectorAll('.has-inline-examples .def-text').forEach(defText => {
@@ -4744,13 +4857,16 @@
 
     // 高可用釋義翻譯請求函數（Background + Client Direct Fallback）
     async function requestYueDefTranslation(text, targetLang, engine) {
+      const cleanText = (text || '').replace(/<[^>]+>/g, '').trim();
+      if (!cleanText) return '';
+
       // 1. 優先嘗試發送給後台 Service Worker（帶 4 秒超時保障）
       try {
         const bgPromise = new Promise((resolve, reject) => {
           const timer = setTimeout(() => reject(new Error('Background timeout')), 4000);
           chrome.runtime.sendMessage({
             action: 'translateYueDef',
-            text: text,
+            text: cleanText,
             targetLang: targetLang,
             engine: engine
           }, (resp) => {
@@ -4778,7 +4894,7 @@
         else if (targetLang === 'ko') googleTo = 'ko';
         else if (targetLang === 'zh-Hant' || targetLang === 'zh-TW' || targetLang === 'zh-HK') googleTo = 'zh-TW';
 
-        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(text)}`;
+        const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(cleanText)}`;
         const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
         if (resp.ok) {
           const data = await resp.json();
@@ -4796,7 +4912,7 @@
         let target = targetLang || 'zh-CN';
         if (target === 'zh-Hans') target = 'zh-CN';
         else if (target === 'zh-Hant' || target === 'zh-HK') target = 'zh-TW';
-        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh-HK|${target}`;
+        const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=zh-HK|${target}`;
         const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
         if (resp.ok) {
           const data = await resp.json();
@@ -4842,6 +4958,29 @@
       }
     }
 
+    function bindWordbookSeeAlsoLinks(rootEl) {
+      if (!rootEl) return;
+      rootEl.querySelectorAll('.see-also-link').forEach(link => {
+        link.onclick = (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          const word = link.dataset.word;
+          if (dictionary[word]) {
+            renderDetailPanel(word);
+            // Highlight in list if exists
+            document.querySelectorAll('.table-row').forEach(r => {
+              r.classList.remove('active-row');
+              const charEl = r.querySelector('.word-character');
+              if (charEl && charEl.dataset.word === word) {
+                r.classList.add('active-row');
+                r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+              }
+            });
+          }
+        };
+      });
+    }
+
     // Bind [粵] Badge Click-to-Translate
     async function translateWordbookBadge(badgeEl, containerEl) {
       const text = badgeEl.dataset.text;
@@ -4868,7 +5007,9 @@
           badgeEl.className = 'badge-yue';
           badgeEl.innerHTML = `粵${yueIconSvg}`;
           badgeEl.title = t('badgeClickToTranslate') || '點擊翻譯此釋義';
-          textSpan.textContent = text;
+          const origHtml = badgeEl.dataset.origHtml || badgeEl.dataset.text || '';
+          textSpan.innerHTML = origHtml;
+          bindWordbookSeeAlsoLinks(textSpan);
           return;
         }
 
@@ -4901,13 +5042,17 @@
           } else {
             badgeEl.className = originalBadgeClass;
             badgeEl.innerHTML = originalBadgeHtml;
-            textSpan.textContent = text;
+            const origHtml = badgeEl.dataset.origHtml || badgeEl.dataset.text || '';
+            textSpan.innerHTML = origHtml;
+            bindWordbookSeeAlsoLinks(textSpan);
           }
         } catch (e) {
           badgeEl.classList.remove('loading');
           badgeEl.className = originalBadgeClass;
           badgeEl.innerHTML = originalBadgeHtml;
-          textSpan.textContent = text;
+          const origHtml = badgeEl.dataset.origHtml || badgeEl.dataset.text || '';
+          textSpan.innerHTML = origHtml;
+          bindWordbookSeeAlsoLinks(textSpan);
         }
       } else {
         // Mode A: 下方展開
@@ -4975,30 +5120,13 @@
     detailPane.querySelectorAll('.example-tts-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.stopPropagation();
+        unlockAudioContext();
         playTts(btn.dataset.text, btn);
       });
     });
 
     // Bind See Also Links
-    detailPane.querySelectorAll('.see-also-link').forEach(link => {
-      link.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        const word = link.dataset.word;
-        if (dictionary[word]) {
-          renderDetailPanel(word);
-          // Highlight in list if exists
-          document.querySelectorAll('.table-row').forEach(r => {
-            r.classList.remove('active-row');
-            const charEl = r.querySelector('.word-character');
-            if (charEl && charEl.dataset.word === word) {
-              r.classList.add('active-row');
-              r.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-            }
-          });
-        }
-      });
-    });
+    bindWordbookSeeAlsoLinks(detailPane);
 
     // Bind Bookmark Button
     const bookmarkBtn = document.getElementById('detailBookmarkBtn');
@@ -5252,8 +5380,8 @@
       // 檢查 AI 配置
       const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel', 'uiLang', 'extensionLang', 'aiCustomSystemPrompt', 'aiNotePrompt']);
       if (!settings.aiBaseUrl || !settings.aiApiKey || !settings.aiModel) {
-        alert(t('aiFeedbackConfigureTip') || '請先在設定中配置 AI 服務 (API Key)');
-        chrome.runtime.sendMessage({ action: 'openOptionsPage' });
+        showToast(t('aiFeedbackConfigureTip') || '請先在設定中配置 AI 服務 (API Key)', 3000, 'error');
+        chrome.runtime.sendMessage({ action: 'openOptionsPage', hash: 'sec-ai' });
         return;
       }
 
@@ -5316,7 +5444,7 @@
             }, 30);
           }
         } else {
-          alert('AI 生成失敗：' + (response?.error || '請求出錯，請稍後重試'));
+          showToast('AI 生成失敗：' + (response?.error || '請求出錯，請稍後重試'), 3500, 'error');
         }
       });
     }
@@ -5377,11 +5505,13 @@
           // Show subtle hint at bottom
           aiChatSection.querySelector('.ai-quick-questions').style.display = 'none';
           aiChatSection.querySelector('.ai-input-row').style.display = 'none';
-          aiResponseArea.innerHTML = `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">尚未配置 AI API，<a id="aiGoToSettings" style="color: var(--primary); cursor: pointer; text-decoration: none;">前往設定</a></div>`;
+          const notConfiguredText = t('wordbookAiNotConfigured') || '尚未配置 AI API，';
+          const goToSettingsText = t('wordbookAiGoToSettings') || '前往設定';
+          aiResponseArea.innerHTML = `<div style="font-size: 11px; color: var(--text-muted); margin-top: 4px;">${notConfiguredText}<a id="aiGoToSettings" style="color: var(--primary); cursor: pointer; text-decoration: none;">${goToSettingsText}</a></div>`;
           const goBtn = document.getElementById('aiGoToSettings');
           if (goBtn) {
             goBtn.addEventListener('click', () => {
-              chrome.runtime.sendMessage({ action: 'openOptionsPage' });
+              chrome.runtime.sendMessage({ action: 'openOptionsPage', hash: 'sec-ai' });
             });
           }
           return;
@@ -7077,7 +7207,7 @@ document.addEventListener('keydown', (e) => {
     activeEl.tagName === 'INPUT' ||
     activeEl.tagName === 'TEXTAREA' ||
     activeEl.isContentEditable ||
-    (activeEl.closest && activeEl.closest('#detailPane'))
+    (activeEl.getAttribute && activeEl.getAttribute('contenteditable') === 'true')
   );
   if (isInputActive) return;
 
@@ -7091,6 +7221,7 @@ document.addEventListener('keydown', (e) => {
     if (rows.length === 0) return;
 
     e.preventDefault();
+    unlockAudioContext();
 
     const activeIndex = rows.findIndex(r => r.classList.contains('active-row'));
     let targetIndex = 0;
@@ -7138,6 +7269,7 @@ document.addEventListener('keydown', (e) => {
     const activeRow = document.querySelector('#wordList .table-row.active-row');
     if (activeRow) {
       e.preventDefault();
+      unlockAudioContext();
       const charEl = activeRow.querySelector('.word-character');
       const wordText = charEl?.dataset.word;
       if (wordText) {

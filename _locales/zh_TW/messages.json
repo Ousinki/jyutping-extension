@@ -315,8 +315,38 @@
     "description": "optFeedbackLabel"
   },
   "optFeedbackPlaceholder": {
-    "message": "請填寫您的建議或遇到的問題...",
+    "message": "請填寫您的建議或遇到的問題... (支援 Cmd/Ctrl+V 直接貼上截圖)",
     "description": "optFeedbackPlaceholder"
+  },
+  "optAddScreenshot": {
+    "message": "附帶截圖"
+  },
+  "optMaxImagesLimit": {
+    "message": "最多只能附帶 3 張截圖"
+  },
+  "optSingleImageTooLarge": {
+    "message": "單張圖片不能超過 3MB"
+  },
+  "optTotalImagesTooLarge": {
+    "message": "所有圖片總和不能超過 4.5MB"
+  },
+  "optOnlyImageAllowed": {
+    "message": "僅支援上傳 PNG、JPG、WEBP 格式的圖片"
+  },
+  "optRemoveAttachment": {
+    "message": "移除截圖"
+  },
+  "optZoomPreview": {
+    "message": "點擊放大預覽"
+  },
+  "optFeedbackSuccess": {
+    "message": "發送成功！非常感謝您的寶貴反饋！"
+  },
+  "optFeedbackFailed": {
+    "message": "發送失敗："
+  },
+  "optFeedbackNetworkError": {
+    "message": "網絡連接異常或發生錯誤，請稍後重試。"
   },
   "optFeedbackTitle": {
     "message": "意見與反饋",
@@ -344,6 +374,10 @@
   "optFooterLicense": {
     "message": "授權：",
     "description": "optFooterLicense"
+  },
+  "optFooterWordsHkLicense": {
+    "message": "Words.hk 開放資料協議",
+    "description": "optFooterWordsHkLicense"
   },
   "optFormat": {
     "message": "發音顯示格式",
@@ -1214,6 +1248,9 @@
   "optAutoTranslateYueDefsEngineDesc": {
     "message": "選擇用於翻譯粵語釋義的引擎"
   },
+  "optOpenWebsite": {
+    "message": "打開官網"
+  },
   "optRoadmapTitle": {
     "message": "學習導航"
   },
@@ -1549,8 +1586,14 @@
   "dictReportWord": {
     "message": "詞語："
   },
+  "optSentenceLabel": {
+    "message": "句子："
+  },
   "dictReportPlaceholder": {
     "message": "請描述具體的錯誤（例如讀音不正確、釋義有誤等）..."
+  },
+  "wordbookNoteCancel": {
+    "message": "取消"
   },
   "dictReportSend": {
     "message": "發送報告"
@@ -1569,6 +1612,15 @@
   },
   "wordbookDeselectItem": {
     "message": "點擊取消選中"
+  },
+  "wordbookAiNotConfigured": {
+    "message": "尚未配置 AI API，"
+  },
+  "wordbookAiGoToSettings": {
+    "message": "前往設定"
+  },
+  "aiFeedbackConfigureTip": {
+    "message": "請先在設定中配置 AI 服務 (API Key)"
   },
   "folderAll": {
     "message": "全部生詞"

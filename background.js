@@ -81,7 +81,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     handleAiChatQuery(request, sendResponse);
     return true; // Keep channel open
   } else if (request.action === 'openOptionsPage') {
-    chrome.runtime.openOptionsPage();
+    const hash = request.hash ? (request.hash.startsWith('#') ? request.hash : '#' + request.hash) : '';
+    const optionsUrl = chrome.runtime.getURL(`options.html${hash}`);
+    chrome.tabs.query({ url: chrome.runtime.getURL('options.html*') }, (tabs) => {
+      if (tabs && tabs.length > 0) {
+        chrome.tabs.update(tabs[0].id, { url: optionsUrl, active: true });
+      } else {
+        if (hash) {
+          chrome.tabs.create({ url: optionsUrl });
+        } else {
+          chrome.runtime.openOptionsPage();
+        }
+      }
+    });
   } else if (request.action === 'openWordbook') {
     chrome.tabs.create({ url: chrome.runtime.getURL('wordbook.html') });
   }
@@ -468,11 +480,11 @@ async function translateWithWebEngines(text, targetLang) {
 // 處理粵語 [粵] 釋義翻譯
 async function handleTranslateYueDef(request, sendResponse) {
   try {
-    const text = request.text;
+    const text = (request.text || '').replace(/<[^>]+>/g, '').trim();
     const targetLang = request.targetLang || 'zh-Hans';
     const engine = request.engine || 'google'; // 'google', 'bing', 'ai'
     
-    if (!text || !text.trim()) {
+    if (!text) {
       sendResponse({ success: false, error: 'Empty text' });
       return;
     }
@@ -576,7 +588,7 @@ async function handleAiTranslate(request, tabId) {
     const targetLang = langMap[currentUi] || '繁體中文';
     let promptTemplate = aiPrompt ? aiPrompt.trim() : '';
     if (!promptTemplate) {
-      const dynamicDefault = await getDefaultPrompt(uiLang);
+      const dynamicDefault = await getDefaultPrompt(currentUi);
       promptTemplate = dynamicDefault || `你是一個粵語語言專家。用戶在閱讀粵語文章時選中了一個詞語，請根據上下文語境，用{targetLang}簡要解釋這個詞在句中的具體含義（1-2句話）。只需要回覆解釋內容本身，不需要任何格式標記。
 
 【詞語】{word}
@@ -640,6 +652,10 @@ async function handleAiTranslateSentenceLang(request, tabId) {
   const { text, targetLang, key } = request;
   
   try {
+    if (!text || !text.trim()) {
+      throw new Error('未獲取到需要翻譯的原文內容');
+    }
+    
     const settings = await chrome.storage.local.get(['aiBaseUrl', 'aiApiKey', 'aiModel']);
     const { aiBaseUrl, aiApiKey, aiModel } = settings;
     
@@ -647,8 +663,20 @@ async function handleAiTranslateSentenceLang(request, tabId) {
       throw new Error('請先在設定頁面配置自定義 AI');
     }
     
-    const prompt = `你是一個專業的翻譯。請將以下句子翻譯成${targetLang}，只輸出翻譯結果，不需要任何解釋。
-句子：
+    const langPromptMap = {
+      'zh-Hans': '現代標準漢語（普通話/簡體中文）',
+      'zh-CN': '現代標準漢語（普通話/簡體中文）',
+      'zh-Hant': '現代標準漢語（繁體中文）',
+      'zh-TW': '現代標準漢語（繁體中文）',
+      'zh-HK': '現代標準漢語（繁體中文）',
+      'en': '英文（English）',
+      'ja': '日文（日本語）',
+      'ko': '韓文（한국어）'
+    };
+    const targetLanguage = langPromptMap[key] || targetLang || '現代標準漢語（普通話）';
+
+    const prompt = `你是一個專業的翻譯。請將以下粵語（廣東話）文字精確翻譯成${targetLanguage}，只輸出翻譯結果本身，不要任何額外解釋。
+原文：
 ${text}`;
     
     const url = aiBaseUrl.replace(/\/$/, '') + '/chat/completions';

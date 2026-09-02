@@ -315,8 +315,38 @@
     "description": "optFeedbackLabel"
   },
   "optFeedbackPlaceholder": {
-    "message": "Please describe your suggestions or issues...",
+    "message": "Please describe your suggestions or issues... (Paste screenshot with Cmd/Ctrl+V)",
     "description": "optFeedbackPlaceholder"
+  },
+  "optAddScreenshot": {
+    "message": "Add Screenshot"
+  },
+  "optMaxImagesLimit": {
+    "message": "Maximum 3 screenshots allowed"
+  },
+  "optSingleImageTooLarge": {
+    "message": "Single image cannot exceed 3MB"
+  },
+  "optTotalImagesTooLarge": {
+    "message": "Total images size cannot exceed 4.5MB"
+  },
+  "optOnlyImageAllowed": {
+    "message": "Only PNG, JPG, and WEBP image formats are supported"
+  },
+  "optRemoveAttachment": {
+    "message": "Remove Screenshot"
+  },
+  "optZoomPreview": {
+    "message": "Click to zoom preview"
+  },
+  "optFeedbackSuccess": {
+    "message": "Sent successfully! Thank you so much for your feedback!"
+  },
+  "optFeedbackFailed": {
+    "message": "Failed to send: "
+  },
+  "optFeedbackNetworkError": {
+    "message": "Network error or request failed, please try again later."
   },
   "optFeedbackTitle": {
     "message": "Feedback & Suggestions",
@@ -344,6 +374,10 @@
   "optFooterLicense": {
     "message": "License: ",
     "description": "optFooterLicense"
+  },
+  "optFooterWordsHkLicense": {
+    "message": "Words.hk Open Data License",
+    "description": "optFooterWordsHkLicense"
   },
   "optFormat": {
     "message": "Pronunciation System",
@@ -1214,6 +1248,9 @@
   "optAutoTranslateYueDefsEngineDesc": {
     "message": "Select translation engine for colloquial definitions"
   },
+  "optOpenWebsite": {
+    "message": "Open Website"
+  },
   "optRoadmapTitle": {
     "message": "Learning Roadmap"
   },
@@ -1549,8 +1586,14 @@
   "dictReportWord": {
     "message": "Word: "
   },
+  "optSentenceLabel": {
+    "message": "Sentence: "
+  },
   "dictReportPlaceholder": {
     "message": "Please describe the issue (e.g. incorrect pronunciation, definition error)..."
+  },
+  "wordbookNoteCancel": {
+    "message": "Cancel"
   },
   "dictReportSend": {
     "message": "Send Report"
@@ -1569,6 +1612,15 @@
   },
   "wordbookDeselectItem": {
     "message": "Click to deselect"
+  },
+  "wordbookAiNotConfigured": {
+    "message": "AI API is not configured. "
+  },
+  "wordbookAiGoToSettings": {
+    "message": "Configure in Settings"
+  },
+  "aiFeedbackConfigureTip": {
+    "message": "Please configure AI API (API Key) in Settings first"
   },
   "folderAll": {
     "message": "All Words"

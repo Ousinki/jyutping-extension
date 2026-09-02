@@ -313,6 +313,7 @@ document.addEventListener('DOMContentLoaded', () => {
     recommendModal.classList.remove('show');
     recommendModal.setAttribute('aria-hidden', 'true');
     document.body.style.overflow = '';
+    setTimeout(resetFormToInitial, 300);
   }
 
   function resetFormToInitial() {
@@ -385,7 +386,7 @@ document.addEventListener('DOMContentLoaded', () => {
 ${content}
 =======================================
 客戶端環境：
-擴展版本：1.5.7
+擴展版本：${chrome.runtime?.getManifest?.()?.version || '1.5.8'}
 提交時間：${new Date().toLocaleString()}
 瀏覽器語言：${navigator.language}
 用戶界面語言：${currentLang}
@@ -431,14 +432,8 @@ ${content}
             `;
             document.getElementById('okRecommendBtn')?.addEventListener('click', () => {
               closeModal();
-              setTimeout(resetFormToInitial, 300);
             });
           }
-
-          setTimeout(() => {
-            closeModal();
-            setTimeout(resetFormToInitial, 300);
-          }, 2800);
         } else {
           throw new Error('網絡請求失敗');
         }

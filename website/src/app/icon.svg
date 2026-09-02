@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="100%" height="100%">
+  <defs>
+    <g id="hk-petal">
+      <path d="M 492.936022 125.19583 a 27.917245 27.917245 0 0 0 -14.901582 41.791893 a 45.171052 45.171052 0 0 1 -20.289932 66.204239 a 38.650583 38.650583 0 0 0 -10.816469 64.313021 A 90.342104 90.342104 0 0 1 492.936022 125.19583 Z" />
+    </g>
+    <g id="hk-flower">
+      <use href="#hk-petal" transform="rotate(0 450 300)"/>
+      <use href="#hk-petal" transform="rotate(72 450 300)"/>
+      <use href="#hk-petal" transform="rotate(144 450 300)"/>
+      <use href="#hk-petal" transform="rotate(216 450 300)"/>
+      <use href="#hk-petal" transform="rotate(288 450 300)"/>
+    </g>
+  </defs>
+
+  <!-- Large Centered Pure Bauhinia Flower (Scale 1.38) -->
+  <g transform="translate(256, 256) scale(1.38) translate(-450, -300)">
+    <use href="#hk-flower" fill="none" stroke="#D83131" stroke-width="15" stroke-linejoin="round" stroke-linecap="round" />
+  </g>
+</svg>

@@ -19,9 +19,10 @@ OUTPUT="jyutping-extension-v${VERSION}.zip"
 
 echo "📦 正在打包粵語懸浮詞典 v${VERSION}..."
 
-# 先從 src/ 重新打包 content.js（避免打包到過時的構建產物）
-echo "🔨 構建 content.js..."
+# 先進行代碼檢查與構建
+echo "🔨 構建 content.js 與代碼檢查..."
 npm run build
+npm run lint
 
 # 刪除舊的打包文件（如果存在）
 rm -f "$OUTPUT"
@@ -34,6 +35,16 @@ zip -r "$OUTPUT" \
     dictionary.json \
     options.html \
     options.js \
+    wordbook.html \
+    wordbook.js \
+    spelling.html \
+    spelling.js \
+    roadmap.html \
+    roadmap.js \
+    roadmap-data.js \
+    jyutping-ime.js \
+    marked.min.js \
+    theme-init.js \
     popup.css \
     privacy-policy.html \
     icon.svg \
@@ -45,6 +56,7 @@ zip -r "$OUTPUT" \
     icon_action_gray.png \
     _locales/ \
     fonts/ \
+    audio/ \
     scripts/google-analytics.js \
     -x "*.DS_Store"
 

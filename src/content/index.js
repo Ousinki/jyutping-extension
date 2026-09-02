@@ -45,6 +45,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   let customEnFont = ''; // 自定義英文字體
   let currentRange = null; // 儲存當前選中的範圍
   let highlightSpans = []; // CSS 高亮的 span 元素
+  let highlightOverlay = null; // 虛線邊框等盒模型高亮專用 Shadow DOM 覆蓋層
   let highlightedRubyElement = null; // 全文注音模式下高亮的 ruby 元素
   let activePopupRubyElement = null; // 當前懸浮窗所對應的 ruby 元素
   let highlightStyle = 'yellow'; // 高亮樣式: yellow, blue, red, green, gray, underline-dashed, border-dashed
@@ -123,6 +124,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       japanese: "日",
       korean: "韓",
       aiExplaining: "AI 釋義中...",
+      aiTranslating: "AI 翻譯中...",
+      bingTranslating: "Bing 翻譯中...",
+      retranslateBing: "點擊使用 Bing 重新翻譯",
+      aiAnalyzing: "AI 分析中...",
+      dictError: "錯誤",
+      aiTranslateFailed: "AI 翻譯失敗，點擊使用 Bing 重新翻譯",
       noPronunciation: "找不到該詞的讀音",
       speak: "發音",
       copy: "複製",
@@ -144,7 +151,23 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       hoverSubwords: "懸停查看相關詞與單字",
       sense: "釋義",
       examples: "例句",
-      playExample: "播放例句"
+      playExample: "播放例句",
+      dictBtnReport: "反饋",
+      dictReportTitle: "反饋問題",
+      dictBookmarkAdd: "加入生詞本",
+      optSettingsTitle: "設定",
+      dictReportWord: "詞語：",
+      optSentenceLabel: "句子：",
+      dictReportPlaceholder: "請描述具體的錯誤（例如讀音不正確、釋義有誤等）...",
+      wordbookNoteCancel: "取消",
+      dictReportSend: "發送報告",
+      reportSending: "發送中...",
+      reportSent: "✓ 報告已送出",
+      reportFailed: "❌ 發送失敗",
+      reportNetworkError: "❌ 網絡錯誤",
+      badgeClickToRestore: "點擊切換回粵語原文",
+      badgeTranslationError: "翻譯失敗",
+      badgeTranslating: "翻譯中..."
     },
     "zh-CN": {
       translating: "翻译中...",
@@ -153,6 +176,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       japanese: "日",
       korean: "韩",
       aiExplaining: "AI 释义中...",
+      aiTranslating: "AI 翻译中...",
+      bingTranslating: "Bing 翻译中...",
+      retranslateBing: "点击使用 Bing 重新翻译",
+      aiAnalyzing: "AI 分析中...",
+      dictError: "错误",
+      aiTranslateFailed: "AI 翻译失败，点击使用 Bing 重新翻译",
       noPronunciation: "找不到该词的读音",
       speak: "发音",
       copy: "复制",
@@ -174,7 +203,23 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       hoverSubwords: "悬停查看相关词与单字",
       sense: "释义",
       examples: "例句",
-      playExample: "播放例句"
+      playExample: "播放例句",
+      dictBtnReport: "反馈",
+      dictReportTitle: "反馈问题",
+      dictBookmarkAdd: "加入生词本",
+      optSettingsTitle: "设置",
+      dictReportWord: "词语：",
+      optSentenceLabel: "句子：",
+      dictReportPlaceholder: "请描述具体的错误（例如读音不正确、释义有误等）...",
+      wordbookNoteCancel: "取消",
+      dictReportSend: "发送反馈",
+      reportSending: "发送中...",
+      reportSent: "✓ 反馈已送出",
+      reportFailed: "❌ 发送失败",
+      reportNetworkError: "❌ 网络错误",
+      badgeClickToRestore: "点击切换回粤语原文",
+      badgeTranslationError: "翻译失败",
+      badgeTranslating: "翻译中..."
     },
     "en": {
       translating: "Translating...",
@@ -183,6 +228,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       japanese: "JA",
       korean: "KO",
       aiExplaining: "AI explaining...",
+      aiTranslating: "AI Translating...",
+      bingTranslating: "Bing Translating...",
+      retranslateBing: "Click to retranslate with Bing",
+      aiAnalyzing: "AI Analyzing...",
+      dictError: "Error",
+      aiTranslateFailed: "AI translation failed, click to retry with Bing",
       noPronunciation: "Pronunciation not found",
       speak: "Speak",
       copy: "Copy",
@@ -204,7 +255,23 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       hoverSubwords: "Hover to view related words",
       sense: "Sense",
       examples: "Examples",
-      playExample: "Play example audio"
+      playExample: "Play example audio",
+      dictBtnReport: "Report",
+      dictReportTitle: "Report Issue",
+      dictBookmarkAdd: "Add to Word Book",
+      optSettingsTitle: "Settings",
+      dictReportWord: "Word: ",
+      optSentenceLabel: "Sentence: ",
+      dictReportPlaceholder: "Please describe the issue (e.g. incorrect pronunciation, definition error)...",
+      wordbookNoteCancel: "Cancel",
+      dictReportSend: "Send Report",
+      reportSending: "Sending...",
+      reportSent: "✓ Report Sent",
+      reportFailed: "❌ Failed",
+      reportNetworkError: "❌ Network Error",
+      badgeClickToRestore: "Click to restore original Cantonese",
+      badgeTranslationError: "Translation failed",
+      badgeTranslating: "Translating..."
     },
     "ja": {
       translating: "翻訳中...",
@@ -213,6 +280,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       japanese: "日",
       korean: "韓",
       aiExplaining: "AI 解説中...",
+      aiTranslating: "AI 翻訳中...",
+      bingTranslating: "Bing 翻訳中...",
+      retranslateBing: "クリックして Bing で再翻訳",
+      aiAnalyzing: "AI 分析中...",
+      dictError: "エラー",
+      aiTranslateFailed: "AI翻訳に失敗しました。クリックしてBingで再試行",
       noPronunciation: "発音が見つかりません",
       speak: "発音",
       copy: "コピー",
@@ -234,7 +307,23 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       hoverSubwords: "ホバーして関連語句を表示",
       sense: "語義",
       examples: "例文",
-      playExample: "例文を再生"
+      playExample: "例文を再生",
+      dictBtnReport: "報告",
+      dictReportTitle: "問題を報告",
+      dictBookmarkAdd: "単語帳に追加",
+      optSettingsTitle: "設定",
+      dictReportWord: "単語：",
+      optSentenceLabel: "例文：",
+      dictReportPlaceholder: "問題の詳細（発音の誤り、意味の誤りなど）を入力してください...",
+      wordbookNoteCancel: "キャンセル",
+      dictReportSend: "送信",
+      reportSending: "送信中...",
+      reportSent: "✓ 送信完了",
+      reportFailed: "❌ 送信失敗",
+      reportNetworkError: "❌ 通信エラー",
+      badgeClickToRestore: "クリックして広東語の原文に戻す",
+      badgeTranslationError: "翻訳に失敗しました",
+      badgeTranslating: "翻訳中..."
     },
     "ko": {
       translating: "번역 중...",
@@ -243,6 +332,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       japanese: "日",
       korean: "韓",
       aiExplaining: "AI 설명 중...",
+      aiTranslating: "AI 번역 중...",
+      bingTranslating: "Bing 번역 중...",
+      retranslateBing: "Bing으로 다시 번역하려면 클릭",
+      aiAnalyzing: "AI 분석 중...",
+      dictError: "오류",
+      aiTranslateFailed: "AI 번역 실패, Bing으로 다시 시도하려면 클릭",
       noPronunciation: "발음을 찾을 수 없습니다",
       speak: "발음",
       copy: "복사",
@@ -264,7 +359,23 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       hoverSubwords: "마우스를 올려 관련 어휘 보기",
       sense: "의미",
       examples: "예문",
-      playExample: "예문 재생"
+      playExample: "예문 재생",
+      dictBtnReport: "신고",
+      dictReportTitle: "문제 신고",
+      dictBookmarkAdd: "단어장에 추가",
+      optSettingsTitle: "설정",
+      dictReportWord: "단어: ",
+      optSentenceLabel: "문장: ",
+      dictReportPlaceholder: "구체적인 문제(예: 발음 오류, 의미 오류 등)를 설명해주세요...",
+      wordbookNoteCancel: "취소",
+      dictReportSend: "전송",
+      reportSending: "전송 중...",
+      reportSent: "✓ 전송 완료",
+      reportFailed: "❌ 전송 실패",
+      reportNetworkError: "❌ 네트워크 오류",
+      badgeClickToRestore: "클릭하여 원래 광둥어로 전환",
+      badgeTranslationError: "번역 실패",
+      badgeTranslating: "번역 중..."
     }
   };
 
@@ -311,17 +422,54 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     return trimmed;
   }
 
+  const pt = (key) => (popupI18n[currentLang] || popupI18n['zh-HK'])[key] || key;
+
+  function updatePopupActionButtons() {
+    if (!popup) return;
+    const reportBtn = popup.querySelector('.popup-report-btn');
+    if (reportBtn) {
+      reportBtn.title = pt('dictReportTitle');
+      const span = reportBtn.querySelector('span');
+      if (span) span.textContent = pt('dictBtnReport');
+    }
+    const bookmarkBtn = popup.querySelector('.popup-bookmark-btn');
+    if (bookmarkBtn) {
+      bookmarkBtn.title = pt('dictBookmarkAdd');
+    }
+    const settingsBtn = popup.querySelector('.popup-settings-btn');
+    if (settingsBtn) {
+      settingsBtn.title = pt('optSettingsTitle');
+    }
+    const formTitle = popup.querySelector('.report-form-title');
+    if (formTitle) formTitle.textContent = pt('dictReportTitle');
+    const wordLabel = popup.querySelector('.report-word-label');
+    if (wordLabel) wordLabel.textContent = pt('dictReportWord');
+    const sentLabel = popup.querySelector('.report-sentence-label');
+    if (sentLabel) sentLabel.textContent = pt('optSentenceLabel');
+    const textarea = popup.querySelector('.report-textarea');
+    if (textarea) textarea.placeholder = pt('dictReportPlaceholder');
+    const cancelBtn = popup.querySelector('.report-cancel-btn');
+    if (cancelBtn) cancelBtn.textContent = pt('wordbookNoteCancel');
+    const sendBtn = popup.querySelector('.report-send-btn');
+    if (sendBtn) sendBtn.textContent = pt('dictReportSend');
+  }
+
   chrome.storage.local.get(['extensionLang', 'uiLang'], (res) => {
     const raw = res.extensionLang || res.uiLang;
-    if (raw) currentLang = normalizeUiLang(raw);
+    if (raw) {
+      currentLang = normalizeUiLang(raw);
+      updatePopupActionButtons();
+    }
   });
   chrome.storage.onChanged.addListener((changes, area) => {
     if (area === 'local' && (changes.extensionLang || changes.uiLang)) {
       const nextRaw = (changes.extensionLang || changes.uiLang).newValue;
-      if (nextRaw) currentLang = normalizeUiLang(nextRaw);
+      if (nextRaw) {
+        currentLang = normalizeUiLang(nextRaw);
+        updatePopupActionButtons();
+      }
     }
   });
-  const pt = (key) => (popupI18n[currentLang] || popupI18n['zh-HK'])[key] || key;
 
   // ========== Toast 多語言翻譯 ==========
   const toastI18n = {
@@ -675,6 +823,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       console.error('[Jyutping] Failed to load popup.css into Shadow DOM:', e);
     }
 
+    // 創建虛線邊框專用覆蓋層（CSS.highlights 規範不支持 border/outline，通過 Shadow DOM 繪製）
+    highlightOverlay = document.createElement('div');
+    highlightOverlay.id = 'jyutping-highlight-overlay';
+    highlightOverlay.style.cssText = 'position: fixed; pointer-events: none; border: 1.5px dashed #888; border-radius: 3px; z-index: 2147483640; display: none; box-sizing: border-box;';
+    shadowRoot.appendChild(highlightOverlay);
+
     // 在主頁面注入宿主層樣式（高亮、長按進度環、Toast、Ruby 注音、翻譯高亮）
     // 這些樣式作用在宿主頁面 DOM 元素上，無法放入 Shadow DOM
     const hostStyle = document.createElement('style');
@@ -687,24 +841,32 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       }
 
       /* ========== 文字高亮樣式 ========== */
-      ::highlight(jyutping-highlight),
       .jyutping-highlight {
-        background-color: rgba(255, 220, 80, 0.45) !important;
         font-size: inherit !important;
       }
-      .jyutping-highlight.hl-yellow { background-color: rgba(255, 220, 80, 0.45) !important; }
-      .jyutping-highlight.hl-blue { background-color: rgba(96, 165, 250, 0.35) !important; }
-      .jyutping-highlight.hl-red { background-color: rgba(248, 113, 113, 0.35) !important; }
-      .jyutping-highlight.hl-green { background-color: rgba(74, 222, 128, 0.35) !important; }
-      .jyutping-highlight.hl-gray { background-color: rgba(156, 163, 175, 0.3) !important; }
-      .jyutping-highlight.hl-underline-dashed {
+      ::highlight(jyutping-highlight-yellow), .jyutping-highlight.hl-yellow, .jyutping-highlight:not([class*="hl-"]) {
+        background-color: rgba(255, 220, 80, 0.45) !important;
+      }
+      ::highlight(jyutping-highlight-blue), .jyutping-highlight.hl-blue {
+        background-color: rgba(96, 165, 250, 0.35) !important;
+      }
+      ::highlight(jyutping-highlight-red), .jyutping-highlight.hl-red {
+        background-color: rgba(248, 113, 113, 0.35) !important;
+      }
+      ::highlight(jyutping-highlight-green), .jyutping-highlight.hl-green {
+        background-color: rgba(74, 222, 128, 0.35) !important;
+      }
+      ::highlight(jyutping-highlight-gray), .jyutping-highlight.hl-gray {
+        background-color: rgba(156, 163, 175, 0.3) !important;
+      }
+      ::highlight(jyutping-highlight-underline-dashed), .jyutping-highlight.hl-underline-dashed {
         background-color: transparent !important;
         text-decoration: underline dashed !important;
         text-decoration-color: #888 !important;
         text-underline-offset: 3px !important;
         text-decoration-thickness: 1.5px !important;
       }
-      .jyutping-highlight.hl-border-dashed {
+      ::highlight(jyutping-highlight-border-dashed), .jyutping-highlight.hl-border-dashed {
         background-color: transparent !important;
         outline: 1.5px dashed #888 !important;
         outline-offset: 2px !important;
@@ -1153,7 +1315,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     if (transHoverEngine === 'ai' && aiEnabled) {
       let fakeTranslations = {};
       transLangs.forEach(lang => {
-        fakeTranslations[lang] = 'AI 翻譯中...';
+        fakeTranslations[lang] = pt('aiTranslating');
       });
       showTranslatePopup(text, fakeTranslations, false);
 
@@ -1177,7 +1339,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
             else if (key === 'ko') labelName = pt('korean');
             labelEl.textContent = labelName;
             labelEl.classList.add('translate-label-ai');
-            labelEl.title = '點擊使用 Bing 重新翻譯';
+            labelEl.title = pt('retranslateBing');
           }
         });
       }
@@ -1206,12 +1368,15 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
   }
 
+  let currentSentenceTranslationText = '';
+
   // 顯示翻譯結果：優先在詞典彈窗內，否則用獨立浮窗
   function showTranslatePopup(originalText, translations, loading) {
     cancelScheduledHide();
     lastPopupShowTime = Date.now();
     
-    if (originalText !== null) {
+    if (originalText !== null && typeof originalText !== 'undefined') {
+      currentSentenceTranslationText = originalText;
       activeQAContext.word = '';
       activeQAContext.sentence = originalText;
       activeQAContext.history = [];
@@ -1237,7 +1402,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
               else if (key === 'en') { label = pt('english'); langName = '英文'; }
               else if (key === 'ja') { label = pt('japanese'); langName = '日文'; }
               else if (key === 'ko') { label = pt('korean'); langName = '韓文'; }
-              rows += `<div class="translate-row" data-key="${key}" data-lang="${langName}"><span class="translate-label translate-label-${key}" title="點擊使用 AI 重新翻譯" style="cursor: pointer;">${label}</span><span class="translate-text">${translations[key] || ''}</span></div>`;
+              const rowText = encodeURIComponent(currentSentenceTranslationText || activeQAContext.sentence || '');
+              rows += `<div class="translate-row" data-key="${key}" data-lang="${langName}" data-text="${rowText}"><span class="translate-label translate-label-${key}" title="${pt('retranslateAi')}" style="cursor: pointer;">${label}</span><span class="translate-text">${translations[key] || ''}</span></div>`;
             }
           }
           translateDiv.innerHTML = rows;
@@ -1249,6 +1415,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
               const row = labelEl.closest('.translate-row');
               const key = row.dataset.key;
               const langName = row.dataset.lang;
+              const rawSentence = decodeURIComponent(row.dataset.text || '') || currentSentenceTranslationText || activeQAContext.sentence || '';
               const textEl = row.querySelector('.translate-text');
               
               if (popup) popup.classList.add('jyutping-popup-pinned');
@@ -1260,21 +1427,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
                 else if (key === 'en') labelEl.textContent = pt('english');
                 else if (key === 'ja') labelEl.textContent = pt('japanese');
                 else if (key === 'ko') labelEl.textContent = pt('korean');
-                labelEl.title = '點擊使用 AI 重新翻譯';
+                labelEl.title = pt('retranslateAi');
                 
                 if (textEl) {
-                  textEl.textContent = 'Bing 翻譯中...';
+                  textEl.textContent = pt('bingTranslating');
                   textEl.style.opacity = '0.5';
                 }
                 chrome.runtime.sendMessage({
                   action: 'bingTranslateSentenceLang',
-                  text: activeQAContext.sentence,
+                  text: rawSentence,
                   targetLang: key,
                   key: key
                 });
               } else {
                 if (textEl) {
-                  textEl.textContent = 'AI 翻譯中...';
+                  textEl.textContent = pt('aiTranslating');
                   textEl.style.opacity = '0.5';
                 }
                 let labelName = 'AI';
@@ -1283,12 +1450,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
                 else if (key === 'ja') labelName = pt('japanese');
                 else if (key === 'ko') labelName = pt('korean');
                 labelEl.textContent = labelName;
-                labelEl.title = '點擊使用 Bing 重新翻譯';
+                labelEl.title = pt('retranslateBing');
                 labelEl.classList.add('translate-label-ai');
                 chrome.runtime.sendMessage({
                   action: 'aiTranslateSentenceLang',
-                  text: activeQAContext.sentence,
-                  targetLang: labelName,
+                  text: rawSentence,
+                  targetLang: langName || '現代標準漢語（普通話）',
                   key: key
                 });
               }
@@ -1321,7 +1488,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           else if (key === 'en') { label = pt('english'); langName = '英文'; }
           else if (key === 'ja') { label = pt('japanese'); langName = '日文'; }
           else if (key === 'ko') { label = pt('korean'); langName = '韓文'; }
-          rows += `<div class="translate-row" data-key="${key}" data-lang="${langName}"><span class="translate-label translate-label-${key}" title="點擊使用 AI 重新翻譯" style="cursor: pointer;">${label}</span><span class="translate-text">${translations[key] || ''}</span></div>`;
+          const rowText = encodeURIComponent(currentSentenceTranslationText || activeQAContext.sentence || '');
+          rows += `<div class="translate-row" data-key="${key}" data-lang="${langName}" data-text="${rowText}"><span class="translate-label translate-label-${key}" title="${pt('retranslateAi')}" style="cursor: pointer;">${label}</span><span class="translate-text">${translations[key] || ''}</span></div>`;
         }
       }
       innerContent = rows;
@@ -1342,6 +1510,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         if (!row) return;
         const key = row.dataset.key;
         const langName = row.dataset.lang;
+        const rawSentence = decodeURIComponent(row.dataset.text || '') || currentSentenceTranslationText || activeQAContext.sentence || '';
         const textEl = row.querySelector('.translate-text');
         
         if (popup) popup.classList.add('jyutping-popup-pinned');
@@ -1353,21 +1522,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           else if (key === 'en') labelEl.textContent = pt('english');
           else if (key === 'ja') labelEl.textContent = pt('japanese');
           else if (key === 'ko') labelEl.textContent = pt('korean');
-          labelEl.title = '點擊使用 AI 重新翻譯';
+          labelEl.title = pt('retranslateAi');
           
           if (textEl) {
-            textEl.textContent = 'Bing 翻譯中...';
+            textEl.textContent = pt('bingTranslating');
             textEl.style.opacity = '0.5';
           }
           chrome.runtime.sendMessage({
             action: 'bingTranslateSentenceLang',
-            text: activeQAContext.sentence,
+            text: rawSentence,
             targetLang: key,
             key: key
           });
         } else {
           if (textEl) {
-            textEl.textContent = 'AI 翻譯中...';
+            textEl.textContent = pt('aiTranslating');
             textEl.style.opacity = '0.5';
           }
           let labelName = 'AI';
@@ -1376,12 +1545,12 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           else if (key === 'ja') labelName = pt('japanese');
           else if (key === 'ko') labelName = pt('korean');
           labelEl.textContent = labelName;
-          labelEl.title = '點擊使用 Bing 重新翻譯';
+          labelEl.title = pt('retranslateBing');
           labelEl.classList.add('translate-label-ai');
           chrome.runtime.sendMessage({
             action: 'aiTranslateSentenceLang',
-            text: activeQAContext.sentence,
-            targetLang: labelName,
+            text: rawSentence,
+            targetLang: langName || '現代標準漢語（普通話）',
             key: key
           });
         }
@@ -1514,7 +1683,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     // 預先填充 Q&A 內容緩存，防止結果返回時遺失上下文
     activeQAContext.word = word;
     activeQAContext.sentence = sentence;
-    activeQAContext.originalTranslation = 'AI 翻譯中...';
+    activeQAContext.originalTranslation = pt('aiTranslating');
     activeQAContext.history = [];
 
     // 擷取並儲存當前目標位置，避免 fallback 到上一次的 popup 導致位置跳躍
@@ -1536,7 +1705,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
 
     // 顯示加載狀態
-    showAiResult(word, '✨ AI 分析中...', targetRect);
+    showAiResult(word, pt('aiAnalyzing'), targetRect);
     
     chrome.runtime.sendMessage({
       action: 'aiTranslate',
@@ -1545,14 +1714,38 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     });
   }
 
+  const AI_SPARKLE_ICON_SVG = `<svg class="ai-sparkle-svg" viewBox="0 0 24 24" width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L12.39 7.61L18 10L12.39 12.39L10 18L7.61 12.39L2 10L7.61 7.61L10 2Z" fill="#F59E0B"/><path d="M19 15L20.19 17.81L23 19L20.19 20.19L19 23L17.81 20.19L15 19L17.81 17.81L19 15Z" fill="#FBBF24"/></svg>`;
+
+  const AI_LOADING_SPARKLE_SVG = `<svg class="ai-sparkle-svg ai-sparkle-loading" viewBox="0 0 24 24" width="15" height="15" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M10 2L12.39 7.61L18 10L12.39 12.39L10 18L7.61 12.39L2 10L7.61 7.61L10 2Z" fill="#F59E0B"/><path d="M19 15L20.19 17.81L23 19L20.19 20.19L19 23L17.81 20.19L15 19L17.81 17.81L19 15Z" fill="#FBBF24"/></svg>`;
+
+  const AI_ERROR_ICON_SVG = `<svg class="ai-error-svg" viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>`;
+
   // 顯示 AI 翻譯結果
   function showAiResult(word, explanation, targetRect = null) {
-    // 確保如果沒有前綴，預設補上 "✨ "
-    let textToRender = explanation;
-    if (!explanation.startsWith('✨') && !explanation.startsWith('❌')) {
-      textToRender = '✨ ' + explanation;
+    const isError = explanation.startsWith('❌');
+    const isLoading = explanation.includes('AI 分析中') || explanation.includes('AI analyzing');
+    const cleanText = explanation.replace(/^[✨❌]\s*/, '');
+
+    let prefixSvg = AI_SPARKLE_ICON_SVG;
+    if (isError) {
+      prefixSvg = AI_ERROR_ICON_SVG;
+    } else if (isLoading) {
+      prefixSvg = AI_LOADING_SPARKLE_SVG;
     }
-    const renderedText = renderMarkdown(textToRender);
+
+    let renderedText = '';
+    if (isLoading) {
+      renderedText = `<div class="ai-loading-row" style="display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; font-size: 13px; color: var(--popup-text, #333);">${prefixSvg}<span>${cleanText}</span></div>`;
+    } else if (isError) {
+      renderedText = `<div class="ai-error-row" style="display: flex; align-items: flex-start; gap: 6px; color: #EF4444; font-size: 13px;">${prefixSvg}<div style="flex: 1;">${renderMarkdown(cleanText)}</div></div>`;
+    } else {
+      const renderedMarkdown = renderMarkdown(cleanText);
+      if (renderedMarkdown.startsWith('<div')) {
+        renderedText = renderedMarkdown.replace(/^<div([^>]*)>/, `<div$1>${prefixSvg}`);
+      } else {
+        renderedText = `${prefixSvg}${renderedMarkdown}`;
+      }
+    }
 
     // 如果詞典彈窗正在顯示（且非精簡/Ruby模式），插入其中
     if (popup && popup.style.display !== 'none' && !popup.classList.contains('compact-mode') && !popup.classList.contains('popup-ruby-mode')) {
@@ -1726,21 +1919,21 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         <!-- 右上角操作按鈕區（包含報告和設定） -->
         <div class="popup-actions-wrapper" style="position: absolute; top: 10px; right: 10px; display: flex; align-items: center; z-index: 10;">
           <!-- 報告錯誤按鈕 (預設隱藏，hover wrapper 時滑出) -->
-          <div class="popup-report-btn" title="${chrome.i18n.getMessage('dictReportTitle') || '報告錯誤'}" style="cursor: pointer; opacity: 0; width: 0; min-width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); font-size: 12px; white-space: nowrap; padding: 0;">
+          <div class="popup-report-btn" title="${pt('dictReportTitle')}" style="cursor: pointer; opacity: 0; width: 0; min-width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); font-size: 12px; white-space: nowrap; padding: 0;">
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 4px; flex-shrink: 0;">
               <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
               <line x1="4" y1="22" x2="4" y2="15"></line>
             </svg>
-            <span style="transform: translateY(-0.5px)">${chrome.i18n.getMessage('dictBtnReport') || '報告'}</span>
+            <span style="transform: translateY(-0.5px)">${pt('dictBtnReport')}</span>
           </div>
           <!-- 生詞本收藏按鈕 -->
-          <div class="popup-bookmark-btn" title="${chrome.i18n.getMessage('dictBookmarkAdd') || '加入生詞本'}" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; width: 0; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); padding: 0;">
+          <div class="popup-bookmark-btn" title="${pt('dictBookmarkAdd')}" style="cursor: pointer; opacity: 0; width: 0; overflow: hidden; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); display: flex; align-items: center; justify-content: center; height: 24px; width: 0; border-radius: 4px; background-color: var(--popup-divider); margin-right: 0; color: var(--popup-text); padding: 0;">
             <svg width="14" height="14" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
               <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" fill="none" stroke="currentColor" stroke-width="1.5"></polygon>
             </svg>
           </div>
           <!-- 設定按鈕 -->
-          <div class="popup-settings-btn" title="${chrome.i18n.getMessage('optSettingsTitle') || '設定'}" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
+          <div class="popup-settings-btn" title="${pt('optSettingsTitle')}" style="cursor: pointer; opacity: 0.4; transition: opacity 0.2s; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 4px;">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--popup-text, currentColor)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex-shrink: 0;">
               <circle cx="12" cy="12" r="3"></circle>
               <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
@@ -1756,17 +1949,17 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         <!-- 內聯報告表單 (預設隱藏) -->
         <div class="popup-report-form" style="display:none; padding: 12px; flex-direction: column; gap: 8px;">
           <div style="font-weight: bold; color: var(--popup-text); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center;">
-            <span>${chrome.i18n.getMessage('dictReportTitle') || '報告錯誤'}</span>
+            <span class="report-form-title">${pt('dictReportTitle')}</span>
             <span class="report-cancel-icon" style="cursor: pointer; opacity: 0.6;">✕</span>
           </div>
           <div style="font-size: 13px; color: var(--popup-text-muted); background: var(--popup-bg); padding: 6px; border-radius: 4px; border: 1px solid var(--popup-divider);">
-            <div><strong>${chrome.i18n.getMessage('dictReportWord') || '詞語：'}</strong><span class="report-word-preview"></span></div>
-            <div style="margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong>${chrome.i18n.getMessage('optSentenceLabel') || '句子：'}</strong><span class="report-sentence-preview"></span></div>
+            <div><strong class="report-word-label">${pt('dictReportWord')}</strong><span class="report-word-preview"></span></div>
+            <div style="margin-top: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;"><strong class="report-sentence-label">${pt('optSentenceLabel')}</strong><span class="report-sentence-preview"></span></div>
           </div>
-          <textarea class="report-textarea" placeholder="${chrome.i18n.getMessage('dictReportPlaceholder') || '請描述具體的錯誤（例如讀音不正確、釋義有誤等）...'}" style="width: 100%; height: 60px; padding: 6px; border: 1px solid var(--popup-border); border-radius: 4px; background: var(--popup-bg); color: var(--popup-text); font-size: 13px; resize: none; outline: none !important; box-shadow: none !important; -webkit-appearance: none; box-sizing: border-box;"></textarea>
+          <textarea class="report-textarea" placeholder="${pt('dictReportPlaceholder')}" style="width: 100%; height: 60px; padding: 6px; border: 1px solid var(--popup-border); border-radius: 4px; background: var(--popup-bg); color: var(--popup-text); font-size: 13px; resize: none; outline: none !important; box-shadow: none !important; -webkit-appearance: none; box-sizing: border-box;"></textarea>
           <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 4px;">
-            <button class="report-cancel-btn" style="padding: 4px 10px; border: 1px solid var(--popup-border); background: transparent; color: var(--popup-text); border-radius: 4px; cursor: pointer; font-size: 12px;">${chrome.i18n.getMessage('wordbookNoteCancel') || '取消'}</button>
-            <button class="report-send-btn" style="padding: 4px 10px; border: none; background: var(--popup-accent); color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">${chrome.i18n.getMessage('dictReportSend') || '發送報告'}</button>
+            <button class="report-cancel-btn" style="padding: 4px 10px; border: 1px solid var(--popup-border); background: transparent; color: var(--popup-text); border-radius: 4px; cursor: pointer; font-size: 12px;">${pt('wordbookNoteCancel')}</button>
+            <button class="report-send-btn" style="padding: 4px 10px; border: none; background: var(--popup-accent); color: white; border-radius: 4px; cursor: pointer; font-size: 12px;">${pt('dictReportSend')}</button>
           </div>
         </div>
       </div>
@@ -1876,12 +2069,26 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       reportForm.style.display = 'flex';
       actionsWrapper.style.display = 'none'; // 隱藏右上角按鈕
       
+      // 確保多語言文本即時刷新
+      const formTitle = popup.querySelector('.report-form-title');
+      if (formTitle) formTitle.textContent = pt('dictReportTitle');
+      const wordLabel = popup.querySelector('.report-word-label');
+      if (wordLabel) wordLabel.textContent = pt('dictReportWord');
+      const sentLabel = popup.querySelector('.report-sentence-label');
+      if (sentLabel) sentLabel.textContent = pt('optSentenceLabel');
+      const textarea = popup.querySelector('.report-textarea');
+      if (textarea) textarea.placeholder = pt('dictReportPlaceholder');
+      const cancelBtn = popup.querySelector('.report-cancel-btn');
+      if (cancelBtn) cancelBtn.textContent = pt('wordbookNoteCancel');
+      const sendBtn = popup.querySelector('.report-send-btn');
+      if (sendBtn) sendBtn.textContent = pt('dictReportSend');
+
       // 填充預覽數據
       popup.querySelector('.report-word-preview').textContent = currentWord || '未知';
       popup.querySelector('.report-sentence-preview').textContent = currentContextSentence || '未知';
       
       // 清空輸入框
-      popup.querySelector('.report-textarea').value = '';
+      if (textarea) textarea.value = '';
     });
     
     // 取消按鈕
@@ -1903,11 +2110,11 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       e.stopPropagation();
       
       const btn = e.currentTarget;
-      const originalText = btn.textContent;
+      const originalText = pt('dictReportSend');
       const originalBg = btn.style.backgroundColor;
       
       // 按鈕變為發送中狀態
-      btn.textContent = '發送中...';
+      btn.textContent = pt('reportSending');
       btn.style.opacity = '0.8';
       btn.style.pointerEvents = 'none';
       
@@ -1936,17 +2143,17 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         
         if (response.status === 200) {
           // 發送成功
-          btn.textContent = '✓ 報告已送出';
+          btn.textContent = pt('reportSent');
           btn.style.backgroundColor = '#4caf50'; // 綠色
         } else {
           // 服務器返回錯誤
-          btn.textContent = '❌ 發送失敗';
+          btn.textContent = pt('reportFailed');
           btn.style.backgroundColor = '#f44336'; // 紅色
           console.error('Email API Error:', result);
         }
       } catch (error) {
         // 網絡錯誤
-        btn.textContent = '❌ 網絡錯誤';
+        btn.textContent = pt('reportNetworkError');
         btn.style.backgroundColor = '#f44336'; // 紅色
         console.error('Network Error:', error);
       }
@@ -3800,27 +4007,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       return; // ★ 核心修復：在空白處移動時，保留舊的高亮，讓它跟隨彈窗生命週期
     }
 
-    // 到這裡說明滑鼠在真正的文字上。移除舊高亮並清理 DOM。
-    const previousWord = currentWord;
-    if (highlightSpans.length > 0) {
-      removeHighlight();
-      // 由於 removeHighlight 調用了 normalize() 合併了文字節點，
-      // 原來的 range.startContainer 可能已經失效，所以必須重新獲取一次
-      if (e.isTriggerKey) {
-        if (popup) popup.style.pointerEvents = 'none';
-        if (translatePopup) translatePopup.style.pointerEvents = 'none';
-      }
-      range = getCaretRangeFromPointInShadow(clientX, clientY);
-      if (e.isTriggerKey) {
-        if (popup) popup.style.pointerEvents = originalPointerEvents;
-        if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
-      }
-      if (!range) {
-        maybeScheduleHide();
-        return;
-      }
-    }
-
     const textNode = range.startContainer;
     if (textNode.nodeType !== Node.TEXT_NODE) {
       maybeScheduleHide();
@@ -3839,27 +4025,47 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     currentContextSentence = text.trim();
     
     // 從當前位置往後取 15 個字符（標準查詞行為：只匹配光標後的詞）
-    // 這樣符合大多數詞典插件（如 Zhongwen, Rikaikun）的習慣
     const searchText = text.substring(offset, offset + 15);
     const result = lookupWord(searchText);
     
     if (result) {
-      // 如果是用戶正在瀏覽的導航彈窗，而現在滑鼠移到了其他文字上
-      // 我們應該取消導航狀態，轉為顯示新詞
-      justNavigated = false;
-
-      // 無論是否同詞，都重新應用高亮（因為上面已經移除了）
-      highlightText(textNode, offset, result);
-
-      // 如果是同一個詞，且彈窗已顯示，不需要重建彈窗內容
-      if (previousWord === result.word && popup.style.display !== 'none') {
-        currentWord = result.word;
-        // 如果有待執行的隱藏任務，取消它（因為用戶又回來了）
+      // 如果是用戶正在瀏覽的同一詞且彈窗與高亮依然存在，取消隱藏定時器並直接返回
+      if (result.word === currentWord && (highlightSpans.length > 0 || highlightedRubyElement) && popup && popup.style.display !== 'none') {
         cancelScheduledHide();
         return;
       }
-      
-      // 新詞，更新顯示
+
+      // 如果是用戶正在瀏覽的導航彈窗，而現在滑鼠移到了其他有效詞上
+      // 取消導航狀態，轉為顯示新詞
+      justNavigated = false;
+
+      // 匹配到有效新詞時，再移除舊高亮並清理 DOM
+      if (highlightSpans.length > 0 || highlightedRubyElement) {
+        removeHighlight();
+        if (e.isTriggerKey) {
+          if (popup) popup.style.pointerEvents = 'none';
+          if (translatePopup) translatePopup.style.pointerEvents = 'none';
+        }
+        range = getCaretRangeFromPointInShadow(clientX, clientY);
+        if (e.isTriggerKey) {
+          if (popup) popup.style.pointerEvents = originalPointerEvents;
+          if (translatePopup) translatePopup.style.pointerEvents = originalTranslatePointerEvents;
+        }
+        if (!range || range.startContainer.nodeType !== Node.TEXT_NODE) {
+          maybeScheduleHide();
+          return;
+        }
+      }
+
+      const freshTextNode = range.startContainer;
+      const freshOffset = getAccurateOffset(freshTextNode, clientX, clientY);
+      if (freshOffset === -1) {
+        maybeScheduleHide();
+        return;
+      }
+
+      // 應用新高亮
+      highlightText(freshTextNode, freshOffset, result);
       currentWord = result.word;
       
       // 使用文字本身的位置來定位彈窗（而非滑鼠位置）
@@ -3872,7 +4078,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           scheduleHideIfMouseOutside();
         }
       } else {
-        // 如果沒有選區（這應該不可能發生，除非 selection 失敗），使用滑鼠位置
+        // 如果沒有選區，使用滑鼠位置
         if (modifierPressed || popupDisplayStyle === 'ruby' || popupDisplayStyle === 'compact') {
           showPopup(result, {
             left: clientX, right: clientX, 
@@ -3884,8 +4090,8 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         }
       }
     } else {
-      // 未匹配到詞
-      currentWord = null;
+      // 滑鼠移動到了非詞語字符（如標點、空格、英文字符等）
+      // 保留原有高亮，讓它跟隨彈窗生命週期（移入彈窗繼續保留，超時離開才由 hidePopup 銷毀）
       maybeScheduleHide();
     }
   }
@@ -4513,13 +4719,16 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   }
 
   async function requestYueDefTranslation(text, targetLang, engine) {
+    const cleanText = (text || '').replace(/<[^>]+>/g, '').trim();
+    if (!cleanText) return '';
+
     // 1. 優先嘗試發送給後台 Service Worker（帶 4 秒超時保障）
     try {
       const bgPromise = new Promise((resolve, reject) => {
         const timer = setTimeout(() => reject(new Error('Background timeout')), 4000);
         chrome.runtime.sendMessage({
           action: 'translateYueDef',
-          text: text,
+          text: cleanText,
           targetLang: targetLang,
           engine: engine
         }, (resp) => {
@@ -4547,7 +4756,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       else if (targetLang === 'ko') googleTo = 'ko';
       else if (targetLang === 'zh-Hant' || targetLang === 'zh-TW' || targetLang === 'zh-HK') googleTo = 'zh-TW';
 
-      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(text)}`;
+      const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=auto&tl=${googleTo}&dt=t&q=${encodeURIComponent(cleanText)}`;
       const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
       if (resp.ok) {
         const data = await resp.json();
@@ -4565,7 +4774,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       let target = targetLang || 'zh-CN';
       if (target === 'zh-Hans') target = 'zh-CN';
       else if (target === 'zh-Hant' || target === 'zh-HK') target = 'zh-TW';
-      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(text)}&langpair=zh-HK|${target}`;
+      const url = `https://api.mymemory.translated.net/get?q=${encodeURIComponent(cleanText)}&langpair=zh-HK|${target}`;
       const resp = await fetch(url, { signal: AbortSignal.timeout(3500) });
       if (resp.ok) {
         const data = await resp.json();
@@ -4611,6 +4820,24 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
     }
   }
 
+  function bindPopupSeeAlsoLinks(rootEl) {
+    if (!rootEl) return;
+    rootEl.querySelectorAll('.see-also-link').forEach(link => {
+      link.onclick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const word = link.dataset.word;
+        if (dictionary && dictionary[word]) {
+          isMouseOverPopup = true;
+          justNavigated = true;
+          currentWord = word;
+          showPopup({ word, entry: dictionary[word], length: word.length }, null);
+          isMouseOverPopup = true;
+        }
+      };
+    });
+  }
+
   // 粵語釋義點擊即翻 / 自動翻譯處理函數
   async function translateBadgeElement(badgeEl, defItemEl) {
     const text = badgeEl.dataset.text;
@@ -4636,8 +4863,10 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         defItemEl.dataset.isReplaced = 'false';
         badgeEl.className = 'badge-yue';
         badgeEl.innerHTML = `粵${yueIconSvg}`;
-        badgeEl.title = chrome.i18n.getMessage('badgeClickToTranslate') || '點擊翻譯此釋義';
-        textSpan.textContent = text;
+        badgeEl.title = pt('badgeClickToTranslate');
+        const origHtml = badgeEl.dataset.origHtml || badgeEl.dataset.text || '';
+        textSpan.innerHTML = origHtml;
+        bindPopupSeeAlsoLinks(textSpan);
         return;
       }
 
@@ -4646,7 +4875,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         defItemEl.dataset.isReplaced = 'true';
         badgeEl.className = 'badge-trans-lang badge-clickable';
         badgeEl.innerHTML = `${langLabel}${toggleIconSvg}`;
-        badgeEl.title = chrome.i18n.getMessage('badgeClickToRestore') || '點擊切換回粵語原文';
+        badgeEl.title = pt('badgeClickToRestore');
         textSpan.textContent = cached;
         return;
       }
@@ -4655,7 +4884,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const originalBadgeHtml = badgeEl.innerHTML;
       const originalBadgeClass = badgeEl.className;
       badgeEl.classList.add('loading');
-      textSpan.textContent = chrome.i18n.getMessage('badgeTranslating') || '翻譯中...';
+      textSpan.textContent = pt('badgeTranslating');
 
       try {
         const translation = await requestYueDefTranslation(text, targetLang, engine);
@@ -4665,18 +4894,22 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           defItemEl.dataset.isReplaced = 'true';
           badgeEl.className = 'badge-trans-lang badge-clickable';
           badgeEl.innerHTML = `${langLabel}${toggleIconSvg}`;
-          badgeEl.title = chrome.i18n.getMessage('badgeClickToRestore') || '點擊切換回粵語原文';
+          badgeEl.title = pt('badgeClickToRestore');
           textSpan.textContent = translation;
         } else {
           badgeEl.className = originalBadgeClass;
           badgeEl.innerHTML = originalBadgeHtml;
-          textSpan.textContent = text;
+          const origHtml = badgeEl.dataset.origHtml || badgeEl.dataset.text || '';
+          textSpan.innerHTML = origHtml;
+          bindPopupSeeAlsoLinks(textSpan);
         }
       } catch (e) {
         badgeEl.classList.remove('loading');
         badgeEl.className = originalBadgeClass;
         badgeEl.innerHTML = originalBadgeHtml;
-        textSpan.textContent = text;
+        const origHtml = badgeEl.dataset.origHtml || badgeEl.dataset.text || '';
+        textSpan.innerHTML = origHtml;
+        bindPopupSeeAlsoLinks(textSpan);
       }
     } else {
       // Mode A: 下方展開
@@ -4699,7 +4932,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         return;
       }
 
-      const translatingText = chrome.i18n.getMessage('badgeTranslating') || '翻譯中...';
+      const translatingText = pt('badgeTranslating');
       transEl.classList.add('loading');
       transEl.innerHTML = `${langBadgeHtml}<span>${translatingText}</span>`;
 
@@ -4710,11 +4943,11 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           yueDefTranslationCache.set(cacheKey, translation);
           transEl.innerHTML = `${langBadgeHtml}<span>${translation}</span>`;
         } else {
-          transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--popup-text-muted); opacity: 0.7;">${chrome.i18n.getMessage('badgeTranslationError') || '翻譯失敗'}</span>`;
+          transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--popup-text-muted); opacity: 0.7;">${pt('badgeTranslationError')}</span>`;
         }
       } catch (e) {
         transEl.classList.remove('loading');
-        transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--popup-text-muted); opacity: 0.7;">${chrome.i18n.getMessage('badgeTranslationError') || '翻譯失敗'}</span>`;
+        transEl.innerHTML = `${langBadgeHtml}<span style="color: var(--popup-text-muted); opacity: 0.7;">${pt('badgeTranslationError')}</span>`;
       }
     }
   }
@@ -4883,7 +5116,7 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
           const cleanTranslateText = rawText.replace(/<[^>]+>/g, '').trim();
           innerHtml = `
             <div class="def-main-row">
-              <span class="badge-yue" data-text="${cleanTranslateText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
+              <span class="badge-yue" data-text="${cleanTranslateText.replace(/"/g, '&quot;')}" data-orig-html="${rawText.replace(/"/g, '&quot;')}" title="${badgeTitle}" role="button">粵<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="2" y1="12" x2="22" y2="12"></line><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"></path></svg></span>
               <span class="def-content-text">${rawText}</span>
               ${hasExamples ? '<span class="example-arrow-icon"> ▷</span>' : ''}
             </div>
@@ -5367,7 +5600,6 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
   // 渲染例句到右側面板
   function renderExamples(examples) {
     const popupExamples = popup.querySelector('.popup-examples');
-    const loadingText = paragraphTransEngine === 'bing' ? '使用 Bing 翻譯中…' : '使用 AI 翻譯中…';
     let html = `<div class="example-title">${pt('examples') || '例句'}</div>`;
     
     examples.forEach((eg, i) => {
@@ -5548,18 +5780,16 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
       const end = Math.min(offset + length, textNode.textContent.length);
       const originalText = textNode.textContent.substring(offset, end);
       
-      // 創建 Range 用於定位彈窗
+      // 創建 Range 用於定位彈窗和繪製高亮
       const range = document.createRange();
       range.setStart(textNode, offset);
       range.setEnd(textNode, end);
-      
-      let wrapper;
+      currentRange = range;
       
       if (popupDisplayStyle === 'ruby') {
         // 內嵌 Ruby 模式
-        wrapper = document.createElement('ruby');
+        const wrapper = document.createElement('ruby');
         wrapper.className = 'jyutping-hover-ruby hl-' + (rubyHoverStyle || 'ruby-red');
-        console.log('[Jyutping] Creating hover ruby. rubyRtBackground:', rubyRtBackground, 'rubyHoverStyle:', rubyHoverStyle);
         if (rubyRtBackground === 'solid') {
           wrapper.classList.add('with-bg');
         } else if (rubyRtBackground === 'fade') {
@@ -5572,24 +5802,41 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
         wrapper.dataset.word = result.word;
         
         wrapper.appendChild(document.createTextNode(originalText));
-        // 不再創建和添加 <rt> 標籤，防裁剪防佈局擴張，拼音將改用 Shadow DOM 浮動層顯示
         
-        // 提取並替換內容
         range.deleteContents();
         range.insertNode(wrapper);
-        
+        highlightSpans.push(wrapper);
+        currentRange = document.createRange();
+        currentRange.selectNodeContents(wrapper);
+      } else if (typeof CSS !== 'undefined' && CSS.highlights) {
+        // 現代標準：使用 CSS Custom Highlight API，完全不修改 DOM，不破壞 TextNode
+        const styleKey = highlightStyle || 'yellow';
+        if (styleKey === 'border-dashed') {
+          // CSS Custom Highlight 規範只支持文字裝飾，不支持 border/outline 盒模型屬性
+          // 因此使用 Shadow DOM 內的 overlay 容器無侵入精準繪製虛線邊框
+          if (highlightOverlay) {
+            const rect = range.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              highlightOverlay.style.top = `${rect.top - 2}px`;
+              highlightOverlay.style.left = `${rect.left - 2}px`;
+              highlightOverlay.style.width = `${rect.width + 4}px`;
+              highlightOverlay.style.height = `${rect.height + 4}px`;
+              highlightOverlay.style.display = 'block';
+            }
+          }
+        } else {
+          const highlight = new Highlight(range);
+          CSS.highlights.set(`jyutping-highlight-${styleKey}`, highlight);
+        }
       } else {
-        // 標準高亮模式
-        wrapper = document.createElement('span');
+        // 標準高亮模式（舊瀏覽器 fallback）
+        const wrapper = document.createElement('span');
         wrapper.className = 'jyutping-highlight hl-' + (highlightStyle || 'yellow');
         range.surroundContents(wrapper);
+        highlightSpans.push(wrapper);
+        currentRange = document.createRange();
+        currentRange.selectNodeContents(wrapper);
       }
-      
-      highlightSpans.push(wrapper);
-      
-      // 更新 currentRange 指向高亮節點的範圍（用於彈窗定位）
-      currentRange = document.createRange();
-      currentRange.selectNodeContents(wrapper);
     } catch (e) {
       console.log('Highlight failed:', e);
       // 回退方案
@@ -5606,14 +5853,27 @@ import { addWord, isWordSaved, removeWordByCharacter } from './wordbook-storage.
 
   // 移除高亮
   function removeHighlight() {
+    if (typeof CSS !== 'undefined' && CSS.highlights) {
+      CSS.highlights.delete('jyutping-highlight');
+      CSS.highlights.delete('jyutping-highlight-yellow');
+      CSS.highlights.delete('jyutping-highlight-blue');
+      CSS.highlights.delete('jyutping-highlight-red');
+      CSS.highlights.delete('jyutping-highlight-green');
+      CSS.highlights.delete('jyutping-highlight-gray');
+      CSS.highlights.delete('jyutping-highlight-underline-dashed');
+      CSS.highlights.delete('jyutping-highlight-border-dashed');
+    }
+
+    if (highlightOverlay) {
+      highlightOverlay.style.display = 'none';
+    }
+
     // 移除所有高亮 span，恢復原始文字節點
     highlightSpans.forEach(span => {
       if (span && span.parentNode) {
         const parent = span.parentNode;
         
         if (span.tagName === 'RUBY') {
-          // 對於 Ruby 模式，我們不能把 <rt> 標籤也提取出來，否則會變成普通文字顯示
-          // 我們只需要還原它原本的文字即可
           const originalText = span.dataset.originalText || span.textContent.replace(/[a-zA-Z0-9\u200A]+/g, '');
           const textNode = document.createTextNode(originalText);
           parent.insertBefore(textNode, span);
