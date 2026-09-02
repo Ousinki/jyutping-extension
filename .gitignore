@@ -5,7 +5,8 @@ node_modules/
 *.zip
 dist/
 
-# Raw dictionary source data (large files)
+# Raw dictionary source data (large files > 100MB)
+dictionary.json
 data/*
 !data/custom_entries.json
 
